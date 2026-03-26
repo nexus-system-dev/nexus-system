@@ -154,6 +154,10 @@ import { defineScreenTemplateSchema } from "./screen-template-schema.js";
 import { createDashboardTemplate } from "./dashboard-template.js";
 import { createDetailPageTemplate } from "./detail-page-template.js";
 import { createWorkflowTemplate } from "./workflow-template.js";
+import { createManagementTemplate } from "./management-template.js";
+import { createStateDrivenTemplateVariants } from "./state-driven-template-variants.js";
+import { createPrimaryActionValidator } from "./primary-action-validator.js";
+import { createMobileUsabilityValidator } from "./mobile-usability-validator.js";
 import { defineDeveloperWorkspaceSchema } from "./developer-workspace-schema.js";
 import { createProjectWorkbenchLayout } from "./project-workbench-layout.js";
 import { createFileTreeAndEditorContract } from "./file-tree-editor-contract.js";
@@ -1609,6 +1613,75 @@ export function buildProjectContext(project) {
       screenType: "wizard",
     }).screenTemplateSchema,
   });
+  const { managementTemplate } = createManagementTemplate({
+    screenTemplateSchema: defineScreenTemplateSchema({
+      screenType: "management",
+    }).screenTemplateSchema,
+  });
+  const { templateVariants } = createStateDrivenTemplateVariants({
+    screenStates,
+    screenTemplates: {
+      dashboardTemplate,
+      detailPageTemplate,
+      workflowTemplate,
+      managementTemplate,
+    },
+  });
+  const primaryActionValidation = {
+    validationCollectionId: `primary-action-validation:${project.id}`,
+    screens: screenContracts.map((screenContract) => {
+      const screenType = screenContract.screenType ?? "detail";
+      const screenTemplate =
+        screenType === "dashboard"
+          ? dashboardTemplate
+          : screenType === "wizard"
+            ? workflowTemplate
+            : screenType === "tracking"
+              ? managementTemplate
+              : screenType === "workspace"
+                ? dashboardTemplate
+                : detailPageTemplate;
+
+      return createPrimaryActionValidator({
+        screenId: screenContract.screenId,
+        screenContract,
+        screenTemplate,
+      }).primaryActionValidation;
+    }),
+  };
+  primaryActionValidation.summary = {
+    totalScreens: primaryActionValidation.screens.length,
+    validScreens: primaryActionValidation.screens.filter((screen) => screen.summary.isValid).length,
+    blockedScreens: primaryActionValidation.screens.filter((screen) => !screen.summary.isValid).length,
+  };
+  const mobileValidation = {
+    validationCollectionId: `mobile-validation:${project.id}`,
+    screens: screenContracts.map((screenContract) => {
+      const screenType = screenContract.screenType ?? "detail";
+      const screenTemplate =
+        screenType === "dashboard"
+          ? dashboardTemplate
+          : screenType === "wizard"
+            ? workflowTemplate
+            : screenType === "tracking"
+              ? managementTemplate
+              : screenType === "workspace"
+                ? dashboardTemplate
+                : detailPageTemplate;
+      const screenMobileChecklist = mobileChecklist.screens.find((screen) => screen.screenId === screenContract.screenId) ?? null;
+
+      return createMobileUsabilityValidator({
+        screenId: screenContract.screenId,
+        screenTemplate,
+        mobileChecklist: screenMobileChecklist,
+      }).mobileValidation;
+    }),
+  };
+  mobileValidation.summary = {
+    totalScreens: mobileValidation.screens.length,
+    usableScreens: mobileValidation.screens.filter((screen) => screen.summary.isUsable).length,
+    blockedScreens: mobileValidation.screens.filter((screen) => !screen.summary.isUsable).length,
+  };
   const { nexusPersistenceSchema } = defineNexusPersistenceSchema({
     coreEntityDefinitions: project.manualContext?.coreEntityDefinitions ?? null,
   });
@@ -2265,6 +2338,10 @@ export function buildProjectContext(project) {
   context.dashboardTemplate = dashboardTemplate;
   context.detailPageTemplate = detailPageTemplate;
   context.workflowTemplate = workflowTemplate;
+  context.managementTemplate = managementTemplate;
+  context.templateVariants = templateVariants;
+  context.primaryActionValidation = primaryActionValidation;
+  context.mobileValidation = mobileValidation;
   context.developerWorkspace = developerWorkspace;
   context.projectWorkbenchLayout = projectWorkbenchLayout;
   context.fileEditorContract = fileEditorContract;

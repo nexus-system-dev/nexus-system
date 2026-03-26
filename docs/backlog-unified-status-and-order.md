@@ -4799,7 +4799,7 @@ Refinements מאושרים:
   - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-5. `Create list and management template`  | סטטוס: 🔴 לא בוצע
+5. `Create list and management template`  | סטטוס: 🟢 בוצע
 - description: לבנות template למסכי רשימות, טבלאות וניהול
 - input:
   - `screenTemplateSchema`
@@ -4809,7 +4809,7 @@ Refinements מאושרים:
   - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-6. `Create state-driven template variants`  | סטטוס: 🔴 לא בוצע
+6. `Create state-driven template variants`  | סטטוס: 🟢 בוצע
 - description: לבנות וריאציות `loading / empty / error / success` לכל template
 - input:
   - `screenStates`
@@ -4824,7 +4824,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Create primary action validator`  | סטטוס: 🔴 לא בוצע
+1. `Create primary action validator`  | סטטוס: 🟢 בוצע
 - description: לבדוק שלכל מסך יש פעולה ראשית ברורה
 - input:
   - `screenContract`
@@ -4832,10 +4832,10 @@ Refinements מאושרים:
 - output:
   - `primaryActionValidation`
 - dependencies:
-  - `Create goal and CTA definition module`  | סטטוס: 🔴 לא בוצע
+  - `Create goal and CTA definition module`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-2. `Create mobile usability validator`  | סטטוס: 🔴 לא בוצע
+2. `Create mobile usability validator`  | סטטוס: 🟢 בוצע
 - description: לבדוק שהמסך usable במובייל
 - input:
   - `screenTemplate`

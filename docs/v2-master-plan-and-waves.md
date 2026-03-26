@@ -67,8 +67,8 @@
 - עובדים עכשיו על `Wave 1`
 
 אחוזי התקדמות:
-- `Wave 1`: `33%`
-- `v2` כולל: `33%`
+- `Wave 1`: `40%`
+- `v2` כולל: `40%`
 
 איך האחוז מחושב:
 - `Wave 1` מחושב לפי מספר המשימות שסומנו `🟢` מתוך כלל המשימות הממופות לגל
@@ -91,8 +91,12 @@
   - `Create dashboard template`
   - `Create detail page template`
   - `Create workflow template`
+  - `Create list and management template`
+  - `Create state-driven template variants`
+  - `Create primary action validator`
+  - `Create mobile usability validator`
 - סך המשימות הממופות ל־`Wave 1`: `55`
-- הושלמו: `18 / 55`
+- הושלמו: `22 / 55`
 
 כלל עבודה:
 - בסוף כל משימה מעדכנים:
@@ -318,7 +322,7 @@
   - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-19. `Create list and management template`  | סטטוס: 🔴 לא בוצע
+19. `Create list and management template`  | סטטוס: 🟢 בוצע
 - description: לבנות template למסכי רשימות, טבלאות וניהול
 - input:
   - `screenTemplateSchema`
@@ -328,7 +332,7 @@
   - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-20. `Create state-driven template variants`  | סטטוס: 🔴 לא בוצע
+20. `Create state-driven template variants`  | סטטוס: 🟢 בוצע
 - description: לבנות וריאציות `loading / empty / error / success` לכל template
 - input:
   - `screenStates`
@@ -339,7 +343,7 @@
   - `Create loading empty error states definition`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-21. `Create primary action validator`  | סטטוס: 🔴 לא בוצע
+21. `Create primary action validator`  | סטטוס: 🟢 בוצע
 - description: לבדוק שלכל מסך יש פעולה ראשית ברורה
 - input:
   - `screenContract`
@@ -350,7 +354,7 @@
   - `Create goal and CTA definition module`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-22. `Create mobile usability validator`  | סטטוס: 🔴 לא בוצע
+22. `Create mobile usability validator`  | סטטוס: 🟢 בוצע
 - description: לבדוק שהמסך usable במובייל
 - input:
   - `screenTemplate`

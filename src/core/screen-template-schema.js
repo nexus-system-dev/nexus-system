@@ -17,6 +17,10 @@ function buildRegions(screenType) {
     return ["topbar", "breadcrumb", "timeline-rail", "detail-panel", "activity-panel"];
   }
 
+  if (screenType === "management") {
+    return ["topbar", "breadcrumb", "filter-bar", "data-table", "side-panel", "bulk-actions"];
+  }
+
   if (screenType === "detail") {
     return ["topbar", "breadcrumb", "primary-content", "side-panel", "footer-actions"];
   }
@@ -35,6 +39,10 @@ function buildRequiredLibraries(screenType) {
 
   if (screenType === "tracking") {
     return ["navigation", "data-display", "feedback", "layout"];
+  }
+
+  if (screenType === "management") {
+    return ["navigation", "data-display", "primitive", "feedback", "layout"];
   }
 
   if (screenType === "detail") {
@@ -60,7 +68,10 @@ export function defineScreenTemplateSchema({
       behavior: {
         supportsAssistant: normalizedScreenType === "workspace" || normalizedScreenType === "wizard",
         supportsPanels: normalizedScreenType !== "wizard",
-        supportsBreadcrumb: normalizedScreenType === "detail" || normalizedScreenType === "tracking",
+        supportsBreadcrumb:
+          normalizedScreenType === "detail"
+          || normalizedScreenType === "tracking"
+          || normalizedScreenType === "management",
         supportsStatusStrip: normalizedScreenType === "workspace" || normalizedScreenType === "dashboard",
       },
       summary: {
