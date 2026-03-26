@@ -67,8 +67,8 @@
 - עובדים עכשיו על `Wave 1`
 
 אחוזי התקדמות:
-- `Wave 1`: `16%`
-- `v2` כולל: `16%`
+- `Wave 1`: `33%`
+- `v2` כולל: `33%`
 
 איך האחוז מחושב:
 - `Wave 1` מחושב לפי מספר המשימות שסומנו `🟢` מתוך כלל המשימות הממופות לגל
@@ -82,8 +82,17 @@
   - `Create color usage rules`
   - `Create interaction states system`
   - `Define component contract schema`
+  - `Create primitive components`
+  - `Create layout components`
+  - `Create feedback components`
+  - `Create navigation components`
+  - `Create data display components`
+  - `Define screen template schema`
+  - `Create dashboard template`
+  - `Create detail page template`
+  - `Create workflow template`
 - סך המשימות הממופות ל־`Wave 1`: `55`
-- הושלמו: `9 / 55`
+- הושלמו: `18 / 55`
 
 כלל עבודה:
 - בסוף כל משימה מעדכנים:
@@ -217,7 +226,7 @@
   - `Design System`
 - connects_to: `Project State`
 
-10. `Create primitive components`  | סטטוס: 🔴 לא בוצע
+10. `Create primitive components`  | סטטוס: 🟢 בוצע
 - description: לבנות רכיבי בסיס כמו button, input, textarea, select, badge, icon button
 - input:
   - `componentContract`
@@ -228,27 +237,27 @@
   - `Define component contract schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-11. `Create layout components`  | סטטוס: 🔴 לא בוצע
+11. `Create layout components`  | סטטוס: 🟢 בוצע
 - description: לבנות container, section, stack, grid, panel, divider
 - input:
   - `layoutSystem`
 - output:
   - `layoutComponents`
 - dependencies:
-  - `Create spacing and layout system`  | סטטוס: 🔴 לא בוצע
+  - `Create spacing and layout system`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-12. `Create feedback components`  | סטטוס: 🔴 לא בוצע
+12. `Create feedback components`  | סטטוס: 🟢 בוצע
 - description: לבנות loading, empty state, error state, toast, banner, progress, skeleton
 - input:
   - `interactionStateSystem`
 - output:
   - `feedbackComponents`
 - dependencies:
-  - `Create interaction states system`  | סטטוס: 🔴 לא בוצע
+  - `Create interaction states system`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-13. `Create navigation components`  | סטטוס: 🔴 לא בוצע
+13. `Create navigation components`  | סטטוס: 🟢 בוצע
 - description: לבנות sidebar, tabs, breadcrumb, topbar, stepper
 - input:
   - `screenFlowMap`
@@ -258,7 +267,7 @@
   - `Create screen-to-flow mapping`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-14. `Create data display components`  | סטטוס: 🔴 לא בוצע
+14. `Create data display components`  | סטטוס: 🟢 בוצע
 - description: לבנות table, stat card, activity log, timeline, key-value panel, status chip
 - input:
   - `screenInventory`
@@ -268,7 +277,7 @@
   - `Define screen inventory`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-15. `Define screen template schema`  | סטטוס: 🔴 לא בוצע
+15. `Define screen template schema`  | סטטוס: 🟢 בוצע
 - description: להגדיר תבנית אחידה למסכים
 - input:
   - `screenType`
@@ -279,34 +288,34 @@
   - `Component Library`
 - connects_to: `Project State`
 
-16. `Create dashboard template`  | סטטוס: 🔴 לא בוצע
+16. `Create dashboard template`  | סטטוס: 🟢 בוצע
 - description: לבנות template למסכי overview ודשבורדים
 - input:
   - `screenTemplateSchema`
 - output:
   - `dashboardTemplate`
 - dependencies:
-  - `Define screen template schema`  | סטטוס: 🔴 לא בוצע
+  - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-17. `Create detail page template`  | סטטוס: 🔴 לא בוצע
+17. `Create detail page template`  | סטטוס: 🟢 בוצע
 - description: לבנות template למסכי פרטים
 - input:
   - `screenTemplateSchema`
 - output:
   - `detailPageTemplate`
 - dependencies:
-  - `Define screen template schema`  | סטטוס: 🔴 לא בוצע
+  - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-18. `Create workflow template`  | סטטוס: 🔴 לא בוצע
+18. `Create workflow template`  | סטטוס: 🟢 בוצע
 - description: לבנות template למסכי flow ו־wizard
 - input:
   - `screenTemplateSchema`
 - output:
   - `workflowTemplate`
 - dependencies:
-  - `Define screen template schema`  | סטטוס: 🔴 לא בוצע
+  - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
 19. `Create list and management template`  | סטטוס: 🔴 לא בוצע
@@ -316,7 +325,7 @@
 - output:
   - `managementTemplate`
 - dependencies:
-  - `Define screen template schema`  | סטטוס: 🔴 לא בוצע
+  - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
 20. `Create state-driven template variants`  | סטטוס: 🔴 לא בוצע

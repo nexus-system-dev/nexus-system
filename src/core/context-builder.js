@@ -145,6 +145,15 @@ import { createSpacingAndLayoutSystem } from "./spacing-layout-system.js";
 import { createColorUsageRules } from "./color-usage-rules.js";
 import { createInteractionStatesSystem } from "./interaction-states-system.js";
 import { defineComponentContractSchema } from "./component-contract-schema.js";
+import { createPrimitiveComponents } from "./primitive-components.js";
+import { createLayoutComponents } from "./layout-components.js";
+import { createFeedbackComponents } from "./feedback-components.js";
+import { createNavigationComponents } from "./navigation-components.js";
+import { createDataDisplayComponents } from "./data-display-components.js";
+import { defineScreenTemplateSchema } from "./screen-template-schema.js";
+import { createDashboardTemplate } from "./dashboard-template.js";
+import { createDetailPageTemplate } from "./detail-page-template.js";
+import { createWorkflowTemplate } from "./workflow-template.js";
 import { defineDeveloperWorkspaceSchema } from "./developer-workspace-schema.js";
 import { createProjectWorkbenchLayout } from "./project-workbench-layout.js";
 import { createFileTreeAndEditorContract } from "./file-tree-editor-contract.js";
@@ -1566,6 +1575,40 @@ export function buildProjectContext(project) {
   const { componentContract } = defineComponentContractSchema({
     componentType: project.manualContext?.componentType ?? "panel",
   });
+  const { primitiveComponents } = createPrimitiveComponents({
+    componentContract,
+    designTokens,
+  });
+  const { layoutComponents } = createLayoutComponents({
+    layoutSystem,
+  });
+  const { feedbackComponents } = createFeedbackComponents({
+    interactionStateSystem,
+  });
+  const { navigationComponents } = createNavigationComponents({
+    screenFlowMap,
+  });
+  const { dataDisplayComponents } = createDataDisplayComponents({
+    screenInventory,
+  });
+  const { screenTemplateSchema } = defineScreenTemplateSchema({
+    screenType: project.manualContext?.screenType ?? "workspace",
+  });
+  const { dashboardTemplate } = createDashboardTemplate({
+    screenTemplateSchema: defineScreenTemplateSchema({
+      screenType: "dashboard",
+    }).screenTemplateSchema,
+  });
+  const { detailPageTemplate } = createDetailPageTemplate({
+    screenTemplateSchema: defineScreenTemplateSchema({
+      screenType: "detail",
+    }).screenTemplateSchema,
+  });
+  const { workflowTemplate } = createWorkflowTemplate({
+    screenTemplateSchema: defineScreenTemplateSchema({
+      screenType: "wizard",
+    }).screenTemplateSchema,
+  });
   const { nexusPersistenceSchema } = defineNexusPersistenceSchema({
     coreEntityDefinitions: project.manualContext?.coreEntityDefinitions ?? null,
   });
@@ -1860,12 +1903,7 @@ export function buildProjectContext(project) {
   });
   const { projectWorkbenchLayout } = createProjectWorkbenchLayout({
     developerWorkspace,
-    screenTemplateSchema: {
-      templateId: "workspace-template",
-      templateType: "workspace",
-      supportsAssistant: true,
-      supportsPanels: true,
-    },
+    screenTemplateSchema,
   });
   const { fileEditorContract } = createFileTreeAndEditorContract({
     developerWorkspace,
@@ -2218,6 +2256,15 @@ export function buildProjectContext(project) {
   context.colorRules = colorRules;
   context.interactionStateSystem = interactionStateSystem;
   context.componentContract = componentContract;
+  context.primitiveComponents = primitiveComponents;
+  context.layoutComponents = layoutComponents;
+  context.feedbackComponents = feedbackComponents;
+  context.navigationComponents = navigationComponents;
+  context.dataDisplayComponents = dataDisplayComponents;
+  context.screenTemplateSchema = screenTemplateSchema;
+  context.dashboardTemplate = dashboardTemplate;
+  context.detailPageTemplate = detailPageTemplate;
+  context.workflowTemplate = workflowTemplate;
   context.developerWorkspace = developerWorkspace;
   context.projectWorkbenchLayout = projectWorkbenchLayout;
   context.fileEditorContract = fileEditorContract;
