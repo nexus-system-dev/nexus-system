@@ -1,0 +1,2343 @@
+import {
+  createCanonicalProject,
+  createCanonicalState,
+  createDependency,
+  createEvidence,
+  createFlow,
+  createGap,
+  createRecommendedAction,
+  createRisk,
+  createSignal,
+} from "./canonical-schema.js";
+import { classifyProjectDomain } from "./domain-classifier.js";
+import { buildBusinessContextLayer } from "./business-context-layer.js";
+import { resolveBusinessBottleneck } from "./business-bottleneck-resolver.js";
+import { createBootstrapPlanGenerator } from "./bootstrap-plan-generator.js";
+import { createBootstrapDispatcher } from "./bootstrap-dispatcher.js";
+import { defineBootstrapExecutionRequestSchema } from "./bootstrap-execution-request.js";
+import { createBootstrapSurfaceResolver } from "./bootstrap-surface-resolver.js";
+import { createBootstrapCommandPlanner } from "./bootstrap-command-planner.js";
+import { createBootstrapExecutionInvoker } from "./bootstrap-execution-invoker.js";
+import { createBootstrapArtifactCollector } from "./bootstrap-artifact-collector.js";
+import { createBootstrapExecutionResultEnvelope } from "./bootstrap-execution-result-envelope.js";
+import { createBootstrapValidationModule } from "./bootstrap-validation-module.js";
+import { createBootstrapStateUpdater } from "./bootstrap-state-updater.js";
+import { defineExecutionProgressSchema } from "./execution-progress-schema.js";
+import { createRunProgressNormalizer } from "./run-progress-normalizer.js";
+import { createProgressPhaseResolver } from "./progress-phase-resolver.js";
+import { createProgressPercentageCalculator } from "./progress-percentage-calculator.js";
+import { createCompletionEstimateCalculator } from "./completion-estimate-calculator.js";
+import { createLiveProgressAssembler } from "./live-progress-assembler.js";
+import { createExecutionLogFormatter } from "./execution-log-formatter.js";
+import { createExecutionCompletionNotifier } from "./execution-completion-notifier.js";
+import { createPlatformLoggingAndTracingLayer } from "./platform-logging-tracing-layer.js";
+import { createAlertingAndIncidentHooks } from "./alerting-incident-hooks.js";
+import { createAuditLogForSystemActions } from "./system-audit-log.js";
+import { defineNotificationEventSchema } from "./notification-event-schema.js";
+import { createInAppNotificationCenter } from "./in-app-notification-center.js";
+import { createEmailNotificationDeliveryModule } from "./email-notification-delivery-module.js";
+import { createNotificationPreferenceSettings } from "./notification-preference-settings.js";
+import { createWebhookExternalNotificationAdapter } from "./webhook-external-notification-adapter.js";
+import { createReleasePlanGenerator } from "./release-plan-generator.js";
+import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
+import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
+import { createApprovalRecordStore } from "./approval-record-store.js";
+import { createApprovalStatusResolver } from "./approval-status-resolver.js";
+import { createApprovalGatingModule } from "./approval-gating-module.js";
+import { createApprovalAuditFormatter } from "./approval-audit-formatter.js";
+import { createActionPolicyRegistry } from "./action-policy-registry.js";
+import { createCredentialUsagePolicy } from "./credential-usage-policy.js";
+import { createCodeChangePolicyChecks } from "./code-change-policy-checks.js";
+import { createDeployPolicyChecks } from "./deploy-policy-checks.js";
+import { createPolicyEnforcementGuard } from "./policy-enforcement-guard.js";
+import { createPolicyTraceBuilder } from "./policy-trace-builder.js";
+import { createExecutionPolicyEvaluator } from "./execution-policy-evaluator.js";
+import { definePolicySchema } from "./policy-schema.js";
+import { defineDiffPreviewSchema } from "./diff-preview-schema.js";
+import { createCodeDiffCollector } from "./code-diff-collector.js";
+import { createConfigInfraDiffCollector } from "./config-infra-diff-collector.js";
+import { createDiffImpactSummarizer } from "./diff-impact-summarizer.js";
+import { createMigrationDiffCollector } from "./migration-diff-collector.js";
+import { createUserFacingDiffPreviewAssembler } from "./user-facing-diff-preview-assembler.js";
+import { defineApprovalRequestSchema } from "./approval-request-schema.js";
+import { createApprovalRuleRegistry } from "./approval-rule-registry.js";
+import { createApprovalTriggerResolver } from "./approval-trigger-resolver.js";
+import { createArtifactReadinessValidator } from "./artifact-readiness-validator.js";
+import { createArtifactRegistryModule } from "./artifact-registry-module.js";
+import { createAccountVerificationModule } from "./account-verification-module.js";
+import { createAuthenticationModeContract } from "./authentication-mode-contract.js";
+import { createBuildTargetResolver } from "./build-target-resolver.js";
+import { createBlockingIssuesClassifier } from "./blocking-issues-classifier.js";
+import { createDeploymentArtifactPreparer } from "./deployment-artifact-preparer.js";
+import { defineDeploymentRequestSchema } from "./deployment-request-schema.js";
+import { createDeploymentProviderResolver } from "./deployment-provider-resolver.js";
+import { createExternalAccountRegistry } from "./external-account-registry.js";
+import { createHostingProviderAdapterContract } from "./hosting-provider-adapter-contract.js";
+import { createMetadataReadinessValidator } from "./metadata-readiness-validator.js";
+import { createPackageFormatResolver } from "./package-format-resolver.js";
+import { createPackageAssembler } from "./package-assembler.js";
+import { createPackagingResultEnvelope } from "./packaging-result-envelope.js";
+import { createPackageVerificationModule } from "./package-verification-module.js";
+import { createPackagingManifestBuilder } from "./packaging-manifest-builder.js";
+import { definePackagingRequirementsSchema } from "./packaging-requirements-schema.js";
+import { createOwnerConsentRecorder } from "./owner-consent-recorder.js";
+import { createOwnershipAwareReleaseGuard } from "./ownership-aware-release-guard.js";
+import { createOwnershipPolicyModel } from "./ownership-policy-model.js";
+import { createCredentialVaultInterface } from "./credential-vault-interface.js";
+import { createProviderCapabilityDescriptor } from "./provider-capability-descriptor.js";
+import { createProviderConnectorAssembler } from "./provider-connector-assembler.js";
+import { defineProviderConnectorSchema } from "./provider-connector-schema.js";
+import { createProviderConnectorContract } from "./provider-connector-contract.js";
+import { createProviderOperationContract } from "./provider-operation-contract.js";
+import { createProviderSessionFactory } from "./provider-session-factory.js";
+import { createReleaseValidationAssembler } from "./release-validation-assembler.js";
+import { createReleaseStatusStateModel } from "./release-status-state-model.js";
+import { createReleaseStateUpdater } from "./release-state-updater.js";
+import { createReleaseTimelineBuilder } from "./release-timeline-builder.js";
+import { createStoreAndProviderStatusPollers } from "./store-provider-status-pollers.js";
+import { createVersioningService } from "./versioning-service.js";
+import { createRejectionAndFailureMapper } from "./rejection-failure-mapper.js";
+import { defineFailureRecoverySchema } from "./failure-recovery-schema.js";
+import { createRetryPolicyResolver } from "./retry-policy-resolver.js";
+import { createFallbackStrategyResolver } from "./fallback-strategy-resolver.js";
+import { createRollbackScopePlanner } from "./rollback-scope-planner.js";
+import { createRecoveryOrchestrationModule } from "./recovery-orchestration-module.js";
+import { createUserFacingRecoveryOptionsAssembler } from "./user-facing-recovery-options-assembler.js";
+import { defineBottleneckSchema } from "./bottleneck-schema.js";
+import { createActiveBottleneckResolver } from "./active-bottleneck-resolver.js";
+import { createBottleneckPriorityScorer } from "./bottleneck-priority-scorer.js";
+import { createUnblockPathGenerator } from "./unblock-path-generator.js";
+import { createBottleneckStateUpdater } from "./bottleneck-state-updater.js";
+import { defineExplanationSchema } from "./explanation-schema.js";
+import { createNextActionExplanationBuilder } from "./next-action-explanation-builder.js";
+import { createFailureExplanationBuilder } from "./failure-explanation-builder.js";
+import { createApprovalExplanationBuilder } from "./approval-explanation-builder.js";
+import { createExecutionChangeExplanationBuilder } from "./execution-change-explanation-builder.js";
+import { createExplanationAssembler } from "./explanation-assembler.js";
+import { createFirstTangibleOutcomeGenerator } from "./first-tangible-outcome-generator.js";
+import { createProgressToRealityMapper } from "./progress-to-reality-mapper.js";
+import { createFirstValueSummaryAssembler } from "./first-value-summary-assembler.js";
+import { defineProjectIdentitySchema } from "./project-identity-schema.js";
+import { createProjectIdentityAssembler } from "./project-identity-assembler.js";
+import { createInstantValueOutputResolver } from "./instant-value-output-resolver.js";
+import { defineV1AcceptanceScenarioSchema } from "./v1-acceptance-scenario-schema.js";
+import { createOnboardingToFirstValueAcceptanceTest } from "./onboarding-to-first-value-acceptance-test.js";
+import { createExecutionToStateUpdateAcceptanceTest } from "./execution-to-state-update-acceptance-test.js";
+import { createFailureRecoveryAcceptanceTest } from "./failure-recovery-acceptance-test.js";
+import { createApprovalExplanationAcceptanceTest } from "./approval-explanation-acceptance-test.js";
+import { createWorkspaceContinuityAcceptanceTest } from "./workspace-continuity-acceptance-test.js";
+import { buildCrossFunctionalTaskGraph } from "./cross-functional-task-graph.js";
+import { buildDecisionIntelligenceLayer } from "./decision-intelligence-layer.js";
+import { createRecommendedDefaults, createStackRecommendationModule } from "./defaults-rule-engine.js";
+import { buildGrowthMarketingPlanner } from "./growth-marketing-planner.js";
+import { definePrimaryUserJourneys } from "./primary-user-journeys.js";
+import { createJourneyMap } from "./journey-map.js";
+import { defineScreenInventory } from "./screen-inventory.js";
+import { createScreenToFlowMapping } from "./screen-flow-map.js";
+import { defineScreenContractSchema } from "./screen-contract-schema.js";
+import { createGoalAndCtaDefinitionModule } from "./screen-goal-cta.js";
+import { createMobileReadinessChecklist } from "./mobile-readiness-checklist.js";
+import { createLoadingEmptyErrorStatesDefinition } from "./loading-empty-error-states-definition.js";
+import { createScreenValidationChecklist } from "./screen-validation-checklist.js";
+import { defineDesignTokenSchema } from "./design-token-schema.js";
+import { createTypographySystem } from "./typography-system.js";
+import { createSpacingAndLayoutSystem } from "./spacing-layout-system.js";
+import { createColorUsageRules } from "./color-usage-rules.js";
+import { createInteractionStatesSystem } from "./interaction-states-system.js";
+import { defineComponentContractSchema } from "./component-contract-schema.js";
+import { defineDeveloperWorkspaceSchema } from "./developer-workspace-schema.js";
+import { createProjectWorkbenchLayout } from "./project-workbench-layout.js";
+import { createFileTreeAndEditorContract } from "./file-tree-editor-contract.js";
+import { createTerminalAndCommandConsoleView } from "./command-console-view.js";
+import { createBranchAndDiffActivityPanel } from "./branch-diff-activity-panel.js";
+import { createArtifactAndBuildLogPanel } from "./artifact-build-log-panel.js";
+import { createDevelopmentWorkspace } from "./development-workspace.js";
+import { createProjectBrainWorkspace } from "./project-brain-workspace.js";
+import { createReleaseWorkspace } from "./release-workspace.js";
+import { createGrowthWorkspace } from "./growth-workspace.js";
+import { createCrossWorkspaceNavigationModel } from "./cross-workspace-navigation-model.js";
+import { defineExecutionTopologySchema } from "./execution-topology-schema.js";
+import { createCloudExecutionWorkspaceModel } from "./cloud-execution-workspace-model.js";
+import { createLocalDevelopmentBridgeContract } from "./local-development-bridge-contract.js";
+import { createRemoteMacRunnerContract } from "./remote-mac-runner-contract.js";
+import { createExecutionModeResolver } from "./execution-mode-resolver.js";
+import { defineTestExecutionSchema } from "./test-execution-schema.js";
+import { defineUserIdentitySchema } from "./user-identity-schema.js";
+import { defineNexusPersistenceSchema } from "./nexus-persistence-schema.js";
+import { createNexusDatabaseMigrations } from "./nexus-database-migrations.js";
+import { createRepositoryLayerForCoreEntities } from "./entity-repository-layer.js";
+import { createFileAndArtifactStorageModule } from "./file-artifact-storage-module.js";
+import { createAuthenticationSystem } from "./authentication-system.js";
+import { createSessionAndTokenManagement } from "./session-and-token-management.js";
+import { createPasswordResetAndEmailVerificationFlow } from "./password-reset-email-verification-flow.js";
+import { defineWorkspaceAndMembershipModel } from "./workspace-membership-model.js";
+import { createProjectAccessControlModule } from "./project-access-control-module.js";
+import { createRoleAssignmentAndInvitationFlow } from "./role-assignment-invitation-flow.js";
+import { createOrganizationWorkspaceSettingsModule } from "./workspace-settings-module.js";
+import { createAutomatedTestOrchestrationModule } from "./automated-test-orchestration-module.js";
+import { createTestRunnerAdapterLayer } from "./test-runner-adapter-layer.js";
+import { createTestResultNormalizationModule } from "./test-result-normalization-module.js";
+import { createPreDeployQualityGate } from "./pre-deploy-quality-gate.js";
+import { createTestReportingAndRemediationSummary } from "./test-reporting-remediation-summary.js";
+import { mapDomainCapabilities } from "./domain-capability-mapper.js";
+import { createDomainRegistry, resolveDomainProfile } from "./domain-registry.js";
+
+const MIN_DECISION_CONFIDENCE = 0.65;
+
+function inferPlannedChangeKind(command) {
+  const text = [command?.command, ...(Array.isArray(command?.args) ? command.args : [])]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (text.includes("billing")) {
+    return "migration";
+  }
+
+  if (
+    text.includes("env")
+    || text.includes("deploy")
+    || text.includes("hosting")
+    || text.includes("route")
+    || text.includes("routing")
+    || text.includes("domain")
+    || text.includes("ci")
+    || text.includes("pipeline")
+  ) {
+    return "infra";
+  }
+
+  return "code";
+}
+
+function getNormalized(project, key) {
+  const normalized = project.normalizedSources?.[key]?.data;
+  if (normalized) {
+    return normalized;
+  }
+
+  if (key === "scan") {
+    return project.scan ?? null;
+  }
+
+  if (key === "external") {
+    return project.externalSnapshot ?? null;
+  }
+
+  if (key === "git") {
+    return project.gitSnapshot ?? null;
+  }
+
+  if (key === "runtime") {
+    return project.runtimeSnapshot ?? null;
+  }
+
+  return null;
+}
+
+function isReliable(item) {
+  if (!item) {
+    return false;
+  }
+
+  const metadata = item.metadata ?? item;
+  return metadata.status !== "unknown" && metadata.confidence >= MIN_DECISION_CONFIDENCE;
+}
+
+function inferDomain(project) {
+  const manualDomain = project.manualContext?.domain ?? project.state?.context?.domain ?? null;
+  if (manualDomain) {
+    return {
+      domain: manualDomain,
+      domainCandidates: [manualDomain],
+      confidenceScores: {
+        [manualDomain]: 1,
+      },
+    };
+  }
+
+  const normalizedScan = getNormalized(project, "scan");
+  return classifyProjectDomain({
+    projectIntake: project.projectIntake ?? null,
+    scan: normalizedScan,
+    knowledge: normalizedScan?.knowledge ?? null,
+    externalSources: getNormalized(project, "external"),
+    goal: project.goal,
+  });
+}
+
+function buildReleaseMetadata({ project, domain, releasePlan, recommendedDefaults, businessContext }) {
+  const metadata = [
+    releasePlan?.releaseTarget ? "deployment-target" : null,
+    project.state?.version ? "version-info" : null,
+    domain === "saas" || recommendedDefaults?.hosting?.target ? "environment-config" : null,
+    domain === "casino" && Array.isArray(businessContext?.constraints) && businessContext.constraints.length > 0
+      ? "compliance-notes"
+      : null,
+    domain === "mobile-app" ? "bundle-id" : null,
+    releasePlan?.releaseTarget === "app-store" || releasePlan?.releaseTarget === "play-store"
+      ? "store-metadata"
+      : null,
+    releasePlan?.releaseTarget?.includes("distribution") ? "distribution-channel" : null,
+    domain === "book" ? "book-metadata" : null,
+    releasePlan?.releaseTarget === "content-delivery" ? "delivery-format" : null,
+  ];
+
+  return [...new Set(metadata.filter(Boolean))];
+}
+
+function buildStack(project) {
+  const external = getNormalized(project, "external")?.technical?.stack;
+  const scanStack = getNormalized(project, "scan")?.stack;
+  const stateStack = project.state?.stack ?? {};
+
+  return {
+    frontend: createEvidence(
+      {
+        value: external?.frontend ?? scanStack?.frontend?.join(", ") ?? stateStack.frontend ?? "לא זוהה",
+        source: external ? "casino-api" : scanStack ? "project-scan" : "project-state",
+        confidence: external ? 0.9 : scanStack ? 0.75 : 0.5,
+        status: external || scanStack ? "verified" : "inferred",
+        derivedFrom: external ? "technical.stack.frontend" : scanStack ? "scan.stack.frontend" : "state.stack.frontend",
+      },
+    ),
+    backend: createEvidence(
+      {
+        value: external?.backend ?? scanStack?.backend?.join(", ") ?? stateStack.backend ?? "לא זוהה",
+        source: external ? "casino-api" : scanStack ? "project-scan" : "project-state",
+        confidence: external ? 0.9 : scanStack ? 0.75 : 0.5,
+        status: external || scanStack ? "verified" : "inferred",
+        derivedFrom: external ? "technical.stack.backend" : scanStack ? "scan.stack.backend" : "state.stack.backend",
+      },
+    ),
+    database: createEvidence(
+      {
+        value: external?.database ?? scanStack?.database?.join(", ") ?? stateStack.database ?? "לא זוהה",
+        source: external ? "casino-api" : scanStack ? "project-scan" : "project-state",
+        confidence: external ? 0.9 : scanStack ? 0.75 : 0.5,
+        status: external || scanStack ? "verified" : "inferred",
+        derivedFrom: external ? "technical.stack.database" : scanStack ? "scan.stack.database" : "state.stack.database",
+      },
+    ),
+  };
+}
+
+function buildCapabilities(project) {
+  const scan = getNormalized(project, "scan");
+  const external = getNormalized(project, "external");
+
+  return {
+    auth: external
+      ? createEvidence({
+          value: Boolean(external.features?.hasAuth),
+          source: "casino-api",
+          confidence: 0.9,
+          status: "verified",
+          derivedFrom: "features.hasAuth",
+        })
+      : createEvidence({
+          value: Boolean(scan?.findings?.hasAuth),
+          source: "project-scan",
+          confidence: 0.75,
+          status: scan ? "verified" : "unknown",
+          derivedFrom: "scan.findings.hasAuth",
+        }),
+    payments: external
+      ? createEvidence({
+          value: Boolean(external.features?.hasPayments),
+          source: "casino-api",
+          confidence: 0.9,
+          status: "verified",
+          derivedFrom: "features.hasPayments",
+        })
+      : createEvidence({
+          value: Boolean(project.state?.product?.hasPaymentIntegration),
+          source: "project-state",
+          confidence: 0.6,
+          status: "inferred",
+          derivedFrom: "state.product.hasPaymentIntegration",
+        }),
+    wallet: external
+      ? createEvidence({
+          value: Boolean(external.features?.hasWallet),
+          source: "casino-api",
+          confidence: 0.9,
+          status: "verified",
+          derivedFrom: "features.hasWallet",
+        })
+      : createEvidence({
+          value: false,
+          source: "unknown",
+          confidence: 0.2,
+          status: "unknown",
+          derivedFrom: "missing",
+        }),
+    migrations: createEvidence({
+      value: Boolean(scan?.findings?.hasMigrations || external?.technical?.hasMigrations),
+      source: external?.technical ? "casino-api" : "project-scan",
+      confidence: external?.technical ? 0.9 : 0.75,
+      status: external?.technical || scan ? "verified" : "unknown",
+      derivedFrom: external?.technical ? "technical.hasMigrations" : "scan.findings.hasMigrations",
+    }),
+    tests: createEvidence({
+      value: Boolean(scan?.findings?.hasTests || external?.technical?.hasTests),
+      source: external?.technical ? "casino-api" : "project-scan",
+      confidence: external?.technical ? 0.9 : 0.75,
+      status: external?.technical || scan ? "verified" : "unknown",
+      derivedFrom: external?.technical ? "technical.hasTests" : "scan.findings.hasTests",
+    }),
+  };
+}
+
+function buildExecutionCapabilities(project, executionModes = []) {
+  const agentCapabilities = (project.agents ?? []).map((agent) => ({
+    type: "agent",
+    id: agent.id,
+    capabilities: agent.capabilities ?? [],
+  }));
+  const surfaceCapabilities = executionModes.map((mode) => ({
+    type: "surface",
+    id: mode,
+    mode,
+    capabilities: ["bootstrap", "backend", "frontend", "security", "payments"],
+  }));
+
+  return [...agentCapabilities, ...surfaceCapabilities];
+}
+
+function buildGaps(project) {
+  const gaps = [];
+  const normalizedScan = getNormalized(project, "scan");
+  const normalizedExternal = getNormalized(project, "external");
+
+  for (const gap of normalizedScan?.gaps ?? []) {
+    gaps.push(
+      createGap({
+        id: gap,
+        text: gap,
+        category: "technical",
+        severity: "medium",
+        source: "project-scan",
+        confidence: 0.75,
+        status: "verified",
+        derivedFrom: "scan.gaps",
+      }),
+    );
+  }
+
+  for (const gap of normalizedScan?.knowledge?.knownMissingParts ?? []) {
+    if (!gaps.some((item) => item.text === gap)) {
+      gaps.push(
+        createGap({
+          id: gap,
+          text: gap,
+          category: "knowledge",
+          severity: "medium",
+          source: "project-docs",
+          confidence: 0.65,
+          status: "inferred",
+          derivedFrom: "scan.knowledge.knownMissingParts",
+        }),
+      );
+    }
+  }
+
+  for (const gap of normalizedExternal?.technical?.knownTechnicalGaps ?? []) {
+    gaps.push(
+      createGap({
+        id: gap,
+        text: gap,
+        category: "technical",
+        severity: "high",
+        source: "casino-api",
+        confidence: 0.9,
+        status: "verified",
+        derivedFrom: "technical.knownTechnicalGaps",
+      }),
+    );
+  }
+
+  for (const gap of normalizedExternal?.roadmapContext?.knownMissingParts ?? []) {
+    gaps.push(
+      createGap({
+        id: gap,
+        text: gap,
+        category: "product",
+        severity: "high",
+        source: "casino-api",
+        confidence: 0.9,
+        status: "verified",
+        derivedFrom: "roadmapContext.knownMissingParts",
+      }),
+    );
+  }
+
+  for (const gap of project.state?.knowledge?.knownGaps ?? []) {
+    if (!gaps.some((item) => item.text === gap)) {
+      gaps.push(
+        createGap({
+          id: gap,
+          text: gap,
+          category: "general",
+          severity: "medium",
+          source: "project-state",
+          confidence: 0.5,
+          status: "inferred",
+          derivedFrom: "state.knowledge.knownGaps",
+        }),
+      );
+    }
+  }
+
+  return gaps;
+}
+
+function buildFlows(project) {
+  const externalFlows = getNormalized(project, "external")?.flows;
+  if (!externalFlows) {
+    return [];
+  }
+
+  return Object.entries(externalFlows)
+    .filter(([key]) => !["apiVersion", "schemaVersion", "generatedAt"].includes(key))
+    .map(([name, payload]) =>
+      createFlow({
+        id: name,
+        name,
+        status: payload.status,
+        blockedBy: payload.blockedBy,
+        notes: payload.notes,
+        source: "casino-api",
+        confidence: 0.9,
+        derivedFrom: `flows.${name}`,
+        reliabilityStatus: "verified",
+      }),
+    );
+}
+
+function resolveBottleneck(project, context) {
+  const criticalDependency = getNormalized(project, "external")?.roadmapContext?.criticalDependencies?.[0];
+  if (criticalDependency) {
+    return createSignal({
+      id: `dependency:${criticalDependency}`,
+      title: criticalDependency,
+      source: "casino-api",
+      confidence: 0.9,
+      status: "verified",
+      derivedFrom: "roadmapContext.criticalDependencies",
+      reason: "criticalDependencies",
+    });
+  }
+
+  const blockedFlow = context.flows.find(
+    (flow) => ["blocked", "partial"].includes(flow.status) && isReliable(flow),
+  );
+  if (blockedFlow) {
+    return createSignal({
+      id: `flow:${blockedFlow.id}`,
+      title: blockedFlow.name,
+      source: blockedFlow.source,
+      confidence: blockedFlow.confidence,
+      status: blockedFlow.reliabilityStatus,
+      derivedFrom: blockedFlow.derivedFrom,
+      reason: blockedFlow.notes ?? "blocked flow",
+    });
+  }
+
+  const firstGap = context.gaps.find((gap) => isReliable(gap));
+  if (firstGap) {
+    return createSignal({
+      id: `gap:${firstGap.id}`,
+      title: firstGap.text,
+      source: firstGap.source,
+      confidence: firstGap.confidence,
+      status: firstGap.status,
+      derivedFrom: firstGap.derivedFrom,
+      reason: firstGap.derivedFrom,
+    });
+  }
+
+  return createSignal({
+    id: "no-blocker",
+    title: "אין כרגע חסם מרכזי",
+    source: "system",
+    confidence: 1,
+    status: "verified",
+    derivedFrom: "system.no-blocker",
+    reason: "no-blocker",
+  });
+}
+
+function buildRecommendedActions(project, context) {
+  const actions = [];
+
+  for (const dependency of getNormalized(project, "external")?.roadmapContext?.criticalDependencies ?? []) {
+    actions.push(
+      createRecommendedAction({
+        id: `dependency:${dependency}`,
+      title: `לטפל ב-${dependency}`,
+      source: "casino-api",
+      confidence: 0.9,
+      status: "verified",
+      derivedFrom: "roadmapContext.criticalDependencies",
+      reason: "criticalDependencies",
+      }),
+    );
+  }
+
+  for (const flow of context.flows.filter(
+    (item) => ["blocked", "partial"].includes(item.status) && isReliable(item),
+  )) {
+    actions.push(
+      createRecommendedAction({
+        id: `flow:${flow.id}`,
+      title: `לשחרר את הזרימה ${flow.name}`,
+      source: flow.source,
+      confidence: flow.confidence,
+      status: flow.reliabilityStatus,
+      derivedFrom: flow.derivedFrom,
+      reason: flow.notes ?? "blocked flow",
+      }),
+    );
+  }
+
+  for (const gap of context.gaps.filter((item) => isReliable(item)).slice(0, 3)) {
+    actions.push(
+      createRecommendedAction({
+        id: `gap:${gap.id}`,
+      title: gap.text,
+      source: gap.source,
+      confidence: gap.confidence,
+      status: gap.status,
+      derivedFrom: gap.derivedFrom,
+      reason: gap.derivedFrom,
+      }),
+    );
+  }
+
+  return actions.slice(0, 6);
+}
+
+function buildDependencies(project, context) {
+  const dependencies = [];
+
+  for (const dependency of getNormalized(project, "external")?.roadmapContext?.criticalDependencies ?? []) {
+    dependencies.push(
+      createDependency({
+        id: dependency,
+        title: dependency,
+        type: "critical",
+        status: "required",
+        source: "casino-api",
+        confidence: 0.9,
+        derivedFrom: "roadmapContext.criticalDependencies",
+      }),
+    );
+  }
+
+  for (const flow of context.flows.filter((item) => item.blockedBy.length > 0)) {
+    for (const blockedBy of flow.blockedBy) {
+      dependencies.push(
+        createDependency({
+          id: `${flow.id}:${blockedBy}`,
+          title: blockedBy,
+          type: "flow-blocker",
+          status: "blocking",
+          source: flow.source,
+          confidence: flow.confidence,
+          derivedFrom: `flows.${flow.id}.blockedBy`,
+        }),
+      );
+    }
+  }
+
+  return dependencies;
+}
+
+function buildRisks(project, context) {
+  const risks = [];
+
+  for (const issue of getNormalized(project, "external")?.health?.blockingIssues ?? []) {
+    risks.push(
+      createRisk({
+        id: issue,
+        title: issue,
+        severity: "high",
+        source: "casino-api",
+        confidence: 0.9,
+        status: "verified",
+        derivedFrom: "health.blockingIssues",
+      }),
+    );
+  }
+
+  if (context.capabilities.migrations.value === false) {
+    risks.push(
+      createRisk({
+        id: "missing-migrations",
+        title: "אין שכבת migrations פעילה",
+        severity: "high",
+        source: context.capabilities.migrations.source,
+        confidence: context.capabilities.migrations.confidence,
+        status: context.capabilities.migrations.status,
+        derivedFrom: context.capabilities.migrations.derivedFrom,
+      }),
+    );
+  }
+
+  if (context.capabilities.tests.value === false) {
+    risks.push(
+      createRisk({
+        id: "missing-tests",
+        title: "אין בדיקות שמגנות על הזרימות",
+        severity: "medium",
+        source: context.capabilities.tests.source,
+        confidence: context.capabilities.tests.confidence,
+        status: context.capabilities.tests.status,
+        derivedFrom: context.capabilities.tests.derivedFrom,
+      }),
+    );
+  }
+
+  return risks;
+}
+
+export function buildProjectContext(project) {
+  const domainDecision = inferDomain(project);
+  const domain = domainDecision.domain;
+  const domainRegistry = createDomainRegistry();
+  const domainProfile = resolveDomainProfile(domain, domainRegistry);
+  const { domainCapabilities, requiredContextFields, executionModes } = mapDomainCapabilities(domain, domainRegistry);
+  const { recommendedDefaults, defaultsTrace } = createRecommendedDefaults({
+    projectIntake: project.projectIntake ?? null,
+    domain,
+    constraints: project.manualContext?.constraints ?? project.state?.constraints ?? {},
+  });
+  const stackRecommendation = createStackRecommendationModule({
+    domain,
+    platformTargets: project.manualContext?.platformTargets ?? [],
+    constraints: project.manualContext?.constraints ?? project.state?.constraints ?? {},
+    projectIntake: project.projectIntake ?? null,
+  });
+  const businessContext = buildBusinessContextLayer({
+    domain,
+    goal: project.goal,
+    manualBusinessContext: project.manualContext?.businessContext ?? null,
+    knowledgeGaps: project.state?.knowledge?.knownGaps ?? [],
+    runtimeSnapshot: project.runtimeSnapshot ?? null,
+    gitSnapshot: project.gitSnapshot ?? null,
+    stateConstraints: project.manualContext?.constraints ?? project.state?.constraints ?? {},
+    recommendedDefaults,
+  });
+  const { projectIdentity } = defineProjectIdentitySchema({
+    projectIntake: project.projectIntake ?? {
+      projectName: project.name ?? null,
+      visionText: project.goal ?? null,
+    },
+    businessContext,
+    domainDecision,
+  });
+  const { projectIdentityProfile, identityCompleteness } = createProjectIdentityAssembler({
+    projectIdentity,
+    projectDraft: project.projectDraft ?? {
+      id: project.id,
+      name: project.name ?? null,
+      goal: project.goal ?? null,
+    },
+    onboardingSession: project.onboardingSession ?? null,
+  });
+  const { instantValuePlan } = createInstantValueOutputResolver({
+    projectIdentity,
+    onboardingSession: project.onboardingSession ?? {
+      projectIntake: project.projectIntake ?? null,
+    },
+    domainCapabilities,
+  });
+  const decisionIntelligence = buildDecisionIntelligenceLayer({
+    approvals: project.approvals ?? [],
+    requiredActions: project.requiredActions ?? [],
+    recommendedDefaults,
+    businessContext,
+    executionModes,
+    stackRecommendation,
+    domain,
+    domainClassification: {
+      domain,
+      confidenceScores: domainDecision.confidenceScores,
+    },
+  });
+  const { approvalRequest } = defineApprovalRequestSchema({
+    actionType: "project-execution",
+    projectId: project.id,
+    actorType: "agent-runtime",
+    actionPayload: {
+      domain,
+      executionModes,
+    },
+    riskContext: {
+      riskLevel: decisionIntelligence?.summary?.requiresApproval ? "high" : "medium",
+    },
+    decisionIntelligence,
+  });
+  const { approvalRule } = createApprovalRuleRegistry({
+    actionType: approvalRequest.actionType,
+    actionPayload: approvalRequest.actionPayload,
+  });
+  const approvalTrigger = createApprovalTriggerResolver({
+    actionType: approvalRequest.actionType,
+    actionPayload: approvalRequest.actionPayload,
+    policyContext: {
+      decisionIntelligence,
+      forceApproval: decisionIntelligence?.summary?.requiresApproval ?? false,
+    },
+  });
+  const { approvalRecord: computedApprovalRecord } = createApprovalRecordStore({
+    approvalRequest: {
+      ...approvalRequest,
+      actionPayload: {
+        ...approvalRequest.actionPayload,
+        approvalType: approvalTrigger.approvalType,
+      },
+    },
+    approvalDecision: {
+      decision: approvalTrigger.requiresApproval ? "rejected" : "approved",
+      approved: !approvalTrigger.requiresApproval,
+      reason: approvalTrigger.approvalReason,
+      actorId: approvalRequest.actorType,
+      expiresInHours: approvalTrigger.requiresApproval ? null : 24,
+    },
+  });
+  const approvalRecords = [
+    ...((Array.isArray(project.approvalRecords) ? project.approvalRecords : [])),
+  ];
+  if (!approvalRecords.some((record) => record.approvalRequestId === computedApprovalRecord.approvalRequestId)) {
+    approvalRecords.unshift(computedApprovalRecord);
+  }
+  const approvalRecord = approvalRecords[0] ?? computedApprovalRecord;
+  const { approvalStatus } = createApprovalStatusResolver({
+    approvalRequest,
+    approvalRecords,
+  });
+  const approvalRequestWithStatus = {
+    ...approvalRequest,
+    status: approvalStatus.status === "approved"
+      ? "approved"
+      : approvalStatus.status === "rejected"
+        ? "rejected"
+        : approvalStatus.status === "expired"
+          ? "expired"
+          : "pending",
+  };
+  const { gatingDecision } = createApprovalGatingModule({
+    approvalRequest: approvalRequestWithStatus,
+    approvalStatus,
+  });
+  const { approvalAuditTrail } = createApprovalAuditFormatter({
+    approvalRecords,
+  });
+  const { policySchema } = definePolicySchema({
+    policyDefinitions: [
+      {
+        id: "execution-controlled-modes",
+        kind: "execution",
+        allowedActions: executionModes,
+        requiresApproval: decisionIntelligence?.summary?.requiresApproval ?? false,
+      },
+      {
+        id: "approval-gating",
+        kind: "approval",
+        approvalTypes: [approvalTrigger.approvalType].filter(Boolean),
+        decision: gatingDecision?.decision ?? "requires-approval",
+      },
+      {
+        id: "credential-protection",
+        kind: "credential",
+        protectedFlows: ["build", "deploy", "execution"],
+      },
+      {
+        id: "deploy-guardrails",
+        kind: "deploy",
+        guardedTargets: domainCapabilities.releaseTargets ?? [],
+      },
+    ],
+  });
+  const { actionPolicy } = createActionPolicyRegistry({
+    actionType: approvalRequestWithStatus.actionType,
+    policySchema,
+  });
+  const { policyDecision } = createExecutionPolicyEvaluator({
+    actionType: approvalRequestWithStatus.actionType,
+    actorType: approvalRequestWithStatus.actorType,
+    actionPayload: approvalRequestWithStatus.actionPayload,
+    projectState: {
+      policySchema,
+      gatingDecision,
+    },
+  });
+  const businessBottleneck = resolveBusinessBottleneck({
+    businessContext,
+    decisionIntelligence,
+    recommendedDefaults,
+  });
+  const crossFunctionalTaskGraph = buildCrossFunctionalTaskGraph({
+    roadmap: project.cycle?.roadmap ?? [],
+    businessContext,
+    businessBottleneck,
+  });
+  const growthMarketingPlan = buildGrowthMarketingPlanner({
+    businessGoal: project.goal,
+    businessContext,
+    businessBottleneck,
+    decisionIntelligence,
+  });
+  const { bootstrapPlan, bootstrapTasks } = createBootstrapPlanGenerator({
+    projectIntake: project.projectIntake ?? null,
+    domain,
+    recommendedDefaults,
+    domainProfile,
+  });
+  const { bootstrapAssignments } = createBootstrapDispatcher({
+    bootstrapTasks,
+    executionCapabilities: buildExecutionCapabilities(project, executionModes),
+  });
+  const bootstrapExecutionRequests = bootstrapAssignments.map((bootstrapAssignment) =>
+    defineBootstrapExecutionRequestSchema({ bootstrapAssignment }),
+  );
+  const bootstrapResolvedSurfaces = bootstrapExecutionRequests.map((executionRequest) =>
+    createBootstrapSurfaceResolver({ executionRequest }),
+  );
+  const bootstrapPlannedCommands = bootstrapExecutionRequests.map((executionRequest) =>
+    createBootstrapCommandPlanner({ executionRequest }),
+  );
+  const bootstrapRawExecutionResults = bootstrapExecutionRequests.map((_, index) =>
+    createBootstrapExecutionInvoker({
+      resolvedSurface: bootstrapResolvedSurfaces[index],
+      plannedCommands: bootstrapPlannedCommands[index],
+    }),
+  );
+  const { artifacts: bootstrapArtifacts, executionMetadata: bootstrapExecutionMetadata } = createBootstrapArtifactCollector({
+    rawExecutionResult: bootstrapRawExecutionResults,
+  });
+  const { executionResult: bootstrapExecutionResult, artifacts: bootstrapEnvelopeArtifacts } = createBootstrapExecutionResultEnvelope({
+    rawExecutionResult: bootstrapRawExecutionResults,
+    artifacts: bootstrapArtifacts,
+  });
+  const plannedChanges = bootstrapPlannedCommands.flatMap((plannedCommandSet) =>
+    (plannedCommandSet.plannedCommands ?? []).map((command) => ({
+      id: command.id,
+      kind: inferPlannedChangeKind(command),
+      operation: command.type === "scaffold" ? "add" : "modify",
+      summary: command.command,
+      command: command.command,
+      args: command.args,
+      path: command.produces?.[0]
+        ? command.command.includes("billing")
+          ? `generated/${command.produces[0]}.sql`
+          : `generated/${command.produces[0]}.ts`
+        : null,
+    })),
+  );
+  const { diffPreviewSchema } = defineDiffPreviewSchema({
+    executionPlan: {
+      executionRequestId: bootstrapExecutionRequests[0]?.requestId ?? null,
+      taskId: bootstrapAssignments[0]?.taskId ?? null,
+      actionType: bootstrapAssignments[0]?.task?.summary ?? "project-execution",
+      target: bootstrapResolvedSurfaces[0]?.resolvedSurface?.surfaceType ?? null,
+    },
+    changeSet: plannedChanges,
+  });
+  const { codeDiff } = createCodeDiffCollector({
+    plannedChanges,
+  });
+  const { migrationDiff } = createMigrationDiffCollector({
+    plannedChanges,
+  });
+  const { infraDiff } = createConfigInfraDiffCollector({
+    plannedChanges,
+  });
+  const { impactSummary, riskFlags } = createDiffImpactSummarizer({
+    codeDiff,
+    migrationDiff,
+    infraDiff,
+    decisionIntelligence,
+  });
+  const { diffPreview } = createUserFacingDiffPreviewAssembler({
+    codeDiff,
+    migrationDiff,
+    infraDiff,
+    impactSummary,
+    riskFlags,
+  });
+  const { policyViolations } = createCodeChangePolicyChecks({
+    changeSet: plannedChanges,
+  });
+  const bootstrapResult = {
+    ...bootstrapExecutionResult,
+    status: bootstrapAssignments.every((assignment) => assignment.status === "assigned")
+      ? bootstrapExecutionResult.status
+      : "blocked",
+    artifacts: bootstrapEnvelopeArtifacts,
+    executionMetadata: bootstrapExecutionMetadata,
+    assignments: bootstrapAssignments,
+    plannedCommands: bootstrapPlannedCommands,
+    rawExecutionResults: bootstrapRawExecutionResults,
+  };
+  const { validationResult: bootstrapValidation } = createBootstrapValidationModule({
+    bootstrapResult,
+    expectedArtifacts: bootstrapPlan?.artifactManifest ?? [],
+    scan: project.scan ?? null,
+    taskResults: project.taskResults ?? [],
+  });
+  const {
+    updatedProjectState: bootstrapStateUpdate,
+    updatedExecutionGraph: bootstrapExecutionGraph,
+  } = createBootstrapStateUpdater({
+    validationResult: bootstrapValidation,
+    bootstrapTasks,
+    projectState: project.state ?? {},
+  });
+  const { firstValueOutput } = createFirstTangibleOutcomeGenerator({
+    instantValuePlan: project.state?.instantValuePlan ?? instantValuePlan,
+    projectState: {
+      projectId: project.id,
+      projectName: project.name ?? null,
+      diffPreview,
+    },
+    bootstrapResult,
+  });
+  const executionProgressSchema = defineExecutionProgressSchema({
+    taskExecutionState: {
+      taskId: bootstrapAssignments[0]?.taskId ?? null,
+      runId: bootstrapExecutionRequests[0]?.requestId ?? null,
+      stageId: "bootstrap",
+      status: bootstrapValidation?.isValid ? "validated" : "pending",
+      progressPercent: bootstrapValidation?.isValid ? 100 : bootstrapAssignments.length > 0 ? 25 : 0,
+      startedAt: project.state?.observed?.lastObservedAt ?? null,
+      updatedAt: project.state?.observed?.lastObservedAt ?? null,
+      completionEstimate: bootstrapValidation?.isValid ? "completed" : null,
+    },
+    runtimeLogs: [],
+  });
+  const { normalizedProgressInputs } = createRunProgressNormalizer({
+    taskExecutionState: {
+      taskId: bootstrapAssignments[0]?.taskId ?? null,
+      runId: bootstrapExecutionRequests[0]?.requestId ?? null,
+      stageId: "bootstrap",
+      status: bootstrapValidation?.isValid ? "validated" : "pending",
+      progressPercent: bootstrapValidation?.isValid ? 100 : bootstrapAssignments.length > 0 ? 25 : 0,
+      startedAt: project.state?.observed?.lastObservedAt ?? null,
+      updatedAt: project.state?.observed?.lastObservedAt ?? null,
+      completionEstimate: bootstrapValidation?.isValid ? "completed" : null,
+    },
+    runtimeLogs: [],
+    taskResults: project.taskResults ?? [],
+  });
+  const { progressPhase } = createProgressPhaseResolver({
+    normalizedProgressInputs,
+  });
+  const { progressPercent } = createProgressPercentageCalculator({
+    normalizedProgressInputs,
+    progressPhase,
+  });
+  const { completionEstimate } = createCompletionEstimateCalculator({
+    normalizedProgressInputs,
+    progressPercent,
+  });
+  const { progressState } = createLiveProgressAssembler({
+    progressPhase,
+    progressPercent,
+    completionEstimate,
+  });
+  const { formattedLogs, userFacingMessages } = createExecutionLogFormatter({
+    rawLogs: executionProgressSchema.logSchema.entries ?? [],
+    commandOutputs: bootstrapRawExecutionResults.flatMap((item) =>
+      (item.rawExecutionResult?.commandResults ?? []).map((commandResult) => ({
+        command: commandResult.command,
+        output: commandResult.output,
+        source: commandResult.surfaceId ?? "execution",
+        timestamp: null,
+        exitCode: commandResult.exitCode,
+      })),
+    ),
+  });
+  const { platformTrace, platformLogs } = createPlatformLoggingAndTracingLayer({
+    runtimeEvents: {
+      runId: executionProgressSchema.runId,
+      status: progressPhase,
+      progressEntries: executionProgressSchema.logSchema.entries ?? [],
+      formattedLogs,
+      executionEvents: bootstrapRawExecutionResults.flatMap((item) =>
+        (item.rawExecutionResult?.commandResults ?? []).map((commandResult, index) => ({
+          id: `${item.requestId ?? "request"}-command-${index + 1}`,
+          source: commandResult.surfaceId ?? "execution-surface",
+          status: commandResult.exitCode === 0 ? "completed" : "failed",
+          message: commandResult.command ?? null,
+          timestamp: null,
+        })),
+      ),
+    },
+    requestContext: {
+      requestId: executionProgressSchema.runId,
+      route: "/runtime/bootstrap",
+      method: "SYSTEM",
+      actorId: project.userId ?? null,
+      workspaceId: project.id,
+      service: "context-builder",
+    },
+  });
+  const { notificationPayload } = createExecutionCompletionNotifier({
+    executionResult: {
+      taskId: bootstrapAssignments[0]?.taskId ?? null,
+      status: bootstrapValidation?.isValid ? "completed" : "failed",
+      reason: bootstrapValidation?.isValid ? null : "Bootstrap validation failed",
+      requiresUserAction: bootstrapValidation?.isValid ? false : decisionIntelligence?.summary?.requiresApproval,
+    },
+    decisionIntelligence,
+  });
+  const { notificationEvent } = defineNotificationEventSchema({
+    eventType: notificationPayload?.type,
+    eventPayload: {
+      ...notificationPayload,
+      projectId: project.id,
+      actorId: project.userId ?? null,
+    },
+  });
+  const { incidentAlert } = createAlertingAndIncidentHooks({
+    platformTrace: {
+      ...platformTrace,
+      logs: platformLogs,
+    },
+    healthStatus: project.state?.observed?.health ?? null,
+  });
+  const { releasePlan, releaseSteps } = createReleasePlanGenerator({
+    projectState: {
+      ...(project.state ?? {}),
+      lifecycle: project.state?.lifecycle ?? null,
+      recommendedDefaults,
+    },
+    domain,
+    domainProfile,
+  });
+  const { buildTargets, artifactManifest } = createBuildTargetResolver({
+    domain,
+    releaseTarget: releasePlan.releaseTarget,
+  });
+  const releaseRequirementsSchema = defineReleaseRequirementsSchema({
+    releaseTarget: releasePlan.releaseTarget,
+    domain,
+  });
+  const { artifactValidation } = createArtifactReadinessValidator({
+    projectArtifacts: [
+      ...(bootstrapPlan?.artifactManifest?.structure ?? []),
+      ...(bootstrapPlan?.artifactManifest?.stack ?? []),
+      bootstrapPlan?.artifactManifest?.hostingTarget,
+    ].filter(Boolean),
+    releaseRequirements: releaseRequirementsSchema,
+  });
+  const { metadataValidation } = createMetadataReadinessValidator({
+    projectArtifacts: buildReleaseMetadata({
+      project,
+      domain,
+      releasePlan,
+      recommendedDefaults,
+      businessContext,
+    }),
+    releaseRequirements: releaseRequirementsSchema,
+  });
+  const { approvalValidation } = createApprovalReadinessValidator({
+    releaseRequirements: releaseRequirementsSchema,
+    projectState: {
+      approvals: project.approvals ?? [],
+      decisionIntelligence,
+    },
+  });
+  const { blockingIssues } = createBlockingIssuesClassifier({
+    artifactValidation,
+    metadataValidation,
+    approvalValidation,
+  });
+  const { validationReport } = createReleaseValidationAssembler({
+    artifactValidation,
+    metadataValidation,
+    approvalValidation,
+    blockingIssues,
+    releaseRequirements: releaseRequirementsSchema,
+  });
+  const { hostingAdapter } = createHostingProviderAdapterContract({
+    providerConfig: {
+      provider: recommendedDefaults?.hosting?.provider ?? releasePlan?.releaseTargetTaxonomy?.provider ?? "generic",
+      target: releasePlan?.releaseTarget ?? recommendedDefaults?.hosting?.target ?? "private-deployment",
+    },
+  });
+  const { deploymentRequest } = defineDeploymentRequestSchema({
+    buildArtifact: [
+      ...(bootstrapPlan?.artifactManifest?.structure ?? []),
+      ...(bootstrapPlan?.artifactManifest?.stack ?? []),
+      bootstrapPlan?.artifactManifest?.hostingTarget,
+    ].filter(Boolean),
+    deploymentConfig: {
+      provider: hostingAdapter.provider,
+      target: hostingAdapter.target,
+      environment: hostingAdapter.environments?.includes("production") ? "production" : "staging",
+      executionMode: hostingAdapter.executionModes?.[0] ?? "manual",
+      capabilities: hostingAdapter.capabilities ?? [],
+    },
+  });
+  const { providerAdapter } = createDeploymentProviderResolver({
+    deploymentRequest,
+  });
+  const { accountRecord } = createExternalAccountRegistry({
+    accountType: "hosting",
+    accountMetadata: {
+      provider: providerAdapter.provider,
+      projectId: project.id,
+      capabilities: providerAdapter.capabilities,
+      connectionMode: providerAdapter.executionModes?.[0] ?? "manual",
+      metadata: {
+        target: providerAdapter.target,
+        environments: providerAdapter.environments,
+      },
+    },
+  });
+  const { credentialReference, encryptedCredential, credentialVaultRecord } = createCredentialVaultInterface({
+    credentialKey: `${project.id}-${providerAdapter.provider}-primary`,
+    credentialValue:
+      project.gitSource?.apiKey
+      ?? project.runtimeSource?.apiKey
+      ?? project.source?.apiKey
+      ?? `${project.id}-${providerAdapter.provider}-credential`,
+  });
+  const { credentialPolicyDecision } = createCredentialUsagePolicy({
+    credentialReference,
+    actorType: approvalRequest.actorType,
+    flowType: "deploy",
+    projectState: {
+      approvalStatus,
+      policyDecision,
+    },
+  });
+  const { providerSession } = createProviderSessionFactory({
+    providerType: "hosting",
+    credentials: {
+      credentialReference,
+      authMode: accountRecord.connectionMode,
+      status: accountRecord.status,
+    },
+  });
+  const { authModeDefinition } = createAuthenticationModeContract({
+    providerType: "hosting",
+    credentials: {
+      credentialReference,
+      authMode: accountRecord.connectionMode,
+      status: accountRecord.status,
+    },
+  });
+  const { providerSession: providerContractSession } = createProviderConnectorContract({
+    providerType: "hosting",
+    credentials: {
+      credentialReference,
+      authMode: accountRecord.connectionMode,
+      status: accountRecord.status,
+    },
+  });
+  const { providerConnectorSchema } = defineProviderConnectorSchema({
+    providerType: providerSession.providerType,
+  });
+  const { providerCapabilities } = createProviderCapabilityDescriptor({
+    providerSession,
+  });
+  const { providerOperations } = createProviderOperationContract({
+    providerSession,
+  });
+  const { providerConnector } = createProviderConnectorAssembler({
+    providerSession,
+    providerCapabilities,
+    providerOperations,
+  });
+  const { verificationResult } = createAccountVerificationModule({
+    providerSession,
+  });
+  const { preparedArtifact } = createDeploymentArtifactPreparer({
+    buildArtifact: deploymentRequest.buildArtifacts,
+    deploymentConfig: {
+      provider: providerAdapter.provider,
+      target: providerAdapter.target,
+      environment: providerAdapter.requestMetadata.environment,
+      executionMode: providerAdapter.executionModes?.[0] ?? "manual",
+      capabilities: providerAdapter.capabilities ?? [],
+    },
+  });
+  const { artifactRecord } = createArtifactRegistryModule({
+    buildResult: {
+      buildTarget: buildTargets[0] ?? "unknown-build",
+      artifacts: preparedArtifact.artifacts,
+      outputPaths: preparedArtifact.artifacts.map((artifact) => `dist/${artifact}`),
+      version: project.state?.version ?? null,
+      status: "registered",
+    },
+  });
+  const { ownershipPolicy } = createOwnershipPolicyModel({
+    userId: project.userId ?? project.manualContext?.userId ?? null,
+    projectId: project.id,
+    linkedAccounts: project.linkedAccounts ?? [],
+    releasePlan,
+    artifactRecord,
+  });
+  const { consentRecord } = createOwnerConsentRecorder({
+    projectId: project.id,
+    consentAction: {
+      actionType: "release-distribution",
+      target: releasePlan.releaseTarget,
+      approved: true,
+    },
+    ownershipPolicy,
+    existingApprovals: project.approvals ?? [],
+  });
+  const { guardResult } = createOwnershipAwareReleaseGuard({
+    releasePlan,
+    linkedAccounts: project.linkedAccounts ?? [],
+    ownershipPolicy,
+  });
+  const { deployPolicyDecision } = createDeployPolicyChecks({
+    deploymentRequest,
+    projectState: {
+      approvalStatus,
+      guardResult,
+      validationReport,
+      credentialPolicyDecision,
+    },
+  });
+  const { enforcementResult } = createPolicyEnforcementGuard({
+    policyDecision,
+    approvalStatus,
+    deployPolicyDecision,
+    credentialPolicyDecision,
+  });
+  const { policyTrace } = createPolicyTraceBuilder({
+    policyDecision,
+    enforcementResult,
+  });
+  const { bottleneckState } = defineBottleneckSchema({
+    projectState: {
+      projectId: project.id,
+      observed: project.state?.observed ?? null,
+      gatingDecision,
+      approvalStatus,
+      policyTrace,
+    },
+    executionGraph: project.cycle?.executionGraph ?? null,
+    taskResults: project.taskResults ?? [],
+  });
+  const { packagingRequirements } = definePackagingRequirementsSchema({
+    buildArtifact: artifactRecord.artifacts,
+    releaseTarget: releasePlan.releaseTarget,
+  });
+  const { packageFormat } = createPackageFormatResolver({
+    releaseTarget: releasePlan.releaseTarget,
+    packagingRequirements,
+  });
+  const { packagingManifest } = createPackagingManifestBuilder({
+    buildArtifact: artifactRecord.artifacts,
+    packageFormat,
+  });
+  const { packagedArtifact: rawPackagedArtifact } = createPackageAssembler({
+    buildArtifact: artifactRecord.artifacts,
+    packagingManifest,
+  });
+  const { packageVerification } = createPackageVerificationModule({
+    packagedArtifact: rawPackagedArtifact,
+    packagingRequirements,
+  });
+  const { packagedArtifact } = createPackagingResultEnvelope({
+    packagedArtifact: rawPackagedArtifact,
+    packagingManifest,
+    packageVerification,
+  });
+  const { testExecutionRequest } = defineTestExecutionSchema({
+    buildTarget: buildTargets[0] ?? "unknown-build",
+    testConfig: {
+      releaseStage: releasePlan.releaseTarget === "private-deployment" ? "pre-release" : "pre-deploy",
+      testTypes:
+        domain === "mobile-app"
+          ? ["unit", "integration", "e2e", "smoke", "sanity"]
+          : ["unit", "integration", "smoke", "sanity"],
+      coverageThreshold: domain === "casino" ? 0.9 : 0.8,
+      retries: releasePlan.releaseTarget === "app-store" || releasePlan.releaseTarget === "play-store" ? 1 : 0,
+      environment: providerAdapter.requestMetadata.environment ?? "ci",
+    },
+  });
+  const { testRunPlan } = createAutomatedTestOrchestrationModule({
+    testExecutionRequest,
+    changeSet: plannedChanges,
+  });
+  const { rawTestResults } = createTestRunnerAdapterLayer({
+    testRunPlan,
+    executionSurface: bootstrapResolvedSurfaces[0] ?? null,
+  });
+  const { normalizedTestResults } = createTestResultNormalizationModule({
+    rawTestResults,
+  });
+  const { qualityGateDecision } = createPreDeployQualityGate({
+    normalizedTestResults,
+    validationReport,
+  });
+  const { nextVersion, releaseTag } = createVersioningService({
+    releasePolicy: releasePlan.releaseTarget === "app-store" || releasePlan.releaseTarget === "play-store"
+      ? "minor"
+      : "patch",
+    currentVersion: project.state?.version ?? "0.0.0",
+  });
+  const releaseEvents = releaseSteps.map((step, index) => ({
+    id: `release-${step.step}-${index + 1}`,
+    step: step.step,
+    summary: step.description ?? step.step,
+    successCriteria: [step.step],
+    lockKey: `release-${step.step}`,
+  }));
+  const {
+    updatedProjectState: releaseStateUpdate,
+    updatedExecutionGraph: releaseExecutionGraph,
+  } = createReleaseStateUpdater({
+    releaseEvents,
+    validationReport,
+    projectState: project.state ?? {},
+  });
+  const { releaseStatus } = createReleaseStatusStateModel({
+    releaseEvents: releaseEvents.map((event, index) => ({
+      ...event,
+      status: validationReport?.isReady
+        ? index === releaseEvents.length - 1
+          ? "published"
+          : "completed"
+        : "failed",
+    })),
+  });
+  const { activeBottleneck } = createActiveBottleneckResolver({
+    bottleneckState,
+    approvalStatus,
+    policyDecision,
+    credentialPolicyDecision,
+    releaseStatus,
+  });
+  const { scoredBottleneck } = createBottleneckPriorityScorer({
+    activeBottleneck,
+    criticalPath: project.cycle?.criticalPath ?? null,
+  });
+  const { unblockPlan } = createUnblockPathGenerator({
+    scoredBottleneck,
+    replanTrigger: project.cycle?.replanTrigger ?? null,
+  });
+  const { updatedBottleneckState } = createBottleneckStateUpdater({
+    unblockPlan,
+    taskResult: project.taskResults?.[project.taskResults.length - 1] ?? null,
+    activeBottleneck,
+  });
+  const {
+    pollingRequest,
+    resolvedPoller,
+    rawStatusResponse,
+    statusEvents,
+    pollingDecision,
+    pollingMetadata,
+  } = createStoreAndProviderStatusPollers({
+    releaseTarget: releasePlan.releaseTarget,
+    providerSession,
+  });
+  const releaseRun = {
+    releaseRunId: `release-run:${project.id}:${releasePlan.releaseTarget}`,
+    steps: releaseSteps,
+    createdAt: project.updatedAt ?? null,
+  };
+  const { releaseTimeline } = createReleaseTimelineBuilder({
+    releaseRun,
+    statusEvents,
+  });
+  const stack = buildStack(project);
+  const capabilities = buildCapabilities(project);
+  const gaps = buildGaps(project);
+  const flows = buildFlows(project);
+  const { userJourneys, journeySteps } = definePrimaryUserJourneys({
+    productGoals: [project.goal],
+    coreCapabilities: capabilities,
+    businessContext,
+    growthMarketingPlan,
+  });
+  const { journeyMap } = createJourneyMap({
+    userJourneys,
+  });
+  const { screenInventory } = defineScreenInventory({
+    journeyMap,
+  });
+  const { screenFlowMap } = createScreenToFlowMapping({
+    screenInventory,
+    journeyMap,
+  });
+  const screenContracts = (screenInventory.screens ?? []).map((screen) => {
+    const screenContract = defineScreenContractSchema({
+      screenType: screen.screenType,
+    }).screenContract;
+    const { screenGoal, primaryAction, secondaryActions } = createGoalAndCtaDefinitionModule({
+      screenContract,
+    });
+
+    return {
+      screenId: screen.screenId,
+      title: screen.title,
+      ...screenContract,
+      screenGoal,
+      primaryAction,
+      secondaryActions,
+    };
+  });
+  const mobileChecklist = {
+    checklistId: `mobile-checklist:${project.id}`,
+    screens: screenContracts.map((screenContract) =>
+      createMobileReadinessChecklist({
+        screenId: screenContract.screenId,
+        title: screenContract.title,
+        screenContract,
+      }).mobileChecklist
+    ),
+  };
+  mobileChecklist.summary = {
+    totalScreens: mobileChecklist.screens.length,
+    mobileReadyScreens: mobileChecklist.screens.filter((screen) => screen.summary.mobileReadyByContract).length,
+    totalRequiredItems: mobileChecklist.screens.reduce(
+      (total, screen) => total + (screen.summary.requiredItems ?? 0),
+      0
+    ),
+  };
+  const screenStates = {
+    stateCollectionId: `screen-states:${project.id}`,
+    screens: screenContracts.map((screenContract) =>
+      createLoadingEmptyErrorStatesDefinition({
+        screenId: screenContract.screenId,
+        title: screenContract.title,
+        screenContract,
+      }).screenStates
+    ),
+  };
+  screenStates.summary = {
+    totalScreens: screenStates.screens.length,
+    loadingScreens: screenStates.screens.filter((screen) => screen.states.loading?.enabled).length,
+    emptyScreens: screenStates.screens.filter((screen) => screen.states.empty?.enabled).length,
+    errorScreens: screenStates.screens.filter((screen) => screen.states.error?.enabled).length,
+    successScreens: screenStates.screens.filter((screen) => screen.states.success?.enabled).length,
+  };
+  const screenValidationChecklist = {
+    checklistCollectionId: `screen-validation:${project.id}`,
+    screens: screenContracts.map((screenContract) => {
+      const screenMobileChecklist = mobileChecklist.screens.find((screen) => screen.screenId === screenContract.screenId) ?? null;
+      const screenStateDefinition = screenStates.screens.find((screen) => screen.screenId === screenContract.screenId) ?? null;
+
+      return createScreenValidationChecklist({
+        screenId: screenContract.screenId,
+        title: screenContract.title,
+        screenContract,
+        mobileChecklist: screenMobileChecklist,
+        screenStates: screenStateDefinition,
+      }).screenValidationChecklist;
+    }),
+  };
+  screenValidationChecklist.summary = {
+    totalScreens: screenValidationChecklist.screens.length,
+    readyScreens: screenValidationChecklist.screens.filter((screen) => screen.summary.isReadyForImplementation).length,
+    blockedScreens: screenValidationChecklist.screens.filter((screen) => !screen.summary.isReadyForImplementation).length,
+  };
+  const { designTokens } = defineDesignTokenSchema({
+    brandDirection: project.manualContext?.brandDirection ?? {
+      brandId: project.id,
+      productMode: "desktop-first-web",
+      visualTone: "focused",
+    },
+  });
+  const { typographySystem } = createTypographySystem({
+    designTokens,
+  });
+  const { layoutSystem } = createSpacingAndLayoutSystem({
+    designTokens,
+  });
+  const { colorRules } = createColorUsageRules({
+    designTokens,
+  });
+  const { interactionStateSystem } = createInteractionStatesSystem({
+    designTokens,
+  });
+  const { componentContract } = defineComponentContractSchema({
+    componentType: project.manualContext?.componentType ?? "panel",
+  });
+  const { nexusPersistenceSchema } = defineNexusPersistenceSchema({
+    coreEntityDefinitions: project.manualContext?.coreEntityDefinitions ?? null,
+  });
+  const { migrationPlan, migrationArtifacts } = createNexusDatabaseMigrations({
+    nexusPersistenceSchema,
+  });
+  const repositoryEntities = ["users", "workspaces", "projects", "approvals", "learningRecords"];
+  const entityRepository = repositoryEntities.map((entityType) =>
+    createRepositoryLayerForCoreEntities({
+      nexusPersistenceSchema,
+      entityType,
+    }).entityRepository
+  );
+
+  const state = createCanonicalState({
+    goal: project.goal,
+    stack: buildStack(project),
+    capabilities,
+    gaps,
+    flows,
+  });
+
+  const context = createCanonicalProject({
+    version: "1.0.0",
+    projectId: project.id,
+    domain,
+    state,
+    sources: {
+      scan: Boolean(project.scan),
+      external: Boolean(project.externalSnapshot),
+      manual: Boolean(project.manualContext),
+    },
+  });
+
+  context.stack = context.state.stack;
+  context.capabilities = context.state.capabilities;
+  context.gaps = context.state.gaps;
+  context.flows = context.state.flows;
+  context.bottleneck = resolveBottleneck(project, context);
+  const { userIdentity } = defineUserIdentitySchema({
+    userProfile: {
+      userId: project.userId ?? project.manualContext?.userId ?? null,
+      email: project.manualContext?.userProfile?.email ?? null,
+      displayName: project.manualContext?.userProfile?.displayName ?? null,
+      status: project.manualContext?.userProfile?.status ?? "active",
+      verificationStatus: project.manualContext?.userProfile?.verificationStatus ?? null,
+    },
+    authMetadata: {
+      provider: project.manualContext?.authMetadata?.provider ?? "password",
+      sessionStatus: project.manualContext?.authMetadata?.sessionStatus ?? "authenticated",
+      hasMfa: project.manualContext?.authMetadata?.hasMfa ?? false,
+      lastLoginAt: project.manualContext?.authMetadata?.lastLoginAt ?? null,
+    },
+  });
+  const { authenticationState } = createAuthenticationSystem({
+    userIdentity,
+    credentials: {
+      authMethod: project.manualContext?.credentials?.authMethod ?? null,
+      password: project.manualContext?.credentials?.password ?? null,
+      providerToken: project.manualContext?.credentials?.providerToken ?? null,
+      isLoggedOut: project.manualContext?.credentials?.isLoggedOut ?? false,
+    },
+  });
+  const { notificationCenterState } = createInAppNotificationCenter({
+    notificationEvent,
+    userIdentity,
+  });
+  const { notificationPreferences } = createNotificationPreferenceSettings({
+    userIdentity,
+    preferenceInput: project.manualContext?.deliveryPreferences ?? null,
+  });
+  const { emailDeliveryResult } = createEmailNotificationDeliveryModule({
+    notificationEvent: {
+      ...notificationEvent,
+      userEmail: userIdentity.email,
+    },
+    deliveryPreferences: {
+      ...notificationPreferences,
+      email: project.manualContext?.deliveryPreferences?.email ?? userIdentity.email,
+      priority: project.manualContext?.deliveryPreferences?.priority ?? "normal",
+      subjectOverride: project.manualContext?.deliveryPreferences?.subjectOverride ?? null,
+    },
+  });
+  const { externalDeliveryResult } = createWebhookExternalNotificationAdapter({
+    notificationEvent,
+    channelConfig: {
+      channelType: project.manualContext?.channelConfig?.channelType ?? "webhook",
+      provider: project.manualContext?.channelConfig?.provider ?? "external-webhook",
+      webhookUrl: project.manualContext?.channelConfig?.webhookUrl ?? null,
+      target: project.manualContext?.channelConfig?.target ?? null,
+      providerSessionId: project.manualContext?.channelConfig?.providerSessionId ?? null,
+    },
+  });
+  const { sessionState, tokenBundle } = createSessionAndTokenManagement({
+    userIdentity,
+    authenticationState,
+  });
+  const { verificationFlowState } = createPasswordResetAndEmailVerificationFlow({
+    userIdentity,
+    verificationRequest: project.manualContext?.verificationRequest ?? null,
+  });
+  const { workspaceModel, membershipRecord } = defineWorkspaceAndMembershipModel({
+    userIdentity,
+    workspaceMetadata: project.manualContext?.workspaceMetadata ?? null,
+  });
+  const { accessDecision } = createProjectAccessControlModule({
+    workspaceModel,
+    membershipRecord,
+    projectId: project.id,
+    actorType: project.manualContext?.actorType ?? membershipRecord?.role ?? "owner",
+    policyDecision,
+  });
+  const { invitationRecord, roleAssignment } = createRoleAssignmentAndInvitationFlow({
+    workspaceModel,
+    invitationRequest: project.manualContext?.invitationRequest ?? null,
+  });
+  const { workspaceSettings } = createOrganizationWorkspaceSettingsModule({
+    workspaceModel,
+    settingsInput: project.manualContext?.workspaceSettingsInput ?? null,
+  });
+  const { storageRecord } = createFileAndArtifactStorageModule({
+    artifactMetadata: {
+      artifactRecord,
+      packagedArtifact,
+    },
+    storageRequest: {
+      projectId: project.id,
+      workspaceId: workspaceModel?.workspaceId ?? null,
+      runId: releaseTag ?? null,
+      attachments: project.projectIntake?.attachments ?? project.manualContext?.attachments ?? [],
+      retentionPolicy: nexusPersistenceSchema?.entities?.projects?.retentionPolicy ?? "project-lifecycle",
+    },
+  });
+  const { auditLogRecord } = createAuditLogForSystemActions({
+    systemAction: {
+      actionType: incidentAlert?.status === "active"
+        ? `security.${incidentAlert.incidentType ?? "incident"}`
+        : notificationEvent?.requiresApproval
+          ? "approval.notification"
+          : authenticationState?.isAuthenticated
+            ? "auth.session.active"
+            : "system.observed",
+      status: incidentAlert?.status === "active" ? "alerted" : "recorded",
+      projectId: project.id,
+      summary: incidentAlert?.summary ?? notificationEvent?.message ?? "System action observed",
+      reason: incidentAlert?.incidentType ?? null,
+      riskLevel:
+        incidentAlert?.severity === "critical"
+          ? "high"
+          : incidentAlert?.severity === "high"
+            ? "medium"
+            : "low",
+      source: "context-builder",
+      traceId: platformTrace.traceId,
+      metadata: {
+        notificationEventId: notificationEvent?.notificationEventId ?? null,
+        incidentCount: incidentAlert?.incidentCount ?? 0,
+      },
+    },
+    actorContext: {
+      actorId: userIdentity?.userId ?? project.userId ?? null,
+      actorType: authenticationState?.isAuthenticated ? "user" : "system",
+      actorRole: membershipRecord?.roles?.[0] ?? null,
+      workspaceId: workspaceModel?.workspaceId ?? project.id,
+      projectId: project.id,
+      source: "nexus-runtime",
+      traceId: platformTrace.traceId,
+    },
+  });
+  const providerErrors = statusEvents
+    .filter((event) => ["failed", "rejected"].includes(event.status))
+    .map((event) => event.rawStatus ?? event.status);
+  const reviewFeedback = blockingIssues.map((issue) => issue.reason ?? issue.issue ?? issue.summary ?? String(issue));
+  const { failureSummary, followUpTasks } = createRejectionAndFailureMapper({
+    providerErrors,
+    reviewFeedback,
+    bottleneck: context.bottleneck,
+    activeBottleneck,
+    unblockPlan,
+    taskResults: project.taskResults ?? [],
+  });
+  const { explanationSchema } = defineExplanationSchema({
+    projectState: {
+      projectId: project.id,
+      bottleneckState: updatedBottleneckState,
+      failureSummary,
+      approvalStatus,
+      approvalRequest: approvalRequestWithStatus,
+      diffPreview,
+      unblockPlan,
+    },
+    decisionContext: {
+      decisionIntelligence,
+      activeBottleneck,
+      policyTrace,
+      policyDecision,
+    },
+  });
+  const { nextActionExplanation } = createNextActionExplanationBuilder({
+    explanationSchema,
+    activeBottleneck,
+    schedulerDecision: project.cycle?.schedulerDecision ?? null,
+  });
+  const { failureExplanation } = createFailureExplanationBuilder({
+    failureSummary,
+    taskResult: project.taskResults?.[project.taskResults.length - 1] ?? null,
+    activeBottleneck,
+  });
+  const { approvalExplanation } = createApprovalExplanationBuilder({
+    approvalRequest: approvalRequestWithStatus,
+    approvalStatus,
+    policyTrace,
+    activeBottleneck,
+  });
+  const { changeExplanation } = createExecutionChangeExplanationBuilder({
+    executionResult: bootstrapExecutionResult,
+    bootstrapStateUpdate,
+    releaseStateUpdate,
+  });
+  const { projectExplanation } = createExplanationAssembler({
+    nextActionExplanation,
+    failureExplanation,
+    approvalExplanation,
+    changeExplanation,
+  });
+  const { failureRecoveryModel } = defineFailureRecoverySchema({
+    executionResult: bootstrapExecutionResult,
+    failureSummary,
+  });
+  const { retryPolicy } = createRetryPolicyResolver({
+    failureRecoveryModel,
+    taskType: domainCapabilities.taskTypes?.[0] ?? "generic",
+  });
+  const { rollbackPlan } = createRollbackScopePlanner({
+    failureRecoveryModel,
+    executionMetadata: {
+      projectId: project.id,
+      bootstrapExecutionMetadata,
+      storageRecord,
+      releaseStateUpdate,
+      releaseTimeline,
+      deploymentRequest,
+      providerSideEffects: providerOperations
+        .filter((operation) => ["deploy", "publish", "sync"].includes(operation?.operationType))
+        .map((operation) => ({
+          providerOperationId: operation.operationId ?? operation.id ?? null,
+          provider: operation.provider ?? deploymentRequest?.provider ?? null,
+          status: operation.status ?? "pending-reversal",
+        })),
+    },
+  });
+  const { testReportSummary } = createTestReportingAndRemediationSummary({
+    normalizedTestResults,
+    failureSummary,
+    followUpTasks,
+  });
+  const { realityProgress } = createProgressToRealityMapper({
+    progressState,
+    executionResult: bootstrapExecutionResult,
+    artifacts: bootstrapArtifacts,
+    releaseStateUpdate,
+  });
+  const { firstValueSummary } = createFirstValueSummaryAssembler({
+    projectIdentityProfile: project.state?.projectIdentityProfile ?? projectIdentityProfile,
+    firstValueOutput,
+    realityProgress,
+    explanationPayload: projectExplanation,
+  });
+  context.state.dependencies = buildDependencies(project, context);
+  context.state.risks = buildRisks(project, context);
+  context.dependencies = context.state.dependencies;
+  context.risks = context.state.risks;
+  context.recommendedActions = buildRecommendedActions(project, context);
+  const { developerWorkspace } = defineDeveloperWorkspaceSchema({
+    projectState: {
+      projectId: project.id,
+      projectName: project.name ?? null,
+      storageRecord,
+      diffPreview,
+      recommendedActions: context.recommendedActions,
+    },
+    executionState: {
+      progressState,
+      progressPercent,
+      formattedLogs,
+      platformLogs,
+      bootstrapPlannedCommands,
+      bootstrapAssignments,
+      taskResults: project.taskResults ?? [],
+      incidentAlert,
+    },
+  });
+  const { projectWorkbenchLayout } = createProjectWorkbenchLayout({
+    developerWorkspace,
+    screenTemplateSchema: {
+      templateId: "workspace-template",
+      templateType: "workspace",
+      supportsAssistant: true,
+      supportsPanels: true,
+    },
+  });
+  const { fileEditorContract } = createFileTreeAndEditorContract({
+    developerWorkspace,
+    storageRecord,
+  });
+  const { commandConsoleView } = createTerminalAndCommandConsoleView({
+    executionStatusPayload: {
+      projectId: project.id,
+      progressState,
+      bootstrapPlannedCommands,
+      bootstrapAssignments,
+    },
+    formattedLogs,
+  });
+  const { branchDiffActivityPanel } = createBranchAndDiffActivityPanel({
+    diffPreviewPayload: {
+      projectId: project.id,
+      executionRequestId: diffPreviewSchema?.executionPlan?.executionRequestId ?? null,
+      diffPreview,
+      riskFlags,
+    },
+    projectState: {
+      projectId: project.id,
+      gitSnapshot: project.gitSnapshot ?? null,
+      approvalRecords,
+      approvalAuditTrail,
+      auditLogRecord,
+    },
+  });
+  const { artifactBuildPanel } = createArtifactAndBuildLogPanel({
+    artifactRecord,
+    packagedArtifact,
+    packageVerification,
+  });
+  const { developmentWorkspace } = createDevelopmentWorkspace({
+    projectWorkbenchLayout,
+    fileEditorContract,
+    commandConsoleView,
+  });
+  const { projectBrainWorkspace } = createProjectBrainWorkspace({
+    projectState: {
+      projectId: project.id,
+      domain,
+      lifecycle: {
+        phase: project.state?.lifecycle?.phase ?? null,
+      },
+      bottleneck: context.bottleneck,
+      businessBottleneck,
+      decisionIntelligence,
+      failureSummary,
+      recommendedActions: context.recommendedActions,
+    },
+    policyTrace,
+    learningInsights: project.context?.learningInsights ?? null,
+  });
+  const { releaseWorkspace } = createReleaseWorkspace({
+    releasePlan,
+    validationReport,
+    releaseTimeline,
+    releaseStatus,
+    deploymentRequest,
+    qualityGateDecision,
+  });
+  const { growthWorkspace } = createGrowthWorkspace({
+    contentStrategy: {
+      workspaceId: "growth-workspace",
+      targetAudience: businessContext?.targetAudience ?? null,
+      gtmStage: businessContext?.gtmStage ?? null,
+      pillars: businessContext?.constraints ?? [],
+      contentGoal: project.goal ?? null,
+    },
+    campaignPlan: {
+      workspaceId: "growth-workspace",
+      channels: businessContext?.funnel
+        ? Object.entries(businessContext.funnel)
+          .filter(([, status]) => status)
+          .map(([channel, status]) => ({ channel, status }))
+        : [],
+      tasks: growthMarketingPlan,
+      pendingApprovals: decisionIntelligence?.approvalRequired ?? [],
+    },
+    growthAnalytics: {
+      kpis: businessContext?.kpis ?? [],
+      runtime: context.projectState?.analytics?.runtime ?? null,
+      productMetrics: context.projectState?.analytics?.productMetrics ?? null,
+      hasBaselineCampaign: context.projectState?.analytics?.hasBaselineCampaign ?? false,
+    },
+  });
+  const { workspaceNavigationModel } = createCrossWorkspaceNavigationModel({
+    projectBrainWorkspace,
+    developmentWorkspace,
+    releaseWorkspace,
+    growthWorkspace,
+    projectExplanation,
+    activeBottleneck,
+    releaseStatus,
+  });
+  const { acceptanceScenario } = defineV1AcceptanceScenarioSchema({
+    productFlows: journeyMap?.flows ?? [],
+    expectedOutcomes: [
+      {
+        scenarioKey: "onboarding-first-value",
+        expectedOutcome: "User gets a first visible project result",
+        successCriteria: ["firstValueOutput", "firstValueSummary"],
+      },
+      {
+        scenarioKey: "execution-state-update",
+        expectedOutcome: "Execution updates state and explanation payload",
+        successCriteria: ["projectExplanation", "changeExplanation"],
+      },
+      {
+        scenarioKey: "failure-recovery",
+        expectedOutcome: "Failure leads to recovery options",
+        successCriteria: ["recoveryOptionsPayload", "failureExplanation"],
+      },
+      {
+        scenarioKey: "approval-explanation",
+        expectedOutcome: "Approval gating is enforced with clear explanation",
+        successCriteria: ["approvalExplanation", "projectExplanation"],
+      },
+      {
+        scenarioKey: "workspace-continuity",
+        expectedOutcome: "Workspace navigation preserves project context and resume continuity",
+        successCriteria: ["workspaceNavigationModel"],
+      },
+    ],
+  });
+  const { acceptanceResult: onboardingAcceptanceResult } = createOnboardingToFirstValueAcceptanceTest({
+    acceptanceScenario,
+    firstValueOutput,
+  });
+  const { acceptanceResult: executionAcceptanceResult } = createExecutionToStateUpdateAcceptanceTest({
+    acceptanceScenario,
+    executionResult: bootstrapExecutionResult,
+    storageRecord,
+    projectExplanation,
+  });
+  const { executionTopology } = defineExecutionTopologySchema({
+    executionSurfaces: bootstrapResolvedSurfaces,
+    environmentConfig: {
+      projectId: project.id,
+      executionModes,
+      defaultMode: recommendedDefaults?.execution?.mode ?? executionModes[0] ?? null,
+      provider: recommendedDefaults?.hosting?.provider ?? null,
+      target: recommendedDefaults?.hosting?.target ?? null,
+      runtimeSource: project.runtimeSource?.baseUrl ?? null,
+    },
+  });
+  const { cloudWorkspaceModel } = createCloudExecutionWorkspaceModel({
+    executionTopology,
+    projectState: {
+      projectId: project.id,
+      storageRecord,
+      bootstrapExecutionResult,
+      bootstrapExecutionMetadata,
+      bootstrapArtifacts,
+    },
+  });
+  const { localDevelopmentBridge } = createLocalDevelopmentBridgeContract({
+    executionTopology,
+    localEnvironmentMetadata: {
+      isConnected: executionModes.includes("local-terminal"),
+      workspacePath: project.source?.rootDir ?? null,
+      os: project.runtimeSource?.platform ?? null,
+      ide: {
+        name: executionModes.includes("xcode") ? "Xcode" : executionModes.includes("local-terminal") ? "Local Terminal" : null,
+        type: executionModes.includes("xcode") ? "apple-ide" : executionModes.includes("local-terminal") ? "terminal" : null,
+      },
+      runtime: {
+        name: project.runtimeSource?.kind ?? "local-runtime",
+      },
+      sync: {
+        enabled: executionModes.includes("local-terminal"),
+        writeback: executionModes.includes("temp-branch"),
+      },
+      handoffMode: "optional-bridge",
+    },
+  });
+  const { remoteMacRunner } = createRemoteMacRunnerContract({
+    executionTopology,
+    appleBuildConfig: {
+      host: executionModes.includes("xcode") ? "remote-mac-host" : null,
+      platform: domain === "mobile-app" ? "ios" : null,
+      xcodeVersion: executionModes.includes("xcode") ? "latest-supported" : null,
+      bundleId: recommendedDefaults?.metadata?.bundleId ?? null,
+      scheme: domain === "mobile-app" ? "App" : null,
+      signing: {
+        teamId: recommendedDefaults?.credentials?.appleTeamId ?? null,
+        signingStyle: "automatic",
+        provisioningProfile: null,
+        requiresManualApproval: approvalTrigger?.requiresApproval ?? false,
+      },
+      archive: {
+        exportMethod: domain === "mobile-app" ? "app-store" : null,
+        artifactPath: domain === "mobile-app" ? "artifacts/ios/app.ipa" : null,
+        shouldArchive: domain === "mobile-app",
+      },
+    },
+  });
+  const { executionModeDecision } = createExecutionModeResolver({
+    executionTopology,
+    taskType: domainCapabilities.taskTypes?.[0] ?? "generic",
+    projectState: {
+      projectId: project.id,
+      domain,
+      riskFlags,
+      policyTrace,
+      decisionIntelligence,
+    },
+    cloudWorkspaceModel,
+    localDevelopmentBridge,
+    remoteMacRunner,
+  });
+  const { fallbackStrategy } = createFallbackStrategyResolver({
+    failureRecoveryModel,
+    executionModeDecision,
+  });
+  const { recoveryDecision, recoveryActions } = createRecoveryOrchestrationModule({
+    retryPolicy,
+    fallbackStrategy,
+    rollbackPlan,
+  });
+  const { recoveryOptionsPayload } = createUserFacingRecoveryOptionsAssembler({
+    failureRecoveryModel,
+    recoveryDecision,
+    recoveryActions,
+    rollbackPlan,
+  });
+  const { acceptanceResult: failureRecoveryAcceptanceResult } = createFailureRecoveryAcceptanceTest({
+    acceptanceScenario,
+    recoveryDecision,
+    recoveryOptionsPayload,
+    failureExplanation,
+  });
+  const { acceptanceResult: approvalExplanationAcceptanceResult } = createApprovalExplanationAcceptanceTest({
+    acceptanceScenario,
+    approvalStatus,
+    approvalExplanation,
+    projectExplanation,
+  });
+  const { acceptanceResult } = createWorkspaceContinuityAcceptanceTest({
+    acceptanceScenario,
+    workspaceNavigationModel,
+  });
+  context.reliability = {
+    decisionConfidenceThreshold: MIN_DECISION_CONFIDENCE,
+  };
+  context.knowledge = {
+    summary: getNormalized(project, "scan")?.knowledge?.summary ?? null,
+    readme: getNormalized(project, "scan")?.knowledge?.readme
+      ? {
+          path: getNormalized(project, "scan").knowledge.readme.path,
+          headings: getNormalized(project, "scan").knowledge.readme.headings,
+        }
+      : null,
+    docs: (getNormalized(project, "scan")?.knowledge?.docs ?? []).map((doc) => ({
+      path: doc.path,
+      headings: doc.headings,
+    })),
+    prDiscussions: (getNormalized(project, "scan")?.knowledge?.prDiscussions ?? []).map((discussion) => ({
+      path: discussion.path,
+      title: discussion.title,
+    })),
+    notionPages: (getNormalized(project, "scan")?.knowledge?.notionPages ?? []).map((page) => ({
+      path: page.path,
+      title: page.title,
+    })),
+    integrations: getNormalized(project, "scan")?.knowledge?.integrations ?? null,
+  };
+  context.domainRegistry = domainRegistry;
+  context.domainProfile = domainProfile;
+  context.domainCandidates = domainDecision.domainCandidates;
+  context.confidenceScores = domainDecision.confidenceScores;
+  context.domainCapabilities = domainCapabilities;
+  context.requiredContextFields = requiredContextFields;
+  context.executionModes = executionModes;
+  context.recommendedDefaults = recommendedDefaults;
+  context.defaultsTrace = defaultsTrace;
+  context.stackRecommendation = stackRecommendation;
+  context.businessContext = businessContext;
+  context.projectIdentity = projectIdentity;
+  context.projectIdentityProfile = projectIdentityProfile;
+  context.identityCompleteness = identityCompleteness;
+  context.instantValuePlan = instantValuePlan;
+  context.decisionIntelligence = decisionIntelligence;
+  context.approvalRequest = approvalRequestWithStatus;
+  context.approvalRule = approvalRule;
+  context.approvalTrigger = approvalTrigger;
+  context.approvalRecords = approvalRecords;
+  context.approvalRecord = approvalRecord;
+  context.approvalStatus = approvalStatus;
+  context.gatingDecision = gatingDecision;
+  context.approvalAuditTrail = approvalAuditTrail;
+  context.policySchema = policySchema;
+  context.actionPolicy = actionPolicy;
+  context.policyDecision = policyDecision;
+  context.policyViolations = policyViolations;
+  context.deployPolicyDecision = deployPolicyDecision;
+  context.enforcementResult = enforcementResult;
+  context.policyTrace = policyTrace;
+  context.diffPreviewSchema = diffPreviewSchema;
+  context.codeDiff = codeDiff;
+  context.migrationDiff = migrationDiff;
+  context.infraDiff = infraDiff;
+  context.impactSummary = impactSummary;
+  context.riskFlags = riskFlags;
+  context.diffPreview = diffPreview;
+  context.businessBottleneck = businessBottleneck;
+  context.bottleneckState = bottleneckState;
+  context.activeBottleneck = activeBottleneck;
+  context.scoredBottleneck = scoredBottleneck;
+  context.unblockPlan = unblockPlan;
+  context.updatedBottleneckState = updatedBottleneckState;
+  context.explanationSchema = explanationSchema;
+  context.nextActionExplanation = nextActionExplanation;
+  context.failureExplanation = failureExplanation;
+  context.approvalExplanation = approvalExplanation;
+  context.changeExplanation = changeExplanation;
+  context.projectExplanation = projectExplanation;
+  context.crossFunctionalTaskGraph = crossFunctionalTaskGraph;
+  context.growthMarketingPlan = growthMarketingPlan;
+  context.userIdentity = userIdentity;
+  context.authenticationState = authenticationState;
+  context.sessionState = sessionState;
+  context.tokenBundle = tokenBundle;
+  context.verificationFlowState = verificationFlowState;
+  context.workspaceModel = workspaceModel;
+  context.membershipRecord = membershipRecord;
+  context.accessDecision = accessDecision;
+  context.invitationRecord = invitationRecord;
+  context.roleAssignment = roleAssignment;
+  context.workspaceSettings = workspaceSettings;
+  context.nexusPersistenceSchema = nexusPersistenceSchema;
+  context.migrationPlan = migrationPlan;
+  context.migrationArtifacts = migrationArtifacts;
+  context.entityRepository = entityRepository;
+  context.storageRecord = storageRecord;
+  context.userJourneys = userJourneys;
+  context.journeySteps = journeySteps;
+  context.journeyMap = journeyMap;
+  context.screenInventory = screenInventory;
+  context.screenFlowMap = screenFlowMap;
+  context.screenContracts = screenContracts;
+  context.mobileChecklist = mobileChecklist;
+  context.screenStates = screenStates;
+  context.screenValidationChecklist = screenValidationChecklist;
+  context.designTokens = designTokens;
+  context.typographySystem = typographySystem;
+  context.layoutSystem = layoutSystem;
+  context.colorRules = colorRules;
+  context.interactionStateSystem = interactionStateSystem;
+  context.componentContract = componentContract;
+  context.developerWorkspace = developerWorkspace;
+  context.projectWorkbenchLayout = projectWorkbenchLayout;
+  context.fileEditorContract = fileEditorContract;
+  context.commandConsoleView = commandConsoleView;
+  context.branchDiffActivityPanel = branchDiffActivityPanel;
+  context.artifactBuildPanel = artifactBuildPanel;
+  context.developmentWorkspace = developmentWorkspace;
+  context.projectBrainWorkspace = projectBrainWorkspace;
+  context.releaseWorkspace = releaseWorkspace;
+  context.growthWorkspace = growthWorkspace;
+  context.workspaceNavigationModel = workspaceNavigationModel;
+  context.acceptanceScenario = acceptanceScenario;
+  context.acceptanceResult = acceptanceResult;
+  context.onboardingAcceptanceResult = onboardingAcceptanceResult;
+  context.executionAcceptanceResult = executionAcceptanceResult;
+  context.failureRecoveryAcceptanceResult = failureRecoveryAcceptanceResult;
+  context.approvalExplanationAcceptanceResult = approvalExplanationAcceptanceResult;
+  context.executionTopology = executionTopology;
+  context.cloudWorkspaceModel = cloudWorkspaceModel;
+  context.localDevelopmentBridge = localDevelopmentBridge;
+  context.remoteMacRunner = remoteMacRunner;
+  context.executionModeDecision = executionModeDecision;
+  context.bootstrapPlan = bootstrapPlan;
+  context.bootstrapTasks = bootstrapTasks;
+  context.bootstrapAssignments = bootstrapAssignments;
+  context.bootstrapExecutionRequests = bootstrapExecutionRequests;
+  context.bootstrapResolvedSurfaces = bootstrapResolvedSurfaces;
+  context.bootstrapPlannedCommands = bootstrapPlannedCommands;
+  context.bootstrapRawExecutionResults = bootstrapRawExecutionResults;
+  context.bootstrapArtifacts = bootstrapArtifacts;
+  context.bootstrapExecutionMetadata = bootstrapExecutionMetadata;
+  context.bootstrapExecutionResult = bootstrapExecutionResult;
+  context.bootstrapResult = bootstrapResult;
+  context.bootstrapValidation = bootstrapValidation;
+  context.bootstrapStateUpdate = bootstrapStateUpdate;
+  context.firstValueOutput = firstValueOutput;
+  context.bootstrapExecutionGraph = bootstrapExecutionGraph;
+  context.executionProgressSchema = executionProgressSchema;
+  context.normalizedProgressInputs = normalizedProgressInputs;
+  context.progressPhase = progressPhase;
+  context.progressPercent = progressPercent;
+  context.completionEstimate = completionEstimate;
+  context.progressState = progressState;
+  context.realityProgress = realityProgress;
+  context.firstValueSummary = firstValueSummary;
+  context.formattedLogs = formattedLogs;
+  context.userFacingMessages = userFacingMessages;
+  context.platformTrace = platformTrace;
+  context.platformLogs = platformLogs;
+  context.incidentAlert = incidentAlert;
+  context.auditLogRecord = auditLogRecord;
+  context.notificationPayload = notificationPayload;
+  context.notificationEvent = notificationEvent;
+  context.notificationCenterState = notificationCenterState;
+  context.notificationPreferences = notificationPreferences;
+  context.emailDeliveryResult = emailDeliveryResult;
+  context.externalDeliveryResult = externalDeliveryResult;
+  context.releasePlan = releasePlan;
+  context.releaseSteps = releaseSteps;
+  context.buildTargets = buildTargets;
+  context.buildArtifactManifest = artifactManifest;
+  context.artifactRecord = artifactRecord;
+  context.packagingRequirements = packagingRequirements;
+  context.packageFormat = packageFormat;
+  context.packagingManifest = packagingManifest;
+  context.packagedArtifact = packagedArtifact;
+  context.packageVerification = packageVerification;
+  context.testExecutionRequest = testExecutionRequest;
+  context.testRunPlan = testRunPlan;
+  context.rawTestResults = rawTestResults;
+  context.normalizedTestResults = normalizedTestResults;
+  context.qualityGateDecision = qualityGateDecision;
+  context.nextVersion = nextVersion;
+  context.releaseTag = releaseTag;
+  context.releaseRequirementsSchema = releaseRequirementsSchema;
+  context.artifactValidation = artifactValidation;
+  context.metadataValidation = metadataValidation;
+  context.approvalValidation = approvalValidation;
+  context.blockingIssues = blockingIssues;
+  context.validationReport = validationReport;
+  context.hostingAdapter = hostingAdapter;
+  context.deploymentRequest = deploymentRequest;
+  context.providerAdapter = providerAdapter;
+  context.accountRecord = accountRecord;
+  context.providerSession = providerSession;
+  context.providerContractSession = providerContractSession;
+  context.authModeDefinition = authModeDefinition;
+  context.credentialReference = credentialReference;
+  context.encryptedCredential = encryptedCredential;
+  context.credentialVaultRecord = credentialVaultRecord;
+  context.credentialPolicyDecision = credentialPolicyDecision;
+  context.providerConnectorSchema = providerConnectorSchema;
+  context.providerCapabilities = providerCapabilities;
+  context.providerOperations = providerOperations;
+  context.providerConnector = providerConnector;
+  context.verificationResult = verificationResult;
+  context.ownershipPolicy = ownershipPolicy;
+  context.consentRecord = consentRecord;
+  context.guardResult = guardResult;
+  context.preparedArtifact = preparedArtifact;
+  context.releaseStateUpdate = releaseStateUpdate;
+  context.releaseExecutionGraph = releaseExecutionGraph;
+  context.releaseStatus = releaseStatus;
+  context.releaseRun = releaseRun;
+  context.releaseTimeline = releaseTimeline;
+  context.failureSummary = failureSummary;
+  context.failureRecoveryModel = failureRecoveryModel;
+  context.retryPolicy = retryPolicy;
+  context.fallbackStrategy = fallbackStrategy;
+  context.rollbackPlan = rollbackPlan;
+  context.recoveryDecision = recoveryDecision;
+  context.recoveryActions = recoveryActions;
+  context.recoveryOptionsPayload = recoveryOptionsPayload;
+  context.followUpTasks = followUpTasks;
+  context.testReportSummary = testReportSummary;
+  context.pollingRequest = pollingRequest;
+  context.resolvedPoller = resolvedPoller;
+  context.rawStatusResponse = rawStatusResponse;
+  context.statusEvents = statusEvents;
+  context.pollingDecision = pollingDecision;
+  context.pollingMetadata = pollingMetadata;
+  return context;
+}

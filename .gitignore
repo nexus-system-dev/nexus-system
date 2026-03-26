@@ -1,0 +1,5 @@
+.DS_Store
+.env
+.env.local
+data/*.ndjson
+data/analysis-cache.json
