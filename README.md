@@ -1,49 +1,52 @@
-# The Nexus
+# Nexus System
 
-`The Nexus` is an orchestration layer for operators, founders, agencies, and AI agents. The product does three things:
+Nexus is a desktop-first web application for managing projects through AI-assisted execution, explanation, recovery, approvals, and workspace continuity.
 
-1. Collect business and delivery context from code, analytics, and knowledge systems.
-2. Convert that context into a live roadmap across build, maintenance, growth, and marketing.
-3. Dispatch work to the right executor: the founder, an AI agent, or an external human.
+The repository currently contains:
 
-This repository starts with the riskiest system first: the orchestration core.
+- a canonical project state layer
+- execution, approval, recovery, and explanation flows
+- a local HTTP server and cockpit UI
+- acceptance tests for the core product loop
+- the active `v2` build plan for product experience, real-time behavior, collaboration, and state versioning
 
-## MVP
+## Current Status
 
-Version `0.1.0` focuses on the minimum loop that proves the product:
+- `v1` is complete as an internal validated foundation
+- `v2` is in progress
+- work is currently focused on `Wave 1`, which upgrades the product experience layer
 
-- ingest a project state
-- persist a canonical version of that state
-- infer the first roadmap tasks
-- represent those tasks as an execution graph
-- build agent-specific memory context
-- persist and emit orchestration events
-- enforce task dependencies and execution locks
-- assign eligible work to agents with matching capabilities
-- execute assignments through agent workers
+## Local Development
 
-## Run
+Install dependencies:
 
 ```bash
-npm test
-npm start
+npm install
+```
+
+Run the server locally:
+
+```bash
 npm run dev
 ```
 
-## Current Structure
+Run the full test suite:
 
-- `docs/mvp-architecture.md`: product and system boundaries for the first version
-- `src/core/state-store.js`: canonical project state and task snapshots
-- `src/core/memory.js`: agent-specific execution context
-- `src/core/event-bus.js`: persistent event stream wrapper
-- `src/core/file-event-log.js`: append-only event log on disk
-- `src/core/project-graph.js`: execution graph for task dependencies
-- `src/core/agent-runtime.js`: worker runtime that consumes assignments
-- `src/core/project-service.js`: app-facing service for projects and orchestration cycles
-- `src/core/planner.js`: rule-based strategic planner for initial roadmap generation
-- `src/core/dispatcher.js`: dependency-aware task assignment
-- `src/core/orchestrator.js`: one-cycle orchestration loop
-- `src/agents/*`: concrete agent workers
-- `src/server.js`: HTTP API and local cockpit server
-- `web/*`: browser UI for the first control room
-- `test/orchestrator.test.js`: executable validation of the first agent workflow
+```bash
+npm test
+```
+
+## Repository Structure
+
+- `docs/` product architecture, source backlog, validation logs, and the `v2` execution plan
+- `src/core/` canonical modules for state, orchestration, policies, recovery, workspaces, and UI contracts
+- `src/agents/` worker agents
+- `src/server.js` local API server
+- `web/` cockpit UI
+- `test/` automated test coverage across the core system
+
+## Key Documents
+
+- `docs/backlog-unified-status-and-order.md`
+- `docs/v1-bug-validation.md`
+- `docs/v2-master-plan-and-waves.md`
