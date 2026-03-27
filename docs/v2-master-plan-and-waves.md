@@ -67,8 +67,8 @@
 - עובדים עכשיו על `Wave 1`
 
 אחוזי התקדמות:
-- `Wave 1`: `40%`
-- `v2` כולל: `40%`
+- `Wave 1`: `91%`
+- `v2` כולל: `91%`
 
 איך האחוז מחושב:
 - `Wave 1` מחושב לפי מספר המשימות שסומנו `🟢` מתוך כלל המשימות הממופות לגל
@@ -95,8 +95,36 @@
   - `Create state-driven template variants`
   - `Create primary action validator`
   - `Create mobile usability validator`
+  - `Create state coverage validator`
+  - `Create consistency validator`
+  - `Create screen review assembler`
+  - `Define learning insight UI schema`
+  - `Create recommendation reasoning panel contract`
+  - `Create pattern confidence indicator`
+  - `Create user preference signal view`
+  - `Create cross-project pattern disclosure panel`
+  - `Create passive learning disclosure banner`
+  - `Create AI learning workspace template`
+  - `Define AI companion presence schema`
+  - `Create companion state model`
+  - `Create companion trigger policy`
+  - `Create companion message priority resolver`
+  - `Create companion dock and panel contract`
+  - `Create companion animation state rules`
+  - `Create companion mode controls`
+  - `Create companion interruption guard`
+  - `Create AI companion workspace template`
+  - `Define real-time event stream schema`
+  - `Create live update transport layer`
+  - `Create live log streaming module`
+  - `Create reactive workspace refresh model`
+  - `Define collaboration event schema`
+  - `Create project presence model`
+  - `Create project comments and review threads module`
+  - `Create shared approval flow model`
+  - `Create collaboration activity feed`
 - סך המשימות הממופות ל־`Wave 1`: `55`
-- הושלמו: `22 / 55`
+- הושלמו: `50 / 55`
 
 כלל עבודה:
 - בסוף כל משימה מעדכנים:
@@ -365,7 +393,7 @@
   - `Create mobile readiness checklist`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-23. `Create state coverage validator`  | סטטוס: 🔴 לא בוצע
+23. `Create state coverage validator`  | סטטוס: 🟢 בוצע
 - description: לבדוק שיש `loading / empty / error / success`
 - input:
   - `screenTemplate`
@@ -376,7 +404,7 @@
   - `Create loading empty error states definition`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-24. `Create consistency validator`  | סטטוס: 🔴 לא בוצע
+24. `Create consistency validator`  | סטטוס: 🟢 בוצע
 - description: לבדוק שימוש עקבי ב־tokens, components ו־templates
 - input:
   - `screenTemplate`
@@ -389,7 +417,7 @@
   - `Component Library`
 - connects_to: `Project State`
 
-25. `Create screen review assembler`  | סטטוס: 🔴 לא בוצע
+25. `Create screen review assembler`  | סטטוס: 🟢 בוצע
 - description: להרכיב report אחיד של איכות המסך
 - input:
   - `primaryActionValidation`
@@ -399,10 +427,10 @@
 - output:
   - `screenReviewReport`
 - dependencies:
-  - `Create consistency validator`  | סטטוס: 🔴 לא בוצע
+  - `Create consistency validator`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-26. `Define learning insight UI schema`  | סטטוס: 🔴 לא בוצע
+26. `Define learning insight UI schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד להצגת תובנות למידה, patterns, confidence ו־recommendation reasoning ב־UI
 - input:
   - `learningInsights`
@@ -413,7 +441,7 @@
   - `Learning Layer`
 - connects_to: `Project State`
 
-27. `Create recommendation reasoning panel contract`  | סטטוס: 🔴 לא בוצע
+27. `Create recommendation reasoning panel contract`  | סטטוס: 🟢 בוצע
 - description: לבנות חוזה UI לפאנל שמסביר למה הומלצה משימה או פעולה מסוימת
 - input:
   - `impactSummary`
@@ -426,7 +454,7 @@
   - `Policy Layer`
 - connects_to: `Project State`
 
-28. `Create pattern confidence indicator`  | סטטוס: 🔴 לא בוצע
+28. `Create pattern confidence indicator`  | סטטוס: 🟢 בוצע
 - description: לבנות רכיב שמציג למשתמש אם pattern מסוים מבוסס היטב, חלש או רק השערה
 - input:
   - `learningInsightViewModel`
@@ -436,7 +464,7 @@
   - `Define learning insight UI schema`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
 
-29. `Create user preference signal view`  | סטטוס: 🔴 לא בוצע
+29. `Create user preference signal view`  | סטטוס: 🟢 בוצע
 - description: לבנות תצוגה שמסבירה אילו החלטות עבר של המשתמש משפיעות על ההמלצות הנוכחיות
 - input:
   - `userPreferenceProfile`
@@ -448,7 +476,7 @@
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
 
-30. `Create cross-project pattern disclosure panel`  | סטטוס: 🔴 לא בוצע
+30. `Create cross-project pattern disclosure panel`  | סטטוס: 🟢 בוצע
 - description: לבנות פאנל שמציג patterns חוצי־פרויקטים בצורה אנונימית וללא דליפת מידע משתמשים
 - input:
   - `crossProjectMemory`
@@ -460,7 +488,7 @@
   - `Learning Layer`
 - connects_to: `Project State`
 
-31. `Create passive learning disclosure banner`  | סטטוס: 🔴 לא בוצע
+31. `Create passive learning disclosure banner`  | סטטוס: 🟢 בוצע
 - description: לבנות banner שמבהיר שה־AI הלומדת רק מסיקה וממליצה, ולא מבצעת פעולות בפועל
 - input:
   - `learningInsights`
@@ -470,7 +498,7 @@
   - `Define learning insight UI schema`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
 
-32. `Create AI learning workspace template`  | סטטוס: 🔴 לא בוצע
+32. `Create AI learning workspace template`  | סטטוס: 🟢 בוצע
 - description: לבנות template למסך ייעודי של תובנות למידה, patterns והמלצות משופרות
 - input:
   - `screenTemplateSchema`
@@ -482,7 +510,7 @@
   - `Define learning insight UI schema`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
 
-33. `Define AI companion presence schema`  | סטטוס: 🔴 לא בוצע
+33. `Define AI companion presence schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד לנוכחות הוויזואלית של ה־AI כולל states, tone, urgency ו־visibility rules
 - input:
   - `assistantState`
@@ -493,7 +521,7 @@
   - `Screen UX Contracts`
 - connects_to: `Project State`
 
-34. `Create companion state model`  | סטטוס: 🔴 לא בוצע
+34. `Create companion state model`  | סטטוס: 🟢 בוצע
 - description: לבנות state model לדמות ה־AI עם מצבים כמו observing, analyzing, recommending, warning ו־waiting
 - input:
   - `learningInsights`
@@ -502,11 +530,11 @@
 - output:
   - `companionState`
 - dependencies:
-  - `Define AI companion presence schema`  | סטטוס: 🔴 לא בוצע
+  - `Define AI companion presence schema`  | סטטוס: 🟢 בוצע
   - `AI Learning UX`
 - connects_to: `Project State`
 
-35. `Create companion trigger policy`  | סטטוס: 🔴 לא בוצע
+35. `Create companion trigger policy`  | סטטוס: 🟢 בוצע
 - description: לבנות מדיניות שמכריעה מתי ה־AI companion מופיע, מתי נשאר שקט ומתי מותר לו להפריע
 - input:
   - `companionState`
@@ -515,11 +543,11 @@
 - output:
   - `companionTriggerDecision`
 - dependencies:
-  - `Create companion state model`  | סטטוס: 🔴 לא בוצע
+  - `Create companion state model`  | סטטוס: 🟢 בוצע
   - `Policy Layer`
 - connects_to: `Project State`
 
-36. `Create companion message priority resolver`  | סטטוס: 🔴 לא בוצע
+36. `Create companion message priority resolver`  | סטטוס: 🟢 בוצע
 - description: לבנות resolver שמסווג הודעות companion לפי advisory, recommendation, warning ו־critical
 - input:
   - `learningInsights`
@@ -528,10 +556,10 @@
 - output:
   - `companionMessagePriority`
 - dependencies:
-  - `Create companion state model`  | סטטוס: 🔴 לא בוצע
+  - `Create companion state model`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-37. `Create companion dock and panel contract`  | סטטוס: 🔴 לא בוצע
+37. `Create companion dock and panel contract`  | סטטוס: 🟢 בוצע
 - description: לבנות חוזה UI ל־dock/panel קבוע של ה־AI companion עם summary, suggestions ו־next actions
 - input:
   - `companionPresence`
@@ -540,10 +568,10 @@
   - `companionDock`
   - `companionPanel`
 - dependencies:
-  - `Define AI companion presence schema`  | סטטוס: 🔴 לא בוצע
+  - `Define AI companion presence schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-38. `Create companion animation state rules`  | סטטוס: 🔴 לא בוצע
+38. `Create companion animation state rules`  | סטטוס: 🟢 בוצע
 - description: להגדיר שפת אנימציה מתונה לדמות ה־AI לפי state, urgency ו־non-blocking rules
 - input:
   - `companionState`
@@ -551,10 +579,10 @@
 - output:
   - `animationStateRules`
 - dependencies:
-  - `Create companion state model`  | סטטוס: 🔴 לא בוצע
+  - `Create companion state model`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-39. `Create companion mode controls`  | סטטוס: 🔴 לא בוצע
+39. `Create companion mode controls`  | סטטוס: 🟢 בוצע
 - description: לבנות שליטה של המשתמש בין מצבי quiet, assistive ו־active עבור ה־AI companion
 - input:
   - `userPreferenceProfile`
@@ -566,7 +594,7 @@
   - `AI Learning UX`
 - connects_to: `Project State`
 
-40. `Create companion interruption guard`  | סטטוס: 🔴 לא בוצע
+40. `Create companion interruption guard`  | סטטוס: 🟢 בוצע
 - description: לבנות guard שמונע מה־AI companion להפריע בזמן execution קריטי או approval flow רגיש
 - input:
   - `companionTriggerDecision`
@@ -575,11 +603,11 @@
 - output:
   - `interruptionDecision`
 - dependencies:
-  - `Create companion trigger policy`  | סטטוס: 🔴 לא בוצע
+  - `Create companion trigger policy`  | סטטוס: 🟢 בוצע
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
 
-41. `Create AI companion workspace template`  | סטטוס: 🔴 לא בוצע
+41. `Create AI companion workspace template`  | סטטוס: 🟢 בוצע
 - description: לבנות template למסכי Nexus שבהם ה־AI companion חי כשותף דיגיטלי ולא רק כפאנל טכני
 - input:
   - `screenTemplateSchema`
@@ -594,7 +622,7 @@
 
 ##### `Real-Time Experience Layer`
 
-1. `Define real-time event stream schema`  | סטטוס: 🔴 לא בוצע
+1. `Define real-time event stream schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד לזרמי עדכון חיים כמו progress, logs, file changes, approvals ו־notifications
 - input:
   - `runtimeEvents`
@@ -606,18 +634,18 @@
   - `Developer Workspace Experience`
 - connects_to: `Project State`
 
-2. `Create live update transport layer`  | סטטוס: 🔴 לא בוצע
+2. `Create live update transport layer`  | סטטוס: 🟢 בוצע
 - description: לבנות transport לשידור updates חיים ל־UI בלי רענון ידני
 - input:
   - `realtimeEventStream`
 - output:
   - `liveUpdateChannel`
 - dependencies:
-  - `Define real-time event stream schema`  | סטטוס: 🔴 לא בוצע
+  - `Define real-time event stream schema`  | סטטוס: 🟢 בוצע
   - `Application Runtime Layer`
 - connects_to: `Execution Surface`
 
-3. `Create live log streaming module`  | סטטוס: 🔴 לא בוצע
+3. `Create live log streaming module`  | סטטוס: 🟢 בוצע
 - description: לבנות מודול שמזריק command outputs ולוגים ל־terminal view בזמן אמת
 - input:
   - `liveUpdateChannel`
@@ -625,11 +653,11 @@
 - output:
   - `liveLogStream`
 - dependencies:
-  - `Create live update transport layer`  | סטטוס: 🔴 לא בוצע
+  - `Create live update transport layer`  | סטטוס: 🟢 בוצע
   - `Create terminal and command console view`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-4. `Create reactive workspace refresh model`  | סטטוס: 🔴 לא בוצע
+4. `Create reactive workspace refresh model`  | סטטוס: 🟢 בוצע
 - description: לבנות model שמעדכן panels, progress bars, diff states ו־artifact views בזמן אמת
 - input:
   - `liveUpdateChannel`
@@ -637,12 +665,12 @@
 - output:
   - `reactiveWorkspaceState`
 - dependencies:
-  - `Create live update transport layer`  | סטטוס: 🔴 לא בוצע
+  - `Create live update transport layer`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 ##### `Collaboration Layer`
 
-1. `Define collaboration event schema`  | סטטוס: 🔴 לא בוצע
+1. `Define collaboration event schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד לשיתופי פעולה כמו comments, mentions, shared reviews, shared approvals ו־presence signals
 - input:
   - `workspaceAction`
@@ -654,7 +682,7 @@
   - `Developer Workspace Experience`
 - connects_to: `Project State`
 
-2. `Create project presence model`  | סטטוס: 🔴 לא בוצע
+2. `Create project presence model`  | סטטוס: 🟢 בוצע
 - description: לבנות model שמציג מי נמצא כרגע בפרויקט, באיזה workspace ובאיזה context הוא עובד
 - input:
   - `collaborationEvent`
@@ -662,11 +690,11 @@
 - output:
   - `projectPresenceState`
 - dependencies:
-  - `Define collaboration event schema`  | סטטוס: 🔴 לא בוצע
+  - `Define collaboration event schema`  | סטטוס: 🟢 בוצע
   - `User Activity & Retention`
 - connects_to: `Project State`
 
-3. `Create project comments and review threads module`  | סטטוס: 🔴 לא בוצע
+3. `Create project comments and review threads module`  | סטטוס: 🟢 בוצע
 - description: לבנות מודול ל־comments, review threads ו־contextual discussion על files, diffs, approvals ו־release steps
 - input:
   - `collaborationEvent`
@@ -674,11 +702,11 @@
 - output:
   - `reviewThreadState`
 - dependencies:
-  - `Define collaboration event schema`  | סטטוס: 🔴 לא בוצע
+  - `Define collaboration event schema`  | סטטוס: 🟢 בוצע
   - `Create branch and diff activity panel`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-4. `Create shared approval flow model`  | סטטוס: 🔴 לא בוצע
+4. `Create shared approval flow model`  | סטטוס: 🟢 בוצע
 - description: לבנות model לשיתוף approval requests בין reviewers, owners ו־operators עם visibility ותיאום החלטות
 - input:
   - `approvalRequest`
@@ -690,7 +718,7 @@
   - `Collaboration Layer`
 - connects_to: `Project State`
 
-5. `Create collaboration activity feed`  | סטטוס: 🔴 לא בוצע
+5. `Create collaboration activity feed`  | סטטוס: 🟢 בוצע
 - description: לבנות feed של פעולות צוות, comments, approvals ו־workspace transitions ברמת הפרויקט
 - input:
   - `collaborationEvent`
@@ -698,8 +726,8 @@
 - output:
   - `collaborationFeed`
 - dependencies:
-  - `Create project presence model`  | סטטוס: 🔴 לא בוצע
-  - `Create project comments and review threads module`  | סטטוס: 🔴 לא בוצע
+  - `Create project presence model`  | סטטוס: 🟢 בוצע
+  - `Create project comments and review threads module`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 ##### `Project State Versioning`

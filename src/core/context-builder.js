@@ -28,6 +28,15 @@ import { createProgressPhaseResolver } from "./progress-phase-resolver.js";
 import { createProgressPercentageCalculator } from "./progress-percentage-calculator.js";
 import { createCompletionEstimateCalculator } from "./completion-estimate-calculator.js";
 import { createLiveProgressAssembler } from "./live-progress-assembler.js";
+import { createLiveUpdateTransportLayer } from "./live-update-transport-layer.js";
+import { createLiveLogStreamingModule } from "./live-log-streaming-module.js";
+import { createReactiveWorkspaceRefreshModel } from "./reactive-workspace-refresh-model.js";
+import { defineRealtimeEventStreamSchema } from "./realtime-event-stream-schema.js";
+import { defineCollaborationEventSchema } from "./collaboration-event-schema.js";
+import { createProjectPresenceModel } from "./project-presence-model.js";
+import { createProjectCommentsAndReviewThreadsModule } from "./project-comments-review-threads-module.js";
+import { createSharedApprovalFlowModel } from "./shared-approval-flow-model.js";
+import { createCollaborationActivityFeed } from "./collaboration-activity-feed.js";
 import { createExecutionLogFormatter } from "./execution-log-formatter.js";
 import { createExecutionCompletionNotifier } from "./execution-completion-notifier.js";
 import { createPlatformLoggingAndTracingLayer } from "./platform-logging-tracing-layer.js";
@@ -158,6 +167,25 @@ import { createManagementTemplate } from "./management-template.js";
 import { createStateDrivenTemplateVariants } from "./state-driven-template-variants.js";
 import { createPrimaryActionValidator } from "./primary-action-validator.js";
 import { createMobileUsabilityValidator } from "./mobile-usability-validator.js";
+import { createStateCoverageValidator } from "./state-coverage-validator.js";
+import { createConsistencyValidator } from "./consistency-validator.js";
+import { createScreenReviewAssembler } from "./screen-review-assembler.js";
+import { defineLearningInsightUiSchema } from "./learning-insight-ui-schema.js";
+import { createRecommendationReasoningPanelContract } from "./recommendation-reasoning-panel-contract.js";
+import { createPatternConfidenceIndicator } from "./pattern-confidence-indicator.js";
+import { createUserPreferenceSignalView } from "./user-preference-signal-view.js";
+import { createCrossProjectPatternDisclosurePanel } from "./cross-project-pattern-disclosure-panel.js";
+import { createPassiveLearningDisclosureBanner } from "./passive-learning-disclosure-banner.js";
+import { createAiLearningWorkspaceTemplate } from "./ai-learning-workspace-template.js";
+import { createCompanionStateModel } from "./companion-state-model.js";
+import { defineAiCompanionPresenceSchema } from "./ai-companion-presence-schema.js";
+import { createCompanionTriggerPolicy } from "./companion-trigger-policy.js";
+import { createCompanionMessagePriorityResolver } from "./companion-message-priority-resolver.js";
+import { createCompanionDockAndPanelContract } from "./companion-dock-panel-contract.js";
+import { createCompanionAnimationStateRules } from "./companion-animation-state-rules.js";
+import { createCompanionModeControls } from "./companion-mode-controls.js";
+import { createCompanionInterruptionGuard } from "./companion-interruption-guard.js";
+import { createAiCompanionWorkspaceTemplate } from "./ai-companion-workspace-template.js";
 import { defineDeveloperWorkspaceSchema } from "./developer-workspace-schema.js";
 import { createProjectWorkbenchLayout } from "./project-workbench-layout.js";
 import { createFileTreeAndEditorContract } from "./file-tree-editor-contract.js";
@@ -1682,6 +1710,156 @@ export function buildProjectContext(project) {
     usableScreens: mobileValidation.screens.filter((screen) => screen.summary.isUsable).length,
     blockedScreens: mobileValidation.screens.filter((screen) => !screen.summary.isUsable).length,
   };
+  const stateCoverageValidation = {
+    validationCollectionId: `state-coverage-validation:${project.id}`,
+    screens: screenContracts.map((screenContract) => {
+      const screenType = screenContract.screenType ?? "detail";
+      const screenTemplate =
+        screenType === "dashboard"
+          ? dashboardTemplate
+          : screenType === "wizard"
+            ? workflowTemplate
+            : screenType === "tracking"
+              ? managementTemplate
+              : screenType === "workspace"
+                ? dashboardTemplate
+                : detailPageTemplate;
+      const screenStateDefinition = screenStates.screens.find((screen) => screen.screenId === screenContract.screenId) ?? null;
+
+      return createStateCoverageValidator({
+        screenId: screenContract.screenId,
+        screenTemplate,
+        screenStates: screenStateDefinition,
+      }).stateCoverageValidation;
+    }),
+  };
+  stateCoverageValidation.summary = {
+    totalScreens: stateCoverageValidation.screens.length,
+    validScreens: stateCoverageValidation.screens.filter((screen) => screen.summary.isValid).length,
+    blockedScreens: stateCoverageValidation.screens.filter((screen) => !screen.summary.isValid).length,
+  };
+  const consistencyValidation = {
+    validationCollectionId: `consistency-validation:${project.id}`,
+    screens: screenContracts.map((screenContract) => {
+      const screenType = screenContract.screenType ?? "detail";
+      const screenTemplate =
+        screenType === "dashboard"
+          ? dashboardTemplate
+          : screenType === "wizard"
+            ? workflowTemplate
+            : screenType === "tracking"
+              ? managementTemplate
+              : screenType === "workspace"
+                ? dashboardTemplate
+                : detailPageTemplate;
+      const componentLibrary =
+        screenType === "dashboard"
+          ? dataDisplayComponents
+          : screenType === "wizard"
+            ? primitiveComponents
+            : screenType === "tracking"
+              ? dataDisplayComponents
+              : primitiveComponents;
+
+      return createConsistencyValidator({
+        screenId: screenContract.screenId,
+        screenTemplate,
+        designTokens,
+        componentLibrary,
+      }).consistencyValidation;
+    }),
+  };
+  consistencyValidation.summary = {
+    totalScreens: consistencyValidation.screens.length,
+    validScreens: consistencyValidation.screens.filter((screen) => screen.summary.isConsistent).length,
+    blockedScreens: consistencyValidation.screens.filter((screen) => !screen.summary.isConsistent).length,
+  };
+  const { screenReviewReport } = createScreenReviewAssembler({
+    primaryActionValidation,
+    mobileValidation,
+    stateCoverageValidation,
+    consistencyValidation,
+  });
+  const { learningInsightViewModel } = defineLearningInsightUiSchema({
+    learningInsights: project.context?.learningInsights ?? null,
+    learningTrace: project.context?.learningTrace ?? null,
+  });
+  const { reasoningPanel } = createRecommendationReasoningPanelContract({
+    impactSummary,
+    learningTrace: project.context?.learningTrace ?? null,
+    policyTrace,
+  });
+  const { confidenceIndicator } = createPatternConfidenceIndicator({
+    learningInsightViewModel,
+  });
+  const { userPreferenceSignals } = createUserPreferenceSignalView({
+    userPreferenceProfile: project.context?.userPreferenceProfile ?? null,
+    approvalFeedbackMemory: project.context?.approvalFeedbackMemory ?? project.approvalRecords ?? [],
+  });
+  const { crossProjectPatternPanel } = createCrossProjectPatternDisclosurePanel({
+    crossProjectMemory: project.context?.crossProjectMemory ?? null,
+    recommendationHints: project.context?.recommendationHints ?? [],
+  });
+  const { learningDisclosure } = createPassiveLearningDisclosureBanner({
+    learningInsights: project.context?.learningInsights ?? null,
+  });
+  const { aiLearningWorkspaceTemplate } = createAiLearningWorkspaceTemplate({
+    screenTemplateSchema: defineScreenTemplateSchema({ screenType: "workspace" }).screenTemplateSchema,
+    learningInsightViewModel,
+  });
+  const { companionState } = createCompanionStateModel({
+    learningInsights: project.context?.learningInsights ?? null,
+    decisionIntelligence,
+    notificationPayload,
+  });
+  const { companionTriggerDecision } = createCompanionTriggerPolicy({
+    companionState,
+    policyTrace,
+    executionStatus: {
+      projectId: project.id,
+      status: progressState?.status ?? notificationPayload?.status ?? "idle",
+      mode: project.context?.executionMode ?? "interactive",
+    },
+  });
+  const { companionMessagePriority } = createCompanionMessagePriorityResolver({
+    learningInsights: project.context?.learningInsights ?? null,
+    gatingDecision,
+    notificationPayload,
+  });
+  const { companionPresence } = defineAiCompanionPresenceSchema({
+    assistantState: companionState,
+    interactionContext: {
+      projectId: project.id,
+      currentSurface: "workspace",
+      currentTask: project.context?.currentTask ?? null,
+      executionMode: project.context?.executionMode ?? "interactive",
+      surface: "workspace",
+      urgency: companionTriggerDecision.summary.canInterrupt ? "high" : activeBottleneck ? "high" : "low",
+      visible: companionTriggerDecision.visibility.visible,
+    },
+  });
+  const { companionDock, companionPanel } = createCompanionDockAndPanelContract({
+    companionPresence,
+    companionMessagePriority,
+  });
+  const { animationStateRules } = createCompanionAnimationStateRules({
+    companionState,
+    companionTriggerDecision,
+  });
+  const { companionModeSettings } = createCompanionModeControls({
+    userPreferenceProfile: project.context?.userPreferenceProfile ?? null,
+    companionPresence,
+  });
+  const { interruptionDecision } = createCompanionInterruptionGuard({
+    companionTriggerDecision,
+    gatingDecision,
+    progressState,
+  });
+  const { aiCompanionTemplate } = createAiCompanionWorkspaceTemplate({
+    screenTemplateSchema: defineScreenTemplateSchema({ screenType: "workspace" }).screenTemplateSchema,
+    companionDock,
+    companionPanel,
+  });
   const { nexusPersistenceSchema } = defineNexusPersistenceSchema({
     coreEntityDefinitions: project.manualContext?.coreEntityDefinitions ?? null,
   });
@@ -1801,6 +1979,49 @@ export function buildProjectContext(project) {
   const { workspaceSettings } = createOrganizationWorkspaceSettingsModule({
     workspaceModel,
     settingsInput: project.manualContext?.workspaceSettingsInput ?? null,
+  });
+  const { collaborationEvent } = defineCollaborationEventSchema({
+    workspaceAction: {
+      eventId: project.manualContext?.workspaceAction?.eventId ?? null,
+      actionType:
+        project.manualContext?.workspaceAction?.actionType
+        ?? (approvalStatus?.status === "pending" ? "shared-approval" : "presence-signal"),
+      message:
+        project.manualContext?.workspaceAction?.message
+        ?? (approvalStatus?.status === "pending"
+          ? "Approval is waiting for shared review"
+          : "Workspace presence updated"),
+      mentions: project.manualContext?.workspaceAction?.mentions ?? [],
+      reviewStatus: project.manualContext?.workspaceAction?.reviewStatus ?? null,
+      approvalStatus: approvalStatus?.status ?? null,
+      workspaceId: workspaceModel?.workspaceId ?? null,
+      projectId: project.id,
+      workspaceArea: project.manualContext?.workspaceAction?.workspaceArea ?? "developer-workspace",
+      visibility: project.manualContext?.workspaceAction?.visibility ?? workspaceModel?.visibility ?? "workspace",
+      resourceId: project.manualContext?.workspaceAction?.resourceId ?? approvalRequestWithStatus?.approvalRequestId ?? null,
+    },
+    actorContext: {
+      actorId: userIdentity?.userId ?? null,
+      userId: userIdentity?.userId ?? null,
+      displayName: userIdentity?.displayName ?? null,
+      role: membershipRecord?.role ?? accessDecision?.effectiveRole ?? "viewer",
+      presence: sessionState?.status === "active" ? "active" : "idle",
+      workspaceId: workspaceModel?.workspaceId ?? null,
+      projectId: project.id,
+      workspaceArea: "developer-workspace",
+      workspaceVisibility: workspaceModel?.visibility ?? "workspace",
+    },
+  });
+  const { projectPresenceState } = createProjectPresenceModel({
+    collaborationEvent,
+    userSessionMetric: project.manualContext?.userSessionMetric ?? {
+      userId: sessionState?.userId ?? userIdentity?.userId ?? null,
+      status: sessionState?.status === "active" ? "active" : "idle",
+      workspaceId: workspaceModel?.workspaceId ?? null,
+      projectId: project.id,
+      workspaceArea: "developer-workspace",
+      activeUsers: project.manualContext?.activeUsers ?? null,
+    },
   });
   const { storageRecord } = createFileAndArtifactStorageModule({
     artifactMetadata: {
@@ -1950,6 +2171,24 @@ export function buildProjectContext(project) {
     realityProgress,
     explanationPayload: projectExplanation,
   });
+  const { realtimeEventStream } = defineRealtimeEventStreamSchema({
+    runtimeEvents: {
+      runId: executionProgressSchema.runId,
+      status: progressPhase,
+      progressEntries: executionProgressSchema.logSchema.entries ?? [],
+      formattedLogs,
+      executionEvents: platformTrace?.runtimeEvents?.executionEvents ?? [],
+    },
+    workspaceEvents: {
+      projectId: project.id,
+      fileChanges: diffPreview?.files ?? [],
+      approvals: approvalAuditTrail?.entries ?? [],
+      notifications: notificationEvent ? [notificationEvent] : [],
+    },
+  });
+  const { liveUpdateChannel } = createLiveUpdateTransportLayer({
+    realtimeEventStream,
+  });
   context.state.dependencies = buildDependencies(project, context);
   context.state.risks = buildRisks(project, context);
   context.dependencies = context.state.dependencies;
@@ -1991,6 +2230,10 @@ export function buildProjectContext(project) {
     },
     formattedLogs,
   });
+  const { liveLogStream } = createLiveLogStreamingModule({
+    liveUpdateChannel,
+    formattedLogs,
+  });
   const { branchDiffActivityPanel } = createBranchAndDiffActivityPanel({
     diffPreviewPayload: {
       projectId: project.id,
@@ -2006,6 +2249,19 @@ export function buildProjectContext(project) {
       auditLogRecord,
     },
   });
+  const { reviewThreadState } = createProjectCommentsAndReviewThreadsModule({
+    collaborationEvent,
+    branchDiffActivityPanel,
+  });
+  const { sharedApprovalState } = createSharedApprovalFlowModel({
+    approvalRequest: approvalRequestWithStatus,
+    workspaceModel,
+  });
+  const { collaborationFeed } = createCollaborationActivityFeed({
+    collaborationEvent,
+    projectPresenceState,
+    reviewThreadState,
+  });
   const { artifactBuildPanel } = createArtifactAndBuildLogPanel({
     artifactRecord,
     packagedArtifact,
@@ -2015,6 +2271,10 @@ export function buildProjectContext(project) {
     projectWorkbenchLayout,
     fileEditorContract,
     commandConsoleView,
+  });
+  const { reactiveWorkspaceState } = createReactiveWorkspaceRefreshModel({
+    liveUpdateChannel,
+    developerWorkspace,
   });
   const { projectBrainWorkspace } = createProjectBrainWorkspace({
     projectState: {
@@ -2306,6 +2566,8 @@ export function buildProjectContext(project) {
   context.workspaceModel = workspaceModel;
   context.membershipRecord = membershipRecord;
   context.accessDecision = accessDecision;
+  context.collaborationEvent = collaborationEvent;
+  context.projectPresenceState = projectPresenceState;
   context.invitationRecord = invitationRecord;
   context.roleAssignment = roleAssignment;
   context.workspaceSettings = workspaceSettings;
@@ -2342,13 +2604,38 @@ export function buildProjectContext(project) {
   context.templateVariants = templateVariants;
   context.primaryActionValidation = primaryActionValidation;
   context.mobileValidation = mobileValidation;
+  context.stateCoverageValidation = stateCoverageValidation;
+  context.consistencyValidation = consistencyValidation;
+  context.screenReviewReport = screenReviewReport;
+  context.learningInsightViewModel = learningInsightViewModel;
+  context.reasoningPanel = reasoningPanel;
+  context.confidenceIndicator = confidenceIndicator;
+  context.userPreferenceSignals = userPreferenceSignals;
+  context.crossProjectPatternPanel = crossProjectPatternPanel;
+  context.learningDisclosure = learningDisclosure;
+  context.aiLearningWorkspaceTemplate = aiLearningWorkspaceTemplate;
+  context.companionState = companionState;
+  context.companionTriggerDecision = companionTriggerDecision;
+  context.companionMessagePriority = companionMessagePriority;
+  context.companionPresence = companionPresence;
+  context.companionDock = companionDock;
+  context.companionPanel = companionPanel;
+  context.animationStateRules = animationStateRules;
+  context.companionModeSettings = companionModeSettings;
+  context.interruptionDecision = interruptionDecision;
+  context.aiCompanionTemplate = aiCompanionTemplate;
   context.developerWorkspace = developerWorkspace;
   context.projectWorkbenchLayout = projectWorkbenchLayout;
   context.fileEditorContract = fileEditorContract;
   context.commandConsoleView = commandConsoleView;
+  context.liveLogStream = liveLogStream;
   context.branchDiffActivityPanel = branchDiffActivityPanel;
+  context.reviewThreadState = reviewThreadState;
+  context.sharedApprovalState = sharedApprovalState;
+  context.collaborationFeed = collaborationFeed;
   context.artifactBuildPanel = artifactBuildPanel;
   context.developmentWorkspace = developmentWorkspace;
+  context.reactiveWorkspaceState = reactiveWorkspaceState;
   context.projectBrainWorkspace = projectBrainWorkspace;
   context.releaseWorkspace = releaseWorkspace;
   context.growthWorkspace = growthWorkspace;
@@ -2387,6 +2674,8 @@ export function buildProjectContext(project) {
   context.progressState = progressState;
   context.realityProgress = realityProgress;
   context.firstValueSummary = firstValueSummary;
+  context.realtimeEventStream = realtimeEventStream;
+  context.liveUpdateChannel = liveUpdateChannel;
   context.formattedLogs = formattedLogs;
   context.userFacingMessages = userFacingMessages;
   context.platformTrace = platformTrace;
