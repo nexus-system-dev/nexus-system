@@ -51,8 +51,8 @@
 - כלל עבודה: מספר נמוך יותר קודם למספר גבוה יותר.
 
 שלבי העבודה הגבוהים במסלול:
-- `1–8`: סגירת partials ותשתיות cross-platform של observability, versioning, realtime ו־collaboration.
-- `9–29`: שכבות foundation של UI, editing, permissions, tenant isolation ו־backup foundations.
+- `1–9`: סגירת partials מוקדמים של realtime ו־collaboration, יחד עם context reduction foundations.
+- `10–29`: שכבות foundation של UI, permissions, tenant isolation, human editing ו־backup foundations.
 - `30–52`: security, audit, recovery ו־resilience.
 - `53–69`: cost control ו־billing.
 - `70–100`: analytics foundations, outcome evaluation ו־feedback.
@@ -255,7 +255,7 @@
 
 
 2. `Create primitive components`  | סטטוס: 🔴 לא בוצע
-- execution_order: `1`
+- execution_order: `10`
 - description: לבנות רכיבי בסיס כמו button, input, textarea, select, badge, icon button
 - input:
   - `componentContract`
@@ -268,7 +268,7 @@
 
 
 3. `Create layout components`  | סטטוס: 🔴 לא בוצע
-- execution_order: `2`
+- execution_order: `11`
 - description: לבנות container, section, stack, grid, panel, divider
 - input:
   - `layoutSystem`
@@ -280,7 +280,7 @@
 
 
 4. `Create feedback components`  | סטטוס: 🔴 לא בוצע
-- execution_order: `3`
+- execution_order: `12`
 - description: לבנות loading, empty state, error state, toast, banner, progress, skeleton
 - input:
   - `interactionStateSystem`
@@ -292,7 +292,7 @@
 
 
 5. `Create navigation components`  | סטטוס: 🔴 לא בוצע
-- execution_order: `4`
+- execution_order: `13`
 - description: לבנות sidebar, tabs, breadcrumb, topbar, stepper
 - input:
   - `screenFlowMap`
@@ -304,7 +304,7 @@
 
 
 6. `Create data display components`  | סטטוס: 🔴 לא בוצע
-- execution_order: `5`
+- execution_order: `14`
 - description: לבנות table, stat card, activity log, timeline, key-value panel, status chip
 - input:
   - `screenInventory`
@@ -543,7 +543,7 @@
 #### `Context Relevance & Reduction`
 
 1. `Define context relevance schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `6`
+- execution_order: `1`
 - description: לבנות schema אחיד שמגדיר איך מודדים relevance, priority, freshness ו־token weight עבור context שנשלח ל־AI, ל־review ול־execution
 - input:
   - `projectState`
@@ -557,7 +557,7 @@
 
 
 2. `Create context relevance filter`  | סטטוס: 🔴 לא בוצע
-- execution_order: `7`
+- execution_order: `2`
 - description: לבנות filter שמכריע אילו חלקי context נשארים בבקשה, אילו יורדים ואילו רק מסוכמים
 - input:
   - `contextRelevanceSchema`
@@ -571,7 +571,7 @@
 
 
 3. `Create context slimming pipeline`  | סטטוס: 🔴 לא בוצע
-- execution_order: `8`
+- execution_order: `3`
 - description: לבנות pipeline שממיר context גדול ל־minimal execution context עם summaries, drops ו־priority ordering לפני שליחה ל־AI או ל־provider
 - input:
   - `relevanceFilteredContext`
@@ -588,7 +588,7 @@
 #### `Human Editing & Partial Acceptance`
 
 1. `Define editable proposal schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `9`
+- execution_order: `22`
 - description: לבנות schema אחיד להצעות שניתן לערוך, לתקן, לאשר חלקית או לדחות ברמת section, component, copy ו־next action
 - input:
   - `proposalType`
@@ -602,7 +602,7 @@
 
 
 2. `Create proposal editing system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `10`
+- execution_order: `23`
 - description: לבנות מערכת עריכה שמאפשרת למשתמש לשנות proposal קיים, להשאיר annotations וליצור revised proposal בלי לשבור את ה־history
 - input:
   - `editableProposal`
@@ -617,7 +617,7 @@
 
 
 3. `Create partial acceptance flow`  | סטטוס: 🔴 לא בוצע
-- execution_order: `11`
+- execution_order: `24`
 - description: לבנות flow שמאפשר לאשר חלק מהצעה, לדחות חלק אחר, ולהחזיר רק את החלקים הבעייתיים ל־regeneration או review נוסף
 - input:
   - `editedProposal`
@@ -774,7 +774,7 @@
 
 
 2. `Create live update transport layer`  | סטטוס: 🟡 חלקי
-- execution_order: `12`
+- execution_order: `4`
 - description: לבנות transport לשידור updates חיים ל־UI בלי רענון ידני
 - input:
   - `realtimeEventStream`
@@ -787,7 +787,7 @@
 
 
 3. `Create live log streaming module`  | סטטוס: 🟡 חלקי
-- execution_order: `13`
+- execution_order: `5`
 - description: לבנות מודול שמזריק command outputs ולוגים ל־terminal view בזמן אמת
 - input:
   - `liveUpdateChannel`
@@ -830,7 +830,7 @@
 
 
 2. `Create project presence model`  | סטטוס: 🟡 חלקי
-- execution_order: `14`
+- execution_order: `6`
 - description: לבנות model שמציג מי נמצא כרגע בפרויקט, באיזה workspace ובאיזה context הוא עובד
 - input:
   - `collaborationEvent`
@@ -844,7 +844,7 @@
 
 
 3. `Create project comments and review threads module`  | סטטוס: 🟡 חלקי
-- execution_order: `15`
+- execution_order: `7`
 - description: לבנות מודול ל־comments, review threads ו־contextual discussion על files, diffs, approvals ו־release steps
 - input:
   - `collaborationEvent`
@@ -858,7 +858,7 @@
 
 
 4. `Create shared approval flow model`  | סטטוס: 🟡 חלקי
-- execution_order: `16`
+- execution_order: `8`
 - description: לבנות model לשיתוף approval requests בין reviewers, owners ו־operators עם visibility ותיאום החלטות
 - input:
   - `approvalRequest`
@@ -872,7 +872,7 @@
 
 
 5. `Create collaboration activity feed`  | סטטוס: 🟡 חלקי
-- execution_order: `17`
+- execution_order: `9`
 - description: לבנות feed של פעולות צוות, comments, approvals ו־workspace transitions ברמת הפרויקט
 - input:
   - `collaborationEvent`
@@ -890,7 +890,7 @@
 #### `Project Permission Matrix`
 
 1. `Define project permission schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `18`
+- execution_order: `15`
 - description: לבנות schema אחיד להרשאות ברמת פרויקט כמו view, edit, run, approve, deploy, connect accounts ו־manage credentials
 - input:
   - `workspaceModel`
@@ -903,7 +903,7 @@
 
 
 2. `Create project role capability matrix`  | סטטוס: 🔴 לא בוצע
-- execution_order: `19`
+- execution_order: `16`
 - description: לבנות matrix שממפה roles כמו owner, member, operator, reviewer ו־viewer ליכולות מותרות בתוך פרויקט
 - input:
   - `projectPermissionSchema`
@@ -915,7 +915,7 @@
 
 
 3. `Create action-level project authorization resolver`  | סטטוס: 🔴 לא בוצע
-- execution_order: `20`
+- execution_order: `17`
 - description: לבנות resolver שמכריע אם actor מסוים רשאי לבצע פעולה ספציפית על פרויקט כמו deploy, code edit, release approval או credential link
 - input:
   - `actorType`
@@ -930,7 +930,7 @@
 
 
 4. `Create privileged action authority resolver`  | סטטוס: 🔴 לא בוצע
-- execution_order: `21`
+- execution_order: `18`
 - description: לבנות resolver לפעולות רגישות במיוחד כמו deploy, approval override, credential use ו־billing changes
 - input:
   - `projectAuthorizationDecision`
@@ -948,7 +948,7 @@
 #### `Multi-Tenancy & Workspace Isolation`
 
 1. `Define tenant isolation schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `22`
+- execution_order: `19`
 - description: לבנות schema אחיד לבידוד בין users, workspaces, projects ו־resources משותפים בלי דליפת מידע בין tenants
 - input:
   - `workspaceModel`
@@ -961,7 +961,7 @@
 
 
 2. `Create workspace isolation guard`  | סטטוס: 🔴 לא בוצע
-- execution_order: `23`
+- execution_order: `20`
 - description: לבנות guard שמוודא שכל קריאה לנתונים, artifacts, logs ו־linked accounts נשארת בגבולות ה־workspace הנכון
 - input:
   - `tenantIsolationSchema`
@@ -975,7 +975,7 @@
 
 
 3. `Create cross-tenant leak detector`  | סטטוס: 🔴 לא בוצע
-- execution_order: `24`
+- execution_order: `21`
 - description: לבנות detector שמזהה ערבוב state, learning signals או provider data בין tenants שונים
 - input:
   - `workspaceIsolationDecision`
