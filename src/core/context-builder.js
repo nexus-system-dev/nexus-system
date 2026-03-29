@@ -2531,6 +2531,7 @@ export function buildProjectContext(project, { observabilityTransport = null, au
   });
   const { liveUpdateChannel } = createLiveUpdateTransportLayer({
     realtimeEventStream,
+    projectId: project.id,
   });
   context.state.dependencies = buildDependencies(project, context);
   context.state.risks = buildRisks(project, context);

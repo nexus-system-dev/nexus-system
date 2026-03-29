@@ -494,3 +494,116 @@ test("cockpit refreshes live progress without manual clicks", async () => {
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /64%/);
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /Build almost done/);
 });
+
+test("cockpit consumes sse live updates when push transport is available", async () => {
+  const fakeDocument = createFakeDocument();
+  const listeners = new Map();
+  const eventSources = [];
+  const initialPayload = {
+    id: "giftwallet",
+    name: "GiftWallet",
+    goal: "Watch live progress",
+    status: "active",
+    source: { baseUrl: "http://localhost:4101" },
+    overview: { bottleneck: "Execution in progress" },
+    cycle: { roadmap: [{ summary: "Run build", status: "assigned", lane: "build", dependencies: [] }] },
+    agents: [],
+    approvals: [],
+    events: [{ type: "state.updated", payload: { projectId: "giftwallet" } }],
+    collaborationFeed: { summary: { totalItems: 0, containsWorkspaceTransitions: false }, items: [] },
+    realtimeEventStream: {
+      events: [{ eventId: "evt-1", streamType: "progress", status: "active", message: "Build started" }],
+      summary: { totalEvents: 1, progressEvents: 1 },
+    },
+    liveUpdateChannel: {
+      transportMode: "websocket",
+      serverTransport: "sse",
+      deliveryEndpoint: "/api/projects/giftwallet/live-events",
+      refreshStrategy: "push",
+      reconnectPolicy: { initialDelayMs: 25 },
+    },
+    reactiveWorkspaceState: {
+      progressBar: { percent: 12 },
+    },
+    progressState: { percent: 12 },
+  };
+
+  async function fetchImpl(url) {
+    if (url === "/api/projects") {
+      return {
+        ok: true,
+        async json() {
+          return { projects: [{ id: "giftwallet", name: "GiftWallet" }] };
+        },
+      };
+    }
+
+    if (url === "/api/projects/giftwallet") {
+      return {
+        ok: true,
+        async json() {
+          return initialPayload;
+        },
+      };
+    }
+
+    throw new Error(`Unexpected url: ${url}`);
+  }
+
+  class FakeEventSource {
+    constructor(url) {
+      this.url = url;
+      this.closed = false;
+      this.onmessage = null;
+      this.onerror = null;
+      eventSources.push(this);
+    }
+
+    addEventListener(type, handler) {
+      listeners.set(type, handler);
+    }
+
+    close() {
+      this.closed = true;
+    }
+  }
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl,
+    EventSourceImpl: FakeEventSource,
+    setTimeoutImpl() {
+      throw new Error("Polling fallback should not run while SSE transport is active");
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await app.ready;
+  assert.equal(eventSources.length, 1);
+  assert.equal(eventSources[0].url, "/api/projects/giftwallet/live-events");
+
+  listeners.get("live-state")?.({
+    data: JSON.stringify({
+      progressState: { percent: 64 },
+      reactiveWorkspaceState: { progressBar: { percent: 64 } },
+      realtimeEventStream: {
+        events: [{ eventId: "evt-2", streamType: "progress", status: "active", message: "Build almost done" }],
+        summary: { totalEvents: 1, progressEvents: 1 },
+      },
+      liveUpdateChannel: {
+        transportMode: "websocket",
+        serverTransport: "sse",
+        deliveryEndpoint: "/api/projects/giftwallet/live-events",
+        refreshStrategy: "push",
+        reconnectPolicy: { initialDelayMs: 25 },
+      },
+      collaborationFeed: { summary: { totalItems: 0, containsWorkspaceTransitions: false }, items: [] },
+      events: [{ type: "state.updated", payload: { projectId: "giftwallet" } }],
+    }),
+  });
+
+  assert.match(fakeDocument.elements.get("#live-content").innerHTML, /64%/);
+  assert.match(fakeDocument.elements.get("#live-content").innerHTML, /Build almost done/);
+  app.closeLiveUpdates();
+  assert.equal(eventSources[0].closed, true);
+});

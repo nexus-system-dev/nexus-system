@@ -67,20 +67,25 @@ function buildSubscriptionTopics(summary) {
 
 export function createLiveUpdateTransportLayer({
   realtimeEventStream = null,
+  projectId = null,
 } = {}) {
   const normalizedRealtimeEventStream = normalizeRealtimeEventStream(realtimeEventStream);
   const summary = normalizeSummary(normalizedRealtimeEventStream.summary);
   const transportMode = resolveTransportMode(summary);
   const topics = buildSubscriptionTopics(summary);
   const totalEvents = summary.totalEvents ?? 0;
+  const normalizedProjectId = typeof projectId === "string" && projectId.length > 0 ? projectId : null;
+  const serverTransport = transportMode === "polling" ? "polling" : "sse";
 
   return {
     liveUpdateChannel: {
       channelId: `live-channel:${normalizedRealtimeEventStream.streamId ?? "project"}`,
       streamId: normalizedRealtimeEventStream.streamId ?? null,
       transportMode,
+      serverTransport,
       deliveryState: totalEvents > 0 ? "live" : "idle",
       refreshStrategy: transportMode === "polling" ? "scheduled-refresh" : "push",
+      deliveryEndpoint: normalizedProjectId ? `/api/projects/${normalizedProjectId}/live-events` : null,
       requiresManualRefresh: false,
       reconnectPolicy: buildReconnectPolicy(transportMode),
       buffering: {
@@ -94,6 +99,7 @@ export function createLiveUpdateTransportLayer({
       summary: {
         totalEvents,
         transportMode,
+        serverTransport,
         isLive: transportMode !== "polling" || totalEvents > 0,
         hasRuntimeSignal: ((summary.progressEvents ?? 0) + (summary.logEvents ?? 0)) > 0,
         hasWorkspaceSignal: ((summary.fileChanges ?? 0) + (summary.approvalEvents ?? 0) + (summary.notificationEvents ?? 0)) > 0,

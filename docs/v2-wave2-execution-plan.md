@@ -39,8 +39,8 @@
 ## Current Snapshot
 
 - סך הכל משימות ב־`Wave 2`: `249`
-- `🟢 בוצע`: `66`
-- `🟡 חלקי`: `6`
+- `🟢 בוצע`: `67`
+- `🟡 חלקי`: `5`
 - `🔴 לא בוצע`: `177`
 
 ## Open Work Execution Ordering
@@ -773,7 +773,7 @@
 - connects_to: `Project State`
 
 
-2. `Create live update transport layer`  | סטטוס: 🟡 חלקי
+2. `Create live update transport layer`  | סטטוס: 🟢 בוצע
 - execution_order: `4`
 - description: לבנות transport לשידור updates חיים ל־UI בלי רענון ידני
 - input:
@@ -784,6 +784,7 @@
   - `Define real-time event stream schema`  | סטטוס: 🟢 בוצע
   - `Application Runtime Layer`
 - connects_to: `Execution Surface`
+- הערת מצב: ה־transport מחובר עכשיו ל־SSE אמיתי דרך `GET /api/projects/:id/live-events`, מייצר `deliveryEndpoint` ו־`serverTransport` ב־`liveUpdateChannel`, וה־web app צורך push updates דרך `EventSource` עם fallback ל־polling במקרה הצורך.
 
 
 3. `Create live log streaming module`  | סטטוס: 🟡 חלקי

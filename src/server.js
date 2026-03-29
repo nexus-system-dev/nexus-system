@@ -74,6 +74,28 @@ function resolveWorkspaceId(urlPathname) {
   return segments[1] === "api" && segments[2] === "projects" ? segments[3] ?? null : null;
 }
 
+function getProjectLiveState(projectService, projectId) {
+  const project = projectService.getProject(projectId);
+  if (!project) {
+    return null;
+  }
+
+  return {
+    projectId,
+    progressState: project.progressState ?? null,
+    reactiveWorkspaceState: project.reactiveWorkspaceState ?? null,
+    realtimeEventStream: project.realtimeEventStream ?? null,
+    liveUpdateChannel: project.liveUpdateChannel ?? null,
+    collaborationFeed: project.collaborationFeed ?? null,
+    events: project.events ?? [],
+  };
+}
+
+function writeSseEvent(response, eventName, payload) {
+  response.write(`event: ${eventName}\n`);
+  response.write(`data: ${JSON.stringify(payload)}\n\n`);
+}
+
 export function createServer(projectService, runtimeStatus = {}) {
   return http.createServer(async (request, response) => {
     const url = new URL(request.url, "http://localhost");
@@ -321,22 +343,62 @@ export function createServer(projectService, runtimeStatus = {}) {
       }
 
       if (suffix === "live-state") {
-        const project = projectService.getProject(projectId);
+        const liveState = getProjectLiveState(projectService, projectId);
         sendJson(
           response,
-          project ? 200 : 404,
-          project
-            ? {
-                projectId,
-                progressState: project.progressState ?? null,
-                reactiveWorkspaceState: project.reactiveWorkspaceState ?? null,
-                realtimeEventStream: project.realtimeEventStream ?? null,
-                liveUpdateChannel: project.liveUpdateChannel ?? null,
-                collaborationFeed: project.collaborationFeed ?? null,
-                events: project.events ?? [],
-              }
-            : { error: "Project not found" },
+          liveState ? 200 : 404,
+          liveState ?? { error: "Project not found" },
         );
+        return;
+      }
+
+      if (suffix === "live-events") {
+        const liveState = getProjectLiveState(projectService, projectId);
+        if (!liveState) {
+          sendJson(response, 404, { error: "Project not found" });
+          return;
+        }
+
+        response.writeHead(200, {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          Connection: "keep-alive",
+        });
+
+        let lastSnapshot = JSON.stringify(liveState);
+        writeSseEvent(response, "live-state", liveState);
+
+        const heartbeatInterval = setInterval(() => {
+          const nextLiveState = getProjectLiveState(projectService, projectId);
+          if (!nextLiveState) {
+            return;
+          }
+
+          const nextSnapshot = JSON.stringify(nextLiveState);
+          if (nextSnapshot !== lastSnapshot) {
+            lastSnapshot = nextSnapshot;
+            writeSseEvent(response, "live-state", nextLiveState);
+            return;
+          }
+
+          response.write(": keep-alive\n\n");
+        }, 1000);
+
+        const cleanup = () => {
+          clearInterval(heartbeatInterval);
+          observabilityTransport?.finishHttpRequest({
+            traceId: requestTrace?.traceId ?? requestId,
+            route: url.pathname,
+            method: request.method,
+            statusCode: response.statusCode ?? 200,
+            durationMs: Date.now() - requestStartedAt,
+            service: runtimeStatus.runtimeId ?? "http-server",
+          });
+        };
+
+        request.on?.("close", cleanup);
+        response.on?.("close", cleanup);
+        response.on?.("finish", cleanup);
         return;
       }
 

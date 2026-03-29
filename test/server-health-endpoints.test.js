@@ -196,6 +196,58 @@ test("server exposes project live-state endpoint", async () => {
   assert.equal(Array.isArray(response.body.events), true);
 });
 
+test("server exposes project live events sse endpoint", async () => {
+  const server = createServer({
+    getProject: (projectId) => ({
+      id: projectId,
+      progressState: { percent: 48, status: "running" },
+      reactiveWorkspaceState: { progressBar: { percent: 48 } },
+      realtimeEventStream: { streamId: "realtime-stream:giftwallet", events: [{ eventId: "evt-1" }], summary: { totalEvents: 1, progressEvents: 1 } },
+      liveUpdateChannel: {
+        channelId: "live-channel:giftwallet",
+        transportMode: "sse",
+        serverTransport: "sse",
+        deliveryEndpoint: "/api/projects/giftwallet/live-events",
+      },
+      collaborationFeed: { feedId: "collaboration-feed:giftwallet", items: [], summary: { totalItems: 0 } },
+      events: [{ type: "state.updated", payload: { projectId } }],
+    }),
+  });
+
+  const bodyChunks = [];
+  const request = new EventEmitter();
+  request.method = "GET";
+  request.url = "/api/projects/giftwallet/live-events";
+  request.headers = {};
+
+  const response = new EventEmitter();
+  response.statusCode = 200;
+  response.headers = {};
+  response.writeHead = function writeHead(statusCode, headers) {
+    this.statusCode = statusCode;
+    this.headers = headers;
+  };
+  response.write = function write(chunk) {
+    bodyChunks.push(chunk);
+  };
+  response.end = function end(chunk) {
+    if (chunk) {
+      bodyChunks.push(chunk);
+    }
+  };
+
+  server.emit("request", request, response);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  request.emit("close");
+
+  const body = bodyChunks.join("");
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.headers["Content-Type"], "text/event-stream; charset=utf-8");
+  assert.match(body, /event: live-state/);
+  assert.match(body, /"projectId":"giftwallet"/);
+});
+
 test("server exposes project audit payload endpoint", async () => {
   const server = createServer({
     getProjectAuditPayload: (projectId, filters) => projectId === "giftwallet"

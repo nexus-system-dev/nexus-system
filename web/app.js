@@ -827,6 +827,7 @@ export function renderProject(elements, project) {
 export function createCockpitApp({
   doc = globalThis.document,
   fetchImpl = globalThis.fetch,
+  EventSourceImpl = globalThis.EventSource,
   setTimeoutImpl = globalThis.setTimeout,
   clearTimeoutImpl = globalThis.clearTimeout,
 } = {}) {
@@ -838,6 +839,7 @@ export function createCockpitApp({
   let currentProjectId = null;
   let currentProject = null;
   let refreshTimer = null;
+  let liveEventSource = null;
   let activeWorkspace = "developer";
 
   async function fetchJson(url, options) {
@@ -856,7 +858,7 @@ export function createCockpitApp({
     applyDesignSystem(doc, project);
     renderProject(elements, project);
     setActiveWorkspace(elements, activeWorkspace);
-    scheduleLiveRefresh();
+    connectLiveUpdates();
     return project;
   }
 
@@ -890,6 +892,19 @@ export function createCockpitApp({
     } finally {
       scheduleLiveRefresh();
     }
+  }
+
+  function closeLiveUpdates() {
+    if (refreshTimer) {
+      clearTimeoutImpl(refreshTimer);
+      refreshTimer = null;
+    }
+
+    if (liveEventSource && typeof liveEventSource.close === "function") {
+      liveEventSource.close();
+    }
+
+    liveEventSource = null;
   }
 
   function resolveRefreshDelay(channel) {
@@ -926,6 +941,51 @@ export function createCockpitApp({
         scheduleLiveRefresh();
       });
     }, delay);
+  }
+
+  function resolveLiveEndpoint(projectId, channel) {
+    const normalizedChannel = normalizeObject(channel);
+    return normalizedChannel.deliveryEndpoint ?? `/api/projects/${projectId}/live-events`;
+  }
+
+  function connectLiveUpdates() {
+    closeLiveUpdates();
+
+    if (!currentProjectId || !currentProject) {
+      return;
+    }
+
+    const channel = normalizeObject(currentProject.liveUpdateChannel);
+    const serverTransport = channel.serverTransport ?? (channel.transportMode === "polling" ? "polling" : "sse");
+    if (serverTransport === "polling" || typeof EventSourceImpl !== "function") {
+      scheduleLiveRefresh();
+      return;
+    }
+
+    const eventSource = new EventSourceImpl(resolveLiveEndpoint(currentProjectId, channel));
+    liveEventSource = eventSource;
+
+    eventSource.onmessage = (event) => {
+      try {
+        mergeLiveState(JSON.parse(event.data));
+      } catch (error) {
+        elements.events.innerHTML = `<p class="empty">Live stream parse failed: ${escapeHtml(error.message)}</p>`;
+      }
+    };
+    eventSource.addEventListener?.("live-state", (event) => {
+      try {
+        mergeLiveState(JSON.parse(event.data));
+      } catch (error) {
+        elements.events.innerHTML = `<p class="empty">Live stream parse failed: ${escapeHtml(error.message)}</p>`;
+      }
+    });
+    eventSource.onerror = () => {
+      if (liveEventSource === eventSource) {
+        eventSource.close?.();
+        liveEventSource = null;
+        scheduleLiveRefresh();
+      }
+    };
   }
 
   async function loadProjects() {
@@ -1011,6 +1071,7 @@ export function createCockpitApp({
       activeWorkspace = workspaceKey;
       setActiveWorkspace(elements, activeWorkspace);
     },
+    closeLiveUpdates,
     ready,
   };
 }
