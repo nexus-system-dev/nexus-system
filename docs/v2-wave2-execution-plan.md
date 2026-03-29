@@ -39,8 +39,8 @@
 ## Current Snapshot
 
 - סך הכל משימות ב־`Wave 2`: `257`
-- `🟢 בוצע`: `70`
-- `🟡 חלקי`: `2`
+- `🟢 בוצע`: `71`
+- `🟡 חלקי`: `1`
 - `🔴 לא בוצע`: `185`
 
 ## Open Work Execution Ordering
@@ -982,7 +982,7 @@
 - הערת מצב: מודול ה־review threads מחובר עכשיו ל־store קנוני עם persistence ל־`project-review-threads.ndjson`, תומך ב־`GET/POST /api/projects/:id/review-threads`, מתמזג עם threads הקונטקסטואליים של diff/approval/release בתוך `context-builder`, ונחשף בזמן אמת דרך `live-state`, `SSE` וה־UI של ה־cockpit.
 
 
-4. `Create shared approval flow model`  | סטטוס: 🟡 חלקי
+4. `Create shared approval flow model`  | סטטוס: 🟢 בוצע
 - execution_order: `8`
 - description: לבנות model לשיתוף approval requests בין reviewers, owners ו־operators עם visibility ותיאום החלטות
 - input:
@@ -994,6 +994,7 @@
   - `Approval System`  | סטטוס: 🟡 חלקי
   - `Collaboration Layer`
 - connects_to: `Project State`
+- הערת מצב: מודל ה־shared approval מחושב עכשיו מתוך `approvalRequest`, `workspaceModel` ו־`approvalRecords`, כולל `participantDecisions`, `visibilityRules` ו־`coordinationStatus`; הוא נחשף גם דרך approval APIs (`GET /api/projects/:id/approvals` ו־approve/reject/revoke) כך שהמערכת כבר מציגה מי צריך להחליט, מי כבר החליט ומה עוד ממתין לסגירה.
 
 
 5. `Create collaboration activity feed`  | סטטוס: 🟡 חלקי

@@ -18,6 +18,15 @@ test("shared approval flow model coordinates reviewers owners and operators for 
       visibility: "private",
       roles: ["owner", "editor"],
     },
+    approvalRecords: [
+      {
+        approvalRecordId: "approval-record:project-1:deploy",
+        auditTrail: [
+          { eventType: "approval.requested", actorId: "agent-runtime", actorRole: "requester" },
+          { eventType: "approval.approved", actorId: "user-1", actorRole: "reviewer", actorName: "Reviewer" },
+        ],
+      },
+    ],
   });
 
   assert.equal(sharedApprovalState.approvalRequestId, "approval:project-1:deploy:agent-runtime");
@@ -26,6 +35,9 @@ test("shared approval flow model coordinates reviewers owners and operators for 
   assert.equal(sharedApprovalState.participants.some((participant) => participant.participantRole === "operator"), true);
   assert.equal(sharedApprovalState.coordinationRules.requiresReviewerDecision, true);
   assert.equal(sharedApprovalState.summary.requiresCoordinatedDecision, true);
+  assert.equal(sharedApprovalState.participantDecisions.some((participant) => participant.participantRole === "reviewer" && participant.decision === "approved"), true);
+  assert.equal(sharedApprovalState.coordinationStatus.waitingForOwner, true);
+  assert.equal(sharedApprovalState.visibilityRules.some((rule) => rule.participantRole === "owner" && rule.canFinalize), true);
 });
 
 test("shared approval flow model falls back safely for basic approvals", () => {
@@ -34,4 +46,6 @@ test("shared approval flow model falls back safely for basic approvals", () => {
   assert.equal(typeof sharedApprovalState.sharedApprovalStateId, "string");
   assert.equal(Array.isArray(sharedApprovalState.participants), true);
   assert.equal(typeof sharedApprovalState.summary.currentStatus, "string");
+  assert.equal(Array.isArray(sharedApprovalState.participantDecisions), true);
+  assert.equal(Array.isArray(sharedApprovalState.visibilityRules), true);
 });

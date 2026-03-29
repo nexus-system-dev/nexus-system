@@ -1938,6 +1938,7 @@ export class ProjectService {
         approvalRequest: project.context?.approvalRequest ?? null,
         approvalStatus: project.context?.approvalStatus ?? null,
         approvalRecords: project.context?.approvalRecords ?? [],
+        sharedApprovalState: project.context?.sharedApprovalState ?? null,
       },
     };
   }
@@ -1979,6 +1980,8 @@ export class ProjectService {
         reason: payload.reason ?? null,
         actorId: payload.actorId ?? "user",
         expiresInHours: payload.expiresInHours,
+        actorRole: payload.actorRole ?? null,
+        actorName: payload.actorName ?? null,
       },
     });
 
@@ -1993,6 +1996,7 @@ export class ProjectService {
         approvalRecord,
         approvalStatus: project.context?.approvalStatus ?? null,
         approvalRecords: project.context?.approvalRecords ?? [],
+        sharedApprovalState: project.context?.sharedApprovalState ?? null,
       },
     };
   }

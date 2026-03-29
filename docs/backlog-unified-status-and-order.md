@@ -6571,7 +6571,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 - הערת מצב: מודול ה־review threads מחובר עכשיו ל־store קנוני עם persistence ל־`project-review-threads.ndjson`, תומך ב־`GET/POST /api/projects/:id/review-threads`, מתמזג עם threads הקונטקסטואליים של diff/approval/release בתוך `context-builder`, ונחשף בזמן אמת דרך `live-state`, `SSE` וה־UI של ה־cockpit.
 
-4. `Create shared approval flow model`  | סטטוס: 🟡 חלקי
+4. `Create shared approval flow model`  | סטטוס: 🟢 בוצע
 - description: לבנות model לשיתוף approval requests בין reviewers, owners ו־operators עם visibility ותיאום החלטות
 - input:
   - `approvalRequest`
@@ -6582,6 +6582,7 @@ Refinements מאושרים:
   - `Approval System`  | סטטוס: 🟡 חלקי
   - `Collaboration Layer`
 - connects_to: `Project State`
+- הערת מצב: מודל ה־shared approval מחושב עכשיו מתוך `approvalRequest`, `workspaceModel` ו־`approvalRecords`, כולל `participantDecisions`, `visibilityRules` ו־`coordinationStatus`; הוא נחשף גם דרך approval APIs (`GET /api/projects/:id/approvals` ו־approve/reject/revoke) כך שהמערכת כבר מציגה מי צריך להחליט, מי כבר החליט ומה עוד ממתין לסגירה.
 
 5. `Create collaboration activity feed`  | סטטוס: 🟡 חלקי
 - description: לבנות feed של פעולות צוות, comments, approvals ו־workspace transitions ברמת הפרויקט

@@ -700,6 +700,8 @@ export function createServer(projectService, runtimeStatus = {}) {
         userInput: {
           ...(body.userInput ?? {}),
           decision: "approved",
+          actorRole: body.userInput?.actorRole ?? null,
+          actorName: body.userInput?.actorName ?? null,
         },
       });
       if (!result) {
@@ -718,6 +720,8 @@ export function createServer(projectService, runtimeStatus = {}) {
         userInput: {
           ...(body.userInput ?? {}),
           decision: "rejected",
+          actorRole: body.userInput?.actorRole ?? null,
+          actorName: body.userInput?.actorName ?? null,
         },
       });
       if (!result) {

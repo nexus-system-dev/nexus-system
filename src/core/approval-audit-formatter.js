@@ -17,6 +17,8 @@ function createAuditEntries(record) {
     status: entry.status ?? record.status ?? "unknown",
     eventType: entry.eventType ?? "approval.event",
     actorId: entry.actorId ?? record.actorType ?? "system",
+    actorRole: entry.actorRole ?? null,
+    actorName: entry.actorName ?? null,
     reason: entry.reason ?? record.reason ?? null,
   }));
 }

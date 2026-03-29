@@ -27,6 +27,12 @@ function normalizeApprovalDecision(approvalDecision, approvalRequest) {
     actorId: typeof payload.actorId === "string" && payload.actorId.trim()
       ? payload.actorId.trim()
       : approvalRequest?.actorType ?? "system",
+    actorRole: typeof payload.actorRole === "string" && payload.actorRole.trim()
+      ? payload.actorRole.trim()
+      : null,
+    actorName: typeof payload.actorName === "string" && payload.actorName.trim()
+      ? payload.actorName.trim()
+      : null,
   };
 }
 
@@ -36,6 +42,8 @@ function buildAuditTrail(approvalRequest, normalizedDecision) {
       eventType: "approval.requested",
       status: approvalRequest?.status ?? "pending",
       actorId: approvalRequest?.actorType ?? "system",
+      actorRole: "requester",
+      actorName: approvalRequest?.actorType ?? "system",
       reason: approvalRequest?.riskContext?.reason ?? null,
     },
     {
@@ -50,6 +58,8 @@ function buildAuditTrail(approvalRequest, normalizedDecision) {
           ? "approved"
           : "rejected",
       actorId: normalizedDecision.actorId,
+      actorRole: normalizedDecision.actorRole,
+      actorName: normalizedDecision.actorName,
       reason: normalizedDecision.reason,
     },
   ];

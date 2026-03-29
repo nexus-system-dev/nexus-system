@@ -8,6 +8,10 @@ function normalizeRoles(workspaceModel) {
     : ["viewer"];
 }
 
+function normalizeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function resolveApprovalParticipants(workspaceModel, approvalRequest) {
   const roles = new Set(normalizeRoles(workspaceModel));
   roles.add("owner");
@@ -60,15 +64,85 @@ function resolveDecisionState(approvalRequest, coordinationRules) {
   };
 }
 
+function resolveRoleDecision(entry = {}) {
+  const eventType = entry.eventType ?? "approval.event";
+  if (eventType === "approval.approved") {
+    return "approved";
+  }
+
+  if (eventType === "approval.rejected") {
+    return "rejected";
+  }
+
+  if (eventType === "approval.revoked") {
+    return "revoked";
+  }
+
+  return "pending";
+}
+
+function resolveParticipantDecisions(participants, approvalRecords) {
+  const latestRecord = normalizeArray(approvalRecords)[0] ?? {};
+  const auditTrail = normalizeArray(latestRecord.auditTrail);
+
+  return participants.map((participant) => {
+    const matchingEntry = auditTrail.findLast?.((entry) => entry.actorRole === participant.participantRole)
+      ?? [...auditTrail].reverse().find((entry) => entry.actorRole === participant.participantRole)
+      ?? null;
+
+    return {
+      participantRole: participant.participantRole,
+      visibility: participant.visibility,
+      decisionScope: participant.decisionScope,
+      required: participant.required,
+      decision: matchingEntry ? resolveRoleDecision(matchingEntry) : "pending",
+      actorId: matchingEntry?.actorId ?? null,
+      actorName: matchingEntry?.actorName ?? null,
+      reason: matchingEntry?.reason ?? null,
+    };
+  });
+}
+
+function resolveVisibilityRules(participants) {
+  return participants.map((participant) => ({
+    participantRole: participant.participantRole,
+    visibility: participant.visibility,
+    seesFullDecisionContext: participant.visibility === "decision-visible",
+    canComment: participant.participantRole !== "viewer",
+    canFinalize: participant.decisionScope === "final-decision",
+  }));
+}
+
+function resolveCoordinationStatus(participantDecisions, decisionState, coordinationRules) {
+  const pendingRequiredRoles = participantDecisions
+    .filter((participant) => participant.required && !["approved", "rejected", "revoked"].includes(participant.decision))
+    .map((participant) => participant.participantRole);
+
+  return {
+    pendingRequiredRoles,
+    resolvedRoleCount: participantDecisions.filter((participant) => ["approved", "rejected", "revoked"].includes(participant.decision)).length,
+    waitingForOwner: pendingRequiredRoles.includes("owner"),
+    waitingForReviewer: pendingRequiredRoles.includes("reviewer"),
+    isReadyForFinalization:
+      !decisionState.isResolved
+      && pendingRequiredRoles.length === 0
+      && coordinationRules.requiresOwnerDecision,
+  };
+}
+
 export function createSharedApprovalFlowModel({
   approvalRequest = null,
   workspaceModel = null,
+  approvalRecords = [],
 } = {}) {
   const normalizedApprovalRequest = normalizeObject(approvalRequest);
   const normalizedWorkspaceModel = normalizeObject(workspaceModel);
   const participants = resolveApprovalParticipants(normalizedWorkspaceModel, normalizedApprovalRequest);
   const coordinationRules = resolveCoordinationRules(normalizedApprovalRequest, participants);
   const decisionState = resolveDecisionState(normalizedApprovalRequest, coordinationRules);
+  const participantDecisions = resolveParticipantDecisions(participants, approvalRecords);
+  const visibilityRules = resolveVisibilityRules(participants);
+  const coordinationStatus = resolveCoordinationStatus(participantDecisions, decisionState, coordinationRules);
 
   return {
     sharedApprovalState: {
@@ -80,13 +154,17 @@ export function createSharedApprovalFlowModel({
           ? "workspace-visible"
           : "restricted-workspace",
       participants,
+      participantDecisions,
+      visibilityRules,
       coordinationRules,
       decisionState,
+      coordinationStatus,
       summary: {
         totalParticipants: participants.length,
         requiredParticipantCount: participants.filter((participant) => participant.required).length,
         requiresCoordinatedDecision: coordinationRules.quorum > 1,
         currentStatus: decisionState.status,
+        pendingRequiredRoleCount: coordinationStatus.pendingRequiredRoles.length,
       },
     },
   };

@@ -2612,6 +2612,7 @@ export function buildProjectContext(
   const { sharedApprovalState } = createSharedApprovalFlowModel({
     approvalRequest: approvalRequestWithStatus,
     workspaceModel,
+    approvalRecords,
   });
   const { collaborationFeed } = createCollaborationActivityFeed({
     collaborationEvent,

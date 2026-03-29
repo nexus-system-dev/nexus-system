@@ -451,3 +451,61 @@ test("server exposes project review thread endpoints", async () => {
   assert.equal(getResponse.statusCode, 200);
   assert.equal(getResponse.body.reviewThreadState.summary.totalThreads, 1);
 });
+
+test("server exposes shared approval state in approval endpoints", async () => {
+  const server = createServer({
+    listApprovals: (projectId) => ({
+      approvalPayload: {
+        projectId,
+        approvalRequest: {
+          approvalRequestId: `approval:${projectId}:deploy:agent-runtime`,
+        },
+        approvalRecords: [],
+        sharedApprovalState: {
+          sharedApprovalStateId: `shared-approval:approval:${projectId}:deploy:agent-runtime`,
+          participantDecisions: [],
+          coordinationStatus: {
+            pendingRequiredRoles: ["owner"],
+          },
+        },
+      },
+    }),
+    captureApproval: (projectId, { userInput }) => ({
+      approvalPayload: {
+        approvalRecord: {
+          status: userInput.decision,
+        },
+        approvalStatus: {
+          status: userInput.decision,
+        },
+        approvalRecords: [],
+        sharedApprovalState: {
+          sharedApprovalStateId: `shared-approval:approval:${projectId}:deploy:agent-runtime`,
+          participantDecisions: [
+            {
+              participantRole: userInput.actorRole,
+              decision: userInput.decision,
+            },
+          ],
+          coordinationStatus: {
+            pendingRequiredRoles: [],
+          },
+        },
+      },
+    }),
+  });
+
+  const listed = await requestJson(server, "/api/projects/giftwallet/approvals");
+  const approved = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/approvals/approve", {
+    approvalRequestId: "approval:giftwallet:deploy:agent-runtime",
+    userInput: {
+      actorRole: "owner",
+      actorName: "Owner",
+    },
+  });
+
+  assert.equal(listed.statusCode, 200);
+  assert.equal(typeof listed.body.approvalPayload.sharedApprovalState.sharedApprovalStateId, "string");
+  assert.equal(approved.statusCode, 200);
+  assert.equal(approved.body.approvalPayload.sharedApprovalState.participantDecisions[0].participantRole, "owner");
+});

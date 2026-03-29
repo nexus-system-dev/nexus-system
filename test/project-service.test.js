@@ -1506,18 +1506,22 @@ test("project service lists approves rejects and revokes approval records", () =
   const listed = service.listApprovals("giftwallet");
   assert.equal(typeof listed.approvalPayload.approvalRequest?.approvalRequestId, "string");
   assert.equal(Array.isArray(listed.approvalPayload.approvalRecords), true);
+  assert.equal(typeof listed.approvalPayload.sharedApprovalState?.sharedApprovalStateId, "string");
 
   const approved = service.captureApproval("giftwallet", {
     approvalRequestId: listed.approvalPayload.approvalRequest.approvalRequestId,
     userInput: {
       decision: "approved",
       actorId: "demo-user",
+      actorRole: "owner",
+      actorName: "Demo Owner",
       reason: "Approved for staging execution",
       expiresInHours: 6,
     },
   });
   assert.equal(approved.approvalPayload.approvalRecord.status, "approved");
   assert.equal(approved.approvalPayload.approvalStatus.status, "approved");
+  assert.equal(approved.approvalPayload.sharedApprovalState.participantDecisions.some((participant) => participant.participantRole === "owner" && participant.decision === "approved"), true);
   const approvedProject = service.getProject("giftwallet");
   assert.equal(approvedProject.state.approvalStatus.status, "approved");
   assert.equal(approvedProject.state.approvalRequest.status, "approved");
@@ -1532,6 +1536,8 @@ test("project service lists approves rejects and revokes approval records", () =
     userInput: {
       decision: "rejected",
       actorId: "demo-user",
+      actorRole: "reviewer",
+      actorName: "Risk Reviewer",
       reason: "Need more review",
     },
   });
