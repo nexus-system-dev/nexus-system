@@ -7686,7 +7686,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Create backup and restore strategy`  | סטטוס: 🔴 לא בוצע
+1. `Create backup and restore strategy`  | סטטוס: 🟢 בוצע
 - description: לבנות אסטרטגיית גיבוי ושחזור לנתוני המוצר, persistence layer ו־artifacts קריטיים
 - input:
   - `nexusPersistenceSchema`
@@ -7718,7 +7718,7 @@ Refinements מאושרים:
 - output:
   - `disasterRecoveryChecklist`
 - dependencies:
-  - `Create backup and restore strategy`  | סטטוס: 🔴 לא בוצע
+  - `Create backup and restore strategy`  | סטטוס: 🟢 בוצע
   - `Platform Observability`
 - connects_to: `Project State`
 

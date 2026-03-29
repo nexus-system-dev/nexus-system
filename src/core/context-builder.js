@@ -248,6 +248,7 @@ import { defineNexusPersistenceSchema } from "./nexus-persistence-schema.js";
 import { createNexusDatabaseMigrations } from "./nexus-database-migrations.js";
 import { createRepositoryLayerForCoreEntities } from "./entity-repository-layer.js";
 import { createFileAndArtifactStorageModule } from "./file-artifact-storage-module.js";
+import { createBackupAndRestoreStrategy } from "./backup-restore-strategy.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
 import { createAuthenticationRouteResolver } from "./authentication-route-resolver.js";
 import { createSessionAndTokenManagement } from "./session-and-token-management.js";
@@ -2372,6 +2373,10 @@ export function buildProjectContext(project, { observabilityTransport = null, au
       retentionPolicy: nexusPersistenceSchema?.entities?.projects?.retentionPolicy ?? "project-lifecycle",
     },
   });
+  const { backupStrategy, restorePlan } = createBackupAndRestoreStrategy({
+    nexusPersistenceSchema,
+    storageRecords: storageRecord,
+  });
   const { auditLogRecord } = createAuditLogForSystemActions({
     systemAction: {
       actionType: incidentAlert?.status === "active"
@@ -3089,6 +3094,8 @@ export function buildProjectContext(project, { observabilityTransport = null, au
   context.migrationArtifacts = migrationArtifacts;
   context.entityRepository = entityRepository;
   context.storageRecord = storageRecord;
+  context.backupStrategy = backupStrategy;
+  context.restorePlan = restorePlan;
   context.userJourneys = userJourneys;
   context.journeySteps = journeySteps;
   context.journeyMap = journeyMap;

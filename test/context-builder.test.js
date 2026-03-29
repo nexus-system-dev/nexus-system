@@ -621,6 +621,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.entityRepository?.[0]?.repositoryId, "string");
   assert.equal(typeof context.storageRecord?.storageRecordId, "string");
   assert.equal(typeof context.storageRecord?.summary?.artifactCount, "number");
+  assert.equal(typeof context.backupStrategy?.backupStrategyId, "string");
+  assert.equal(typeof context.backupStrategy?.summary?.totalDatasets, "number");
+  assert.equal(typeof context.restorePlan?.restorePlanId, "string");
+  assert.equal(Array.isArray(context.restorePlan?.restoreTargets?.datasets), true);
   assert.equal(typeof context.notificationPayload?.type, "string");
   assert.equal(typeof context.notificationEvent?.eventType, "string");
   assert.equal(typeof context.notificationEvent?.notificationEventId, "string");

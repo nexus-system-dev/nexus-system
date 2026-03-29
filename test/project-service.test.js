@@ -548,6 +548,10 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.entityRepository?.[0]?.repositoryId, "string");
   assert.equal(typeof project.state.storageRecord?.storageRecordId, "string");
   assert.equal(typeof project.state.storageRecord?.summary?.totalStoredItems, "number");
+  assert.equal(typeof project.state.backupStrategy?.backupStrategyId, "string");
+  assert.equal(typeof project.state.backupStrategy?.summary?.totalDatasets, "number");
+  assert.equal(typeof project.state.restorePlan?.restorePlanId, "string");
+  assert.equal(Array.isArray(project.state.restorePlan?.restoreTargets?.datasets), true);
   assert.equal(typeof project.state.notificationPayload?.type, "string");
   assert.equal(typeof project.state.notificationEvent?.eventType, "string");
   assert.equal(typeof project.state.notificationEvent?.notificationEventId, "string");

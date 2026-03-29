@@ -1049,6 +1049,8 @@ export class ProjectService {
       migrationArtifacts: project.context?.migrationArtifacts ?? null,
       entityRepository: project.context?.entityRepository ?? [],
       storageRecord: project.context?.storageRecord ?? null,
+      backupStrategy: project.context?.backupStrategy ?? null,
+      restorePlan: project.context?.restorePlan ?? null,
       userJourneys: project.context?.userJourneys ?? null,
       journeySteps: project.context?.journeySteps ?? [],
       journeyMap: project.context?.journeyMap ?? null,
