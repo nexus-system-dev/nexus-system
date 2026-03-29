@@ -38,17 +38,18 @@
 
 ## Current Snapshot
 
-- סך הכל משימות ב־`Wave 2`: `249`
+- סך הכל משימות ב־`Wave 2`: `257`
 - `🟢 בוצע`: `69`
 - `🟡 חלקי`: `3`
-- `🔴 לא בוצע`: `177`
+- `🔴 לא בוצע`: `185`
 
 ## Open Work Execution Ordering
 
-- `execution_order` ממספר רק את המשימות הפתוחות ב־`Wave 2` (`🟡` + `🔴`), מ־`1` עד `186`.
+- `execution_order` ממספר רק את המשימות הפתוחות ב־`Wave 2` (`🟡` + `🔴`), מ־`1` עד `194`.
 - הסדר מחושב לפי dependencies פנימיים בין משימות פתוחות, עם עדיפות לסגירת `🟡 חלקי` מוקדם ככל האפשר.
 - כשיש תלות חיצונית ל־Wave 2, המסלול מסדר את המשימה במקום הנכון בתוך הגל אבל לא מוחק את ה־dependency המקורי.
 - כלל עבודה: מספר נמוך יותר קודם למספר גבוה יותר.
+- הערת מסלול: `AI Design Integration` נוסף עכשיו כמסלול טכני מלא, אבל נשמר בטווח `187–194` כדי לא לשבור את רצף העבודה הפעיל; בנקודת הגשר הבאה צריך למשוך אותו קדימה לפני implementation/review מלא.
 
 שלבי העבודה הגבוהים במסלול:
 - `1–9`: סגירת partials מוקדמים של realtime ו־collaboration, יחד עם context reduction foundations.
@@ -58,6 +59,7 @@
 - `70–100`: analytics foundations, outcome evaluation ו־feedback.
 - `101–152`: go-to-market, website, activation, launch ו־measurement.
 - `153–186`: owner control plane, operations, security ו־monitoring.
+- `187–194`: AI design integration bridge tasks שמוכנות תכנונית אבל ממתינות לחלון המימוש הנכון.
 
 ## Execution Plan
 
@@ -583,6 +585,125 @@
   - `AI Learning UX`
 - connects_to: `Execution Surface`
 - הערת מצב: ה־pipeline כבר ממומש ב־`context-slimming-pipeline.js`, ממיר `relevanceFilteredContext` ל־`slimmedContextPayload` עם `orderedContext`, `summaries` ו־`tokenBudget`, ומחזיר גם `droppedContextSummary`; הוא מחובר ב־`context-builder` לפני שליחה ל־execution/AI flows.
+
+
+#### `AI Design Integration`
+
+הערת מצב:
+- כרגע יש ב־Nexus את כל שכבות ההכנה החשובות ל־AI Design: `screen contracts`, `templates`, `validators`, `component library contracts` ו־`context reduction`.
+- מה שחסר עדיין הוא שכבת חיבור ייעודית שמגדירה request/response קנוניים, provider adapter, service והרצה מבוקרת של design proposal לתוך `Project State`.
+- בגלל ש־`Human Editing & Partial Acceptance` עדיין לא סגורים, זה עדיין מוקדם למימוש קוד end-to-end; עכשיו נכון למסגר את המשימות, ובחלון הגשר הבא למקם אותן לפני implementation/review מלא.
+
+1. `Define AI design request schema`  | סטטוס: 🔴 לא בוצע
+- execution_order: `187`
+- description: לבנות schema אחיד לבקשת AI Design שמאגדת את כל ה־context הקנוני למסך אחד לפני קריאה למודל
+- input:
+  - `selectedTask`
+  - `screenContract`
+  - `screenTemplateSchema`
+  - `screenFlowMap`
+  - `screenStates`
+  - `designTokens`
+  - `componentContract`
+  - `slimmedContextPayload`
+- output:
+  - `aiDesignRequest`
+- dependencies:
+  - `Screen Template System`
+  - `Context Relevance & Reduction`
+- connects_to: `Project State`
+
+2. `Define AI design response schema`  | סטטוס: 🔴 לא בוצע
+- execution_order: `188`
+- description: לבנות schema אחיד ל־JSON structured output של AI Design כולל composition, copy, states, interactions ו־reasoning בלי להחזיר קוד
+- input:
+  - `aiDesignRequest`
+- output:
+  - `aiDesignProposal`
+- dependencies:
+  - `Define AI design request schema`  | סטטוס: 🔴 לא בוצע
+  - `Screen UX Contracts`
+- connects_to: `Project State`
+
+3. `Create AI design provider adapter`  | סטטוס: 🔴 לא בוצע
+- execution_order: `189`
+- description: לבנות adapter ל־provider של מודל reasoning שמקבל `aiDesignRequest`, שולח אותו במבנה קשיח ומחזיר `aiDesignProposal` לפי schema
+- input:
+  - `aiDesignRequest`
+  - `providerConfig`
+- output:
+  - `aiDesignProviderResult`
+- dependencies:
+  - `Define AI design request schema`  | סטטוס: 🔴 לא בוצע
+  - `Define AI design response schema`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+4. `Create AI design service`  | סטטוס: 🔴 לא בוצע
+- execution_order: `190`
+- description: לבנות service שאוסף context קנוני מתוך `Project State`, בונה `aiDesignRequest`, קורא ל־provider adapter ומחזיר proposal מוכן להמשך flow
+- input:
+  - `projectState`
+  - `selectedTask`
+- output:
+  - `aiDesignServiceResult`
+- dependencies:
+  - `Create AI design provider adapter`  | סטטוס: 🔴 לא בוצע
+  - `Context Builder`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+5. `Create AI design execution hook`  | סטטוס: 🔴 לא בוצע
+- execution_order: `191`
+- description: לחבר את AI Design ל־`ProjectService` ול־execution cycle כך שכאשר נבחרת משימת עיצוב המערכת מפעילה design generation מבוקר
+- input:
+  - `selectedTask`
+  - `aiDesignServiceResult`
+- output:
+  - `aiDesignExecutionState`
+- dependencies:
+  - `Create AI design service`  | סטטוס: 🔴 לא בוצע
+  - `Execution Surface Layer`
+- connects_to: `Execution Surface`
+
+6. `Create design proposal validation flow`  | סטטוס: 🔴 לא בוצע
+- execution_order: `192`
+- description: לבנות flow שבודק שה־proposal שחזר מהמודל תואם schema, templates, components ו־screen validators לפני review
+- input:
+  - `aiDesignProposal`
+  - `screenTemplateSchema`
+  - `screenValidationChecklist`
+- output:
+  - `designProposalValidation`
+- dependencies:
+  - `Define AI design response schema`  | סטטוס: 🔴 לא בוצע
+  - `UI Review Layer`
+- connects_to: `Project State`
+
+7. `Create design proposal review handoff`  | סטטוס: 🔴 לא בוצע
+- execution_order: `193`
+- description: לחבר proposal תקף ל־editing, approvals ו־partial acceptance כך שהוא יוכל להיכנס ל־human review במקום להיזרק ישר ל־implementation
+- input:
+  - `aiDesignProposal`
+  - `designProposalValidation`
+  - `editableProposal`
+- output:
+  - `designProposalReviewState`
+- dependencies:
+  - `Create design proposal validation flow`  | סטטוס: 🔴 לא בוצע
+  - `Human Editing & Partial Acceptance`
+- connects_to: `Execution Surface`
+
+8. `Create design proposal state integration`  | סטטוס: 🔴 לא בוצע
+- execution_order: `194`
+- description: להכניס את design proposal המאושר ל־`Project State` עם history, trace ו־links למשימות, למסכים ולזרימת review
+- input:
+  - `designProposalReviewState`
+  - `aiDesignProposal`
+- output:
+  - `integratedDesignProposalState`
+- dependencies:
+  - `Create design proposal review handoff`  | סטטוס: 🔴 לא בוצע
+  - `Project State`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
 
 
 #### `Human Editing & Partial Acceptance`
