@@ -468,6 +468,109 @@ Refinements מאושרים:
   - `Create onboarding API endpoints`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
+#### 1.25 `Imported Project Glue`
+
+משימות טכניות:
+
+1. `Create uploaded intake to scanner handoff`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: לחבר `uploadedFiles`, `externalLinks` ו־connected repo מתוך `projectIntake` ל־scanner input usable, כך שחומר שהמשתמש הביא יוכל להפוך ל־source scanable ולא להישאר רק intake metadata
+- input:
+  - `projectIntake`
+  - `onboardingSession`
+  - `connectedSource`
+- output:
+  - `scannerInput`
+  - `intakeScanHandoff`
+- dependencies:
+  - `Create project intake parser`  | סטטוס: 🟢 בוצע
+  - `Create repo connection handler`  | סטטוס: 🟢 בוצע
+  - `Deep Code Scanner`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+- הערת מצב: זאת נקודת החיבור הראשונה שחסרה היום; בלי המשימה הזאת `uploadedFiles` נשארים ב־onboarding session ולא נכנסים למסלול `scan`.
+
+2. `Create imported project analysis kickoff flow`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: לבנות flow שמפעיל אוטומטית `scan -> context -> analysis` מתוך import/onboarding כשהגיע מספיק חומר usable מהמשתמש
+- input:
+  - `intakeScanHandoff`
+  - `scannerInput`
+  - `onboardingCompletionDecision`
+- output:
+  - `importAnalysisRun`
+  - `analysisKickoffDecision`
+- dependencies:
+  - `Create uploaded intake to scanner handoff`  | סטטוס: 🔴 לא בוצע
+  - `Structured Analysis Pipeline`  | סטטוס: 🟢 בוצע
+  - `Create onboarding completion evaluator`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+- הערת מצב: היום scan ו־analysis קיימים אבל רצים כפעולות נפרדות; המשימה הזאת מחברת אותם למסלול onboarding/import אמיתי.
+
+3. `Create imported project onboarding summary model`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: לבנות summary ברור למשתמש אחרי import/analysis שמסביר מה נמצא בפרויקט, מה חסר, ומה Nexus מציעה לעשות עכשיו
+- input:
+  - `projectIntake`
+  - `scan`
+  - `analysis`
+  - `onboardingCompletionDecision`
+- output:
+  - `importOnboardingSummary`
+- dependencies:
+  - `Build onboarding screen flow`  | סטטוס: 🔴 לא בוצע
+  - `Structured Analysis Pipeline`  | סטטוס: 🟢 בוצע
+  - `Create onboarding completion evaluator`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+- הערת מצב: זאת שכבת ה־presentation שחסרה היום; היא צריכה להציג למשתמש `מה יש / מה חסר / מה לעשות`, ולא רק raw scan או raw analysis.
+
+4. `Create imported project next-action handoff`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: לחבר את `importOnboardingSummary` ל־next actions, plan או kickoff path, כך שהמשתמש לא יישאר עם summary בלי כיוון פעולה
+- input:
+  - `importOnboardingSummary`
+  - `nextTaskPresentation`
+  - `instantValuePlan`
+- output:
+  - `importNextActionHandoff`
+- dependencies:
+  - `Create imported project onboarding summary model`  | סטטוס: 🔴 לא בוצע
+  - `Create next task presentation model`  | סטטוס: 🟢 בוצע
+  - `Create instant value output resolver`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+- הערת מצב: זאת שכבת הדבק בין summary לבין החלטה אופרטיבית; בלעדיה יש diagnosis אבל אין navigation product.
+
+5. `Create imported project workspace entry resolver`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: להכריע אם אחרי import/analysis המשתמש נכנס ישר ל־workspace, עוצר ב־clarification summary, או נוחת ב־plan/kickoff state
+- input:
+  - `importNextActionHandoff`
+  - `onboardingStateHandoff`
+  - `entryStateVariants`
+- output:
+  - `importWorkspaceEntryDecision`
+- dependencies:
+  - `Create imported project next-action handoff`  | סטטוס: 🔴 לא בוצע
+  - `Create onboarding-to-state handoff contract`  | סטטוס: 🔴 לא בוצע
+  - `Create entry state variants and redirects`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+- הערת מצב: זאת נקודת הסיום של ה־Glue; היא מחליטה אם יש מספיק ודאות כדי להכניס ל־workspace או שצריך לעצור בעוד שלב guided.
+
+6. `Create imported project end-to-end acceptance test`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: לבנות acceptance test שמדמה את כל השרשרת `upload files -> scan -> analysis -> onboarding summary -> next actions -> workspace decision`
+- input:
+  - `uploadedFiles`
+  - `externalLinks`
+  - `onboardingSession`
+- output:
+  - `importedProjectAcceptanceResult`
+- dependencies:
+  - `Create imported project workspace entry resolver`  | סטטוס: 🔴 לא בוצע
+  - `Structured Analysis Pipeline`  | סטטוס: 🟢 בוצע
+  - `Build onboarding screen flow`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+- הערת מצב: בלי הטסט הזה שוב נישאר עם חלקים עובדים בנפרד אבל בלי הוכחה שהמסלול המלא באמת usable.
+
 #### 1.5 `Project Identity & Instant Value`
 
 משימות טכניות:
