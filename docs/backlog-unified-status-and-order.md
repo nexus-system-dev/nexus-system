@@ -7631,7 +7631,7 @@ Refinements מאושרים:
 משימות טכניות:
 
 - הערת מצב: ה־flow כבר מומש ב־`provider-recovery-probe-flow.js`, מתרגם `circuitBreakerDecision` ו־`providerSession` ל־`providerRecoveryProbe` עם probe scheduling, worker job, reopen decision ו־controlled retry path; הוא גם מחובר ב־`context-builder` ונחשף ב־project state.
-1. `Define project audit event schema`  | סטטוס: 🔴 לא בוצע
+1. `Define project audit event schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד לאירועי audit ברמת פרויקט כמו edits, approvals, deploy actions, provider calls ו־state changes
 - input:
   - `projectAction`
@@ -7650,7 +7650,7 @@ Refinements מאושרים:
 - output:
   - `projectAuditRecord`
 - dependencies:
-  - `Define project audit event schema`  | סטטוס: 🔴 לא בוצע
+  - `Define project audit event schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 3. `Create actor action trace assembler`  | סטטוס: 🔴 לא בוצע
