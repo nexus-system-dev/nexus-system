@@ -1632,3 +1632,28 @@ test("project service returns filtered project audit payload", () => {
   assert.equal(Array.isArray(projectAuditPayload.entries), true);
   assert.equal(projectAuditPayload.summary.filtered, true);
 });
+
+test("project service updates live project presence from participant heartbeats", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.updateProjectPresence({
+    projectId: "giftwallet",
+    presenceInput: {
+      participantId: "session-1",
+      sessionId: "session-1",
+      userId: "user-1",
+      displayName: "Owner",
+      role: "owner",
+      workspaceArea: "release-workspace",
+      currentSurface: "release-workspace",
+      currentTask: "review deploy",
+    },
+  });
+
+  assert.equal(project.state.projectPresenceState.participants.length >= 1, true);
+  assert.equal(project.state.projectPresenceState.participants[0].displayName, "Owner");
+  assert.equal(project.state.projectPresenceState.participants[0].workspaceArea, "release-workspace");
+  assert.equal(project.state.projectPresenceState.participants[0].currentTask, "review deploy");
+  assert.equal(project.state.projectPresenceState.summary.latestSeenAt !== null, true);
+});

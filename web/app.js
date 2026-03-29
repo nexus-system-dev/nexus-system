@@ -857,6 +857,7 @@ export function createCockpitApp({
   let refreshTimer = null;
   let liveEventSource = null;
   let activeWorkspace = "developer";
+  const presenceParticipantId = `presence-${Math.random().toString(36).slice(2, 10)}`;
 
   async function fetchJson(url, options) {
     const response = await fetchImpl(url, options);
@@ -874,6 +875,7 @@ export function createCockpitApp({
     applyDesignSystem(doc, project);
     renderProject(elements, project);
     setActiveWorkspace(elements, activeWorkspace);
+    updatePresence().catch(() => {});
     connectLiveUpdates();
     return project;
   }
@@ -911,6 +913,28 @@ export function createCockpitApp({
     } finally {
       scheduleLiveRefresh();
     }
+  }
+
+  async function updatePresence() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    await fetchJson(`/api/projects/${currentProjectId}/presence`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        participantId: presenceParticipantId,
+        sessionId: presenceParticipantId,
+        userId: presenceParticipantId,
+        displayName: "Local operator",
+        role: "owner",
+        status: "active",
+        workspaceArea: `${activeWorkspace}-workspace`,
+        currentSurface: `${activeWorkspace}-workspace`,
+        currentTask: currentProject?.progressState?.status ?? null,
+      }),
+    });
   }
 
   function closeLiveUpdates() {
@@ -1027,21 +1051,25 @@ export function createCockpitApp({
   elements.developerTab?.addEventListener("click", () => {
     activeWorkspace = "developer";
     setActiveWorkspace(elements, activeWorkspace);
+    updatePresence().catch(() => {});
   });
 
   elements.projectBrainTab?.addEventListener("click", () => {
     activeWorkspace = "project-brain";
     setActiveWorkspace(elements, activeWorkspace);
+    updatePresence().catch(() => {});
   });
 
   elements.releaseTab?.addEventListener("click", () => {
     activeWorkspace = "release";
     setActiveWorkspace(elements, activeWorkspace);
+    updatePresence().catch(() => {});
   });
 
   elements.growthTab?.addEventListener("click", () => {
     activeWorkspace = "growth";
     setActiveWorkspace(elements, activeWorkspace);
+    updatePresence().catch(() => {});
   });
 
   elements.runCycleButton?.addEventListener("click", async () => {

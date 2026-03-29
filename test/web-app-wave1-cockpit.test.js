@@ -360,6 +360,15 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
       };
     }
 
+    if (url === "/api/projects/giftwallet/presence") {
+      return {
+        ok: true,
+        async json() {
+          return projectPayload;
+        },
+      };
+    }
+
     throw new Error(`Unexpected url: ${url}`);
   }
 
@@ -491,6 +500,15 @@ test("cockpit refreshes live progress without manual clicks", async () => {
       };
     }
 
+    if (url === "/api/projects/giftwallet/presence") {
+      return {
+        ok: true,
+        async json() {
+          return initialPayload;
+        },
+      };
+    }
+
     throw new Error(`Unexpected url: ${url}`);
   }
 
@@ -569,6 +587,15 @@ test("cockpit consumes sse live updates when push transport is available", async
     }
 
     if (url === "/api/projects/giftwallet") {
+      return {
+        ok: true,
+        async json() {
+          return initialPayload;
+        },
+      };
+    }
+
+    if (url === "/api/projects/giftwallet/presence") {
       return {
         ok: true,
         async json() {

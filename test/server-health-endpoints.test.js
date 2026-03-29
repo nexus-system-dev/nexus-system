@@ -366,3 +366,36 @@ test("server exposes partial acceptance mutation endpoint", async () => {
   assert.equal(response.body.state.partialAcceptanceDecision.status, "partially-accepted");
   assert.equal(response.body.context.approvalOutcome.sectionOutcomes[0].decision, "approved");
 });
+
+test("server exposes project presence heartbeat endpoint", async () => {
+  const server = createServer({
+    updateProjectPresence: ({ projectId, presenceInput }) => ({
+      id: projectId,
+      state: {
+        projectPresenceState: {
+          presenceStateId: `project-presence:${projectId}`,
+          participants: [
+            {
+              participantId: presenceInput.participantId,
+              displayName: presenceInput.displayName,
+              workspaceArea: presenceInput.workspaceArea,
+            },
+          ],
+          summary: {
+            totalParticipants: 1,
+          },
+        },
+      },
+    }),
+  });
+
+  const response = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/presence", {
+    participantId: "session-1",
+    displayName: "Owner",
+    workspaceArea: "release-workspace",
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.state.projectPresenceState.participants[0].displayName, "Owner");
+  assert.equal(response.body.state.projectPresenceState.participants[0].workspaceArea, "release-workspace");
+});

@@ -39,8 +39,8 @@
 ## Current Snapshot
 
 - סך הכל משימות ב־`Wave 2`: `249`
-- `🟢 בוצע`: `68`
-- `🟡 חלקי`: `4`
+- `🟢 בוצע`: `69`
+- `🟡 חלקי`: `3`
 - `🔴 לא בוצע`: `177`
 
 ## Open Work Execution Ordering
@@ -831,7 +831,7 @@
 - connects_to: `Project State`
 
 
-2. `Create project presence model`  | סטטוס: 🟡 חלקי
+2. `Create project presence model`  | סטטוס: 🟢 בוצע
 - execution_order: `6`
 - description: לבנות model שמציג מי נמצא כרגע בפרויקט, באיזה workspace ובאיזה context הוא עובד
 - input:
@@ -843,6 +843,7 @@
   - `Define collaboration event schema`  | סטטוס: 🟢 בוצע
   - `User Activity & Retention`
 - connects_to: `Project State`
+- הערת מצב: ה־presence model מחובר עכשיו ל־heartbeat חי דרך `POST /api/projects/:id/presence`, נשען על registry פעיל ב־`ProjectService`, ומעדכן `projectPresenceState` בזמן אמת עם participants, workspace area, current task ו־last seen דרך `live-state` ו־`SSE`.
 
 
 3. `Create project comments and review threads module`  | סטטוס: 🟡 חלקי
@@ -882,7 +883,7 @@
 - output:
   - `collaborationFeed`
 - dependencies:
-  - `Create project presence model`  | סטטוס: 🟡 חלקי
+  - `Create project presence model`  | סטטוס: 🟢 בוצע
   - `Create project comments and review threads module`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
 

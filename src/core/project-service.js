@@ -81,6 +81,7 @@ export class ProjectService {
     this.projects = new Map();
     this.projectDrafts = new Map();
     this.users = new Map();
+    this.projectPresenceRegistry = new Map();
     this.platformObservabilityTransport = platformObservabilityTransport ?? createPlatformObservabilityTransport();
     this.systemAuditLogStore = systemAuditLogStore ?? createSystemAuditLogStore({ filePath: auditLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "system-audit.ndjson") });
     this.projectSnapshotStore = projectSnapshotStore
@@ -927,6 +928,92 @@ export class ProjectService {
           }
         : null,
     }));
+  }
+
+  getPresenceRegistry(projectId) {
+    if (!this.projectPresenceRegistry.has(projectId)) {
+      this.projectPresenceRegistry.set(projectId, new Map());
+    }
+
+    return this.projectPresenceRegistry.get(projectId);
+  }
+
+  listActivePresenceUsers(projectId, maxAgeMs = 30_000) {
+    const registry = this.projectPresenceRegistry.get(projectId);
+    if (!registry) {
+      return [];
+    }
+
+    const now = Date.now();
+    const activeUsers = [];
+    for (const [participantId, participant] of registry.entries()) {
+      const heartbeatAtMs = Number.isFinite(participant.heartbeatAtMs) ? participant.heartbeatAtMs : now;
+      if ((now - heartbeatAtMs) > maxAgeMs || participant.status === "inactive") {
+        registry.delete(participantId);
+        continue;
+      }
+
+      activeUsers.push({
+        ...participant,
+        lastSeenAt: participant.lastSeenAt ?? new Date(heartbeatAtMs).toISOString(),
+      });
+    }
+
+    return activeUsers;
+  }
+
+  updateProjectPresence({ projectId, presenceInput } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const input = presenceInput && typeof presenceInput === "object" ? presenceInput : {};
+    const participantId = input.participantId ?? input.sessionId ?? input.userId ?? `presence-${Date.now()}`;
+    const heartbeatAtMs = Date.now();
+    const registry = this.getPresenceRegistry(projectId);
+    const previous = registry.get(participantId) ?? {};
+    registry.set(participantId, {
+      participantId,
+      sessionId: input.sessionId ?? previous.sessionId ?? participantId,
+      userId: input.userId ?? previous.userId ?? participantId,
+      displayName: input.displayName ?? previous.displayName ?? "Active user",
+      role: input.role ?? previous.role ?? "viewer",
+      status: input.status ?? previous.status ?? "active",
+      workspaceArea: input.workspaceArea ?? previous.workspaceArea ?? "developer-workspace",
+      currentSurface: input.currentSurface ?? previous.currentSurface ?? input.workspaceArea ?? "developer-workspace",
+      currentTask: input.currentTask ?? previous.currentTask ?? null,
+      lastSeenAt: new Date(heartbeatAtMs).toISOString(),
+      heartbeatAtMs,
+      contextLabel: input.contextLabel ?? previous.contextLabel ?? null,
+    });
+
+    project.manualContext = {
+      ...(project.manualContext ?? {}),
+      userSessionMetric: {
+        ...(project.manualContext?.userSessionMetric ?? {}),
+        userId: input.userId ?? project.manualContext?.userSessionMetric?.userId ?? participantId,
+        sessionId: input.sessionId ?? project.manualContext?.userSessionMetric?.sessionId ?? participantId,
+        status: input.status ?? "active",
+        workspaceId: project.manualContext?.userSessionMetric?.workspaceId ?? null,
+        projectId,
+        workspaceArea: input.workspaceArea ?? input.currentSurface ?? "developer-workspace",
+        currentTask: input.currentTask ?? null,
+        currentSurface: input.currentSurface ?? input.workspaceArea ?? "developer-workspace",
+        lastSeenAt: new Date(heartbeatAtMs).toISOString(),
+        activeUsers: this.listActivePresenceUsers(projectId),
+      },
+      activeUsers: this.listActivePresenceUsers(projectId),
+      workspaceAction: {
+        ...(project.manualContext?.workspaceAction ?? {}),
+        actionType: "presence-heartbeat",
+        workspaceArea: input.workspaceArea ?? input.currentSurface ?? "developer-workspace",
+        resourceId: participantId,
+      },
+    };
+
+    this.rebuildContext(projectId);
+    return this.serializeProject(project);
   }
 
   rebuildContext(projectId) {

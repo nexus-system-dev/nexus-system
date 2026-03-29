@@ -31,6 +31,8 @@ test("project presence model returns active collaborators by workspace area", ()
   assert.equal(projectPresenceState.participants.length, 2);
   assert.equal(projectPresenceState.activeParticipantCount, 2);
   assert.equal(projectPresenceState.summary.hasSharedPresence, true);
+  assert.equal(projectPresenceState.participants[0].lastSeenAt !== null, true);
+  assert.equal(Array.isArray(projectPresenceState.summary.workspaceAreas), true);
 });
 
 test("project presence model falls back safely to current actor", () => {
