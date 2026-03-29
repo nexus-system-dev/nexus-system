@@ -86,6 +86,9 @@ function getProjectLiveState(projectService, projectId) {
     reactiveWorkspaceState: project.reactiveWorkspaceState ?? null,
     realtimeEventStream: project.realtimeEventStream ?? null,
     liveUpdateChannel: project.liveUpdateChannel ?? null,
+    liveLogStream: project.liveLogStream ?? null,
+    formattedLogs: project.formattedLogs ?? [],
+    commandConsoleView: project.commandConsoleView ?? null,
     collaborationFeed: project.collaborationFeed ?? null,
     events: project.events ?? [],
   };

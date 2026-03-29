@@ -424,6 +424,15 @@ test("cockpit refreshes live progress without manual clicks", async () => {
       refreshStrategy: "scheduled-refresh",
       reconnectPolicy: { initialDelayMs: 25 },
     },
+    liveLogStream: {
+      streamId: "live-log-stream:giftwallet",
+      streams: {
+        stdout: [{ logId: "log-1", message: "npm install started", source: "runtime" }],
+        stderr: [],
+      },
+      commandOutputs: [{ commandOutputId: "command-output:log-1", stream: "stdout", message: "npm install", timestamp: null }],
+      summary: { totalEntries: 1 },
+    },
     reactiveWorkspaceState: {
       progressBar: { percent: 12 },
     },
@@ -440,6 +449,15 @@ test("cockpit refreshes live progress without manual clicks", async () => {
       transportMode: "polling",
       refreshStrategy: "scheduled-refresh",
       reconnectPolicy: { initialDelayMs: 25 },
+    },
+    liveLogStream: {
+      streamId: "live-log-stream:giftwallet",
+      streams: {
+        stdout: [{ logId: "log-2", message: "npm run build complete", source: "runtime" }],
+        stderr: [{ logId: "log-3", message: "warning: skipped optional step", source: "runtime" }],
+      },
+      commandOutputs: [{ commandOutputId: "command-output:log-2", stream: "stdout", message: "npm run build", timestamp: null }],
+      summary: { totalEntries: 2 },
     },
     collaborationFeed: { summary: { totalItems: 0, containsWorkspaceTransitions: false }, items: [] },
     events: [{ type: "state.updated", payload: { projectId: "giftwallet" } }],
@@ -488,11 +506,14 @@ test("cockpit refreshes live progress without manual clicks", async () => {
 
   await app.ready;
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /12%/);
+  assert.match(fakeDocument.elements.get("#live-content").innerHTML, /npm install/);
   assert.equal(scheduled.length > 0, true);
   await app.refreshLiveState();
 
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /64%/);
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /Build almost done/);
+  assert.match(fakeDocument.elements.get("#live-content").innerHTML, /npm run build/);
+  assert.match(fakeDocument.elements.get("#live-content").innerHTML, /warning: skipped optional step/);
 });
 
 test("cockpit consumes sse live updates when push transport is available", async () => {
@@ -521,6 +542,15 @@ test("cockpit consumes sse live updates when push transport is available", async
       deliveryEndpoint: "/api/projects/giftwallet/live-events",
       refreshStrategy: "push",
       reconnectPolicy: { initialDelayMs: 25 },
+    },
+    liveLogStream: {
+      streamId: "live-log-stream:giftwallet",
+      streams: {
+        stdout: [{ logId: "log-1", message: "build started", source: "runtime" }],
+        stderr: [],
+      },
+      commandOutputs: [{ commandOutputId: "command-output:log-1", stream: "stdout", message: "npm run build", timestamp: null }],
+      summary: { totalEntries: 1 },
     },
     reactiveWorkspaceState: {
       progressBar: { percent: 12 },
@@ -597,6 +627,15 @@ test("cockpit consumes sse live updates when push transport is available", async
         refreshStrategy: "push",
         reconnectPolicy: { initialDelayMs: 25 },
       },
+      liveLogStream: {
+        streamId: "live-log-stream:giftwallet",
+        streams: {
+          stdout: [{ logId: "log-2", message: "build almost done", source: "runtime" }],
+          stderr: [],
+        },
+        commandOutputs: [{ commandOutputId: "command-output:log-2", stream: "stdout", message: "npm run build", timestamp: null }],
+        summary: { totalEntries: 1 },
+      },
       collaborationFeed: { summary: { totalItems: 0, containsWorkspaceTransitions: false }, items: [] },
       events: [{ type: "state.updated", payload: { projectId: "giftwallet" } }],
     }),
@@ -604,6 +643,8 @@ test("cockpit consumes sse live updates when push transport is available", async
 
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /64%/);
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /Build almost done/);
+  assert.match(fakeDocument.elements.get("#live-content").innerHTML, /npm run build/);
+  assert.match(fakeDocument.elements.get("#live-content").innerHTML, /build almost done/);
   app.closeLiveUpdates();
   assert.equal(eventSources[0].closed, true);
 });

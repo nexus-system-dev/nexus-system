@@ -384,15 +384,31 @@ function renderLive(elements, project) {
   const progressState = normalizeObject(project.progressState);
   const reactiveWorkspaceState = normalizeObject(project.reactiveWorkspaceState);
   const liveUpdateChannel = normalizeObject(project.liveUpdateChannel);
+  const liveLogStream = normalizeObject(project.liveLogStream);
   const realtimeEvents = normalizeArray(project.realtimeEventStream?.events);
+  const commandOutputs = normalizeArray(liveLogStream.commandOutputs);
+  const stdoutEntries = normalizeArray(liveLogStream.streams?.stdout);
+  const stderrEntries = normalizeArray(liveLogStream.streams?.stderr);
   const items = [
     {
       title: `Live channel: ${liveUpdateChannel.transportMode ?? "polling"}`,
-      body: `refresh ${liveUpdateChannel.refreshStrategy ?? "scheduled-refresh"} | progress ${reactiveWorkspaceState.progressBar?.percent ?? progressState.percent ?? 0}%`,
+      body: `refresh ${liveUpdateChannel.refreshStrategy ?? "scheduled-refresh"} | progress ${reactiveWorkspaceState.progressBar?.percent ?? progressState.percent ?? 0}% | logs ${liveLogStream.summary?.totalEntries ?? 0}`,
     },
     ...realtimeEvents.slice(0, 2).map((event) => ({
       title: event.message ?? event.streamType ?? "Live event",
       body: `${event.streamType ?? "stream"} | ${t(event.status ?? "active")}`,
+    })),
+    ...commandOutputs.slice(-2).reverse().map((entry) => ({
+      title: entry.message ?? "Command output",
+      body: `${entry.stream ?? "stdout"} | command output`,
+    })),
+    ...stdoutEntries.slice(-2).reverse().map((entry) => ({
+      title: entry.message ?? "stdout",
+      body: `${entry.source ?? "runtime"} | stdout`,
+    })),
+    ...stderrEntries.slice(-1).reverse().map((entry) => ({
+      title: entry.message ?? "stderr",
+      body: `${entry.source ?? "runtime"} | stderr`,
     })),
     ...activeTasks.slice(0, 3).map((task) => ({
       title: task.summary,
@@ -873,6 +889,9 @@ export function createCockpitApp({
       reactiveWorkspaceState: liveState.reactiveWorkspaceState ?? currentProject.reactiveWorkspaceState,
       realtimeEventStream: liveState.realtimeEventStream ?? currentProject.realtimeEventStream,
       liveUpdateChannel: liveState.liveUpdateChannel ?? currentProject.liveUpdateChannel,
+      liveLogStream: liveState.liveLogStream ?? currentProject.liveLogStream,
+      formattedLogs: liveState.formattedLogs ?? currentProject.formattedLogs,
+      commandConsoleView: liveState.commandConsoleView ?? currentProject.commandConsoleView,
       collaborationFeed: liveState.collaborationFeed ?? currentProject.collaborationFeed,
       events: liveState.events ?? currentProject.events,
     };

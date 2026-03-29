@@ -182,6 +182,12 @@ test("server exposes project live-state endpoint", async () => {
       reactiveWorkspaceState: { progressBar: { percent: 48 } },
       realtimeEventStream: { streamId: "realtime-stream:giftwallet", events: [], summary: { totalEvents: 0 } },
       liveUpdateChannel: { channelId: "live-channel:giftwallet", transportMode: "polling" },
+      liveLogStream: {
+        streamId: "live-log-stream:giftwallet",
+        streams: { stdout: [{ logId: "log-1", message: "build started" }], stderr: [] },
+        commandOutputs: [],
+        summary: { totalEntries: 1 },
+      },
       collaborationFeed: { feedId: "collaboration-feed:giftwallet", items: [], summary: { totalItems: 0 } },
       events: [{ type: "state.updated", payload: { projectId } }],
     }),
@@ -193,6 +199,7 @@ test("server exposes project live-state endpoint", async () => {
   assert.equal(response.body.projectId, "giftwallet");
   assert.equal(response.body.progressState.percent, 48);
   assert.equal(response.body.liveUpdateChannel.transportMode, "polling");
+  assert.equal(response.body.liveLogStream.summary.totalEntries, 1);
   assert.equal(Array.isArray(response.body.events), true);
 });
 

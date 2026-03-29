@@ -39,8 +39,8 @@
 ## Current Snapshot
 
 - סך הכל משימות ב־`Wave 2`: `249`
-- `🟢 בוצע`: `67`
-- `🟡 חלקי`: `5`
+- `🟢 בוצע`: `68`
+- `🟡 חלקי`: `4`
 - `🔴 לא בוצע`: `177`
 
 ## Open Work Execution Ordering
@@ -787,7 +787,7 @@
 - הערת מצב: ה־transport מחובר עכשיו ל־SSE אמיתי דרך `GET /api/projects/:id/live-events`, מייצר `deliveryEndpoint` ו־`serverTransport` ב־`liveUpdateChannel`, וה־web app צורך push updates דרך `EventSource` עם fallback ל־polling במקרה הצורך.
 
 
-3. `Create live log streaming module`  | סטטוס: 🟡 חלקי
+3. `Create live log streaming module`  | סטטוס: 🟢 בוצע
 - execution_order: `5`
 - description: לבנות מודול שמזריק command outputs ולוגים ל־terminal view בזמן אמת
 - input:
@@ -796,9 +796,10 @@
 - output:
   - `liveLogStream`
 - dependencies:
-  - `Create live update transport layer`  | סטטוס: 🟡 חלקי
+  - `Create live update transport layer`  | סטטוס: 🟢 בוצע
   - `Create terminal and command console view`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- הערת מצב: ה־live log stream מחובר עכשיו ל־`live-state` ול־`SSE` payloads, נצרך ב־web app בזמן אמת, ומזריק `stdout`, `stderr` ו־`commandOutputs` לפאנל החי של ה־Developer Workspace עם fallback קיים ל־polling.
 
 
 4. `Create reactive workspace refresh model`  | סטטוס: 🟢 בוצע
@@ -809,7 +810,7 @@
 - output:
   - `reactiveWorkspaceState`
 - dependencies:
-  - `Create live update transport layer`  | סטטוס: 🟡 חלקי
+  - `Create live update transport layer`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 
