@@ -398,6 +398,102 @@ select:focus-visible {
   line-height: var(--line-height-body);
 }
 
+.primitive-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.primitive-card {
+  display: grid;
+  gap: var(--space-sm);
+  border: var(--border-subtle) solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) calc(var(--space-md) + var(--space-xs));
+  background: #fff;
+}
+
+.primitive-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.primitive-card-body,
+.primitive-card-meta {
+  margin: 0;
+  color: var(--muted);
+}
+
+.primitive-card-meta {
+  font-size: var(--font-size-meta);
+}
+
+.primitive-preview-row {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.primitive-field-preview {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.primitive-field-preview input,
+.primitive-field-preview textarea,
+.primitive-field-preview select {
+  width: 100%;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--panel) 74%, white 26%);
+}
+
+.primitive-button-preview.secondary {
+  background: color-mix(in srgb, var(--panel) 58%, white 42%);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.primitive-button-preview.secondary:hover {
+  background: color-mix(in srgb, var(--panel) 44%, white 56%);
+}
+
+.primitive-badge-preview {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  padding: 6px 10px;
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.primitive-badge-preview.tone-0 {
+  background: color-mix(in srgb, var(--good) 14%, white 86%);
+  color: var(--good);
+}
+
+.primitive-badge-preview.tone-1 {
+  background: color-mix(in srgb, var(--warn) 14%, white 86%);
+  color: var(--warn);
+}
+
+.primitive-badge-preview.tone-2 {
+  background: color-mix(in srgb, var(--bad) 14%, white 86%);
+  color: var(--bad);
+}
+
+.primitive-icon-button-preview {
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .sync-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -445,6 +541,7 @@ details summary {
   .workspace-grid,
   .now-grid,
   .signal-grid,
+  .primitive-grid,
   .details-grid,
   .sync-row {
     grid-template-columns: 1fr;

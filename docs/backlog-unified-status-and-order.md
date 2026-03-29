@@ -5496,7 +5496,7 @@ Refinements מאושרים:
   - `Design System`
 - connects_to: `Project State`
 
-2. `Create primitive components`  | סטטוס: 🔴 לא בוצע
+2. `Create primitive components`  | סטטוס: 🟢 בוצע
 - description: לבנות רכיבי בסיס כמו button, input, textarea, select, badge, icon button
 - input:
   - `componentContract`
@@ -5506,6 +5506,7 @@ Refinements מאושרים:
 - dependencies:
   - `Define component contract schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- הערת מצב: ספריית `primitiveComponents` כוללת עכשיו גם preview metadata קנוני, ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר button, input, textarea, select, badge ו־icon button כממשק חי במקום להישאר descriptor בלבד.
 
 3. `Create layout components`  | סטטוס: 🔴 לא בוצע
 - description: לבנות container, section, stack, grid, panel, divider

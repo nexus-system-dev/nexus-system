@@ -156,6 +156,7 @@ function queryElements(doc) {
     scanPathInput: doc.querySelector("#scan-path-input"),
     scanButton: doc.querySelector("#scan-button"),
     scanner: doc.querySelector("#scanner-content"),
+    primitiveComponents: doc.querySelector("#primitive-components-content"),
     analysis: doc.querySelector("#analysis-content"),
     graph: doc.querySelector("#graph-content"),
     agents: doc.querySelector("#agents-content"),
@@ -501,6 +502,119 @@ function renderWorkspaceSummaries(elements, project) {
   ]);
 }
 
+function renderPrimitivePreview(component) {
+  const preview = normalizeObject(component.preview);
+  const escapedLabel = escapeHtml(preview.label ?? component.componentType ?? "Primitive");
+
+  if (component.componentType === "button") {
+    return `
+      <div class="primitive-preview-row">
+        <button type="button" class="primitive-button-preview">${escapeHtml(preview.text ?? "Primary action")}</button>
+        <button type="button" class="primitive-button-preview secondary">${escapeHtml(preview.secondaryText ?? "Secondary action")}</button>
+      </div>
+    `;
+  }
+
+  if (component.componentType === "input") {
+    return `
+      <label class="primitive-field-preview">
+        <span class="mini-label">${escapedLabel}</span>
+        <input type="text" value="${escapeHtml(preview.value ?? "")}" placeholder="${escapeHtml(preview.placeholder ?? "")}" />
+      </label>
+    `;
+  }
+
+  if (component.componentType === "textarea") {
+    return `
+      <label class="primitive-field-preview">
+        <span class="mini-label">${escapedLabel}</span>
+        <textarea rows="4" placeholder="${escapeHtml(preview.placeholder ?? "")}">${escapeHtml(preview.value ?? "")}</textarea>
+      </label>
+    `;
+  }
+
+  if (component.componentType === "select") {
+    const options = normalizeArray(preview.options);
+    const selectedOption = preview.selectedOption ?? options[0] ?? "";
+    return `
+      <label class="primitive-field-preview">
+        <span class="mini-label">${escapedLabel}</span>
+        <select>
+          ${options
+            .map(
+              (option) =>
+                `<option value="${escapeHtml(option)}"${option === selectedOption ? " selected" : ""}>${escapeHtml(option)}</option>`,
+            )
+            .join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  if (component.componentType === "badge") {
+    return `
+      <div class="primitive-preview-row">
+        ${normalizeArray(preview.items)
+          .map((item, index) => `<span class="primitive-badge-preview tone-${index % 3}">${escapeHtml(item)}</span>`)
+          .join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "icon-button") {
+    return `
+      <div class="primitive-preview-row">
+        <button type="button" class="primitive-icon-button-preview" aria-label="${escapeHtml(preview.assistiveLabel ?? "Icon action")}">
+          <span aria-hidden="true">${escapeHtml(preview.icon ?? "⋯")}</span>
+        </button>
+      </div>
+    `;
+  }
+
+  return `<p class="empty">No preview available.</p>`;
+}
+
+function renderPrimitiveComponents(elements, project) {
+  if (!elements.primitiveComponents) {
+    return;
+  }
+
+  const primitiveLibrary = normalizeObject(project.primitiveComponents);
+  const components = normalizeArray(primitiveLibrary.components);
+  const summary = normalizeObject(primitiveLibrary.summary);
+
+  if (!components.length) {
+    elements.primitiveComponents.innerHTML = `<p class="empty">עדיין אין ספריית primitive components זמינה.</p>`;
+    return;
+  }
+
+  const cards = components
+    .map(
+      (component) => `
+        <article class="primitive-card">
+          <header class="primitive-card-header">
+            <strong>${escapeHtml(component.componentType ?? "primitive")}</strong>
+            <span class="mini-label">${escapeHtml(component.interactive ? "interactive" : "display")}</span>
+          </header>
+          <p class="primitive-card-body">${escapeHtml(component.usage ?? "No usage guidance yet.")}</p>
+          ${renderPrimitivePreview(component)}
+          <p class="primitive-card-meta">${escapeHtml(normalizeArray(component.variants).join(" · "))}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  elements.primitiveComponents.innerHTML = `
+    ${metricHtml([
+      { label: "Primitives", value: String(summary.totalComponents ?? components.length) },
+      { label: "Interactive", value: String(summary.interactiveComponents ?? 0) },
+      { label: "Form ready", value: summary.includesFormPrimitives ? "yes" : "no" },
+      { label: "Base contract", value: primitiveLibrary.baseContractId ?? "not-set" },
+    ])}
+    <div class="primitive-grid">${cards}</div>
+  `;
+}
+
 function renderScreenReview(elements, project) {
   const report = normalizeObject(project.screenReviewReport);
   const reportSummary = normalizeObject(report.summary);
@@ -833,6 +947,7 @@ export function renderProject(elements, project) {
   renderExisting(elements, project);
   renderLive(elements, project);
   renderDecision(elements, project);
+  renderPrimitiveComponents(elements, project);
   renderScreenReview(elements, project);
   renderLearning(elements, project);
   renderCompanion(elements, project);

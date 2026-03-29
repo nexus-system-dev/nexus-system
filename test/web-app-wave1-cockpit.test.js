@@ -58,6 +58,7 @@ function createFakeDocument() {
     "#scan-path-input",
     "#scan-button",
     "#scanner-content",
+    "#primitive-components-content",
     "#analysis-content",
     "#graph-content",
     "#agents-content",
@@ -316,6 +317,83 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
         focus: "0 0 0 3px rgba(20, 184, 166, 0.25)",
       },
     },
+    primitiveComponents: {
+      componentLibraryId: "primitive-components:design-tokens:nexus",
+      baseContractId: "component-contract:button",
+      components: [
+        {
+          componentId: "primitive:button",
+          componentType: "button",
+          interactive: true,
+          usage: "primary actions across onboarding, execution and approvals",
+          variants: ["primary", "secondary", "destructive"],
+          preview: {
+            text: "שלח לאישור",
+            secondaryText: "שמור כטיוטה",
+          },
+        },
+        {
+          componentId: "primitive:input",
+          componentType: "input",
+          interactive: true,
+          usage: "single-line data entry for project setup and operational updates",
+          variants: ["default", "inline", "dense"],
+          preview: {
+            label: "Input field",
+            value: "Checkout dashboard",
+            placeholder: "שם המסך הראשי",
+          },
+        },
+        {
+          componentId: "primitive:textarea",
+          componentType: "textarea",
+          interactive: true,
+          usage: "multi-line product context, notes and explanation editing",
+          variants: ["default", "autosize"],
+          preview: {
+            value: "מסך זה מרכז approvals, incidents ופעולות release.",
+            placeholder: "הוסף כאן הסבר על המסך",
+          },
+        },
+        {
+          componentId: "primitive:select",
+          componentType: "select",
+          interactive: true,
+          usage: "choice selection for execution mode, owner decisions and configuration",
+          variants: ["single", "searchable"],
+          preview: {
+            options: ["Assistive", "Active", "Quiet"],
+            selectedOption: "Active",
+          },
+        },
+        {
+          componentId: "primitive:badge",
+          componentType: "badge",
+          interactive: false,
+          usage: "status chips for blockers, release state and approvals",
+          variants: ["neutral", "success", "warning", "danger"],
+          preview: {
+            items: ["Ready", "Partial", "Blocked"],
+          },
+        },
+        {
+          componentId: "primitive:icon-button",
+          componentType: "icon-button",
+          interactive: true,
+          usage: "dense actions in workbench panels, navigation and toolbars",
+          variants: ["ghost", "subtle", "danger"],
+          preview: {
+            icon: "⋯",
+            assistiveLabel: "פתח פעולות נוספות",
+          },
+        },
+      ],
+      summary: {
+        totalComponents: 6,
+        interactiveComponents: 5,
+        includesFormPrimitives: true,
+      },
+    },
     typographySystem: {
       baseFontFamily: "\"IBM Plex Sans\", sans-serif",
       displayFontFamily: "\"Avenir Next\", sans-serif",
@@ -412,6 +490,9 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#project-brain-summary").innerHTML, /saas/);
   assert.match(fakeDocument.elements.get("#decision-content").innerHTML, /Approve deploy/);
   assert.match(fakeDocument.elements.get("#decision-content").innerHTML, /This recommendation needs approval before it can move forward/);
+  assert.match(fakeDocument.elements.get("#primitive-components-content").innerHTML, /שלח לאישור/);
+  assert.match(fakeDocument.elements.get("#primitive-components-content").innerHTML, /Checkout dashboard/);
+  assert.match(fakeDocument.elements.get("#primitive-components-content").innerHTML, /Ready/);
   assert.match(fakeDocument.elements.get("#tab-developer").innerHTML, /Wire cockpit layout/);
   assert.match(fakeDocument.elements.get("#tab-release").innerHTML, /blocked/);
   assert.equal(fakeDocument.elements.get("#workspace-developer").hidden, false);

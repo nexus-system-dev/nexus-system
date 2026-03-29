@@ -40,7 +40,10 @@ test("createPrimitiveComponents builds canonical primitive component library", (
   assert.equal(primitiveComponents.components.length, 6);
   assert.equal(primitiveComponents.components[0].componentType, "button");
   assert.deepEqual(primitiveComponents.components[0].states, ["hover", "active", "focus", "disabled", "destructive"]);
+  assert.equal(primitiveComponents.components[0].preview.text, "שלח לאישור");
   assert.equal(primitiveComponents.components[4].interactive, false);
+  assert.deepEqual(primitiveComponents.components[4].preview.items, ["Ready", "Partial", "Blocked"]);
+  assert.equal(primitiveComponents.previewSurface.supportsLivePreview, true);
   assert.equal(primitiveComponents.summary.totalComponents, 6);
   assert.equal(primitiveComponents.summary.includesFormPrimitives, true);
 });
@@ -51,5 +54,6 @@ test("createPrimitiveComponents falls back safely without explicit inputs", () =
   assert.equal(primitiveComponents.baseContractId, "component-contract:panel");
   assert.equal(primitiveComponents.components.length, 6);
   assert.equal(primitiveComponents.components[5].componentType, "icon-button");
+  assert.equal(primitiveComponents.components[5].preview.icon, "⋯");
   assert.equal(primitiveComponents.summary.interactiveComponents, 5);
 });

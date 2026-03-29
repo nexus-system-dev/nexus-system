@@ -13,6 +13,7 @@ function createPrimitiveComponent({
   variants,
   usage,
   tokens,
+  preview,
   interactive = true,
 }) {
   return {
@@ -22,6 +23,7 @@ function createPrimitiveComponent({
     variants,
     states,
     tokens,
+    preview,
     interactive,
     usage,
   };
@@ -55,6 +57,11 @@ export function createPrimitiveComponents({
         spacingY: spacing.sm ?? 8,
         radius: radius.md ?? 12,
       },
+      preview: {
+        label: "Primary action",
+        text: "שלח לאישור",
+        secondaryText: "שמור כטיוטה",
+      },
     }),
     createPrimitiveComponent({
       componentType: "input",
@@ -67,6 +74,11 @@ export function createPrimitiveComponents({
         textColor: colors.ink ?? "#1f2933",
         spacingY: spacing.sm ?? 8,
         radius: radius.sm ?? 6,
+      },
+      preview: {
+        label: "Input field",
+        placeholder: "שם המסך הראשי",
+        value: "Checkout dashboard",
       },
     }),
     createPrimitiveComponent({
@@ -81,6 +93,11 @@ export function createPrimitiveComponents({
         minHeight: 120,
         radius: radius.md ?? 12,
       },
+      preview: {
+        label: "Textarea",
+        placeholder: "הוסף כאן הסבר על המסך",
+        value: "מסך זה מרכז approvals, incidents ופעולות release.",
+      },
     }),
     createPrimitiveComponent({
       componentType: "select",
@@ -94,6 +111,11 @@ export function createPrimitiveComponents({
         spacingY: spacing.sm ?? 8,
         radius: radius.sm ?? 6,
       },
+      preview: {
+        label: "Mode selector",
+        options: ["Assistive", "Active", "Quiet"],
+        selectedOption: "Active",
+      },
     }),
     createPrimitiveComponent({
       componentType: "badge",
@@ -105,6 +127,10 @@ export function createPrimitiveComponents({
         textColor: colors.ink ?? "#1f2933",
         spacingX: spacing.sm ?? 8,
         radius: radius.pill ?? 999,
+      },
+      preview: {
+        label: "Status badges",
+        items: ["Ready", "Partial", "Blocked"],
       },
       interactive: false,
     }),
@@ -120,6 +146,11 @@ export function createPrimitiveComponents({
         size: typography.sizeSm ?? 14,
         radius: radius.pill ?? 999,
       },
+      preview: {
+        label: "Dense actions",
+        icon: "⋯",
+        assistiveLabel: "פתח פעולות נוספות",
+      },
     }),
   ];
 
@@ -128,6 +159,10 @@ export function createPrimitiveComponents({
       componentLibraryId: `primitive-components:${normalizedDesignTokens.tokenSetId ?? "nexus"}`,
       baseContractId: normalizedComponentContract.componentContractId ?? "component-contract:panel",
       components: primitives,
+      previewSurface: {
+        sectionTitle: "Primitive component library",
+        supportsLivePreview: true,
+      },
       summary: {
         totalComponents: primitives.length,
         interactiveComponents: primitives.filter((component) => component.interactive).length,
