@@ -5811,6 +5811,12 @@ Refinements מאושרים:
 - מה שחסר עדיין הוא שכבת חיבור ייעודית שמגדירה request/response קנוניים, provider adapter, service והרצה מבוקרת של design proposal לתוך `Project State`.
 - בגלל ש־`Human Editing & Partial Acceptance` עדיין לא סגורים, זה עדיין מוקדם למימוש קוד end-to-end; עכשיו נכון למסגר את המשימות, ובחלון הגשר הבא למקם אותן לפני implementation/review מלא.
 
+⚠️ `PLACEMENT NOTE`:
+- בלוק זה ממוקם כרגע מאוחר מטעמי יציבות.
+- יש למשוך אותו קדימה לאחר השלמת `Human Editing & Partial Acceptance`.
+- העברה זו צפויה לדרוש `renumbering` של כל המשימות שאחריה.
+- יש לבצע זאת בצורה מרוכזת וזהירה, רק בנקודת הגשר, ולא תוך כדי עבודה שוטפת.
+
 1. `Define AI design request schema`  | סטטוס: 🔴 לא בוצע
 - description: לבנות schema אחיד לבקשת AI Design שמאגדת את כל ה־context הקנוני למסך אחד לפני קריאה למודל
 - input:
@@ -5917,6 +5923,10 @@ Refinements מאושרים:
 #### `Human Editing & Partial Acceptance`
 
 משימות טכניות:
+
+⚠️ `BRIDGE TRIGGER`:
+- לאחר שכל המשימות בבלוק זה מסומנות `🟢`, יש לבצע בדיקה מחודשת של מיקום `AI Design Integration` ולשקול העברתו מיד לאחר בלוק זה.
+- אם מתבצעת העברה, יש לבצע גם `renumbering` מלא לכל המשימות שמגיעות אחרי מיקום זה, כך ש־`execution_order` יישאר רציף, עקבי וללא כפילויות או חורים.
 
 1. `Define editable proposal schema`  | סטטוס: 🔴 לא בוצע
 - description: לבנות schema אחיד להצעות שניתן לערוך, לתקן, לאשר חלקית או לדחות ברמת section, component, copy ו־next action
