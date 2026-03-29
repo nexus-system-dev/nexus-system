@@ -39,9 +39,9 @@
 ## Current Snapshot
 
 - סך הכל משימות ב־`Wave 2`: `249`
-- `🟢 בוצע`: `63`
+- `🟢 בוצע`: `64`
 - `🟡 חלקי`: `6`
-- `🔴 לא בוצע`: `180`
+- `🔴 לא בוצע`: `179`
 
 ## Open Work Execution Ordering
 
@@ -542,8 +542,7 @@
 
 #### `Context Relevance & Reduction`
 
-1. `Define context relevance schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `1`
+1. `Define context relevance schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד שמגדיר איך מודדים relevance, priority, freshness ו־token weight עבור context שנשלח ל־AI, ל־review ול־execution
 - input:
   - `projectState`
@@ -554,6 +553,7 @@
   - `Context Builder`  | סטטוס: 🟢 בוצע
   - `AI Learning UX`
 - connects_to: `Project State`
+- הערת מצב: ה־schema כבר ממומש ב־`context-relevance-schema.js`, מחשב `relevance`, `priority`, `freshness` ו־`tokenWeight` עבור `projectState` ו־`interactionContext`, ומחובר ב־`context-builder` ל־`Project State` יחד עם guidance ל־AI, review ו־execution.
 
 
 2. `Create context relevance filter`  | סטטוס: 🔴 לא בוצע
@@ -566,7 +566,7 @@
 - output:
   - `relevanceFilteredContext`
 - dependencies:
-  - `Define context relevance schema`  | סטטוס: 🔴 לא בוצע
+  - `Define context relevance schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 

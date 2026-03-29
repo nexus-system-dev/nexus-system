@@ -5764,7 +5764,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Define context relevance schema`  | סטטוס: 🔴 לא בוצע
+1. `Define context relevance schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד שמגדיר איך מודדים relevance, priority, freshness ו־token weight עבור context שנשלח ל־AI, ל־review ול־execution
 - input:
   - `projectState`
@@ -5775,6 +5775,7 @@ Refinements מאושרים:
   - `Context Builder`  | סטטוס: 🟢 בוצע
   - `AI Learning UX`
 - connects_to: `Project State`
+- הערת מצב: ה־schema כבר ממומש ב־`context-relevance-schema.js`, מחשב `relevance`, `priority`, `freshness` ו־`tokenWeight` עבור `projectState` ו־`interactionContext`, ומחובר ב־`context-builder` ל־`Project State` יחד עם guidance ל־AI, review ו־execution.
 
 2. `Create context relevance filter`  | סטטוס: 🔴 לא בוצע
 - description: לבנות filter שמכריע אילו חלקי context נשארים בבקשה, אילו יורדים ואילו רק מסוכמים
@@ -5785,7 +5786,7 @@ Refinements מאושרים:
 - output:
   - `relevanceFilteredContext`
 - dependencies:
-  - `Define context relevance schema`  | סטטוס: 🔴 לא בוצע
+  - `Define context relevance schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 3. `Create context slimming pipeline`  | סטטוס: 🔴 לא בוצע
