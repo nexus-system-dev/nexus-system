@@ -7698,8 +7698,44 @@ Refinements מאושרים:
   - `Nexus Persistence Layer`
 - connects_to: `Project State`
 
-2. `Create data retention policy module`  | סטטוס: 🔴 לא בוצע
-- description: לבנות מודול שמגדיר retention windows, archival rules ו־deletion policies לנתוני Nexus
+2. `Create snapshot backup scheduling module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות scheduling בסיסי ליצירת snapshots לפי interval קבוע ו־pre-change triggers כמו bootstrap, migration ו־deploy
+- input:
+  - `backupStrategy`
+  - `projectState`
+- output:
+  - `snapshotSchedule`
+- dependencies:
+  - `Create backup and restore strategy`  | סטטוס: 🟢 בוצע
+  - `Project State Versioning`
+- connects_to: `Project State`
+
+3. `Create snapshot retention guard`  | סטטוס: 🔴 לא בוצע
+- description: לבנות guard פשוט שמגביל max snapshots, מזהה snapshots ישנים למחיקה ומכריע איזה history נשמר לכל פרויקט
+- input:
+  - `snapshotRecord`
+  - `snapshotSchedule`
+- output:
+  - `snapshotRetentionDecision`
+- dependencies:
+  - `Create snapshot backup scheduling module`  | סטטוס: 🔴 לא בוצע
+  - `Create project snapshot store`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+4. `Create snapshot backup worker job`  | סטטוס: 🔴 לא בוצע
+- description: לבנות worker/job שמריץ snapshot creation בפועל לפי schedule ומוחק snapshots ישנים לפי retention guard
+- input:
+  - `snapshotSchedule`
+  - `snapshotRetentionDecision`
+- output:
+  - `snapshotJobState`
+- dependencies:
+  - `Create snapshot retention guard`  | סטטוס: 🔴 לא בוצע
+  - `Create background worker runtime`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+
+5. `Create data retention policy module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מודול מתקדם שמגדיר retention windows, archival rules, data-class policies ו־deletion workflows לנתוני Nexus
 - input:
   - `dataClass`
   - `policyInput`
@@ -7710,7 +7746,7 @@ Refinements מאושרים:
   - `Policy Layer`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-3. `Create disaster recovery checklist`  | סטטוס: 🔴 לא בוצע
+6. `Create disaster recovery checklist`  | סטטוס: 🔴 לא בוצע
 - description: לבנות checklist אופרטיבי להתאוששות מתקלות חמורות, אובדן נתונים ו־runtime outages
 - input:
   - `backupStrategy`
@@ -7722,7 +7758,7 @@ Refinements מאושרים:
   - `Platform Observability`
 - connects_to: `Project State`
 
-4. `Create business continuity lifecycle manager`  | סטטוס: 🔴 לא בוצע
+7. `Create business continuity lifecycle manager`  | סטטוס: 🔴 לא בוצע
 - description: לבנות manager שמחבר backup, failover, incident recovery, retention policies ו־owner continuity decisions למסלול continuity אחד לאורך חיי המוצר
 - input:
   - `backupStrategy`
