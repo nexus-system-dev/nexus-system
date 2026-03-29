@@ -80,6 +80,52 @@ function buildThreadEvents(reviewThreadState) {
   });
 }
 
+function buildSharedApprovalEvents(sharedApprovalState) {
+  const normalizedSharedApprovalState = normalizeObject(sharedApprovalState);
+  const participantDecisions = normalizeArray(normalizedSharedApprovalState.participantDecisions);
+  const coordinationStatus = normalizeObject(normalizedSharedApprovalState.coordinationStatus);
+
+  const decisionItems = participantDecisions
+    .filter((participant) => participant.decision && participant.decision !== "pending")
+    .map((participant, index) => ({
+      feedItemId: `collaboration-feed:approval-decision:${normalizedSharedApprovalState.approvalRequestId ?? "approval"}:${participant.participantRole ?? index + 1}`,
+      itemType: "shared-approval",
+      headline: `${participant.participantRole ?? "participant"} marked approval as ${participant.decision}`,
+      actorName: participant.actorName ?? participant.actorId ?? participant.participantRole ?? "Collaborator",
+      workspaceArea: normalizedSharedApprovalState.workspaceArea ?? "developer-workspace",
+      resourceId: normalizedSharedApprovalState.approvalRequestId ?? null,
+      status: participant.decision,
+      source: "shared-approval-state",
+      visibility: normalizedSharedApprovalState.visibility ?? "workspace",
+      metadata: {
+        participantRole: participant.participantRole ?? null,
+        pendingRequiredRoles: coordinationStatus.pendingRequiredRoles ?? [],
+        workspaceId: normalizedSharedApprovalState.workspaceId ?? null,
+      },
+    }));
+
+  const waitingItem =
+    coordinationStatus.pendingRequiredRoles?.length > 0
+      ? {
+          feedItemId: `collaboration-feed:approval-pending:${normalizedSharedApprovalState.approvalRequestId ?? "approval"}`,
+          itemType: "shared-approval",
+          headline: `Approval is waiting for ${coordinationStatus.pendingRequiredRoles.join(", ")}`,
+          actorName: "Nexus",
+          workspaceArea: normalizedSharedApprovalState.workspaceArea ?? "developer-workspace",
+          resourceId: normalizedSharedApprovalState.approvalRequestId ?? null,
+          status: normalizedSharedApprovalState.decisionState?.status ?? "pending",
+          source: "shared-approval-state",
+          visibility: normalizedSharedApprovalState.visibility ?? "workspace",
+          metadata: {
+            pendingRequiredRoles: coordinationStatus.pendingRequiredRoles,
+            workspaceId: normalizedSharedApprovalState.workspaceId ?? null,
+          },
+        }
+      : null;
+
+  return [...decisionItems, waitingItem].filter(Boolean);
+}
+
 function buildWorkspaceTransitionEvent(projectPresenceState) {
   const summary = normalizeObject(projectPresenceState.summary);
 
@@ -105,12 +151,14 @@ export function createCollaborationActivityFeed({
   collaborationEvent = null,
   projectPresenceState = null,
   reviewThreadState = null,
+  sharedApprovalState = null,
 } = {}) {
   const normalizedPresenceState = normalizeObject(projectPresenceState);
   const items = [
     buildPrimaryEvent(collaborationEvent, normalizedPresenceState),
     ...buildPresenceEvents(normalizedPresenceState),
     ...buildThreadEvents(normalizeObject(reviewThreadState)),
+    ...buildSharedApprovalEvents(sharedApprovalState),
     buildWorkspaceTransitionEvent(normalizedPresenceState),
   ].filter(Boolean);
 
@@ -123,6 +171,7 @@ export function createCollaborationActivityFeed({
         containsThreadActivity: items.some((item) => item.source === "review-thread" || item.source === "approval-record" || item.source === "pull-request"),
         containsPresenceSignals: items.some((item) => item.itemType === "presence"),
         containsWorkspaceTransitions: items.some((item) => item.itemType === "workspace-transition"),
+        containsApprovalCoordination: items.some((item) => item.source === "shared-approval-state"),
       },
     },
   };

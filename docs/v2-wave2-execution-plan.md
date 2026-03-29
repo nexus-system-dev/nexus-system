@@ -39,8 +39,8 @@
 ## Current Snapshot
 
 - סך הכל משימות ב־`Wave 2`: `257`
-- `🟢 בוצע`: `71`
-- `🟡 חלקי`: `1`
+- `🟢 בוצע`: `72`
+- `🟡 חלקי`: `0`
 - `🔴 לא בוצע`: `185`
 
 ## Open Work Execution Ordering
@@ -1007,7 +1007,7 @@
 - הערת מצב: מודל ה־shared approval מחושב עכשיו מתוך `approvalRequest`, `workspaceModel` ו־`approvalRecords`, כולל `participantDecisions`, `visibilityRules` ו־`coordinationStatus`; הוא נחשף גם דרך approval APIs (`GET /api/projects/:id/approvals` ו־approve/reject/revoke) כך שהמערכת כבר מציגה מי צריך להחליט, מי כבר החליט ומה עוד ממתין לסגירה.
 
 
-5. `Create collaboration activity feed`  | סטטוס: 🟡 חלקי
+5. `Create collaboration activity feed`  | סטטוס: 🟢 בוצע
 - execution_order: `9`
 - description: לבנות feed של פעולות צוות, comments, approvals ו־workspace transitions ברמת הפרויקט
 - input:
@@ -1019,6 +1019,7 @@
   - `Create project presence model`  | סטטוס: 🟢 בוצע
   - `Create project comments and review threads module`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- הערת מצב: ה־collaboration feed מאחד עכשיו `comments`, `review threads`, `shared approval coordination`, `presence signals` ו־`workspace transitions` ל־feed אחד קנוני; הוא נבנה ב־`context-builder`, כולל approval coordination מתוך `sharedApprovalState`, ונחשף ב־`Project State`, `live-state`, `SSE` וב־UI של ה־cockpit.
 
 
 ### `Project Permission Matrix`

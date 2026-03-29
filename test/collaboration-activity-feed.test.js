@@ -58,15 +58,36 @@ test("collaboration activity feed combines team actions threads and workspace tr
         },
       ],
     },
+    sharedApprovalState: {
+      approvalRequestId: "approval:project-1:deploy:agent-runtime",
+      workspaceId: "workspace-1",
+      visibility: "restricted-workspace",
+      coordinationStatus: {
+        pendingRequiredRoles: ["owner"],
+      },
+      participantDecisions: [
+        {
+          participantRole: "reviewer",
+          decision: "approved",
+          actorId: "user-2",
+          actorName: "Reviewer",
+        },
+      ],
+      decisionState: {
+        status: "pending",
+      },
+    },
   });
 
   assert.equal(collaborationFeed.feedId, "collaboration-feed:project-1");
   assert.equal(collaborationFeed.items.some((item) => item.itemType === "comment"), true);
   assert.equal(collaborationFeed.items.some((item) => item.itemType === "presence"), true);
   assert.equal(collaborationFeed.items.some((item) => item.itemType === "workspace-transition"), true);
+  assert.equal(collaborationFeed.items.some((item) => item.itemType === "shared-approval"), true);
   assert.equal(collaborationFeed.summary.containsThreadActivity, true);
   assert.equal(collaborationFeed.summary.containsPresenceSignals, true);
   assert.equal(collaborationFeed.summary.containsWorkspaceTransitions, true);
+  assert.equal(collaborationFeed.summary.containsApprovalCoordination, true);
 });
 
 test("collaboration activity feed falls back safely", () => {

@@ -2618,6 +2618,7 @@ export function buildProjectContext(
     collaborationEvent,
     projectPresenceState,
     reviewThreadState,
+    sharedApprovalState,
   });
   const { projectStateSnapshot } = defineProjectStateSnapshotSchema({
     projectState: {

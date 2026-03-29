@@ -231,13 +231,19 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
       selectedMode: "active",
     },
     collaborationFeed: {
-      summary: { totalItems: 3, containsWorkspaceTransitions: true },
+      summary: { totalItems: 4, containsWorkspaceTransitions: true, containsApprovalCoordination: true },
       items: [
         {
           headline: "Please review the latest diff",
           actorName: "Owner",
           workspaceArea: "development-workspace",
           status: "active",
+        },
+        {
+          headline: "reviewer marked approval as approved",
+          actorName: "Reviewer",
+          workspaceArea: "release-workspace",
+          status: "approved",
         },
       ],
     },
@@ -399,6 +405,7 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#companion-content").innerHTML, /review-warning/);
   assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Please review the latest diff/);
   assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Review pending changes/);
+  assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /reviewer marked approval as approved/);
   assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /project-state-snapshot:giftwallet:v3/);
   assert.match(fakeDocument.elements.get("#growth-content").innerHTML, /Draft Wave 2 teaser/);
   assert.match(fakeDocument.elements.get("#developer-workspace-summary").innerHTML, /36%/);
@@ -436,7 +443,17 @@ test("cockpit refreshes live progress without manual clicks", async () => {
     agents: [],
     approvals: [],
     events: [{ type: "state.updated", payload: { projectId: "giftwallet" } }],
-    collaborationFeed: { summary: { totalItems: 0, containsWorkspaceTransitions: false }, items: [] },
+    collaborationFeed: {
+      summary: { totalItems: 1, containsWorkspaceTransitions: false, containsApprovalCoordination: true },
+      items: [
+        {
+          headline: "Approval is waiting for owner",
+          actorName: "Nexus",
+          workspaceArea: "release-workspace",
+          status: "pending",
+        },
+      ],
+    },
     realtimeEventStream: {
       events: [{ eventId: "evt-1", streamType: "progress", status: "active", message: "Build started" }],
       summary: { totalEvents: 1, progressEvents: 1 },
@@ -494,7 +511,17 @@ test("cockpit refreshes live progress without manual clicks", async () => {
       ],
       summary: { openThreads: 1 },
     },
-    collaborationFeed: { summary: { totalItems: 0, containsWorkspaceTransitions: false }, items: [] },
+    collaborationFeed: {
+      summary: { totalItems: 1, containsWorkspaceTransitions: false, containsApprovalCoordination: true },
+      items: [
+        {
+          headline: "Approval is waiting for owner",
+          actorName: "Nexus",
+          workspaceArea: "release-workspace",
+          status: "pending",
+        },
+      ],
+    },
     events: [{ type: "state.updated", payload: { projectId: "giftwallet" } }],
   };
 
@@ -559,6 +586,7 @@ test("cockpit refreshes live progress without manual clicks", async () => {
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /npm run build/);
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /warning: skipped optional step/);
   assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Release diff review/);
+  assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Approval is waiting for owner/);
 });
 
 test("cockpit consumes sse live updates when push transport is available", async () => {
