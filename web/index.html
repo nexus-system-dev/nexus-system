@@ -33,68 +33,141 @@
           <div id="critical-content"></div>
         </section>
 
-        <section class="simple-card status">
-          <h2>מה חסר</h2>
-          <div id="missing-content" class="simple-list"></div>
-        </section>
+        <section class="workspace-board">
+          <nav class="workspace-tabs" aria-label="Workspace navigation">
+            <button id="tab-developer" class="workspace-tab active" type="button" data-workspace="developer">Developer</button>
+            <button id="tab-project-brain" class="workspace-tab" type="button" data-workspace="project-brain">Project Brain</button>
+            <button id="tab-release" class="workspace-tab" type="button" data-workspace="release">Release</button>
+            <button id="tab-growth" class="workspace-tab" type="button" data-workspace="growth">Growth</button>
+          </nav>
 
-        <section class="simple-card good">
-          <h2>מה כבר קיים</h2>
-          <div id="existing-content" class="simple-list"></div>
-        </section>
+          <div id="workspace-developer" class="workspace-shell workspace-panel active">
+            <header class="workspace-header">
+              <p class="workspace-kicker">Workspace</p>
+              <h2>Developer Workspace</h2>
+              <div id="developer-workspace-summary" class="workspace-summary"></div>
+            </header>
+            <div class="workspace-grid">
+              <section class="workbench-card wide">
+                <h3>מה קורה כרגע</h3>
+                <div id="live-content" class="simple-list"></div>
+              </section>
 
-        <section class="simple-card tasks">
-          <h2>מה קורה כרגע</h2>
-          <div id="live-content" class="simple-list"></div>
-        </section>
+              <section class="workbench-card">
+                <h3>חיבורי Runtime</h3>
+                <div class="sync-row">
+                  <input id="casino-base-url-input" type="text" placeholder="http://localhost:4101" />
+                </div>
+                <div id="external-content" class="simple-list"></div>
+              </section>
 
-        <section class="simple-card decision">
-          <h2>מה אתה צריך לאשר</h2>
-          <div id="decision-content" class="simple-list"></div>
-        </section>
+              <section class="workbench-card">
+                <h3>זרימת ביצוע</h3>
+                <div id="graph-content" class="detail-content"></div>
+              </section>
 
-        <section class="simple-card sync">
-          <h2>חיבור לקזינו</h2>
-          <div class="sync-row">
-            <input id="casino-base-url-input" type="text" placeholder="http://localhost:4101" />
-          </div>
-          <div id="external-content" class="simple-list"></div>
-        </section>
+              <section class="workbench-card">
+                <h3>סוכנים</h3>
+                <div id="agents-content" class="detail-content"></div>
+              </section>
 
-        <section class="details-card">
-          <details>
-            <summary>פרטים מתקדמים</summary>
-            <div class="details-grid">
-              <div class="detail-block">
+              <section class="workbench-card">
                 <h3>סריקת קוד</h3>
                 <div class="sync-row">
                   <input id="scan-path-input" type="text" placeholder="/נתיב/מלא/לפרויקט" />
                   <button id="scan-button">סרוק</button>
                 </div>
                 <div id="scanner-content" class="detail-content"></div>
-              </div>
+              </section>
 
-              <div class="detail-block">
-                <h3>ניתוח AI</h3>
-                <div id="analysis-content" class="detail-content"></div>
-              </div>
-
-              <div class="detail-block">
-                <h3>זרימת ביצוע</h3>
-                <div id="graph-content" class="detail-content"></div>
-              </div>
-
-              <div class="detail-block">
-                <h3>סוכנים</h3>
-                <div id="agents-content" class="detail-content"></div>
-              </div>
-
-              <div class="detail-block wide">
+              <section class="workbench-card wide">
                 <h3>אירועים אחרונים</h3>
                 <div id="events-content" class="detail-content"></div>
-              </div>
+              </section>
             </div>
-          </details>
+          </div>
+
+          <div id="workspace-project-brain" class="workspace-shell workspace-panel">
+            <header class="workspace-header">
+              <p class="workspace-kicker">Workspace</p>
+              <h2>Project Brain</h2>
+              <div id="project-brain-summary" class="workspace-summary"></div>
+            </header>
+            <div class="workspace-grid">
+              <section class="workbench-card wide">
+                <h3>מה צריך לעשות עכשיו</h3>
+                <div id="critical-content"></div>
+              </section>
+
+              <section class="workbench-card">
+                <h3>מה חסר</h3>
+                <div id="missing-content" class="simple-list"></div>
+              </section>
+
+              <section class="workbench-card">
+                <h3>מה כבר קיים</h3>
+                <div id="existing-content" class="simple-list"></div>
+              </section>
+
+              <section class="workbench-card">
+                <h3>AI Learning</h3>
+                <div id="learning-content" class="detail-content"></div>
+              </section>
+
+              <section class="workbench-card">
+                <h3>AI Companion</h3>
+                <div id="companion-content" class="detail-content"></div>
+              </section>
+            </div>
+          </div>
+
+          <div id="workspace-release" class="workspace-shell workspace-panel">
+            <header class="workspace-header">
+              <p class="workspace-kicker">Workspace</p>
+              <h2>Release Workspace</h2>
+              <div id="release-workspace-summary" class="workspace-summary"></div>
+            </header>
+            <div class="workspace-grid">
+              <section class="workbench-card">
+                <h3>Screen Review</h3>
+                <div id="screen-review-content" class="detail-content"></div>
+              </section>
+
+              <section class="workbench-card">
+                <h3>מה אתה צריך לאשר</h3>
+                <div id="decision-content" class="simple-list"></div>
+              </section>
+
+              <section class="workbench-card">
+                <h3>Collaboration</h3>
+                <div id="collaboration-content" class="detail-content"></div>
+              </section>
+
+              <section class="workbench-card wide">
+                <h3>Versioning And Restore</h3>
+                <div id="versioning-content" class="detail-content"></div>
+              </section>
+            </div>
+          </div>
+
+          <div id="workspace-growth" class="workspace-shell workspace-panel">
+            <header class="workspace-header">
+              <p class="workspace-kicker">Workspace</p>
+              <h2>Growth Workspace</h2>
+              <div id="growth-workspace-summary" class="workspace-summary"></div>
+            </header>
+            <div class="workspace-grid">
+              <section class="workbench-card wide">
+                <h3>ניתוח AI</h3>
+                <div id="analysis-content" class="detail-content"></div>
+              </section>
+
+              <section class="workbench-card wide">
+                <h3>Growth Plan</h3>
+                <div id="growth-content" class="detail-content"></div>
+              </section>
+            </div>
+          </div>
         </section>
       </main>
     </div>

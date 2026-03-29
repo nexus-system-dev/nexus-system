@@ -49,10 +49,57 @@ function parseBody(request) {
   });
 }
 
+function getPlatformObservability(projectService) {
+  return typeof projectService.getPlatformObservability === "function"
+    ? projectService.getPlatformObservability()
+    : {
+        platformTraces: [],
+        platformLogs: [],
+        summary: {
+          totalTraces: 0,
+          totalLogs: 0,
+          activeTraces: 0,
+          latestTraceId: null,
+          latestLogId: null,
+        },
+      };
+}
+
+function getObservabilityTransport(projectService) {
+  return projectService?.platformObservabilityTransport ?? null;
+}
+
+function resolveWorkspaceId(urlPathname) {
+  const segments = urlPathname.split("/");
+  return segments[1] === "api" && segments[2] === "projects" ? segments[3] ?? null : null;
+}
+
 export function createServer(projectService, runtimeStatus = {}) {
   return http.createServer(async (request, response) => {
     const url = new URL(request.url, "http://localhost");
     const segments = url.pathname.split("/");
+    const observabilityTransport = getObservabilityTransport(projectService);
+    const requestId = request.headers?.["x-request-id"] ?? `${request.method ?? "GET"}:${url.pathname}:${Date.now()}`;
+    const requestStartedAt = Date.now();
+    const requestTrace = observabilityTransport?.startHttpRequest({
+      requestId,
+      route: url.pathname,
+      method: request.method,
+      workspaceId: resolveWorkspaceId(url.pathname),
+      service: runtimeStatus.runtimeId ?? "http-server",
+    });
+    const originalEnd = response.end.bind(response);
+    response.end = (body) => {
+      observabilityTransport?.finishHttpRequest({
+        traceId: requestTrace?.traceId ?? requestId,
+        route: url.pathname,
+        method: request.method,
+        statusCode: response.statusCode ?? 200,
+        durationMs: Date.now() - requestStartedAt,
+        service: runtimeStatus.runtimeId ?? "http-server",
+      });
+      return originalEnd(body);
+    };
 
     if (request.method === "GET" && url.pathname === "/api/health") {
       sendJson(response, 200, { healthStatus: runtimeStatus.healthStatus ?? null });
@@ -61,6 +108,28 @@ export function createServer(projectService, runtimeStatus = {}) {
 
     if (request.method === "GET" && url.pathname === "/api/readiness") {
       sendJson(response, 200, { readinessStatus: runtimeStatus.readinessStatus ?? null });
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/observability") {
+      sendJson(response, 200, {
+        runtimeId: runtimeStatus.runtimeId ?? null,
+        observability: getPlatformObservability(projectService),
+      });
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/audit-logs") {
+      sendJson(response, 200, {
+        auditLogs: typeof projectService.getSystemAuditLogs === "function"
+          ? projectService.getSystemAuditLogs({
+              projectId: url.searchParams.get("projectId") ?? null,
+              workspaceId: url.searchParams.get("workspaceId") ?? null,
+              category: url.searchParams.get("category") ?? null,
+              actorId: url.searchParams.get("actorId") ?? null,
+            })
+          : [],
+      });
       return;
     }
 
@@ -90,6 +159,16 @@ export function createServer(projectService, runtimeStatus = {}) {
         userInput: body.userInput,
       });
       sendJson(response, result ? 200 : 404, result ?? { error: "User not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/project-drafts") {
+      const body = await parseBody(request).catch(() => ({}));
+      const result = projectService.createProjectDraft({
+        userInput: body.userInput,
+        projectCreationInput: body.projectCreationInput,
+      });
+      sendJson(response, result ? 201 : 404, result ?? { error: "User not found" });
       return;
     }
 
@@ -181,6 +260,28 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/proposal-edits")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = projectService.submitProposalEdits({
+        projectId,
+        userEditInput: body.userEditInput,
+      });
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/partial-acceptance")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = projectService.submitPartialAcceptance({
+        projectId,
+        approvalOutcome: body.approvalOutcome,
+      });
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "GET" && url.pathname === "/api/projects") {
       sendJson(response, 200, { projects: projectService.listProjects() });
       return;
@@ -201,6 +302,26 @@ export function createServer(projectService, runtimeStatus = {}) {
           response,
           project ? 200 : 404,
           project ? { events: projectService.getProjectEvents(projectId) } : { error: "Project not found" },
+        );
+        return;
+      }
+
+      if (suffix === "live-state") {
+        const project = projectService.getProject(projectId);
+        sendJson(
+          response,
+          project ? 200 : 404,
+          project
+            ? {
+                projectId,
+                progressState: project.progressState ?? null,
+                reactiveWorkspaceState: project.reactiveWorkspaceState ?? null,
+                realtimeEventStream: project.realtimeEventStream ?? null,
+                liveUpdateChannel: project.liveUpdateChannel ?? null,
+                collaborationFeed: project.collaborationFeed ?? null,
+                events: project.events ?? [],
+              }
+            : { error: "Project not found" },
         );
         return;
       }

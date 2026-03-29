@@ -43,6 +43,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(project.state.businessContext.gtmStage, "build");
   assert.equal(Array.isArray(project.state.businessContext.kpis), true);
   assert.equal(typeof project.state.projectIdentity?.identityId, "string");
+  assert.equal(typeof project.state.projectDraft?.id, "string");
+  assert.equal(typeof project.state.projectDraft?.owner?.displayName, "string");
+  assert.equal(typeof project.state.projectDraft?.onboardingReadiness?.canStartOnboarding, "boolean");
   assert.equal(typeof project.state.projectIdentity?.name, "string");
   assert.equal(typeof project.state.projectIdentity?.audience, "string");
   assert.equal(typeof project.state.projectIdentityProfile?.profileId, "string");
@@ -97,6 +100,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.businessBottleneck.reason, "string");
   assert.equal(typeof project.state.bottleneckState?.blockerType, "string");
   assert.equal(typeof project.state.bottleneckState?.summary?.isBlocked, "boolean");
+  assert.equal(typeof project.state.systemBottleneckSummary?.status, "string");
+  assert.equal(Array.isArray(project.state.systemBottleneckSummary?.signals), true);
   assert.equal(typeof project.state.activeBottleneck?.blockerType, "string");
   assert.equal(typeof project.state.activeBottleneck?.summary?.isBlocking, "boolean");
   assert.equal(typeof project.state.scoredBottleneck?.priorityScore, "number");
@@ -125,9 +130,53 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.authenticationState?.status, "string");
   assert.equal(typeof project.state.authenticationState?.isAuthenticated, "boolean");
   assert.equal(typeof project.state.sessionState?.status, "string");
+  assert.equal(typeof project.state.authenticationRouteDecision?.decisionId, "string");
+  assert.equal(typeof project.state.authenticationRouteDecision?.route, "string");
+  assert.equal(typeof project.state.authenticationRouteDecision?.summary?.requiresAuthentication, "boolean");
   assert.equal(typeof project.state.tokenBundle?.tokenType === "string" || project.state.tokenBundle?.tokenType === null, true);
   assert.equal(typeof project.state.verificationFlowState?.status, "string");
   assert.equal(Array.isArray(project.state.verificationFlowState?.nextActions), true);
+  assert.equal(typeof project.state.authenticationViewState?.viewStateId, "string");
+  assert.equal(typeof project.state.authenticationViewState?.activeScreen, "string");
+  assert.equal(typeof project.state.authenticationViewState?.screens?.login?.enabled, "boolean");
+  assert.equal(typeof project.state.authenticationViewState?.summary?.needsUserInput, "boolean");
+  assert.equal(typeof project.state.postAuthRedirect?.redirectId, "string");
+  assert.equal(typeof project.state.postAuthRedirect?.destination, "string");
+  assert.equal(typeof project.state.postAuthRedirect?.summary?.entersWorkbench, "boolean");
+  assert.equal(typeof project.state.projectCreationExperience?.experienceId, "string");
+  assert.equal(typeof project.state.projectCreationExperience?.primaryAction?.actionId, "string");
+  assert.equal(typeof project.state.projectCreationExperience?.validation?.canCreateDraft, "boolean");
+  assert.equal(typeof project.state.projectCreationRedirect?.redirectId, "string");
+  assert.equal(typeof project.state.projectCreationRedirect?.target, "string");
+  assert.equal(typeof project.state.projectCreationRedirect?.summary?.canReturnLater, "boolean");
+  assert.equal(typeof project.state.onboardingProgress?.progressId, "string");
+  assert.equal(typeof project.state.onboardingProgress?.currentStep, "string");
+  assert.equal(Array.isArray(project.state.onboardingProgress?.completedSteps), true);
+  assert.equal(typeof project.state.onboardingViewState?.viewStateId, "string");
+  assert.equal(typeof project.state.onboardingViewState?.activeScreen, "string");
+  assert.equal(Array.isArray(project.state.onboardingViewState?.questions), true);
+  assert.equal(typeof project.state.onboardingViewState?.summary?.needsUserInput, "boolean");
+  assert.equal(typeof project.state.onboardingCompletionDecision?.decisionId, "string");
+  assert.equal(typeof project.state.onboardingCompletionDecision?.isComplete, "boolean");
+  assert.equal(Array.isArray(project.state.onboardingCompletionDecision?.clarificationPrompts), true);
+  assert.equal(typeof project.state.onboardingCompletionDecision?.summary?.canCreateProjectState, "boolean");
+  assert.equal(typeof project.state.onboardingStateHandoff?.handoffId, "string");
+  assert.equal(typeof project.state.onboardingStateHandoff?.handoffStatus, "string");
+  assert.equal(Array.isArray(project.state.onboardingStateHandoff?.missingClarifications), true);
+  assert.equal(typeof project.state.onboardingStateHandoff?.summary?.canBuildProjectState, "boolean");
+  assert.equal(typeof project.state.projectOwnershipBinding?.bindingId, "string");
+  assert.equal(typeof project.state.projectOwnershipBinding?.ownerUserId === "string" || project.state.projectOwnershipBinding?.ownerUserId === null, true);
+  assert.equal(typeof project.state.initialProjectStateContract?.contractId, "string");
+  assert.equal(Array.isArray(project.state.initialProjectStateContract?.requiredInputs), true);
+  assert.equal(typeof project.state.initialProjectStateContract?.readiness?.canBootstrapState, "boolean");
+  assert.equal(typeof project.state.initialProjectState?.stateId, "string");
+  assert.equal(typeof project.state.initialProjectState?.identity?.identityId, "string");
+  assert.equal(Array.isArray(project.state.initialProjectState?.constraints?.requiredInputs), true);
+  assert.equal(typeof project.state.initialProjectState?.summary?.isCanonical, "boolean");
+  assert.equal(typeof project.state.stateBootstrapPayload?.payloadId, "string");
+  assert.equal(typeof project.state.stateBootstrapPayload?.initialProjectStateId, "string");
+  assert.equal(Array.isArray(project.state.stateBootstrapPayload?.approvals), true);
+  assert.equal(typeof project.state.stateBootstrapPayload?.summary?.canBootstrap, "boolean");
   assert.equal(typeof project.state.workspaceModel?.workspaceId, "string");
   assert.equal(typeof project.state.membershipRecord?.membershipId, "string");
   assert.equal(Array.isArray(project.state.membershipRecord?.roles), true);
@@ -145,6 +194,21 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.collaborationFeed?.feedId, "string");
   assert.equal(Array.isArray(project.state.collaborationFeed?.items), true);
   assert.equal(typeof project.state.collaborationFeed?.summary?.containsWorkspaceTransitions, "boolean");
+  assert.equal(typeof project.state.projectStateSnapshot?.snapshotId, "string");
+  assert.equal(typeof project.state.projectStateSnapshot?.stateVersion, "number");
+  assert.equal(typeof project.state.projectStateSnapshot?.summary?.isRestorable, "boolean");
+  assert.equal(typeof project.state.snapshotRecord?.snapshotRecordId, "string");
+  assert.equal(typeof project.state.snapshotRecord?.storageMetadata?.checksum, "string");
+  assert.equal(typeof project.state.snapshotRecord?.summary?.isStored, "boolean");
+  assert.equal(typeof project.state.stateDiff?.stateDiffId, "string");
+  assert.equal(Array.isArray(project.state.stateDiff?.artifactChanges), true);
+  assert.equal(typeof project.state.stateDiff?.summary?.totalChanges, "number");
+  assert.equal(typeof project.state.restoreDecision?.restoreDecisionId, "string");
+  assert.equal(typeof project.state.restoreDecision?.restoreMode, "string");
+  assert.equal(typeof project.state.restoreDecision?.summary?.isSafeToExecute, "boolean");
+  assert.equal(typeof project.state.rollbackExecutionResult?.rollbackExecutionId, "string");
+  assert.equal(typeof project.state.rollbackExecutionResult?.executionStatus, "string");
+  assert.equal(typeof project.state.rollbackExecutionResult?.summary?.restoredTargetCount, "number");
   assert.equal(typeof project.state.invitationRecord?.status, "string");
   assert.equal(typeof project.state.roleAssignment?.status, "string");
   assert.equal(typeof project.state.workspaceSettings?.policyProfile, "string");
@@ -284,6 +348,14 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.aiLearningWorkspaceTemplate?.templateId, "string");
   assert.equal(typeof project.state.aiLearningWorkspaceTemplate?.sections?.workspacePanels?.enabled, "boolean");
   assert.equal(typeof project.state.aiLearningWorkspaceTemplate?.summary?.supportsLearningInsights, "boolean");
+  assert.equal(typeof project.state.contextRelevanceSchema?.schemaId, "string");
+  assert.equal(Array.isArray(project.state.contextRelevanceSchema?.contextEntries), true);
+  assert.equal(typeof project.state.contextRelevanceSchema?.summary?.isReadyForAiReviewExecution, "boolean");
+  assert.equal(typeof project.state.relevanceFilteredContext?.filterId, "string");
+  assert.equal(Array.isArray(project.state.relevanceFilteredContext?.keptContext), true);
+  assert.equal(typeof project.state.slimmedContextPayload?.payloadId, "string");
+  assert.equal(Array.isArray(project.state.slimmedContextPayload?.orderedContext), true);
+  assert.equal(typeof project.state.droppedContextSummary?.summaryId, "string");
   assert.equal(typeof project.state.companionState?.stateId, "string");
   assert.equal(typeof project.state.companionState?.mode, "string");
   assert.equal(typeof project.state.companionState?.summary?.hasRecommendations, "boolean");
@@ -396,6 +468,36 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.bootstrapExecutionResult?.status, "string");
   assert.equal(typeof project.state.bootstrapValidation?.isValid, "boolean");
   assert.equal(Array.isArray(project.state.bootstrapValidation?.expectedArtifacts), true);
+  assert.equal(typeof project.state.initialProjectStateValidation?.isValid, "boolean");
+  assert.equal(Array.isArray(project.state.stateValidationIssues), true);
+  assert.equal(Array.isArray(project.state.initialTasks), true);
+  assert.equal(typeof project.state.taskSeedMetadata?.seedId, "string");
+  assert.equal(typeof project.state.selectionReason?.code, "string");
+  assert.equal(
+    project.state.selectedTask === null || typeof project.state.selectedTask?.summary === "string",
+    true,
+  );
+  assert.equal(typeof project.state.nextTaskPresentation?.presentationId, "string");
+  assert.equal(typeof project.state.nextTaskPresentation?.summary?.requiresApproval, "boolean");
+  assert.equal(typeof project.state.nextTaskApprovalPanel?.panelId, "string");
+  assert.equal(typeof project.state.nextTaskApprovalPanel?.summary?.safeAlternativeCount, "number");
+  assert.equal(typeof project.state.recommendationDisplay?.displayId, "string");
+  assert.equal(typeof project.state.recommendationDisplay?.primaryCta?.intent, "string");
+  assert.equal(typeof project.state.recommendationSummaryPanel?.panelId, "string");
+  assert.equal(typeof project.state.recommendationSummaryPanel?.urgency, "string");
+  assert.equal(typeof project.state.editableProposal?.proposalId, "string");
+  assert.equal(Array.isArray(project.state.editableProposal?.sections), true);
+  assert.equal(typeof project.state.editableProposal?.summary?.supportsPartialAcceptance, "boolean");
+  assert.equal(typeof project.state.editedProposal?.revisionId, "string");
+  assert.equal(Array.isArray(project.state.editedProposal?.annotations), true);
+  assert.equal(typeof project.state.proposalEditHistory?.historyId, "string");
+  assert.equal(typeof project.state.proposalEditHistory?.summary?.preservesHistory, "boolean");
+  assert.equal(typeof project.state.partialAcceptanceDecision?.decisionId, "string");
+  assert.equal(typeof project.state.partialAcceptanceDecision?.summary?.requiresRegeneration, "boolean");
+  assert.equal(typeof project.state.remainingProposalScope?.scopeId, "string");
+  assert.equal(typeof project.state.remainingProposalScope?.summary?.remainingSectionCount, "number");
+  assert.equal(typeof project.state.cockpitRecommendationSurface?.surfaceId, "string");
+  assert.equal(typeof project.state.cockpitRecommendationSurface?.approval?.requiresApproval, "boolean");
   assert.equal(typeof project.state.bootstrapStateUpdate?.bootstrap?.status, "string");
   assert.equal(typeof project.state.firstValueOutput?.outputId, "string");
   assert.equal(typeof project.state.firstValueOutput?.summary?.feelsReal, "boolean");
@@ -426,6 +528,15 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.incidentAlert?.incidentCount, "number");
   assert.equal(typeof project.state.auditLogRecord?.auditLogId, "string");
   assert.equal(typeof project.state.auditLogRecord?.category, "string");
+  assert.equal(typeof project.state.projectAuditEvent?.projectAuditEventId, "string");
+  assert.equal(typeof project.state.projectAuditEvent?.category, "string");
+  assert.equal(typeof project.state.projectAuditEvent?.actor?.actorId, "string");
+  assert.equal(typeof project.state.projectAuditRecord?.projectAuditRecordId, "string");
+  assert.equal(typeof project.state.projectAuditRecord?.category, "string");
+  assert.equal(Array.isArray(project.state.projectAuditRecord?.auditTrail), true);
+  assert.equal(typeof project.state.actorActionTrace?.actorActionTraceId, "string");
+  assert.equal(typeof project.state.actorActionTrace?.outcome?.status, "string");
+  assert.equal(Array.isArray(project.state.actorActionTrace?.affectedArtifacts), true);
   assert.equal(typeof project.state.nexusPersistenceSchema?.schemaId, "string");
   assert.equal(typeof project.state.nexusPersistenceSchema?.summary?.totalEntities, "number");
   assert.equal(typeof project.state.migrationPlan?.migrationPlanId, "string");
@@ -505,6 +616,15 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.providerOperations?.[0]?.operationType, "string");
   assert.equal(typeof project.state.providerConnector?.providerType, "string");
   assert.equal(Array.isArray(project.state.providerConnector?.operations), true);
+  assert.equal(typeof project.state.providerDegradationState?.providerType, "string");
+  assert.equal(typeof project.state.providerDegradationState?.health, "string");
+  assert.equal(typeof project.state.providerDegradationState?.summary?.requiresCircuitBreaker, "boolean");
+  assert.equal(typeof project.state.circuitBreakerDecision?.providerType, "string");
+  assert.equal(typeof project.state.circuitBreakerDecision?.decision, "string");
+  assert.equal(typeof project.state.circuitBreakerDecision?.summary?.failFast, "boolean");
+  assert.equal(typeof project.state.providerRecoveryProbe?.providerType, "string");
+  assert.equal(typeof project.state.providerRecoveryProbe?.status, "string");
+  assert.equal(typeof project.state.providerRecoveryProbe?.summary?.canProbe, "boolean");
   assert.equal(typeof project.state.verificationResult?.isVerified, "boolean");
   assert.equal(typeof project.state.verificationResult?.status, "string");
   assert.equal(typeof project.state.ownershipPolicy?.ownerUserId, "string");
@@ -788,7 +908,44 @@ test("project service creates onboarding session for a new project draft", () =>
   assert.equal(session.currentStep, "review-intake");
   assert.equal(session.projectDraft.name, "Delivery App");
   assert.equal(session.projectDraft.goal, "אפליקציה להזמנת שליחים בזמן אמת");
+  assert.equal(session.projectDraft.owner.userId, "user-1");
+  assert.equal(session.projectDraft.creationSource, "onboarding-session");
+  assert.equal(session.projectDraft.onboardingReadiness.canStartOnboarding, true);
   assert.equal(service.getOnboardingSession(session.sessionId)?.sessionId, session.sessionId);
+});
+
+test("project service creates project draft for authenticated user", () => {
+  const service = createProjectService();
+
+  service.signupUser({
+    userInput: {
+      email: "draft-user@example.com",
+      displayName: "Draft User",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const result = service.createProjectDraft({
+    userInput: {
+      email: "draft-user@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Launch Studio",
+      visionText: "מערכת עבודה ליוצרים",
+      requestedDeliverables: ["auth", "growth"],
+    },
+  });
+
+  assert.equal(result.projectDraftId, "launch-studio");
+  assert.equal(result.projectDraft.id, "launch-studio");
+  assert.equal(result.projectDraft.owner.email, "draft-user@example.com");
+  assert.equal(result.projectDraft.onboardingReadiness.canStartOnboarding, true);
+  assert.equal(result.projectCreationExperience.primaryAction.actionId, "create-first-project");
+  assert.equal(result.projectCreationExperience.redirect.target, "onboarding");
+  assert.equal(result.projectCreationRedirect.target, "onboarding");
+  assert.equal(result.projectCreationRedirect.shouldCreateOnboardingSession, true);
 });
 
 test("project service creates structured intake from vision text files and links", () => {
@@ -982,6 +1139,9 @@ test("project service supports onboarding intake updates file uploads current st
   const finished = service.finishOnboardingSession(session.sessionId);
   assert.equal(finished.updatedSession.status, "completed");
   assert.equal(finished.updatedSession.currentStep, "completed");
+  assert.equal(finished.blocked, false);
+  assert.equal(finished.onboardingCompletionDecision.isComplete, true);
+  assert.equal(finished.onboardingStateHandoff.summary.canBuildProjectState, true);
   assert.equal(typeof finished.project?.id, "string");
   assert.equal(finished.project.id, "launch-app");
   assert.equal(finished.project.name, "Launch App");
@@ -1009,7 +1169,10 @@ test("project service supports signup login and logout auth flows", () => {
   assert.equal(signedUp.authPayload.authenticationState.isAuthenticated, true);
   assert.equal(typeof signedUp.authPayload.sessionState.sessionId, "string");
   assert.equal(typeof signedUp.authPayload.tokenBundle.accessToken, "string");
+  assert.equal(signedUp.authPayload.authenticationRouteDecision.route, "workspace");
   assert.equal(signedUp.authPayload.verificationFlowState.status, "pending");
+  assert.equal(signedUp.authPayload.authenticationViewState.activeScreen, "logout-redirect");
+  assert.equal(signedUp.authPayload.postAuthRedirect.destination, "workbench");
   assert.equal(typeof signedUp.authPayload.workspaceModel.workspaceId, "string");
   assert.equal(signedUp.authPayload.membershipRecord.role, "owner");
   assert.equal(typeof signedUp.authPayload.credentialReference, "string");
@@ -1025,7 +1188,10 @@ test("project service supports signup login and logout auth flows", () => {
 
   assert.equal(loggedIn.authPayload.authenticationState.status, "authenticated");
   assert.equal(loggedIn.authPayload.sessionState.status, "active");
+  assert.equal(loggedIn.authPayload.authenticationRouteDecision.route, "workspace");
   assert.equal(typeof loggedIn.authPayload.verificationFlowState.status, "string");
+  assert.equal(loggedIn.authPayload.authenticationViewState.screens.logoutRedirect.enabled, true);
+  assert.equal(loggedIn.authPayload.postAuthRedirect.destination, "workbench");
 
   const loggedOut = service.logoutUser({
     userInput: {
@@ -1035,7 +1201,10 @@ test("project service supports signup login and logout auth flows", () => {
 
   assert.equal(loggedOut.authPayload.authenticationState.status, "logged-out");
   assert.equal(loggedOut.authPayload.sessionState.status, "inactive");
+  assert.equal(loggedOut.authPayload.authenticationRouteDecision.route, "login");
   assert.equal(loggedOut.authPayload.tokenBundle.accessToken, null);
+  assert.equal(loggedOut.authPayload.authenticationViewState.activeScreen, "login");
+  assert.equal(loggedOut.authPayload.postAuthRedirect.destination, "authentication");
 
   const verification = service.requestEmailVerification({
     userInput: {
@@ -1045,6 +1214,8 @@ test("project service supports signup login and logout auth flows", () => {
 
   assert.equal(verification.authPayload.verificationFlowState.flowType, "email-verification");
   assert.equal(verification.authPayload.verificationFlowState.status, "pending");
+  assert.equal(typeof verification.authPayload.authenticationViewState.summary.nextAction, "string");
+  assert.equal(typeof verification.authPayload.postAuthRedirect.destination, "string");
 
   const reset = service.requestPasswordReset({
     userInput: {
@@ -1054,6 +1225,8 @@ test("project service supports signup login and logout auth flows", () => {
 
   assert.equal(reset.authPayload.verificationFlowState.flowType, "password-reset");
   assert.equal(reset.authPayload.verificationFlowState.status, "pending");
+  assert.equal(typeof reset.authPayload.authenticationViewState.screens.error.enabled, "boolean");
+  assert.equal(typeof reset.authPayload.postAuthRedirect.destination, "string");
 
   const invite = service.inviteWorkspaceMember({
     userInput: {
@@ -1082,6 +1255,155 @@ test("project service supports signup login and logout auth flows", () => {
 
   assert.equal(updatedSettings.authPayload.workspaceSettings.policyProfile, "strict");
   assert.equal(updatedSettings.authPayload.workspaceSettings.teamPreferences.notifications, "instant");
+});
+
+test("project service blocks onboarding finish when intake is incomplete instead of crashing", () => {
+  const service = createProjectService();
+
+  service.signupUser({
+    userInput: {
+      email: "blocked-finish@example.com",
+      displayName: "Blocked Finish",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const draft = service.createProjectDraft({
+    userInput: {
+      email: "blocked-finish@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Blocked Finish",
+    },
+  });
+
+  const session = service.createOnboardingSession({
+    userId: "user-1",
+    projectDraftId: draft.projectDraftId,
+    initialInput: {
+      projectName: "Blocked Finish",
+    },
+  });
+
+  const finished = service.finishOnboardingSession(session.sessionId);
+
+  assert.equal(finished.blocked, true);
+  assert.equal(finished.error, "Onboarding is not ready to build project state");
+  assert.equal(finished.onboardingCompletionDecision.isComplete, false);
+  assert.equal(finished.onboardingStateHandoff.handoffStatus, "needs-clarification");
+  assert.equal(service.listProjects().some((project) => project.id === draft.projectDraftId), false);
+});
+
+test("project service supports proposal editing and partial acceptance as real mutations", () => {
+  const service = createProjectService();
+
+  const signedUp = service.signupUser({
+    userInput: {
+      email: "mutation-flow@example.com",
+      displayName: "Mutation Flow",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const draft = service.createProjectDraft({
+    userInput: {
+      email: "mutation-flow@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Mutation Flow",
+      visionText: "מערכת שמקדמת הצעות עבודה עם אישור חלקי",
+      requestedDeliverables: ["auth", "workflow"],
+    },
+  });
+
+  const session = service.createOnboardingSession({
+    userId: signedUp.authPayload.userIdentity.userId,
+    projectDraftId: draft.projectDraftId,
+    initialInput: {
+      projectName: "Mutation Flow",
+    },
+  });
+
+  service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: Mutation Flow\nאפליקציה עם התחברות, workbench ו־approval flow",
+    uploadedFiles: [{ name: "spec.md", type: "markdown", content: "# Spec" }],
+    externalLinks: [],
+  });
+
+  const finished = service.finishOnboardingSession(session.sessionId);
+  assert.equal(finished.blocked, false);
+  const projectId = finished.project.id;
+  const editableProposal = finished.project.state.editableProposal;
+  const firstSection = editableProposal.sections[0];
+  const firstComponent = editableProposal.components[0];
+  const firstCopy = editableProposal.copy[0];
+
+  const edited = service.submitProposalEdits({
+    projectId,
+    userEditInput: {
+      revisionNumber: 2,
+      annotations: [
+        {
+          targetType: "section",
+          targetId: firstSection.sectionId,
+          note: "להדגיש יותר את שלב האישור",
+          severity: "warning",
+        },
+      ],
+      sectionEdits: [
+        {
+          sectionId: firstSection.sectionId,
+          title: "Approval Handoff",
+          body: "המסך צריך להבהיר מה יאושר ומה ימשיך לרגנרציה.",
+        },
+      ],
+      nextActionEdit: {
+        label: "אשר חלקית והמשך",
+      },
+    },
+  });
+
+  assert.equal(edited.state.editedProposal.revisionNumber, 2);
+  assert.equal(edited.state.editedProposal.sections[0].title, "Approval Handoff");
+  assert.equal(edited.state.editedProposal.annotations.length, 1);
+  assert.equal(edited.state.proposalEditHistory.entries.length >= 3, true);
+
+  const partial = service.submitPartialAcceptance({
+    projectId,
+    approvalOutcome: {
+      sectionOutcomes: [
+        {
+          sectionId: firstSection.sectionId,
+          decision: "approved",
+          note: "החלק הזה טוב",
+        },
+      ],
+      componentOutcomes: [
+        {
+          componentId: firstComponent.componentId,
+          decision: "rejected",
+          note: "צריך רגנרציה",
+        },
+      ],
+      copyOutcomes: [
+        {
+          copyId: firstCopy.copyId,
+          decision: "approved",
+        },
+      ],
+    },
+  });
+
+  assert.equal(partial.state.partialAcceptanceDecision.status, "partially-accepted");
+  assert.equal(partial.state.partialAcceptanceDecision.approvedSections[0].sectionId, firstSection.sectionId);
+  assert.equal(partial.state.partialAcceptanceDecision.rejectedComponents[0].componentId, firstComponent.componentId);
+  assert.equal(partial.state.remainingProposalScope.componentsNeedingRegeneration[0].componentId, firstComponent.componentId);
+  assert.equal(partial.state.partialAcceptanceDecision.followUpAction, "regenerate-rejected-scope");
 });
 
 test("project service links verifies lists and unlinks external accounts", () => {

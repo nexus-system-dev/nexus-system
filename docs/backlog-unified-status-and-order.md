@@ -381,6 +381,93 @@ Refinements מאושרים:
   - `Create onboarding command handlers`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
+6. `Define project draft schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד ל־`projectDraft` לפני בניית `Project State` מלא, כולל name, owner, creation source, onboarding readiness ו־bootstrap metadata
+- input:
+  - `userIdentity`
+  - `initialInput`
+- output:
+  - `projectDraft`
+- dependencies:
+  - `Canonical Schema`  | סטטוס: 🟢 בוצע
+  - `Identity & Auth`
+- connects_to: `Project State`
+
+7. `Create project draft creation service`  | סטטוס: 🔴 לא בוצע
+- description: לבנות service שיוצר `projectDraft` חדש למשתמש מחובר ומחזיר draft id שממנו נכנסים ל־onboarding
+- input:
+  - `userIdentity`
+  - `projectCreationInput`
+- output:
+  - `projectDraft`
+  - `projectDraftId`
+- dependencies:
+  - `Define project draft schema`  | סטטוס: 🔴 לא בוצע
+  - `Workspace & Access Control`
+- connects_to: `Project State`
+
+8. `Create onboarding answer persistence store`  | סטטוס: 🔴 לא בוצע
+- description: לבנות שכבת שמירה ואחזור לתשובות onboarding כדי לאפשר autosave, resume ו־audit של התפתחות ה־intake
+- input:
+  - `onboardingSession`
+  - `projectIntake`
+- output:
+  - `onboardingAnswerRecord`
+- dependencies:
+  - `Create onboarding session service`  | סטטוס: 🟢 בוצע
+  - `Nexus Persistence Layer`
+- connects_to: `Project State`
+
+9. `Create onboarding completion evaluator`  | סטטוס: 🔴 לא בוצע
+- description: לבנות evaluator שקובע אם נאסף מספיק intake כדי להתקדם לבניית `Project State`, או שצריך clarification נוסף
+- input:
+  - `projectIntake`
+  - `onboardingSession`
+- output:
+  - `onboardingCompletionDecision`
+- dependencies:
+  - `Create project intake parser`  | סטטוס: 🟢 בוצע
+  - `Create onboarding answer persistence store`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+10. `Create onboarding-to-state handoff contract`  | סטטוס: 🔴 לא בוצע
+- description: להגדיר חוזה ברור בין סוף ה־onboarding לבין יצירת `Project State` הראשוני, כולל intake, approvals, draft metadata ו־missing clarifications
+- input:
+  - `projectDraft`
+  - `projectIntake`
+  - `onboardingCompletionDecision`
+- output:
+  - `onboardingStateHandoff`
+- dependencies:
+  - `Create onboarding completion evaluator`  | סטטוס: 🔴 לא בוצע
+  - `Project State`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+11. `Create onboarding progress model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מודל UI להתקדמות onboarding כולל current step, completed steps, missing fields ו־resume state
+- input:
+  - `onboardingSession`
+  - `currentStep`
+- output:
+  - `onboardingProgress`
+- dependencies:
+  - `Create onboarding step resolver`  | סטטוס: 🟢 בוצע
+  - `Initial Nexus Screens`
+- connects_to: `Execution Surface`
+
+12. `Build onboarding screen flow`  | סטטוס: 🔴 לא בוצע
+- description: לממש flow מסכי onboarding עם שאלות, autosave, מצבי loading/error ויכולת resume למשתמש
+- input:
+  - `onboardingSession`
+  - `onboardingProgress`
+  - `requiredActions`
+- output:
+  - `onboardingViewState`
+- dependencies:
+  - `Create onboarding progress model`  | סטטוס: 🔴 לא בוצע
+  - `Create onboarding API endpoints`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+
 #### 1.5 `Project Identity & Instant Value`
 
 משימות טכניות:
@@ -437,7 +524,7 @@ Refinements מאושרים:
 - output:
   - `firstValueOutput`
 - dependencies:
-  - `Create instant value output resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create instant value output resolver`  | סטטוס: 🟢 בוצע
   - `Project Bootstrap Layer`
 - connects_to: `Project State`
 
@@ -465,11 +552,145 @@ Refinements מאושרים:
 - output:
   - `firstValueSummary`
 - dependencies:
-  - `Create project identity assembler`  | סטטוס: 🔴 לא בוצע
+  - `Create project identity assembler`  | סטטוס: 🟢 בוצע
   - `Create progress-to-reality mapper`  | סטטוס: 🟢 בוצע
   - `Explanation Layer`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
-- הערת מצב: המשימה עצמה מומשה עם fallback בטוח ל־project identity בסיסי עד ש־`Create project identity assembler` יושלם; כרגע `firstValueSummary` כבר מחבר outcome, reality progress ו־explanation payload להסבר אחד ברור למשתמש.
+- הערת מצב: המשימה עצמה מומשה, ו־`firstValueSummary` כבר מחבר outcome, reality progress ו־explanation payload להסבר אחד ברור למשתמש על בסיס `project identity` שהושלמה.
+
+7. `Create project creation experience model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מודל מלא ליצירת פרויקט ראשון מתוך ה־app כולל CTA, draft creation, validation, empty workspace state ו־redirect ל־onboarding
+- input:
+  - `workspaceModel`
+  - `postLoginDestination`
+- output:
+  - `projectCreationExperience`
+- dependencies:
+  - `Create project draft creation service`  | סטטוס: 🔴 לא בוצע
+  - `Landing, Access & App Entry Flow`
+- connects_to: `Project State`
+
+8. `Create project draft persistence store`  | סטטוס: 🔴 לא בוצע
+- description: לבנות שכבת persistence ל־`projectDraft` כדי לאפשר continuity בין create project, onboarding ו־resume later
+- input:
+  - `projectDraft`
+- output:
+  - `projectDraftRecord`
+- dependencies:
+  - `Create project draft creation service`  | סטטוס: 🔴 לא בוצע
+  - `Nexus Persistence Layer`
+- connects_to: `Project State`
+
+9. `Create post-project-creation redirect resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שמחליט אם אחרי יצירת `projectDraft` המשתמש ממשיך מיד ל־onboarding, חוזר later או נשלח ל־resume flow
+- input:
+  - `projectDraft`
+  - `projectCreationExperience`
+- output:
+  - `projectCreationRedirect`
+- dependencies:
+  - `Create project draft persistence store`  | סטטוס: 🔴 לא בוצע
+  - `Create onboarding session service`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+10. `Create project ownership binding model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מודל שקושר `projectDraft` ו־`projectState` למשתמש, ל־workspace ול־membership המתאימים כבר מרגע היצירה
+- input:
+  - `projectDraft`
+  - `workspaceModel`
+  - `membershipRecord`
+- output:
+  - `projectOwnershipBinding`
+- dependencies:
+  - `Create project draft creation service`  | סטטוס: 🔴 לא בוצע
+  - `Workspace & Access Control`
+- connects_to: `Project State`
+
+11. `Define initial project state creation contract`  | סטטוס: 🔴 לא בוצע
+- description: להגדיר חוזה ברור ליצירת `Project State` ראשוני מתוך onboarding, כולל required inputs, optional metadata ו־minimum viable state
+- input:
+  - `onboardingStateHandoff`
+  - `projectOwnershipBinding`
+- output:
+  - `initialProjectStateContract`
+- dependencies:
+  - `Create onboarding-to-state handoff contract`  | סטטוס: 🔴 לא בוצע
+  - `Create project ownership binding model`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+12. `Define canonical initial project state schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema קנוני ל־`initialProjectState` כולל identity, goals, constraints, readiness, ownership ו־bootstrap metadata
+- input:
+  - `initialProjectStateContract`
+  - `projectIdentity`
+- output:
+  - `initialProjectState`
+- dependencies:
+  - `Define initial project state creation contract`  | סטטוס: 🔴 לא בוצע
+  - `Canonical Schema`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+13. `Create onboarding-to-state transformation mapper`  | סטטוס: 🔴 לא בוצע
+- description: לבנות mapper שמתרגם intake, approvals, draft metadata ו־clarifications לשדות הקנוניים של `initialProjectState`
+- input:
+  - `onboardingStateHandoff`
+  - `initialProjectState`
+- output:
+  - `stateBootstrapPayload`
+- dependencies:
+  - `Define canonical initial project state schema`  | סטטוס: 🔴 לא בוצע
+  - `Create onboarding-to-state handoff contract`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+14. `Create project state bootstrap service`  | סטטוס: 🔴 לא בוצע
+- description: לבנות service שמייצר, שומר ומחזיר `initialProjectState` שמיש מיד אחרי ה־onboarding
+- input:
+  - `stateBootstrapPayload`
+  - `projectOwnershipBinding`
+- output:
+  - `initialProjectState`
+  - `projectStateSnapshot`
+- dependencies:
+  - `Create onboarding-to-state transformation mapper`  | סטטוס: 🔴 לא בוצע
+  - `Nexus Persistence Layer`
+- connects_to: `Project State`
+
+15. `Create initial state readiness classifier`  | סטטוס: 🔴 לא בוצע
+- description: לבנות classifier שקובע אם ה־`initialProjectState` מוכן ל־task seeding, דורש הבהרות או עדיין לא יציב מספיק
+- input:
+  - `initialProjectState`
+  - `completionCriteria`
+- output:
+  - `initialStateReadiness`
+- dependencies:
+  - `Create project state bootstrap service`  | סטטוס: 🔴 לא בוצע
+  - `Create lifecycle milestone generator`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+16. `Create initial state clarification request model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מודל שמחזיר למשתמש clarification requests כשבניית ה־state הראשוני נתקעת על פערי intake או readiness
+- input:
+  - `initialStateReadiness`
+  - `stateBootstrapPayload`
+- output:
+  - `initialStateClarification`
+- dependencies:
+  - `Create initial state readiness classifier`  | סטטוס: 🔴 לא בוצע
+  - `Execution Feedback Layer`
+- connects_to: `Execution Surface`
+
+17. `Create initial project state validation module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות validator שמוודא שה־`initialProjectState` עומד ב־schema הקנוני, כולל required fields, ownership binding, readiness metadata ו־state consistency לפני המשך ל־task seeding
+- input:
+  - `initialProjectState`
+  - `initialProjectStateContract`
+- output:
+  - `initialProjectStateValidation`
+  - `stateValidationIssues`
+- dependencies:
+  - `Define canonical initial project state schema`  | סטטוס: 🔴 לא בוצע
+  - `Create project state bootstrap service`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
 
 #### 2. `Universal Project Lifecycle`
 
@@ -529,6 +750,170 @@ Refinements מאושרים:
   - `completionCriteria`
 - dependencies:
   - `Domain-Aware Planner`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+5. `Create live issue intake and triage flow`  | סטטוס: 🔴 לא בוצע
+- description: לבנות flow שמקבל bug reports מהמשתמש או מהמערכת החיה, מסווג severity, impact ו־affected scope ומייצר triage state
+- input:
+  - `ownerIncident`
+  - `feedbackSignals`
+  - `projectState`
+- output:
+  - `liveIssueTriage`
+- dependencies:
+  - `Owner Operations & Incidents`
+  - `Learning Layer`
+- connects_to: `Project State`
+
+6. `Create feature request intake and expansion planner`  | סטטוס: 🔴 לא בוצע
+- description: לבנות planner שמקבל feature requests אחרי launch, מחבר אותם ל־project goals ול־live constraints ומציע expansion path
+- input:
+  - `featureRequest`
+  - `projectState`
+  - `roadmap`
+- output:
+  - `featureExpansionPlan`
+- dependencies:
+  - `Learning Layer`
+  - `Scheduler`  | סטטוס: 🟡 חלקי
+- connects_to: `Project State`
+
+7. `Create live-state-aware task regeneration engine`  | סטטוס: 🔴 לא בוצע
+- description: לבנות engine שמחדש backlog ומשימות לפי state חי, incidents, feature requests, user feedback ו־post-launch priorities
+- input:
+  - `projectStateSnapshot`
+  - `liveIssueTriage`
+  - `featureExpansionPlan`
+- output:
+  - `regeneratedBacklog`
+  - `regenerationReasoning`
+- dependencies:
+  - `Create live issue intake and triage flow`  | סטטוס: 🔴 לא בוצע
+  - `Create feature request intake and expansion planner`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Graph`
+
+8. `Create post-launch backlog manager`  | סטטוס: 🔴 לא בוצע
+- description: לבנות manager שממזג backlog קיים עם maintenance, bugfix, feature expansion ו־growth follow-up למשטר עבודה אחד
+- input:
+  - `regeneratedBacklog`
+  - `roadmap`
+  - `ownerPriorityQueue`
+- output:
+  - `postLaunchBacklog`
+- dependencies:
+  - `Create live-state-aware task regeneration engine`  | סטטוס: 🔴 לא בוצע
+  - `Owner Control Center`
+- connects_to: `Project State`
+
+9. `Create improvement execution loop manager`  | סטטוס: 🔴 לא בוצע
+- description: לבנות manager שמחזיר את Nexus שוב ושוב ללולאת improvement של detect, triage, regenerate, approve ו־execute אחרי launch
+- input:
+  - `postLaunchBacklog`
+  - `schedulerDecision`
+  - `learningInsights`
+- output:
+  - `improvementLoopState`
+- dependencies:
+  - `Create post-launch backlog manager`  | סטטוס: 🔴 לא בוצע
+  - `Scheduler`  | סטטוס: 🟡 חלקי
+- connects_to: `Project State`
+
+10. `Create project implementation loop orchestrator`  | סטטוס: 🔴 לא בוצע
+- description: לבנות orchestrator שמחזיר את הפרויקט ללולאת build רציפה של select, approve, execute, update ו־continue עד השלמת milestones
+- input:
+  - `schedulerDecision`
+  - `updatedProjectState`
+  - `lifecycleState`
+- output:
+  - `projectImplementationLoop`
+  - `implementationLoopState`
+- dependencies:
+  - `Scheduler`  | סטטוס: 🟡 חלקי
+  - `Execution Feedback Layer`
+- connects_to: `Project State`
+
+11. `Create feature build loop manager`  | סטטוס: 🔴 לא בוצע
+- description: לבנות manager שמנהל לולאת בניית פיצ'רים מתוך backlog נבחר, כולל readiness, approvals, execution ו־completion tracking לכל feature increment
+- input:
+  - `selectedTask`
+  - `projectImplementationLoop`
+  - `featureExpansionPlan`
+- output:
+  - `featureBuildLoop`
+  - `featureLoopState`
+- dependencies:
+  - `Create project implementation loop orchestrator`  | סטטוס: 🔴 לא בוצע
+  - `Create feature request intake and expansion planner`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Graph`
+
+12. `Create bug fix loop manager`  | סטטוס: 🔴 לא בוצע
+- description: לבנות manager שמנהל לולאת תיקון באגים מקבלת issue, דרך triage ו־selection ועד execution, verification ו־closeout
+- input:
+  - `liveIssueTriage`
+  - `schedulerDecision`
+  - `productionHealthValidation`
+- output:
+  - `bugFixLoop`
+  - `bugFixLoopState`
+- dependencies:
+  - `Create live issue intake and triage flow`  | סטטוס: 🔴 לא בוצע
+  - `Create project implementation loop orchestrator`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Graph`
+
+13. `Create refactor and improvement loop manager`  | סטטוס: 🔴 לא בוצע
+- description: לבנות manager ללולאת refactor ושיפור יזום שמזהה debt, improvement opportunities ו־safe rollout path בלי לחכות רק ל־incident או feature request
+- input:
+  - `projectState`
+  - `diffChangeExplanation`
+  - `recommendationHints`
+- output:
+  - `refactorImprovementLoop`
+  - `improvementCandidates`
+- dependencies:
+  - `Create project implementation loop orchestrator`  | סטטוס: 🔴 לא בוצע
+  - `Cross-Project Memory`
+- connects_to: `Project State`
+
+14. `Create clarification loop manager`  | סטטוס: 🔴 לא בוצע
+- description: לבנות manager שמחזיר את המשתמש או את המערכת ללולאת clarification כשחסר מידע לביצוע, לאישור, ל־state update או ל־replanning
+- input:
+  - `initialStateClarification`
+  - `schedulerDecision`
+  - `recommendationDisplay`
+- output:
+  - `clarificationLoop`
+  - `clarificationRequests`
+- dependencies:
+  - `Create initial state clarification request model`  | סטטוס: 🔴 לא בוצע
+  - `Create recommendation display contract`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+15. `Create bug report return entry flow`  | סטטוס: 🔴 לא בוצע
+- description: לבנות flow חזרה ל־Nexus עבור משתמש שחוזר עם bug report אחרי launch, כולל entry point, context carryover ו־handoff ל־issue intake
+- input:
+  - `visitorContext`
+  - `launchConfirmation`
+  - `projectState`
+- output:
+  - `bugReturnFlow`
+  - `bugReturnEntry`
+- dependencies:
+  - `Create live issue intake and triage flow`  | סטטוס: 🔴 לא בוצע
+  - `Landing, Access & App Entry Flow`
+- connects_to: `Project State`
+
+16. `Create feature request return entry flow`  | סטטוס: 🔴 לא בוצע
+- description: לבנות flow חזרה ל־Nexus עבור משתמש שחוזר עם בקשת פיצ'ר חדשה, כולל context carryover, project selection ו־handoff ל־feature expansion planning
+- input:
+  - `visitorContext`
+  - `launchConfirmation`
+  - `projectState`
+- output:
+  - `featureReturnFlow`
+  - `featureReturnEntry`
+- dependencies:
+  - `Create feature request intake and expansion planner`  | סטטוס: 🔴 לא בוצע
+  - `Landing, Access & App Entry Flow`
 - connects_to: `Project State`
 
 #### 3. `Expanded Domain Adaptation`
@@ -1698,6 +2083,133 @@ Refinements מאושרים:
   - `Execution Graph`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Graph`
 
+#### `Scheduler`
+
+משימות טכניות:
+
+1. `Define scheduler decision schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד להכרעת scheduler כולל selected task, alternatives, blocking reasons, approval posture ו־dispatch rationale
+- input:
+  - `executionGraph`
+  - `projectState`
+- output:
+  - `schedulerDecision`
+- dependencies:
+  - `Execution Graph`  | סטטוס: 🟢 בוצע
+  - `Decision Intelligence Layer`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+2. `Create initial task seeding service`  | סטטוס: 🔴 לא בוצע
+- description: לבנות service שממיר `Project State` ראשוני ל־backlog התחלתי, task graph ראשוני ו־priority ordering שממנו אפשר להתחיל לעבוד
+- input:
+  - `projectState`
+  - `domainCapabilities`
+- output:
+  - `initialBacklog`
+  - `seededTaskGraph`
+- dependencies:
+  - `Project State`  | סטטוס: 🟢 בוצע
+  - `Expanded Domain Adaptation`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Graph`
+
+3. `Create task prioritization evaluator`  | סטטוס: 🔴 לא בוצע
+- description: לבנות evaluator שמדרג משימות לפי value path, dependency order, urgency, approval friction ו־execution feasibility
+- input:
+  - `initialBacklog`
+  - `activeBottleneck`
+- output:
+  - `prioritizedTasks`
+- dependencies:
+  - `Create initial task seeding service`  | סטטוס: 🔴 לא בוצע
+  - `Bottleneck Resolver`
+- connects_to: `Execution Graph`
+
+4. `Create next task selection resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver קנוני שמכריע מה המשימה הבאה למשתמש או ל־agent מתוך roadmap, blockers, approvals ו־scheduler alternatives
+- input:
+  - `prioritizedTasks`
+  - `policyDecision`
+  - `approvalStatus`
+- output:
+  - `schedulerDecision`
+  - `selectedTask`
+- dependencies:
+  - `Define scheduler decision schema`  | סטטוס: 🔴 לא בוצע
+  - `Create task prioritization evaluator`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+5. `Create scheduler decision persistence record`  | סטטוס: 🔴 לא בוצע
+- description: לבנות record ששומר את החלטת ה־scheduler, החלופות שנפסלו והסיבה כדי לשמור source of truth עקבי בין UI, runtime ו־audit
+- input:
+  - `schedulerDecision`
+- output:
+  - `schedulerDecisionRecord`
+- dependencies:
+  - `Create next task selection resolver`  | סטטוס: 🔴 לא בוצע
+  - `Nexus Persistence Layer`
+- connects_to: `Project State`
+
+6. `Create next task selection validation suite`  | סטטוס: 🔴 לא בוצע
+- description: לבנות בדיקות שמוודאות התאמה בין roadmap, active bottleneck, selected task, next action explanation ו־assignment behavior
+- input:
+  - `schedulerDecision`
+  - `executionGraph`
+- output:
+  - `schedulerValidation`
+- dependencies:
+  - `Create next task selection resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create next action explanation builder`  | סטטוס: 🟢 בוצע
+- connects_to: `Validation Layer`
+
+7. `Define initial task schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד למשימה ראשונית כולל title, objective, priority, dependency metadata, approval posture ו־execution class
+- input:
+  - `projectState`
+  - `domainCapabilities`
+- output:
+  - `initialTask`
+- dependencies:
+  - `Project State`  | סטטוס: 🟢 בוצע
+  - `Expanded Domain Adaptation`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Graph`
+
+8. `Define initial task graph schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד ל־task graph הראשוני כולל dependencies, ordering, optional branches ו־critical path hints
+- input:
+  - `initialTask`
+  - `projectState`
+- output:
+  - `initialTaskGraph`
+- dependencies:
+  - `Define initial task schema`  | סטטוס: 🔴 לא בוצע
+  - `Execution Graph`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Graph`
+
+9. `Create project-state-to-task transformation mapper`  | סטטוס: 🔴 לא בוצע
+- description: לבנות mapper שמתרגם `initialProjectState`, readiness ו־domain signals ל־initial backlog קנוני ול־graph התחלתי
+- input:
+  - `initialProjectState`
+  - `initialStateReadiness`
+  - `domainCapabilities`
+- output:
+  - `taskSeedPayload`
+- dependencies:
+  - `Create initial state readiness classifier`  | סטטוס: 🔴 לא בוצע
+  - `Define initial task graph schema`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Graph`
+
+10. `Create initial backlog persistence store`  | סטטוס: 🔴 לא בוצע
+- description: לבנות שכבת persistence ל־initial backlog, `seededTaskGraph` ו־selection metadata כדי לשמור continuity בין seeding, scheduling ו־workbench
+- input:
+  - `initialBacklog`
+  - `seededTaskGraph`
+- output:
+  - `initialBacklogRecord`
+- dependencies:
+  - `Create initial task seeding service`  | סטטוס: 🔴 לא בוצע
+  - `Nexus Persistence Layer`
+- connects_to: `Project State`
+
 2. `Create critical path analyzer`  | סטטוס: 🔴 לא בוצע
 - description: לבנות analyzer שמחשב את מסלול החסימה המרכזי של הפרויקט ואת המשימות שמעכבות את ההתקדמות הכי הרבה
 - input:
@@ -2077,6 +2589,79 @@ Refinements מאושרים:
   - `Decision Intelligence Layer`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
+6. `Create execution result interpretation module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מודול שמפרש `executionResultEnvelope` לתוצאה מערכתית ברמת success, failure class, side effects, approvals consumed ו־required follow-up
+- input:
+  - `executionResultEnvelope`
+  - `projectState`
+- output:
+  - `interpretedExecutionResult`
+- dependencies:
+  - `Execution Action Routing`
+  - `Task Result Ingestion`  | סטטוס: 🟡 חלקי
+- connects_to: `Project State`
+
+7. `Create project state update module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות updater כללי שמעדכן את `Project State` אחרי execution רגיל, לא רק ב־bootstrap או release flows
+- input:
+  - `interpretedExecutionResult`
+  - `projectState`
+- output:
+  - `updatedProjectState`
+- dependencies:
+  - `Create execution result interpretation module`  | סטטוס: 🔴 לא בוצע
+  - `Project State`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+8. `Create task graph update module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות updater כללי לגרף המשימות אחרי execution, approvals, retries, failures ו־follow-up generation
+- input:
+  - `interpretedExecutionResult`
+  - `executionGraph`
+- output:
+  - `updatedExecutionGraph`
+- dependencies:
+  - `Create execution result interpretation module`  | סטטוס: 🔴 לא בוצע
+  - `Execution Graph`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Graph`
+
+9. `Create progress tracking state model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות state model שמרכז progress מצטבר ברמת run, task, project ו־milestone ולא רק progress של ריצה אחת
+- input:
+  - `progressState`
+  - `updatedProjectState`
+- output:
+  - `progressTrackingState`
+- dependencies:
+  - `Create live progress model`  | סטטוס: 🔴 לא בוצע
+  - `Create project state update module`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+10. `Create diff and change explanation model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model מפורש להצגת diffs, changed artifacts, user-facing impact ו־what changed since last step
+- input:
+  - `executionArtifacts`
+  - `changeExplanation`
+- output:
+  - `diffChangeExplanation`
+- dependencies:
+  - `Create execution change explanation builder`  | סטטוס: 🟢 בוצע
+  - `Execution Action Routing`
+- connects_to: `Project State`
+
+11. `Create execution audit trace recorder`  | סטטוס: 🔴 לא בוצע
+- description: לבנות recorder שמתעד invocation, provider choice, approval chain, artifacts, interpreted result ו־state changes ל־audit trace אחד
+- input:
+  - `executionInvocation`
+  - `interpretedExecutionResult`
+  - `updatedProjectState`
+- output:
+  - `executionAuditTrace`
+- dependencies:
+  - `Create execution result interpretation module`  | סטטוס: 🔴 לא בוצע
+  - `Platform Observability`
+- connects_to: `Project State`
+
 #### `Failure Recovery & Rollback`
 
 משימות טכניות:
@@ -2433,6 +3018,69 @@ Refinements מאושרים:
   - `Create deployment evidence collector`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
 
+7. `Create production health validation module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות validator שבודק אחרי deploy זמינות, routing, auth reachability, critical endpoints ו־basic smoke health לפני launch confirmation
+- input:
+  - `deploymentResult`
+  - `environmentResources`
+- output:
+  - `productionHealthValidation`
+- dependencies:
+  - `Create deployment result envelope`  | סטטוס: 🔴 לא בוצע
+  - `Create environment provisioner`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+8. `Create launch confirmation state`  | סטטוס: 🔴 לא בוצע
+- description: לבנות state שמאשר אם הפרויקט אכן עלה לאוויר, מה ה־live endpoints, אילו checks עברו ומה הסטטוס למשתמש
+- input:
+  - `deploymentResult`
+  - `productionHealthValidation`
+- output:
+  - `launchConfirmation`
+- dependencies:
+  - `Create production health validation module`  | סטטוס: 🔴 לא בוצע
+  - `Release Status Tracking`
+- connects_to: `Project State`
+
+9. `Create release readiness evaluator`  | סטטוס: 🔴 לא בוצע
+- description: לבנות evaluator קנוני שמכריע אם הפרויקט באמת מוכן ל־release לפי validation, approvals, env readiness ו־deployment prerequisites
+- input:
+  - `validationReport`
+  - `approvalValidation`
+  - `environmentResources`
+- output:
+  - `releaseReadinessDecision`
+- dependencies:
+  - `Delivery / Release Flow`
+  - `Create environment provisioner`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+10. `Create environment preparation checklist`  | סטטוס: 🔴 לא בוצע
+- description: לבנות checklist קנוני להכנת environments לפני build או deploy כולל infra, domains, secrets, configs ו־smoke prerequisites
+- input:
+  - `environmentResources`
+  - `deploymentConfig`
+- output:
+  - `environmentPreparationState`
+- dependencies:
+  - `Create environment provisioner`  | סטטוס: 🔴 לא בוצע
+  - `Create env management module`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+11. `Create deployment planning module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מודול שמתרגם release readiness, environment state, deployment target ו־provider constraints לתוכנית deployment מפורשת עם sequencing, approvals ו־rollback posture
+- input:
+  - `releaseReadinessDecision`
+  - `environmentPreparationState`
+  - `deploymentRequest`
+- output:
+  - `deploymentPlan`
+  - `deploymentSequence`
+- dependencies:
+  - `Create release readiness evaluator`  | סטטוס: 🔴 לא בוצע
+  - `Create environment preparation checklist`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
 #### `Build & Release System`
 
 Refinements מאושרים:
@@ -2654,6 +3302,18 @@ Refinements מאושרים:
 - connects_to: `Project State`
 - הערת מצב: המשימה עצמה מומשה, אבל ה־`testReportSummary` עדיין נשען על `normalizedTestResults` ו־`failureSummary` קנוניים; הוא יקבל ערך מלא יותר אחרי `Failure Recovery & Rollback`.
 
+7. `Create validation and test execution orchestrator`  | סטטוס: 🔴 לא בוצע
+- description: לבנות orchestrator מפורש שמריץ validation, tests, smoke checks ו־quality gates כחלק אחד של readiness לפני release
+- input:
+  - `testRunPlan`
+  - `validationReport`
+- output:
+  - `validationExecutionState`
+- dependencies:
+  - `Create automated test orchestration module`  | סטטוס: 🟢 בוצע
+  - `Delivery / Release Flow`
+- connects_to: `Execution Surface`
+
 #### `V1 Acceptance & Reality Test Harness`
 
 משימות טכניות:
@@ -2857,6 +3517,113 @@ Refinements מאושרים:
 - connects_to: `Project State`
 - הערת מצב: המשימה עצמה מומשה, אבל ה־API עדיין נשען על provider sessions ו־verification קנוניים בלי `Credentials Management` מלא; כשהשכבה הזאת תיכנס, החיבור והאימות יתבססו גם על secret references והרשאות גישה אמיתיות.
 
+#### `Provider Authorization Lifecycle`
+
+משימות טכניות:
+
+1. `Define provider authorization state schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד ל־authorization state של ספקים חיצוניים כולל consent mode, token state, scopes, refresh state ו־revocation metadata
+- input:
+  - `providerType`
+  - `accountRecord`
+- output:
+  - `providerAuthorizationState`
+- dependencies:
+  - `External Accounts Connector`
+  - `Identity & Auth`
+- connects_to: `Project State`
+
+2. `Create provider OAuth consent and token exchange module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות flow גנרי ל־OAuth / consent / token exchange עבור ספקים חיצוניים כמו Google, GitHub, Stripe ו־App Store Connect adapters
+- input:
+  - `providerAuthorizationState`
+  - `authorizationRequest`
+- output:
+  - `providerAuthorizationResult`
+- dependencies:
+  - `Define provider authorization state schema`  | סטטוס: 🔴 לא בוצע
+  - `Credentials Management`
+- connects_to: `Project State`
+
+3. `Create provider token refresh and revocation module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מודול לחידוש tokens, invalidation, revoke ו־reauthorization flows עבור ספקים מחוברים
+- input:
+  - `providerAuthorizationResult`
+  - `providerSession`
+- output:
+  - `providerTokenLifecycle`
+- dependencies:
+  - `Create provider OAuth consent and token exchange module`  | סטטוס: 🔴 לא בוצע
+  - `Create provider session factory`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+
+#### `Prompt Provider Integration`
+
+משימות טכניות:
+
+1. `Define prompt provider contract`  | סטטוס: 🔴 לא בוצע
+- description: לבנות contract אחיד ל־prompt providers חיצוניים שמקבל task, context, constraints ו־execution mode ומחזיר compiled prompt עם metadata ואזהרות
+- input:
+  - `taskIntent`
+  - `slimmedContextPayload`
+  - `executionModeDecision`
+- output:
+  - `compiledPrompt`
+  - `promptMetadata`
+- dependencies:
+  - `Context Relevance & Reduction`
+  - `External Accounts Connector`
+- connects_to: `Execution Surface`
+
+2. `Create prompt strategy registry`  | סטטוס: 🔴 לא בוצע
+- description: לבנות registry של אסטרטגיות prompt לפי action type כמו debug, refactor, review, bootstrap ו־research
+- input:
+  - `taskType`
+  - `providerType`
+- output:
+  - `promptStrategy`
+- dependencies:
+  - `Define prompt provider contract`  | סטטוס: 🔴 לא בוצע
+  - `Expanded Domain Adaptation`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+3. `Create contextual prompt assembler`  | סטטוס: 🔴 לא בוצע
+- description: לבנות assembler שמרכיב prompt מלא מתוך task, state, constraints, approvals ו־artifact references לפני שליחה ל־provider
+- input:
+  - `promptStrategy`
+  - `projectState`
+  - `artifactRegistry`
+- output:
+  - `compiledPrompt`
+- dependencies:
+  - `Create prompt strategy registry`  | סטטוס: 🔴 לא בוצע
+  - `Create context slimming pipeline`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+4. `Create provider-specific prompt adapter`  | סטטוס: 🔴 לא בוצע
+- description: לבנות adapter שמתרגם `compiledPrompt` לחוזה של provider חיצוני כמו Claude prompt generator ושומר תאימות ל־provider capabilities
+- input:
+  - `compiledPrompt`
+  - `providerConnector`
+- output:
+  - `providerPromptRequest`
+- dependencies:
+  - `Create contextual prompt assembler`  | סטטוס: 🔴 לא בוצע
+  - `Create provider connector assembler`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+
+5. `Create prompt generation trace record`  | סטטוס: 🔴 לא בוצע
+- description: לבנות trace שמתעד איזה context נכנס ל־prompt, איזה strategy נבחרה ואיזה provider החזיר את התוצאה
+- input:
+  - `compiledPrompt`
+  - `promptMetadata`
+- output:
+  - `promptTraceRecord`
+- dependencies:
+  - `Create provider-specific prompt adapter`  | סטטוס: 🔴 לא בוצע
+  - `Project Audit Trail`
+- connects_to: `Project State`
+
 #### `Source Control Integration Runtime`
 
 משימות טכניות:
@@ -3006,6 +3773,19 @@ Refinements מאושרים:
   - `resolvedExecutionConfig`
 - dependencies:
   - `Execution Surface Layer`
+- connects_to: `Execution Surface`
+
+5. `Create secrets and configuration binding resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שקושר secrets, env vars, provider credentials ו־runtime config ל־environment המתאים לפני execution או deployment
+- input:
+  - `credentialReferences`
+  - `environmentPreparationState`
+  - `deploymentConfig`
+- output:
+  - `configurationBinding`
+- dependencies:
+  - `Create secret resolution module`  | סטטוס: 🔴 לא בוצע
+  - `Create environment preparation checklist`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
 
 #### `Distribution Ownership Model`
@@ -4234,6 +5014,19 @@ Refinements מאושרים:
   - `Create approval outcome resolver`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Graph`
 
+14. `Create human approval handoff state`  | סטטוס: 🔴 לא בוצע
+- description: לבנות state מפורש שבו recommendation, approval request, user decision ו־follow-up action נקשרים לזרימה אנושית אחת וברורה
+- input:
+  - `approvalRequest`
+  - `approvalStatus`
+  - `schedulerDecision`
+- output:
+  - `humanApprovalHandoff`
+- dependencies:
+  - `Create approval gating module`  | סטטוס: 🟢 בוצע
+  - `Create approval status resolver`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
 14. `Create approval feedback memory`  | סטטוס: 🔴 לא בוצע
 - description: לבנות זיכרון שמצטבר מהחלטות rejection/override של המשתמש כדי לשפר תיעדוף והצעות עתידיות
 - input:
@@ -4656,7 +5449,7 @@ Refinements מאושרים:
 - output:
   - `typographySystem`
 - dependencies:
-  - `Define design token schema`  | סטטוס: 🔴 לא בוצע
+  - `Define design token schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 3. `Create spacing and layout system`  | סטטוס: 🟢 בוצע
@@ -4666,7 +5459,7 @@ Refinements מאושרים:
 - output:
   - `layoutSystem`
 - dependencies:
-  - `Define design token schema`  | סטטוס: 🔴 לא בוצע
+  - `Define design token schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 4. `Create color usage rules`  | סטטוס: 🟢 בוצע
@@ -4676,7 +5469,7 @@ Refinements מאושרים:
 - output:
   - `colorRules`
 - dependencies:
-  - `Define design token schema`  | סטטוס: 🔴 לא בוצע
+  - `Define design token schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 5. `Create interaction states system`  | סטטוס: 🟢 בוצע
@@ -4703,7 +5496,7 @@ Refinements מאושרים:
   - `Design System`
 - connects_to: `Project State`
 
-2. `Create primitive components`  | סטטוס: 🟢 בוצע
+2. `Create primitive components`  | סטטוס: 🔴 לא בוצע
 - description: לבנות רכיבי בסיס כמו button, input, textarea, select, badge, icon button
 - input:
   - `componentContract`
@@ -4714,7 +5507,7 @@ Refinements מאושרים:
   - `Define component contract schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-3. `Create layout components`  | סטטוס: 🟢 בוצע
+3. `Create layout components`  | סטטוס: 🔴 לא בוצע
 - description: לבנות container, section, stack, grid, panel, divider
 - input:
   - `layoutSystem`
@@ -4724,7 +5517,7 @@ Refinements מאושרים:
   - `Create spacing and layout system`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-4. `Create feedback components`  | סטטוס: 🟢 בוצע
+4. `Create feedback components`  | סטטוס: 🔴 לא בוצע
 - description: לבנות loading, empty state, error state, toast, banner, progress, skeleton
 - input:
   - `interactionStateSystem`
@@ -4734,7 +5527,7 @@ Refinements מאושרים:
   - `Create interaction states system`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-5. `Create navigation components`  | סטטוס: 🟢 בוצע
+5. `Create navigation components`  | סטטוס: 🔴 לא בוצע
 - description: לבנות sidebar, tabs, breadcrumb, topbar, stepper
 - input:
   - `screenFlowMap`
@@ -4744,7 +5537,7 @@ Refinements מאושרים:
   - `Create screen-to-flow mapping`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-6. `Create data display components`  | סטטוס: 🟢 בוצע
+6. `Create data display components`  | סטטוס: 🔴 לא בוצע
 - description: לבנות table, stat card, activity log, timeline, key-value panel, status chip
 - input:
   - `screenInventory`
@@ -4907,7 +5700,7 @@ Refinements מאושרים:
 - output:
   - `reasoningPanel`
 - dependencies:
-  - `Define learning insight UI schema`  | סטטוס: 🔴 לא בוצע
+  - `Define learning insight UI schema`  | סטטוס: 🟢 בוצע
   - `Policy Layer`
 - connects_to: `Project State`
 
@@ -4918,7 +5711,7 @@ Refinements מאושרים:
 - output:
   - `confidenceIndicator`
 - dependencies:
-  - `Define learning insight UI schema`  | סטטוס: 🔴 לא בוצע
+  - `Define learning insight UI schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
 4. `Create user preference signal view`  | סטטוס: 🟢 בוצע
@@ -4952,7 +5745,7 @@ Refinements מאושרים:
 - output:
   - `learningDisclosure`
 - dependencies:
-  - `Define learning insight UI schema`  | סטטוס: 🔴 לא בוצע
+  - `Define learning insight UI schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
 7. `Create AI learning workspace template`  | סטטוס: 🟢 בוצע
@@ -4964,7 +5757,90 @@ Refinements מאושרים:
   - `aiLearningWorkspaceTemplate`
 - dependencies:
   - `Screen Template System`
-  - `Define learning insight UI schema`  | סטטוס: 🔴 לא בוצע
+  - `Define learning insight UI schema`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+
+#### `Context Relevance & Reduction`
+
+משימות טכניות:
+
+1. `Define context relevance schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד שמגדיר איך מודדים relevance, priority, freshness ו־token weight עבור context שנשלח ל־AI, ל־review ול־execution
+- input:
+  - `projectState`
+  - `interactionContext`
+- output:
+  - `contextRelevanceSchema`
+- dependencies:
+  - `Context Builder`  | סטטוס: 🟢 בוצע
+  - `AI Learning UX`
+- connects_to: `Project State`
+
+2. `Create context relevance filter`  | סטטוס: 🔴 לא בוצע
+- description: לבנות filter שמכריע אילו חלקי context נשארים בבקשה, אילו יורדים ואילו רק מסוכמים
+- input:
+  - `contextRelevanceSchema`
+  - `projectState`
+  - `screenContext`
+- output:
+  - `relevanceFilteredContext`
+- dependencies:
+  - `Define context relevance schema`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+3. `Create context slimming pipeline`  | סטטוס: 🔴 לא בוצע
+- description: לבנות pipeline שממיר context גדול ל־minimal execution context עם summaries, drops ו־priority ordering לפני שליחה ל־AI או ל־provider
+- input:
+  - `relevanceFilteredContext`
+  - `tokenBudget`
+- output:
+  - `slimmedContextPayload`
+  - `droppedContextSummary`
+- dependencies:
+  - `Create context relevance filter`  | סטטוס: 🔴 לא בוצע
+  - `AI Learning UX`
+- connects_to: `Execution Surface`
+
+#### `Human Editing & Partial Acceptance`
+
+משימות טכניות:
+
+1. `Define editable proposal schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד להצעות שניתן לערוך, לתקן, לאשר חלקית או לדחות ברמת section, component, copy ו־next action
+- input:
+  - `proposalType`
+  - `proposalPayload`
+- output:
+  - `editableProposal`
+- dependencies:
+  - `AI Learning UX`
+  - `Approval System`  | סטטוס: 🟡 חלקי
+- connects_to: `Project State`
+
+2. `Create proposal editing system`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מערכת עריכה שמאפשרת למשתמש לשנות proposal קיים, להשאיר annotations וליצור revised proposal בלי לשבור את ה־history
+- input:
+  - `editableProposal`
+  - `userEditInput`
+- output:
+  - `editedProposal`
+  - `proposalEditHistory`
+- dependencies:
+  - `Define editable proposal schema`  | סטטוס: 🔴 לא בוצע
+  - `Project State`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+3. `Create partial acceptance flow`  | סטטוס: 🔴 לא בוצע
+- description: לבנות flow שמאפשר לאשר חלק מהצעה, לדחות חלק אחר, ולהחזיר רק את החלקים הבעייתיים ל־regeneration או review נוסף
+- input:
+  - `editedProposal`
+  - `approvalOutcome`
+- output:
+  - `partialAcceptanceDecision`
+  - `remainingProposalScope`
+- dependencies:
+  - `Create proposal editing system`  | סטטוס: 🔴 לא בוצע
+  - `Define approval outcome schema`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
 
 #### `AI Companion Experience`
@@ -5051,7 +5927,7 @@ Refinements מאושרים:
 - output:
   - `companionModeSettings`
 - dependencies:
-  - `Create companion dock and panel contract`  | סטטוס: 🔴 לא בוצע
+  - `Create companion dock and panel contract`  | סטטוס: 🟢 בוצע
   - `AI Learning UX`
 - connects_to: `Project State`
 
@@ -5078,7 +5954,7 @@ Refinements מאושרים:
   - `aiCompanionTemplate`
 - dependencies:
   - `Screen Template System`
-  - `Create companion dock and panel contract`  | סטטוס: 🔴 לא בוצע
+  - `Create companion dock and panel contract`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
 #### `Priority Order`
@@ -5243,7 +6119,7 @@ Refinements מאושרים:
   - `Developer Workspace Experience`
 - connects_to: `Project State`
 
-2. `Create live update transport layer`  | סטטוס: 🟢 בוצע
+2. `Create live update transport layer`  | סטטוס: 🟡 חלקי
 - description: לבנות transport לשידור updates חיים ל־UI בלי רענון ידני
 - input:
   - `realtimeEventStream`
@@ -5254,7 +6130,7 @@ Refinements מאושרים:
   - `Application Runtime Layer`
 - connects_to: `Execution Surface`
 
-3. `Create live log streaming module`  | סטטוס: 🟢 בוצע
+3. `Create live log streaming module`  | סטטוס: 🟡 חלקי
 - description: לבנות מודול שמזריק command outputs ולוגים ל־terminal view בזמן אמת
 - input:
   - `liveUpdateChannel`
@@ -5262,7 +6138,7 @@ Refinements מאושרים:
 - output:
   - `liveLogStream`
 - dependencies:
-  - `Create live update transport layer`  | סטטוס: 🟢 בוצע
+  - `Create live update transport layer`  | סטטוס: 🟡 חלקי
   - `Create terminal and command console view`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
@@ -5274,7 +6150,7 @@ Refinements מאושרים:
 - output:
   - `reactiveWorkspaceState`
 - dependencies:
-  - `Create live update transport layer`  | סטטוס: 🟢 בוצע
+  - `Create live update transport layer`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
 
 #### `Unified Project Workbench`
@@ -5350,6 +6226,194 @@ Refinements מאושרים:
   - `Create growth workspace`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
+6. `Create next task presentation model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות view model אחיד להצגת המשימה הבאה למשתמש כולל selected task, reason, alternatives, approval state ו־expected outcome
+- input:
+  - `schedulerDecision`
+  - `nextActionExplanation`
+  - `approvalStatus`
+- output:
+  - `nextTaskPresentation`
+- dependencies:
+  - `Scheduler`  | סטטוס: 🟡 חלקי
+  - `Explanation Layer`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+7. `Create next task approval handoff panel`  | סטטוס: 🔴 לא בוצע
+- description: לבנות פאנל workbench שבו המשתמש רואה אם הצעד הבא דורש approval, מה יקרה אחרי אישור, ומהן החלופות הבטוחות
+- input:
+  - `nextTaskPresentation`
+  - `approvalExplanation`
+- output:
+  - `nextTaskApprovalPanel`
+- dependencies:
+  - `Create next task presentation model`  | סטטוס: 🔴 לא בוצע
+  - `Approval System`  | סטטוס: 🟡 חלקי
+- connects_to: `Execution Surface`
+
+8. `Bind scheduler decision to project brain workspace`  | סטטוס: 🔴 לא בוצע
+- description: לחבר את `schedulerDecision` ו־`nextTaskPresentation` ל־Project Brain ול־Developer Workspace כך ששניהם נשענים על אותו source of truth
+- input:
+  - `projectBrainWorkspace`
+  - `developmentWorkspace`
+  - `schedulerDecisionRecord`
+- output:
+  - `workspaceNextTaskState`
+- dependencies:
+  - `Create scheduler decision persistence record`  | סטטוס: 🔴 לא בוצע
+  - `Create next task presentation model`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+9. `Create next task user acceptance test`  | סטטוס: 🔴 לא בוצע
+- description: לבנות test flow שמוכיח שהמשימה הבאה שנבחרת ב־scheduler היא גם מה שהמשתמש רואה ב־workbench, עם reasoning ו־approval handoff עקביים
+- input:
+  - `schedulerDecision`
+  - `nextTaskPresentation`
+  - `projectBrainWorkspace`
+- output:
+  - `acceptanceResult`
+- dependencies:
+  - `Bind scheduler decision to project brain workspace`  | סטטוס: 🔴 לא בוצע
+  - `V1 Acceptance & Reality Test Harness`
+- connects_to: `Execution Surface`
+
+10. `Create recommendation display contract`  | סטטוס: 🔴 לא בוצע
+- description: לבנות contract אחיד להצגת recommendation למשתמש כולל headline, why now, expected impact, blockers, alternatives ו־primary CTA
+- input:
+  - `projectExplanation`
+  - `reasoningPanel`
+  - `nextTaskPresentation`
+- output:
+  - `recommendationDisplay`
+- dependencies:
+  - `Create next task presentation model`  | סטטוס: 🔴 לא בוצע
+  - `Create recommendation reasoning panel contract`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+11. `Create recommendation summary panel`  | סטטוס: 🔴 לא בוצע
+- description: לבנות פאנל UI מרכזי שמציג למשתמש את ההמלצה הפעילה, את הסיבה, את רמת הדחיפות ואת תוצאת ההמשך הצפויה
+- input:
+  - `recommendationDisplay`
+  - `projectBrainWorkspace`
+- output:
+  - `recommendationSummaryPanel`
+- dependencies:
+  - `Create recommendation display contract`  | סטטוס: 🔴 לא בוצע
+  - `Initial Nexus Screens`
+- connects_to: `Execution Surface`
+
+12. `Bind project explanation to cockpit recommendation surface`  | סטטוס: 🔴 לא בוצע
+- description: לחבר את `projectExplanation`, `approvalExplanation`, `reasoningPanel` ו־`recommendationSummaryPanel` ל־cockpit כך שההמלצה למשתמש לא תופיע רק כ־metric או רשימת טקסטים חלקית
+- input:
+  - `projectExplanation`
+  - `approvalExplanation`
+  - `recommendationSummaryPanel`
+- output:
+  - `cockpitRecommendationSurface`
+- dependencies:
+  - `Create recommendation summary panel`  | סטטוס: 🔴 לא בוצע
+  - `Build authentication screen states`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+13. `Create recommendation clarity validation suite`  | סטטוס: 🔴 לא בוצע
+- description: לבנות בדיקות שמוודאות שהמלצה שמוצגת למשתמש כוללת selected action, reason, approval state, alternatives ו־CTA ברור ללא סתירה בין surfaces שונים
+- input:
+  - `recommendationDisplay`
+  - `cockpitRecommendationSurface`
+- output:
+  - `recommendationClarityValidation`
+- dependencies:
+  - `Bind project explanation to cockpit recommendation surface`  | סטטוס: 🔴 לא בוצע
+  - `Create next task user acceptance test`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Validation Layer`
+
+14. `Create recommendation presentation state`  | סטטוס: 🔴 לא בוצע
+- description: לבנות state מפורש להצגת recommendation למשתמש כולל headline, reason, impact, CTA, alternatives ו־approval handoff במסך אחד
+- input:
+  - `recommendationDisplay`
+  - `humanApprovalHandoff`
+- output:
+  - `recommendationPresentation`
+- dependencies:
+  - `Create recommendation display contract`  | סטטוס: 🔴 לא בוצע
+  - `Approval System`  | סטטוס: 🟡 חלקי
+- connects_to: `Execution Surface`
+
+15. `Create workbench access entry resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שמכריע לאיזה workspace המשתמש נכנס עכשיו לפי project state, role, blocked flows ו־current lifecycle phase
+- input:
+  - `workspaceNavigationModel`
+  - `projectState`
+  - `postAuthRedirect`
+- output:
+  - `workbenchEntryDecision`
+- dependencies:
+  - `Create cross-workspace navigation model`  | סטטוס: 🟢 בוצע
+  - `Identity & Auth`
+- connects_to: `Project State`
+
+16. `Create context visibility model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model שמציג איזה context פעיל למשתמש עכשיו, מאיפה הוא הגיע ומה רלוונטי ל־next step
+- input:
+  - `projectBrainWorkspace`
+  - `workspaceNextTaskState`
+- output:
+  - `contextVisibilityState`
+- dependencies:
+  - `Create project brain workspace`  | סטטוס: 🟢 בוצע
+  - `Bind scheduler decision to project brain workspace`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+17. `Create logs visibility model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model מפורש להצגת logs, run phases ו־user-facing messages בתוך workbench אחד
+- input:
+  - `formattedLogs`
+  - `executionStatusPayload`
+- output:
+  - `logsVisibilityState`
+- dependencies:
+  - `Create terminal and command console view`  | סטטוס: 🟢 בוצע
+  - `Execution Feedback Layer`
+- connects_to: `Execution Surface`
+
+18. `Create diff visibility model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model מפורש להצגת diffs, changed files ו־impact summaries כחלק מה־workbench השוטף
+- input:
+  - `branchDiffActivityPanel`
+  - `diffChangeExplanation`
+- output:
+  - `diffVisibilityState`
+- dependencies:
+  - `Create branch and diff activity panel`  | סטטוס: 🟢 בוצע
+  - `Create diff and change explanation model`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+19. `Create approvals workspace model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model ייעודי ל־approval inbox, request details, decision history ו־safe alternatives כחלק מה־workbench
+- input:
+  - `approvalRequest`
+  - `approvalAuditTrail`
+  - `humanApprovalHandoff`
+- output:
+  - `approvalsWorkspace`
+- dependencies:
+  - `Approval System`  | סטטוס: 🟡 חלקי
+  - `Create human approval handoff state`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+20. `Create next-step visibility model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model שמראה למשתמש מה הצעד הבא, מה יקרה אחריו, ומה ייחשב completion של השלב הנוכחי
+- input:
+  - `workspaceNextTaskState`
+  - `progressTrackingState`
+  - `milestoneTracking`
+- output:
+  - `nextStepVisibilityState`
+- dependencies:
+  - `Bind scheduler decision to project brain workspace`  | סטטוס: 🔴 לא בוצע
+  - `Create progress tracking state model`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
 #### `Collaboration Layer`
 
 משימות טכניות:
@@ -5366,7 +6430,7 @@ Refinements מאושרים:
   - `Developer Workspace Experience`
 - connects_to: `Project State`
 
-2. `Create project presence model`  | סטטוס: 🟢 בוצע
+2. `Create project presence model`  | סטטוס: 🟡 חלקי
 - description: לבנות model שמציג מי נמצא כרגע בפרויקט, באיזה workspace ובאיזה context הוא עובד
 - input:
   - `collaborationEvent`
@@ -5378,7 +6442,7 @@ Refinements מאושרים:
   - `User Activity & Retention`
 - connects_to: `Project State`
 
-3. `Create project comments and review threads module`  | סטטוס: 🟢 בוצע
+3. `Create project comments and review threads module`  | סטטוס: 🟡 חלקי
 - description: לבנות מודול ל־comments, review threads ו־contextual discussion על files, diffs, approvals ו־release steps
 - input:
   - `collaborationEvent`
@@ -5390,7 +6454,7 @@ Refinements מאושרים:
   - `Create branch and diff activity panel`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-4. `Create shared approval flow model`  | סטטוס: 🟢 בוצע
+4. `Create shared approval flow model`  | סטטוס: 🟡 חלקי
 - description: לבנות model לשיתוף approval requests בין reviewers, owners ו־operators עם visibility ותיאום החלטות
 - input:
   - `approvalRequest`
@@ -5402,7 +6466,7 @@ Refinements מאושרים:
   - `Collaboration Layer`
 - connects_to: `Project State`
 
-5. `Create collaboration activity feed`  | סטטוס: 🟢 בוצע
+5. `Create collaboration activity feed`  | סטטוס: 🟡 חלקי
 - description: לבנות feed של פעולות צוות, comments, approvals ו־workspace transitions ברמת הפרויקט
 - input:
   - `collaborationEvent`
@@ -5410,8 +6474,8 @@ Refinements מאושרים:
 - output:
   - `collaborationFeed`
 - dependencies:
-  - `Create project presence model`  | סטטוס: 🟢 בוצע
-  - `Create project comments and review threads module`  | סטטוס: 🟢 בוצע
+  - `Create project presence model`  | סטטוס: 🟡 חלקי
+  - `Create project comments and review threads module`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
 
 #### `Execution Topology Model`
@@ -5477,6 +6541,159 @@ Refinements מאושרים:
   - `Create cloud execution workspace model`  | סטטוס: 🟢 בוצע
   - `Create local development bridge contract`  | סטטוס: 🟢 בוצע
   - `Create remote mac runner contract`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+
+#### `Execution Action Routing`
+
+משימות טכניות:
+
+1. `Define execution action routing schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד שממפה action קנוני של Nexus לפעולה מבצעת בעולם האמיתי כולל actor, provider, execution surface ו־side effects צפויים
+- input:
+  - `actionType`
+  - `executionModeDecision`
+  - `providerCapabilities`
+- output:
+  - `executionActionRoute`
+- dependencies:
+  - `Execution Topology Model`
+  - `External Accounts Connector`
+- connects_to: `Execution Surface`
+
+2. `Create action-to-provider mapping resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שמכריע איזה provider, runner או integration מבצעים בפועל actions כמו create repository, push code, deploy backend, build ios או send external event
+- input:
+  - `executionActionRoute`
+  - `providerConnector`
+  - `projectState`
+- output:
+  - `executionDispatchPlan`
+- dependencies:
+  - `Define execution action routing schema`  | סטטוס: 🔴 לא בוצע
+  - `Create provider connector assembler`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+
+3. `Create external execution dispatch module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות dispatch module שמבצע בפועל actions דרך provider APIs, remote runners או execution surfaces ומחזיר תוצאה אחידה ל־Nexus
+- input:
+  - `executionDispatchPlan`
+  - `resolvedExecutionConfig`
+- output:
+  - `externalExecutionResult`
+- dependencies:
+  - `Create action-to-provider mapping resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create secret resolution module`  | סטטוס: 🔴 לא בוצע
+  - `Execution Surface Layer`
+- connects_to: `Execution Surface`
+
+4. `Define IDE agent executor contract`  | סטטוס: 🔴 לא בוצע
+- description: לבנות contract אחיד ל־IDE / coding agents חיצוניים שמקבלים prompt, workspace reference, allowed actions ו־approval token ומחזירים raw execution result, artifacts ו־logs
+- input:
+  - `compiledPrompt`
+  - `workspaceReference`
+  - `approvalStatus`
+- output:
+  - `ideAgentExecutionRequest`
+  - `rawExecutionResult`
+- dependencies:
+  - `Define execution action routing schema`  | סטטוס: 🔴 לא בוצע
+  - `Prompt Provider Integration`
+- connects_to: `Execution Surface`
+
+5. `Create local coding agent adapter`  | סטטוס: 🔴 לא בוצע
+- description: לבנות adapter שמחבר coding agent חיצוני בסגנון Roo-like executor אל Nexus כ־execution provider מבוקר
+- input:
+  - `ideAgentExecutionRequest`
+  - `providerConnector`
+- output:
+  - `executionProviderSession`
+- dependencies:
+  - `Define IDE agent executor contract`  | סטטוס: 🔴 לא בוצע
+  - `Create provider connector assembler`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+
+6. `Create execution provider capability sync`  | סטטוס: 🔴 לא בוצע
+- description: לבנות sync שמטען ומנרמל capabilities של coding executors כמו file edit, shell run, repo read, diff apply ו־approval requirements
+- input:
+  - `executionProviderSession`
+- output:
+  - `executionProviderCapabilities`
+- dependencies:
+  - `Create local coding agent adapter`  | סטטוס: 🔴 לא בוצע
+  - `Create provider capability descriptor`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+
+7. `Create external execution session manager`  | סטטוס: 🔴 לא בוצע
+- description: לבנות manager לפתיחת session, חידוש, ביטול ומיפוי session ids בין Nexus לבין execution providers חיצוניים
+- input:
+  - `executionProviderSession`
+  - `workspaceRecoveryState`
+- output:
+  - `managedExecutionSession`
+- dependencies:
+  - `Create local coding agent adapter`  | סטטוס: 🔴 לא בוצע
+  - `Workspace Recovery & Resume`
+- connects_to: `Execution Surface`
+
+8. `Create IDE agent result normalizer`  | סטטוס: 🔴 לא בוצע
+- description: לבנות normalizer שממיר תוצאות של coding agents חיצוניים לפורמט אחיד של Nexus כולל status, changed files, artifacts, logs ו־provider trace id
+- input:
+  - `rawExecutionResult`
+  - `executionProviderCapabilities`
+- output:
+  - `normalizedExecutionResult`
+- dependencies:
+  - `Create execution provider capability sync`  | סטטוס: 🔴 לא בוצע
+  - `Create external execution session manager`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+9. `Create execution invocation contract`  | סטטוס: 🔴 לא בוצע
+- description: לבנות contract קנוני לריצת execution בפועל כולל invocation id, provider session, execution target, approval posture ו־expected side effects
+- input:
+  - `executionDispatchPlan`
+  - `managedExecutionSession`
+- output:
+  - `executionInvocation`
+- dependencies:
+  - `Create external execution dispatch module`  | סטטוס: 🔴 לא בוצע
+  - `Create external execution session manager`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+10. `Create artifact collection pipeline`  | סטטוס: 🔴 לא בוצע
+- description: לבנות pipeline שאוסף files, diffs, logs, previews ו־provider metadata אחרי כל execution ולא רק ב־bootstrap
+- input:
+  - `executionInvocation`
+  - `normalizedExecutionResult`
+- output:
+  - `executionArtifacts`
+- dependencies:
+  - `Create execution invocation contract`  | סטטוס: 🔴 לא בוצע
+  - `Create IDE agent result normalizer`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+11. `Create canonical execution result envelope`  | סטטוס: 🔴 לא בוצע
+- description: לבנות envelope אחיד לכל execution שמרכז result status, artifacts, logs, provider trace, approval context ו־follow-up metadata
+- input:
+  - `normalizedExecutionResult`
+  - `executionArtifacts`
+- output:
+  - `executionResultEnvelope`
+- dependencies:
+  - `Create artifact collection pipeline`  | סטטוס: 🔴 לא בוצע
+  - `Create IDE agent result normalizer`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+12. `Create execution provider trust boundary resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שמגדיר מה מותר לשלוח ל־provider חיצוני, אילו credentials מוצמדים, ואילו actions נדרשים ל־approval נוסף
+- input:
+  - `executionProviderCapabilities`
+  - `credentialReferences`
+  - `approvalStatus`
+- output:
+  - `providerTrustDecision`
+- dependencies:
+  - `Create execution provider capability sync`  | סטטוס: 🔴 לא בוצע
+  - `Create secret resolution module`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
 
 #### `Workspace Recovery & Resume`
@@ -5602,6 +6819,56 @@ Refinements מאושרים:
   - `Notification System`
 - connects_to: `Project State`
 - הערת מצב: המשימה עצמה מומשה, אבל ה־`verificationFlowState` עדיין קנוני ונשען על auth flows פנימיים ולא על delivery אמיתי של email; הוא יקבל ערך מלא יותר אחרי `Notification System`.
+
+6. `Create authentication route resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שקובע אם המשתמש רואה signup, login, session restore, session expired או redirect ל־workspace
+- input:
+  - `authenticationState`
+  - `sessionState`
+- output:
+  - `authenticationRouteDecision`
+- dependencies:
+  - `Create authentication system`  | סטטוס: 🟢 בוצע
+  - `Create session and token management`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+7. `Create protected workspace access gate`  | סטטוס: 🔴 לא בוצע
+- description: לבנות gate שמונע גישה ל־workspace, project routes ו־execution surfaces בלי session תקין ו־workspace access תקף
+- input:
+  - `authenticationState`
+  - `sessionState`
+  - `accessDecision`
+- output:
+  - `protectedAccessDecision`
+- dependencies:
+  - `Create authentication route resolver`  | סטטוס: 🔴 לא בוצע
+  - `Workspace & Access Control`
+- connects_to: `Project State`
+
+8. `Build authentication screen states`  | סטטוס: 🔴 לא בוצע
+- description: לממש מצבי UI למסכי auth כולל sign up, sign in, restore session, error, loading ו־logout redirect
+- input:
+  - `authenticationRouteDecision`
+  - `verificationFlowState`
+- output:
+  - `authenticationViewState`
+- dependencies:
+  - `Create authentication route resolver`  | סטטוס: 🔴 לא בוצע
+  - `Initial Nexus Screens`
+- connects_to: `Execution Surface`
+
+9. `Create post-auth redirect resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שמכריע אם אחרי auth המשתמש נוחת ב־project creation, onboarding resume, workbench, approval inbox או waitlist status
+- input:
+  - `authenticationRouteDecision`
+  - `sessionState`
+  - `workspaceModel`
+- output:
+  - `postAuthRedirect`
+- dependencies:
+  - `Create authentication route resolver`  | סטטוס: 🔴 לא בוצע
+  - `Workspace & Access Control`
+- connects_to: `Project State`
 
 ---
 
@@ -5811,7 +7078,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Define project state snapshot schema`  | סטטוס: 🔴 לא בוצע
+1. `Define project state snapshot schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד ל־project snapshots כולל state version, execution graph version, workspace reference ו־restore metadata
 - input:
   - `projectState`
@@ -5829,10 +7096,10 @@ Refinements מאושרים:
 - output:
   - `snapshotRecord`
 - dependencies:
-  - `Define project state snapshot schema`  | סטטוס: 🔴 לא בוצע
+  - `Define project state snapshot schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-3. `Create state diff and compare module`  | סטטוס: 🔴 לא בוצע
+3. `Create state diff and compare module`  | סטטוס: 🟢 בוצע
 - description: לבנות מודול להשוואה בין snapshots ולזיהוי שינויים ברמת state, graph ו־artifacts
 - input:
   - `snapshotRecord`
@@ -5843,7 +7110,7 @@ Refinements מאושרים:
   - `Create project snapshot store`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
 
-4. `Create project state restore resolver`  | סטטוס: 🔴 לא בוצע
+4. `Create project state restore resolver`  | סטטוס: 🟢 בוצע
 - description: לבנות resolver שמכריע אם ואיך ניתן לשחזר snapshot מלא או חלקי לפי failure scope, approvals ו־side effects
 - input:
   - `snapshotRecord`
@@ -5855,7 +7122,7 @@ Refinements מאושרים:
   - `Failure Recovery & Rollback`
 - connects_to: `Project State`
 
-5. `Create project rollback execution module`  | סטטוס: 🔴 לא בוצע
+5. `Create project rollback execution module`  | סטטוס: 🟢 בוצע
 - description: לבנות מודול שמבצע restore בפועל ל־state, workspace ו־linked metadata כשהוחלט על rollback
 - input:
   - `restoreDecision`
@@ -5863,9 +7130,10 @@ Refinements מאושרים:
 - output:
   - `rollbackExecutionResult`
 - dependencies:
-  - `Create project state restore resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create project state restore resolver`  | סטטוס: 🟢 בוצע
   - `Execution Surface Layer`
 - connects_to: `Execution Surface`
+- הערת מצב: מודול ה־rollback מבצע עכשיו restore בפועל מתוך `snapshotRecord.restorePayload`, מחזיר `restoredProjectState`, `restoredExecutionGraph`, `restoredWorkspaceReference` ו־`linkedMetadataResults`, ומאפשר ל־execution surface לקבל תוצאת rollback עם payloadים משוחזרים במקום החלטה בלבד.
 
 ---
 
@@ -6093,6 +7361,89 @@ Refinements מאושרים:
   - `Platform Observability`
 - connects_to: `Project State`
 
+#### `Execution Safety & Idempotency`
+
+משימות טכניות:
+
+1. `Create external execution deduplication registry`  | סטטוס: 🔴 לא בוצע
+- description: לבנות registry שמזהה execution requests כפולים לפי action identity, effect key, provider target ו־retry lineage
+- input:
+  - `executionRequest`
+  - `executionActionRoute`
+- output:
+  - `executionDedupRecord`
+- dependencies:
+  - `Execution Action Routing`
+  - `Project State`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+2. `Create idempotent external action executor`  | סטטוס: 🔴 לא בוצע
+- description: לבנות executor שמבצע external actions בצורה idempotent, מחזיר existing result כשאותו effect כבר בוצע, ומונע side effects כפולים
+- input:
+  - `executionRequest`
+  - `executionDedupRecord`
+  - `resolvedActionProvider`
+- output:
+  - `idempotentExecutionResult`
+- dependencies:
+  - `Create external execution dispatch module`  | סטטוס: 🔴 לא בוצע
+  - `Create external execution deduplication registry`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+3. `Create atomic external action envelope`  | סטטוס: 🔴 לא בוצע
+- description: לבנות envelope אחיד ל־prepare, dispatch, commit, reconcile ו־abort כדי שפעולות חיצוניות לא יישארו ב־half-applied state
+- input:
+  - `executionRequest`
+  - `resolvedActionProvider`
+- output:
+  - `atomicExecutionEnvelope`
+- dependencies:
+  - `Create action-to-provider mapping resolver`  | סטטוס: 🔴 לא בוצע
+  - `Execution Surface Layer`
+- connects_to: `Execution Surface`
+
+4. `Create execution consistency validator`  | סטטוס: 🔴 לא בוצע
+- description: לבנות validator שבודק התאמה בין requested action, provider result, state update ו־stored evidence כדי לזהות drift או partial execution
+- input:
+  - `atomicExecutionEnvelope`
+  - `externalExecutionResult`
+  - `projectState`
+- output:
+  - `executionConsistencyReport`
+- dependencies:
+  - `Create atomic external action envelope`  | סטטוס: 🔴 לא בוצע
+  - `Create external execution dispatch module`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+#### `Failure Simulation & Chaos Validation`
+
+משימות טכניות:
+
+1. `Define failure simulation scenario schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד לתרחישי כשל כמו provider outage, queue stall, credential revoke, partial deploy ו־workspace disconnect
+- input:
+  - `runtimeTopology`
+  - `providerCapabilities`
+- output:
+  - `failureSimulationScenario`
+- dependencies:
+  - `Platform Observability`
+  - `Execution Surface Layer`
+- connects_to: `Project State`
+
+2. `Create chaos testing and failure injection runner`  | סטטוס: 🔴 לא בוצע
+- description: לבנות runner שמזריק failures מבוקרים, בודק recovery paths ואוסף evidence על retry, rollback ו־continuity behavior
+- input:
+  - `failureSimulationScenario`
+  - `continuityPlan`
+- output:
+  - `failureSimulationResult`
+  - `chaosValidationEvidence`
+- dependencies:
+  - `Define failure simulation scenario schema`  | סטטוס: 🔴 לא בוצע
+  - `Create failover and continuity planner`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
 #### `Notification System`
 
 משימות טכניות:
@@ -6180,7 +7531,7 @@ Refinements מאושרים:
 - dependencies:
   - `Application Runtime Layer`
 - connects_to: `Project State`
-- הערת מצב: המשימה עצמה מומשה, אבל ה־`platformTrace` וה־`platformLogs` עדיין בנויים מ־runtime state קנוני פנימי ולא מ־transport observability חיצוני; הם יקבלו עומק נוסף אחרי health, incidents ו־audit hooks.
+- הערת מצב: השכבה מחוברת עכשיו ל־observability transport משותף, רושמת traces ולוגים מה־context builder, מה־HTTP server ומ־application bootstrap, וחשופה דרך `getPlatformObservability()` ו־`/api/observability`; היא כבר לא נשענת רק על runtime state פנימי.
 
 2. `Create health check and readiness endpoints`  | סטטוס: 🟢 בוצע
 - description: לבנות endpoints לבדיקת health, readiness ו־dependency status של המערכת
@@ -6200,11 +7551,26 @@ Refinements מאושרים:
   - `healthStatus`
 - output:
   - `incidentAlert`
+
+- הערת מצב: ה־incident hooks מחוברים עכשיו לזיהוי incident חמור ביותר, מייצרים incident notification event, מפעילים dispatch בפועל ל־in-app / email / webhook לפי severity, ורושמים incident trace ייעודי ל־observability transport; הם כבר לא נשארים רק כ־incident state מחושב.
+4. `Create system bottleneck detector`  | סטטוס: 🟢 בוצע
+- description: לבנות detector שמזהה bottlenecks רוחביים במערכת עצמה לפי queue lag, runtime pressure, provider failures ו־stuck execution lanes
+- input:
+  - `platformTrace`
+  - `healthStatus`
+  - `queueObservability`
+- output:
+  - `systemBottleneckSummary`
 - dependencies:
-  - `Create platform logging and tracing layer`  | סטטוס: 🔴 לא בוצע
+  - `Create alerting and incident hooks`  | סטטוס: 🟢 בוצע
+  - `Server Queue & Job Control`
+- connects_to: `Project State`
+- dependencies:
+  - `Create platform logging and tracing layer`  | סטטוס: 🟢 בוצע
   - `Notification System`
 - connects_to: `Execution Surface`
 
+- הערת מצב: ה־detector מומש ומחשב עכשיו `systemBottleneckSummary` אמיתי מתוך queue lag, retry pressure, runtime degradation, provider failures ו־stuck execution lanes; הוא מחובר ל־`context-builder` ול־project state ומשתמש ב־observability signals חיים במקום placeholder.
 4. `Create audit log for system actions`  | סטטוס: 🟢 בוצע
 - description: לבנות audit log קנוני לפעולות מערכתיות כמו auth, role changes, approvals ו־security events
 - input:
@@ -6221,7 +7587,8 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Define provider degradation schema`  | סטטוס: 🔴 לא בוצע
+- הערת מצב: ה־audit log מחובר עכשיו ל־store אמיתי עם append/query, נשמר ל־`system-audit.ndjson`, נרשם מתוך `context-builder`, נחשף דרך `ProjectService.getSystemAuditLogs()` ודרך `GET /api/audit-logs`, ומקליט גם audit trace ל־observability transport.
+1. `Define provider degradation schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד ל־provider health, consecutive failures, cooldown windows, probe state ו־degraded service flags
 - input:
   - `providerSession`
@@ -6233,7 +7600,8 @@ Refinements מאושרים:
   - `External Accounts Connector`
 - connects_to: `Project State`
 
-2. `Create provider circuit breaker resolver`  | סטטוס: 🔴 לא בוצע
+- הערת מצב: ה־schema כבר מומש ב־`provider-degradation-schema.js`, מכסה `health`, `consecutiveFailures`, `cooldownWindowMs`, `probeState` ו־`degradedServiceFlags`, ונבנה בפועל מתוך `providerSession` ו־`incidentAlert` בתוך `context-builder`; הוא גם נבדק ומופיע ב־project state.
+2. `Create provider circuit breaker resolver`  | סטטוס: 🟢 בוצע
 - description: לבנות resolver שסוגר provider זמנית אחרי רצף כשלים, timeouts או outage signals, ומכריע מתי fail fast ומתי לאפשר ניסיון מחדש
 - input:
   - `providerDegradationState`
@@ -6241,11 +7609,12 @@ Refinements מאושרים:
 - output:
   - `circuitBreakerDecision`
 - dependencies:
-  - `Define provider degradation schema`  | סטטוס: 🔴 לא בוצע
+  - `Define provider degradation schema`  | סטטוס: 🟢 בוצע
   - `Create alerting and incident hooks`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
-3. `Create provider recovery probe flow`  | סטטוס: 🔴 לא בוצע
+- הערת מצב: ה־resolver כבר מומש ב־`provider-circuit-breaker-resolver.js`, מקבל `providerDegradationState` ו־`runtimeHealthSignals`, ומחזיר `circuitBreakerDecision` עם `open` / `half-open` / `closed`, fail-fast מול controlled retry, cooldown ו־dependency signals; הוא גם מחובר ב־`context-builder` ומופיע ב־project state.
+3. `Create provider recovery probe flow`  | סטטוס: 🟢 בוצע
 - description: לבנות flow מבוקר של probe/re-open כדי לבדוק אם provider סגור חזר להיות תקין בלי להעמיס עליו מחדש
 - input:
   - `circuitBreakerDecision`
@@ -6253,7 +7622,7 @@ Refinements מאושרים:
 - output:
   - `providerRecoveryProbe`
 - dependencies:
-  - `Create provider circuit breaker resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create provider circuit breaker resolver`  | סטטוס: 🟢 בוצע
   - `Create background worker runtime`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
@@ -6261,6 +7630,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
+- הערת מצב: ה־flow כבר מומש ב־`provider-recovery-probe-flow.js`, מתרגם `circuitBreakerDecision` ו־`providerSession` ל־`providerRecoveryProbe` עם probe scheduling, worker job, reopen decision ו־controlled retry path; הוא גם מחובר ב־`context-builder` ונחשף ב־project state.
 1. `Define project audit event schema`  | סטטוס: 🔴 לא בוצע
 - description: לבנות schema אחיד לאירועי audit ברמת פרויקט כמו edits, approvals, deploy actions, provider calls ו־state changes
 - input:
@@ -6350,6 +7720,19 @@ Refinements מאושרים:
 - dependencies:
   - `Create backup and restore strategy`  | סטטוס: 🔴 לא בוצע
   - `Platform Observability`
+- connects_to: `Project State`
+
+4. `Create business continuity lifecycle manager`  | סטטוס: 🔴 לא בוצע
+- description: לבנות manager שמחבר backup, failover, incident recovery, retention policies ו־owner continuity decisions למסלול continuity אחד לאורך חיי המוצר
+- input:
+  - `backupStrategy`
+  - `continuityPlan`
+  - `disasterRecoveryChecklist`
+- output:
+  - `businessContinuityState`
+- dependencies:
+  - `Create disaster recovery checklist`  | סטטוס: 🔴 לא בוצע
+  - `Create failover and continuity planner`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
 
 ---
@@ -6668,6 +8051,36 @@ Refinements מאושרים:
   - `UI / UX Foundation`
 - connects_to: `Project State`
 
+#### `Cost-Aware Decision Engine`
+
+משימות טכניות:
+
+1. `Create cost-aware action selector`  | סטטוס: 🔴 לא בוצע
+- description: לבנות selector שמעדיף בין actions חלופיים לפי expected value, latency, provider cost ו־budget pressure
+- input:
+  - `candidateActions`
+  - `costSummary`
+  - `decisionIntelligence`
+- output:
+  - `costAwareActionSelection`
+- dependencies:
+  - `Platform Cost & Usage Control`
+  - `Decision Intelligence Layer`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+2. `Create budget constraint engine`  | סטטוס: 🔴 לא בוצע
+- description: לבנות engine שמחשב budget envelopes, hard limits ו־soft limits לפי workspace, provider lane ו־execution class
+- input:
+  - `costSummary`
+  - `workspaceModel`
+  - `pricingMetadata`
+- output:
+  - `budgetDecision`
+- dependencies:
+  - `Platform Cost & Usage Control`
+  - `Workspace & Access Control`
+- connects_to: `Execution Surface`
+
 ---
 
 ### שלב 6.69 — Billing & Monetization System
@@ -6932,6 +8345,18 @@ Refinements מאושרים:
   - `Create returning user resolver`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
 
+5. `Create retention and re-engagement planner`  | סטטוס: 🔴 לא בוצע
+- description: לבנות planner מפורש לשימור, reactivation ו־ongoing re-engagement לפי cohorts, drop-offs ו־product milestones
+- input:
+  - `retentionSummary`
+  - `activationDropOffs`
+- output:
+  - `retentionLifecyclePlan`
+- dependencies:
+  - `Create retention metrics aggregator`  | סטטוס: 🔴 לא בוצע
+  - `Create re-engagement trigger planner`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
 #### `Billing & Revenue Metrics`
 
 משימות טכניות:
@@ -7017,6 +8442,188 @@ Refinements מאושרים:
   - `Create analytics API`  | סטטוס: 🔴 לא בוצע
   - `UI / UX Foundation`
 - connects_to: `Execution Surface`
+
+#### `Product Feedback Loop`
+
+משימות טכניות:
+
+1. `Define feature success schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד למדידת הצלחת פיצ'ר לפי activation, repeat usage, completion quality, override rate ו־drop-off points
+- input:
+  - `featureUsageEvents`
+  - `analyticsSummary`
+- output:
+  - `featureSuccessMetric`
+- dependencies:
+  - `Nexus Product Analytics`
+- connects_to: `Project State`
+
+2. `Create feature success tracker`  | סטטוס: 🔴 לא בוצע
+- description: לבנות tracker שמחשב עבור כל feature את adoption, stickiness, success rate ו־friction indicators
+- input:
+  - `featureSuccessMetric`
+  - `userActivityEvent`
+- output:
+  - `featureSuccessSummary`
+- dependencies:
+  - `Define feature success schema`  | סטטוס: 🔴 לא בוצע
+  - `User Activity & Retention`
+- connects_to: `Project State`
+
+3. `Create product iteration feedback engine`  | סטטוס: 🔴 לא בוצע
+- description: לבנות engine שמחזיר recommendations לשיפור flows, features ו־defaults לפי feature success, outcome scores ו־user behavior
+- input:
+  - `featureSuccessSummary`
+  - `outcomeFeedbackState`
+  - `analyticsSummary`
+- output:
+  - `productIterationInsights`
+- dependencies:
+  - `Create feature success tracker`  | סטטוס: 🔴 לא בוצע
+  - `Create outcome feedback loop`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+#### `Outcome & Goal Evaluation`
+
+משימות טכניות:
+
+1. `Define outcome evaluation schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד להערכת outcomes של פעולות ברמת execution, product, user value ו־business impact
+- input:
+  - `actionResult`
+  - `projectState`
+  - `analyticsSummary`
+- output:
+  - `outcomeEvaluation`
+- dependencies:
+  - `Task Execution Metrics`
+  - `Nexus Product Analytics`
+- connects_to: `Project State`
+
+2. `Create action success scoring engine`  | סטטוס: 🔴 לא בוצע
+- description: לבנות engine שמחשב success score אמיתי לפעולה לפי outcome quality, side effects, reversals ו־user acceptance
+- input:
+  - `outcomeEvaluation`
+  - `taskResult`
+- output:
+  - `actionSuccessScore`
+- dependencies:
+  - `Define outcome evaluation schema`  | סטטוס: 🔴 לא בוצע
+  - `Task Result Ingestion`  | סטטוס: 🟡 חלקי
+- connects_to: `Project State`
+
+3. `Create outcome feedback loop`  | סטטוס: 🔴 לא בוצע
+- description: לבנות loop שמחזיר success scores ו־failure patterns חזרה ל־learning, recommendation ו־priority systems
+- input:
+  - `actionSuccessScore`
+  - `projectLearningRecords`
+- output:
+  - `outcomeFeedbackState`
+- dependencies:
+  - `Create action success scoring engine`  | סטטוס: 🔴 לא בוצע
+  - `Learning Layer`
+- connects_to: `Project State`
+
+4. `Create goal progress evaluator`  | סטטוס: 🔴 לא בוצע
+- description: לבנות evaluator שמודד כמה התקדמנו למטרה המוצהרת של הפרויקט לפי outcomes, blockers, throughput ו־first value progression
+- input:
+  - `projectGoal`
+  - `outcomeFeedbackState`
+  - `taskThroughputSummary`
+- output:
+  - `goalProgressState`
+- dependencies:
+  - `Create outcome feedback loop`  | סטטוס: 🔴 לא בוצע
+  - `Universal Project Lifecycle`  | סטטוס: 🟢 בוצע
+- connects_to: `Project State`
+
+5. `Create milestone tracking system`  | סטטוס: 🔴 לא בוצע
+- description: לבנות system שממפה milestones קריטיים, עוקב אחרי completion שלהם ומציג drift בין milestone plan לבין actual outcome
+- input:
+  - `goalProgressState`
+  - `lifecycleMilestones`
+- output:
+  - `milestoneTracking`
+- dependencies:
+  - `Create lifecycle milestone generator`  | סטטוס: 🟢 בוצע
+  - `Create goal progress evaluator`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+#### `Meta Orchestration Layer`
+
+משימות טכניות:
+
+1. `Define post-execution evaluation schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד לזרימה שאחרי execution כולל consistency, outcome, bottleneck, cost ו־feedback signals
+- input:
+  - `executionResult`
+  - `projectState`
+  - `analyticsSummary`
+- output:
+  - `postExecutionEvaluation`
+- dependencies:
+  - `Outcome & Goal Evaluation`
+  - `Execution Safety & Idempotency`
+- connects_to: `Project State`
+
+2. `Create post-execution evaluation pipeline`
+- סטטוס: `🔴 לא בוצע`
+- description: לבנות pipeline שמריץ לפי סדר consistency validation, outcome evaluation, bottleneck analysis ו־feedback assembly אחרי כל execution משמעותי
+- input:
+  - `postExecutionEvaluation`
+  - `executionConsistencyReport`
+  - `outcomeEvaluation`
+  - `systemBottleneckSummary`
+- output:
+  - `postExecutionReport`
+- dependencies:
+  - `Define post-execution evaluation schema`  | סטטוס: `🔴 לא בוצע`
+  - `Create execution consistency validator`  | סטטוס: `🔴 לא בוצע`
+  - `Create system bottleneck detector`  | סטטוס: `🔴 לא בוצע`
+- connects_to: `Project State`
+
+3. `Create cross-layer feedback orchestrator`
+- סטטוס: `🔴 לא בוצע`
+- description: לבנות orchestrator שמפיץ insights מתוך post-execution report ל־learning, recommendation, cost ו־product iteration layers
+- input:
+  - `postExecutionReport`
+  - `outcomeFeedbackState`
+  - `productIterationInsights`
+- output:
+  - `crossLayerFeedbackState`
+- dependencies:
+  - `Create post-execution evaluation pipeline`  | סטטוס: `🔴 לא בוצע`
+  - `Create outcome feedback loop`  | סטטוס: `🔴 לא בוצע`
+  - `Create product iteration feedback engine`  | סטטוס: `🔴 לא בוצע`
+- connects_to: `Project State`
+
+4. `Create adaptive execution loop`
+- סטטוס: `🔴 לא בוצע`
+- description: לבנות loop שמעדכן execution strategy, action ordering, provider choice או approval posture לפי cross-layer feedback מצטבר
+- input:
+  - `crossLayerFeedbackState`
+  - `decisionIntelligence`
+  - `budgetDecision`
+- output:
+  - `adaptiveExecutionDecision`
+- dependencies:
+  - `Create cross-layer feedback orchestrator`  | סטטוס: `🔴 לא בוצע`
+  - `Cost-Aware Decision Engine`
+- connects_to: `Execution Surface`
+
+5. `Create system optimization cycle`
+- סטטוס: `🔴 לא בוצע`
+- description: לבנות cycle מחזורי שמרכז adaptive decisions, reliability signals ו־product insights לתוכנית אופטימיזציה אחת של המערכת
+- input:
+  - `adaptiveExecutionDecision`
+  - `serviceReliabilityDashboard`
+  - `productIterationInsights`
+- output:
+  - `systemOptimizationPlan`
+- dependencies:
+  - `Create adaptive execution loop`  | סטטוס: `🔴 לא בוצע`
+  - `Create service reliability dashboard model`  | סטטוס: `🔴 לא בוצע`
+- connects_to: `Project State`
 
 ---
 
@@ -7164,6 +8771,31 @@ Refinements מאושרים:
   - `Nexus Product Analytics`
 - connects_to: `Project State`
 
+7. `Create trust proof block builder`  | סטטוס: 🔴 לא בוצע
+- description: לבנות builder ל־proof blocks, credibility signals, demos, testimonials ו־trust messaging עבור דפי הכניסה של Nexus
+- input:
+  - `messagingFramework`
+  - `objectionMap`
+- output:
+  - `trustProofBlocks`
+- dependencies:
+  - `Create landing page information architecture`  | סטטוס: 🔴 לא בוצע
+  - `Create objection and FAQ map`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+8. `Create persona-specific landing variant resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שבוחר variant נכון של landing page לפי persona, channel intent ו־entry context
+- input:
+  - `messagingVariants`
+  - `visitorContext`
+  - `acquisitionSourceMetrics`
+- output:
+  - `landingVariantDecision`
+- dependencies:
+  - `Create audience-specific messaging variants`  | סטטוס: 🔴 לא בוצע
+  - `Create acquisition source tracker`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
 #### `Landing, Access & App Entry Flow`
 
 משימות טכניות:
@@ -7270,6 +8902,68 @@ Refinements מאושרים:
   - `Create first project kickoff flow`  | סטטוס: 🔴 לא בוצע
   - `Create post-login destination resolver`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
+
+9. `Create app landing entry experience`  | סטטוס: 🔴 לא בוצע
+- description: לבנות חוויית כניסה ראשית ל־app עם value framing, CTAs, first-visit states ו־handoff ברור ל־signup, login או create project
+- input:
+  - `siteAppBoundary`
+  - `accessModeDecision`
+  - `productCtaStrategy`
+- output:
+  - `appLandingEntry`
+- dependencies:
+  - `Create public site and app boundary model`  | סטטוס: 🔴 לא בוצע
+  - `Initial Nexus Screens`
+- connects_to: `Execution Surface`
+
+10. `Create entry state variants and redirects`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מצבי UI ו־redirects למשתמש חדש, משתמש מחובר בלי פרויקט, משתמש עם פרויקט קיים ו־session expired
+- input:
+  - `appEntryDecision`
+  - `postLoginDestination`
+- output:
+  - `entryStateVariants`
+- dependencies:
+  - `Create app entry gate resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create app landing entry experience`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+11. `Create entry loading and recovery states`  | סטטוס: 🔴 לא בוצע
+- description: לבנות מצבי loading, bootstrap failure, empty workspace ו־resume recovery למסך הכניסה הראשי של האפליקציה
+- input:
+  - `appEntryDecision`
+  - `sessionState`
+- output:
+  - `entryRecoveryState`
+- dependencies:
+  - `Create entry state variants and redirects`  | סטטוס: 🔴 לא בוצע
+  - `Workspace Recovery & Resume`
+- connects_to: `Execution Surface`
+
+12. `Create app entry trust and orientation panel`  | סטטוס: 🔴 לא בוצע
+- description: לבנות panel שמסביר למשתמש החדש מה Nexus עושה, למה לסמוך עליו, ומה יקרה אחרי הלחיצה הראשונה
+- input:
+  - `appLandingEntry`
+  - `trustProofBlocks`
+- output:
+  - `entryOrientationPanel`
+- dependencies:
+  - `Create app landing entry experience`  | סטטוס: 🔴 לא בוצע
+  - `Create trust proof block builder`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
+
+13. `Create entry decision support flow`  | סטטוס: 🔴 לא בוצע
+- description: לבנות flow שעוזר למשתמש לבחור בין signup, demo, waitlist, login או create first project לפי readiness, trust level ו־access mode
+- input:
+  - `entryStateVariants`
+  - `accessModeDecision`
+  - `visitorContext`
+- output:
+  - `entryDecisionSupport`
+- dependencies:
+  - `Create entry state variants and redirects`  | סטטוס: 🔴 לא בוצע
+  - `Create app entry trust and orientation panel`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
 
 #### `Product-Led Onboarding Marketing`
 
@@ -7463,6 +9157,43 @@ Refinements מאושרים:
   - `Learning Layer`
 - connects_to: `Project State`
 
+6. `Create go-to-market planning model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model מפורש לתוכנית go-to-market של Nexus שמחברת positioning, channels, rollout, activation ו־success criteria
+- input:
+  - `launchCampaignBrief`
+  - `websiteConversionFlow`
+  - `activationFunnel`
+- output:
+  - `goToMarketPlan`
+- dependencies:
+  - `Create Nexus launch campaign brief`  | סטטוס: 🔴 לא בוצע
+  - `Product-Led Onboarding Marketing`
+- connects_to: `Project State`
+
+7. `Create promotion execution planner`  | סטטוס: 🔴 לא בוצע
+- description: לבנות planner מפורש להרצת promotion בערוצים השונים כולל schedule, assets, approvals ו־distribution responsibilities
+- input:
+  - `launchRolloutPlan`
+  - `launchPublishingPlan`
+- output:
+  - `promotionExecutionPlan`
+- dependencies:
+  - `Create launch draft publishing plan`  | סטטוס: 🔴 לא בוצע
+  - `Marketing Distribution Orchestrator`
+- connects_to: `Project State`
+
+8. `Create launch marketing execution tracker`  | סטטוס: 🔴 לא בוצע
+- description: לבנות tracker שמראה מה כבר פורסם, מה בתור, מה נכשל ומה דורש התערבות ידנית בהרצת ההשקה השיווקית
+- input:
+  - `promotionExecutionPlan`
+  - `launchFeedbackSummary`
+- output:
+  - `launchMarketingExecution`
+- dependencies:
+  - `Create promotion execution planner`  | סטטוס: 🔴 לא בוצע
+  - `Create launch feedback intake module`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
 #### `GTM Measurement & Feedback`
 
 משימות טכניות:
@@ -7526,6 +9257,55 @@ Refinements מאושרים:
 - dependencies:
   - `Create launch performance dashboard assembler`  | סטטוס: 🔴 לא בוצע
   - `Create optimization recommendation engine`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+6. `Create first-touch attribution recorder`  | סטטוס: 🔴 לא בוצע
+- description: לבנות recorder ששומר first-touch source, landing variant, CTA path ו־anonymous visit context עוד לפני auth או signup
+- input:
+  - `visitorContext`
+  - `landingVariantDecision`
+  - `productCtaStrategy`
+- output:
+  - `firstTouchAttribution`
+- dependencies:
+  - `Create persona-specific landing variant resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create product CTA strategy`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+7. `Create pre-auth conversion event collector`  | סטטוס: 🔴 לא בוצע
+- description: לבנות collector לאירועי pre-auth כמו landing views, CTA clicks, waitlist attempts, demo requests ו־auth handoff starts
+- input:
+  - `firstTouchAttribution`
+  - `landingAuthHandoff`
+- output:
+  - `preAuthConversionEvents`
+- dependencies:
+  - `Create first-touch attribution recorder`  | סטטוס: 🔴 לא בוצע
+  - `Create public landing to auth handoff flow`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+8. `Create conversion analytics model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model מפורש ל־conversion analytics שמחבר visits, CTA clicks, signup starts, activation ו־drop-off reasons
+- input:
+  - `preAuthConversionEvents`
+  - `websiteActivationFunnel`
+- output:
+  - `conversionAnalytics`
+- dependencies:
+  - `Create pre-auth conversion event collector`  | סטטוס: 🔴 לא בוצע
+  - `Create website-to-activation funnel analyzer`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+9. `Create growth loop management state`  | סטטוס: 🔴 לא בוצע
+- description: לבנות state ניהולי שמרכז hypotheses, experiments, conversions, retention moves ו־next growth actions ללולאת שיפור מתמשכת
+- input:
+  - `continuousGrowthLoop`
+  - `conversionAnalytics`
+- output:
+  - `growthLoopManagement`
+- dependencies:
+  - `Create continuous growth loop engine`  | סטטוס: 🔴 לא בוצע
+  - `Create conversion analytics model`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
 
 ---
@@ -7874,6 +9654,31 @@ Refinements מאושרים:
   - `Operating Model & Defensibility`
 - connects_to: `Project State`
 
+8. `Create live project monitoring model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model שמרכז health, runtime, deploy status, verification signals ו־live alerts ברמת פרויקט בודד אחרי launch
+- input:
+  - `platformTrace`
+  - `releaseStateUpdate`
+  - `ownerIncident`
+- output:
+  - `liveProjectMonitoring`
+- dependencies:
+  - `Create incident detection system`  | סטטוס: 🔴 לא בוצע
+  - `Release Status Tracking`
+- connects_to: `Project State`
+
+9. `Create maintenance task generation engine`  | סטטוס: 🔴 לא בוצע
+- description: לבנות engine שמפיק maintenance tasks מתוך incidents, degraded health, security signals ו־aging operational debt
+- input:
+  - `liveProjectMonitoring`
+  - `incidentTimeline`
+- output:
+  - `maintenanceBacklog`
+- dependencies:
+  - `Create live project monitoring model`  | סטטוס: 🔴 לא בוצע
+  - `Scheduler`  | סטטוס: 🟡 חלקי
+- connects_to: `Execution Graph`
+
 #### `Owner Security & Privileged Access`
 
 משימות טכניות:
@@ -8081,6 +9886,42 @@ Refinements מאושרים:
 - dependencies:
   - `Create multi-actor project state system`  | סטטוס: 🔴 לא בוצע
   - `Create approval chain manager`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+6. `Create portfolio workspace registry`  | סטטוס: 🔴 לא בוצע
+- description: לבנות registry שמרכז את כל הפרויקטים הפעילים, מצבם, owner mapping ו־shared signals ברמת workspace או organization
+- input:
+  - `workspaceModel`
+  - `projectStateSnapshot`
+- output:
+  - `portfolioWorkspace`
+- dependencies:
+  - `Workspace & Access Control`
+  - `Nexus Persistence Layer`
+- connects_to: `Project State`
+
+7. `Create multi-project overview assembler`  | סטטוס: 🔴 לא בוצע
+- description: לבנות assembler שנותן תמונת מצב רוחבית על כמה פרויקטים במקביל כולל health, stage, blockers, growth ו־owner priorities
+- input:
+  - `portfolioWorkspace`
+  - `ownerPriorityQueue`
+- output:
+  - `multiProjectOverview`
+- dependencies:
+  - `Create portfolio workspace registry`  | סטטוס: 🔴 לא בוצע
+  - `Owner Control Center`
+- connects_to: `Project State`
+
+8. `Create collaboration expansion planner`  | סטטוס: 🔴 לא בוצע
+- description: לבנות planner שמגדיר איך להרחיב פרויקט מ־solo flow ל־team collaboration כולל roles, invitations, approvals ו־shared workspaces
+- input:
+  - `teamContext`
+  - `workspaceUsageSignals`
+- output:
+  - `collaborationExpansionPlan`
+- dependencies:
+  - `Define team context schema`  | סטטוס: 🔴 לא בוצע
+  - `Workspace & Access Control`
 - connects_to: `Project State`
 
 #### `Context & Scope Awareness`
@@ -8334,6 +10175,31 @@ Refinements מאושרים:
 - dependencies:
   - `Create domain playbook builder`  | סטטוס: 🔴 לא בוצע
   - `Create cross-project memory registry`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+
+10. `Create template and pattern reuse resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שקובע מתי אפשר ליישם template, playbook או reusable pattern על פרויקט חדש בלי לשבור domain fit או privacy scope
+- input:
+  - `reusableSolutionPatterns`
+  - `projectState`
+- output:
+  - `patternReuseDecision`
+- dependencies:
+  - `Create reusable solution patterns registry`  | סטטוס: 🔴 לא בוצע
+  - `Learning Governance`
+- connects_to: `Project State`
+
+11. `Create cross-project learning application planner`  | סטטוס: 🔴 לא בוצע
+- description: לבנות planner שמתרגם learnings חוצי־פרויקטים ל־recommended actions, defaults או warnings לפרויקט הנוכחי
+- input:
+  - `crossProjectMemory`
+  - `patternReuseDecision`
+  - `projectState`
+- output:
+  - `crossProjectLearningPlan`
+- dependencies:
+  - `Create cross-project memory registry`  | סטטוס: 🔴 לא בוצע
+  - `Create template and pattern reuse resolver`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
 
 #### `Knowledge Ownership & Learning Rights`
@@ -8778,6 +10644,35 @@ Refinements מאושרים:
   - `Create capability promise and limit map`  | סטטוס: 🔴 לא בוצע
   - `Nexus Product Go-To-Market`
 - connects_to: `Project State`
+
+#### `System Capability Registry`
+
+משימות טכניות:
+
+1. `Define system capability registry schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד לרישום capabilities, limits, supported workflows, execution classes ו־unsupported operations של Nexus
+- input:
+  - `productBoundaryModel`
+  - `extensionRegistry`
+- output:
+  - `systemCapabilityRegistry`
+- dependencies:
+  - `Define product boundary schema`  | סטטוס: 🔴 לא בוצע
+  - `Extensibility Framework`
+- connects_to: `Project State`
+
+2. `Create system capability resolver`  | סטטוס: 🔴 לא בוצע
+- description: לבנות resolver שקובע בזמן אמת אם פעולה או workflow נתמכים, מוגבלים, דורשים אישור מיוחד או מחוץ לגבולות Nexus
+- input:
+  - `systemCapabilityRegistry`
+  - `requestedAction`
+  - `workspaceModel`
+- output:
+  - `capabilityDecision`
+- dependencies:
+  - `Define system capability registry schema`  | סטטוס: 🔴 לא בוצע
+  - `Create capability promise and limit map`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Execution Surface`
 
 ---
 

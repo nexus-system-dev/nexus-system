@@ -34,13 +34,14 @@ function buildTraceSteps(runtimeEvents) {
 export function createPlatformLoggingAndTracingLayer({
   runtimeEvents = null,
   requestContext = null,
+  observabilityTransport = null,
 } = {}) {
   const normalizedRuntimeEvents = normalizeRuntimeEvents(runtimeEvents);
   const normalizedRequestContext = normalizeRequestContext(requestContext);
   const platformLogs = normalizeLogEntries(normalizedRuntimeEvents);
   const traceSteps = buildTraceSteps(normalizedRuntimeEvents);
 
-  return {
+  const payload = {
     platformTrace: {
       traceId:
         normalizedRequestContext.requestId
@@ -73,4 +74,10 @@ export function createPlatformLoggingAndTracingLayer({
       },
     })),
   };
+
+  if (observabilityTransport && typeof observabilityTransport.recordTraceEnvelope === "function") {
+    observabilityTransport.recordTraceEnvelope(payload);
+  }
+
+  return payload;
 }

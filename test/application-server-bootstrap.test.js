@@ -38,6 +38,8 @@ test("application server bootstrap returns canonical runtime without seeded demo
   assert.equal(applicationRuntime.healthStatus.summary.totalDependencies >= 4, true);
   assert.equal(applicationRuntime.readinessStatus.status, "ready");
   assert.equal(applicationRuntime.readinessStatus.isReady, true);
+  assert.equal(applicationRuntime.platformObservabilityTransport.getSnapshot().summary.totalTraces >= 1, true);
+  assert.equal(applicationRuntime.platformObservabilityTransport.getSnapshot().summary.totalLogs >= 1, true);
   assert.equal(applicationRuntime.startupSteps.some((step) => step.step === "seed-demo-projects"), false);
   assert.equal(applicationRuntime.projectService.getProject("giftwallet"), null);
 });

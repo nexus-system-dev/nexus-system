@@ -33,6 +33,38 @@ function requestJson(server, pathname) {
   });
 }
 
+function requestJsonWithBody(server, method, pathname, payload) {
+  return new Promise((resolve, reject) => {
+    const request = new EventEmitter();
+    request.method = method;
+    request.url = pathname;
+    request.headers = { "content-type": "application/json" };
+
+    const response = {
+      statusCode: 200,
+      headers: {},
+      writeHead(statusCode, headers) {
+        this.statusCode = statusCode;
+        this.headers = headers;
+      },
+      end(body) {
+        try {
+          resolve({
+            statusCode: this.statusCode,
+            body: JSON.parse(body),
+          });
+        } catch (error) {
+          reject(error);
+        }
+      },
+    };
+
+    server.emit("request", request, response);
+    request.emit("data", Buffer.from(JSON.stringify(payload)));
+    request.emit("end");
+  });
+}
+
 test("server exposes health and readiness endpoints", async () => {
   const server = createServer(
     {
@@ -56,4 +88,186 @@ test("server exposes health and readiness endpoints", async () => {
   assert.equal(healthResponse.body.healthStatus.status, "healthy");
   assert.equal(readinessResponse.statusCode, 200);
   assert.equal(readinessResponse.body.readinessStatus.status, "ready");
+});
+
+test("server exposes observability endpoint and records request traces", async () => {
+  const projectService = {
+    platformObservabilityTransport: {
+      traces: [],
+      logs: [],
+      startHttpRequest({ requestId, route, method, workspaceId, service }) {
+        this.traces.push({
+          traceId: requestId,
+          route,
+          method,
+          workspaceId,
+          service,
+          status: "running",
+        });
+
+        return { traceId: requestId };
+      },
+      finishHttpRequest({ traceId, statusCode }) {
+        this.logs.push({
+          traceId,
+          statusCode,
+        });
+      },
+    },
+    getPlatformObservability() {
+      return {
+        platformTraces: this.platformObservabilityTransport.traces,
+        platformLogs: this.platformObservabilityTransport.logs,
+        summary: {
+          totalTraces: this.platformObservabilityTransport.traces.length,
+          totalLogs: this.platformObservabilityTransport.logs.length,
+        },
+      };
+    },
+    listProjects: () => [],
+  };
+  const server = createServer(projectService, {
+    runtimeId: "application-runtime-1",
+  });
+
+  const observabilityResponse = await requestJson(server, "/api/observability");
+
+  assert.equal(observabilityResponse.statusCode, 200);
+  assert.equal(observabilityResponse.body.observability.summary.totalTraces, 1);
+  assert.equal(observabilityResponse.body.observability.summary.totalLogs, 0);
+
+  const healthResponse = await requestJson(server, "/api/health");
+  const finalSnapshot = projectService.getPlatformObservability();
+
+  assert.equal(healthResponse.statusCode, 200);
+  assert.equal(finalSnapshot.summary.totalTraces, 2);
+  assert.equal(finalSnapshot.summary.totalLogs, 2);
+  assert.equal(finalSnapshot.platformTraces[0].route, "/api/observability");
+});
+
+test("server exposes audit logs endpoint", async () => {
+  const server = createServer({
+    getSystemAuditLogs: ({ category }) => category === "security"
+      ? [{ auditLogId: "audit-1", category: "security" }]
+      : [],
+  });
+
+  const response = await requestJson(server, "/api/audit-logs?category=security");
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(Array.isArray(response.body.auditLogs), true);
+  assert.equal(response.body.auditLogs[0].auditLogId, "audit-1");
+});
+
+test("server exposes project live-state endpoint", async () => {
+  const server = createServer({
+    listProjects: () => [],
+    getProject: (projectId) => ({
+      id: projectId,
+      progressState: { percent: 48, status: "running" },
+      reactiveWorkspaceState: { progressBar: { percent: 48 } },
+      realtimeEventStream: { streamId: "realtime-stream:giftwallet", events: [], summary: { totalEvents: 0 } },
+      liveUpdateChannel: { channelId: "live-channel:giftwallet", transportMode: "polling" },
+      collaborationFeed: { feedId: "collaboration-feed:giftwallet", items: [], summary: { totalItems: 0 } },
+      events: [{ type: "state.updated", payload: { projectId } }],
+    }),
+  });
+
+  const response = await requestJson(server, "/api/projects/giftwallet/live-state");
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.projectId, "giftwallet");
+  assert.equal(response.body.progressState.percent, 48);
+  assert.equal(response.body.liveUpdateChannel.transportMode, "polling");
+  assert.equal(Array.isArray(response.body.events), true);
+});
+
+test("server exposes project draft creation endpoint", async () => {
+  const server = createServer({
+    createProjectDraft: ({ userInput, projectCreationInput }) => ({
+      projectDraft: {
+        id: "launch-studio",
+        owner: {
+          email: userInput.email,
+        },
+      },
+      projectDraftId: "launch-studio",
+      projectCreationExperience: {
+        experienceId: "project-creation:launch-studio",
+      },
+      projectCreationRedirect: {
+        target: "onboarding",
+      },
+    }),
+  });
+
+  const response = await requestJsonWithBody(server, "POST", "/api/project-drafts", {
+    userInput: {
+      email: "draft-user@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Launch Studio",
+      visionText: "מערכת עבודה ליוצרים",
+    },
+  });
+
+  assert.equal(response.statusCode, 201);
+  assert.equal(response.body.projectDraftId, "launch-studio");
+  assert.equal(response.body.projectDraft.owner.email, "draft-user@example.com");
+  assert.equal(response.body.projectCreationRedirect.target, "onboarding");
+});
+
+test("server exposes proposal edit mutation endpoint", async () => {
+  const server = createServer({
+    submitProposalEdits: ({ projectId, userEditInput }) => ({
+      id: projectId,
+      state: {
+        editedProposal: {
+          revisionNumber: userEditInput.revisionNumber,
+        },
+      },
+      context: {
+        userEditInput,
+      },
+    }),
+  });
+
+  const response = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/proposal-edits", {
+    userEditInput: {
+      revisionNumber: 2,
+      annotations: [{ note: "revise" }],
+    },
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.id, "giftwallet");
+  assert.equal(response.body.state.editedProposal.revisionNumber, 2);
+  assert.equal(response.body.context.userEditInput.annotations[0].note, "revise");
+});
+
+test("server exposes partial acceptance mutation endpoint", async () => {
+  const server = createServer({
+    submitPartialAcceptance: ({ projectId, approvalOutcome }) => ({
+      id: projectId,
+      state: {
+        partialAcceptanceDecision: {
+          status: "partially-accepted",
+        },
+      },
+      context: {
+        approvalOutcome,
+      },
+    }),
+  });
+
+  const response = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/partial-acceptance", {
+    approvalOutcome: {
+      sectionOutcomes: [{ sectionId: "section-1", decision: "approved" }],
+    },
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.id, "giftwallet");
+  assert.equal(response.body.state.partialAcceptanceDecision.status, "partially-accepted");
+  assert.equal(response.body.context.approvalOutcome.sectionOutcomes[0].decision, "approved");
 });

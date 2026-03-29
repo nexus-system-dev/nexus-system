@@ -1,28 +1,27 @@
-const elements = {
-  projectSelect: document.querySelector("#project-select"),
-  syncCasinoButton: document.querySelector("#sync-casino-button"),
-  analyzeButton: document.querySelector("#analyze-button"),
-  runCycleButton: document.querySelector("#run-cycle-button"),
-  heroProjectName: document.querySelector("#hero-project-name"),
-  heroGoal: document.querySelector("#hero-goal"),
-  now: document.querySelector("#now-content"),
-  critical: document.querySelector("#critical-content"),
-  missing: document.querySelector("#missing-content"),
-  existing: document.querySelector("#existing-content"),
-  live: document.querySelector("#live-content"),
-  decision: document.querySelector("#decision-content"),
-  casinoBaseUrlInput: document.querySelector("#casino-base-url-input"),
-  external: document.querySelector("#external-content"),
-  scanPathInput: document.querySelector("#scan-path-input"),
-  scanButton: document.querySelector("#scan-button"),
-  scanner: document.querySelector("#scanner-content"),
-  analysis: document.querySelector("#analysis-content"),
-  graph: document.querySelector("#graph-content"),
-  agents: document.querySelector("#agents-content"),
-  events: document.querySelector("#events-content"),
-};
+function normalizeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
 
-let currentProjectId = null;
+function normalizeObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function setCssVar(styleTarget, name, value) {
+  if (!styleTarget || typeof styleTarget.setProperty !== "function" || value === undefined || value === null) {
+    return;
+  }
+
+  styleTarget.setProperty(name, String(value));
+}
 
 const labels = {
   active: "פעיל",
@@ -36,6 +35,16 @@ const labels = {
   maintenance: "תחזוקה",
   marketing: "שיווק",
   growth: "צמיחה",
+  advisory: "זמין",
+  recommendation: "המלצה",
+  warning: "אזהרה",
+  critical: "קריטי",
+  partial: "חלקי",
+  full: "מלא",
+  shared: "משותף",
+  solo: "יחיד",
+  open: "פתוח",
+  success: "הצלחה",
   "task.assigned": "משימה שובצה",
   "task.completed": "משימה הושלמה",
   "task.failed": "משימה נכשלה",
@@ -43,89 +52,310 @@ const labels = {
   "state.updated": "המצב עודכן",
 };
 
-async function fetchJson(url, options) {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
-  }
-
-  return response.json();
-}
-
 function t(value) {
   return labels[value] ?? value;
 }
 
 function listHtml(items, emptyText) {
   if (!items.length) {
-    return `<p class="empty">${emptyText}</p>`;
+    return `<p class="empty">${escapeHtml(emptyText)}</p>`;
   }
 
   return items
     .map(
       (item) => `
       <article class="list-item">
-        <strong>${item.title}</strong>
-        ${item.body ? `<p>${item.body}</p>` : ""}
+        <strong>${escapeHtml(item.title)}</strong>
+        ${item.body ? `<p>${escapeHtml(item.body)}</p>` : ""}
       </article>
     `,
     )
     .join("");
 }
 
-function renderTop(project) {
-  const blockedTasks = project.cycle?.roadmap.filter((task) => task.status === "blocked") ?? [];
-  const activeTasks = project.cycle?.roadmap.filter((task) => task.status === "assigned") ?? [];
-  const activeAgents = project.agents.filter((agent) => agent.status === "working").length;
+function metricHtml(metrics) {
+  return `
+    <div class="signal-grid">
+      ${metrics
+        .map(
+          (metric) => `
+          <div class="signal-item">
+            <span class="mini-label">${escapeHtml(metric.label)}</span>
+            <strong>${escapeHtml(metric.value)}</strong>
+          </div>
+        `,
+        )
+        .join("")}
+    </div>
+  `;
+}
 
-  elements.heroProjectName.textContent = project.name;
-  elements.heroGoal.textContent = project.goal;
+function stackHtml(title, items, emptyText) {
+  if (!items.length) {
+    return `
+      <section class="stack-block">
+        <h3>${escapeHtml(title)}</h3>
+        <p class="empty">${escapeHtml(emptyText)}</p>
+      </section>
+    `;
+  }
+
+  return `
+    <section class="stack-block">
+      <h3>${escapeHtml(title)}</h3>
+      <div class="stack-list">
+        ${items
+          .map(
+            (item) => `
+            <article class="stack-item">
+              <strong>${escapeHtml(item.title)}</strong>
+              ${item.body ? `<p>${escapeHtml(item.body)}</p>` : ""}
+            </article>
+          `,
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function queryElements(doc) {
+  return {
+    projectSelect: doc.querySelector("#project-select"),
+    syncCasinoButton: doc.querySelector("#sync-casino-button"),
+    analyzeButton: doc.querySelector("#analyze-button"),
+    runCycleButton: doc.querySelector("#run-cycle-button"),
+    developerTab: doc.querySelector("#tab-developer"),
+    projectBrainTab: doc.querySelector("#tab-project-brain"),
+    releaseTab: doc.querySelector("#tab-release"),
+    growthTab: doc.querySelector("#tab-growth"),
+    heroProjectName: doc.querySelector("#hero-project-name"),
+    heroGoal: doc.querySelector("#hero-goal"),
+    now: doc.querySelector("#now-content"),
+    critical: doc.querySelector("#critical-content"),
+    missing: doc.querySelector("#missing-content"),
+    existing: doc.querySelector("#existing-content"),
+    live: doc.querySelector("#live-content"),
+    decision: doc.querySelector("#decision-content"),
+    developerWorkspaceSummary: doc.querySelector("#developer-workspace-summary"),
+    developerWorkspacePanel: doc.querySelector("#workspace-developer"),
+    projectBrainSummary: doc.querySelector("#project-brain-summary"),
+    projectBrainPanel: doc.querySelector("#workspace-project-brain"),
+    releaseWorkspaceSummary: doc.querySelector("#release-workspace-summary"),
+    releaseWorkspacePanel: doc.querySelector("#workspace-release"),
+    growthWorkspaceSummary: doc.querySelector("#growth-workspace-summary"),
+    growthWorkspacePanel: doc.querySelector("#workspace-growth"),
+    screenReview: doc.querySelector("#screen-review-content"),
+    learning: doc.querySelector("#learning-content"),
+    companion: doc.querySelector("#companion-content"),
+    collaboration: doc.querySelector("#collaboration-content"),
+    versioning: doc.querySelector("#versioning-content"),
+    growth: doc.querySelector("#growth-content"),
+    casinoBaseUrlInput: doc.querySelector("#casino-base-url-input"),
+    external: doc.querySelector("#external-content"),
+    scanPathInput: doc.querySelector("#scan-path-input"),
+    scanButton: doc.querySelector("#scan-button"),
+    scanner: doc.querySelector("#scanner-content"),
+    analysis: doc.querySelector("#analysis-content"),
+    graph: doc.querySelector("#graph-content"),
+    agents: doc.querySelector("#agents-content"),
+    events: doc.querySelector("#events-content"),
+  };
+}
+
+const workspaceKeys = ["developer", "project-brain", "release", "growth"];
+
+function workspaceTabHtml(title, metaItems = []) {
+  return `
+    <span class="workspace-tab-title">${escapeHtml(title)}</span>
+    <span class="workspace-tab-meta">${metaItems.map((item) => escapeHtml(item)).join(" · ")}</span>
+  `;
+}
+
+function renderWorkspaceTabs(elements, project) {
+  const developerWorkspace = normalizeObject(project.developerWorkspace);
+  const developerSummary = normalizeObject(developerWorkspace.contextSummary);
+  const projectBrainWorkspace = normalizeObject(project.projectBrainWorkspace);
+  const brainSummary = normalizeObject(projectBrainWorkspace.summary);
+  const releaseWorkspace = normalizeObject(project.releaseWorkspace);
+  const releaseValidation = normalizeObject(releaseWorkspace.validation);
+  const releaseSummary = normalizeObject(releaseWorkspace.summary);
+  const growthWorkspace = normalizeObject(project.growthWorkspace);
+  const growthSummary = normalizeObject(growthWorkspace.summary);
+
+  if (elements.developerTab) {
+    elements.developerTab.innerHTML = workspaceTabHtml("Developer", [
+      `${developerSummary.progressPercent ?? 0}%`,
+      developerSummary.progressStatus ?? "idle",
+      developerSummary.nextAction ?? "no next action",
+    ]);
+  }
+
+  if (elements.projectBrainTab) {
+    elements.projectBrainTab.innerHTML = workspaceTabHtml("Project Brain", [
+      `${brainSummary.blockerCount ?? 0} blockers`,
+      projectBrainWorkspace.overview?.currentPhase ?? "unknown",
+      brainSummary.requiresApproval ? "approval required" : "clear",
+    ]);
+  }
+
+  if (elements.releaseTab) {
+    elements.releaseTab.innerHTML = workspaceTabHtml("Release", [
+      releaseValidation.status ?? "unknown",
+      releaseSummary.isBlocked ? "blocked" : "moving",
+      releaseWorkspace.buildAndDeploy?.currentStage ?? "planned",
+    ]);
+  }
+
+  if (elements.growthTab) {
+    elements.growthTab.innerHTML = workspaceTabHtml("Growth", [
+      `${growthSummary.totalPillars ?? 0} pillars`,
+      `${growthSummary.totalKpis ?? 0} kpis`,
+      growthSummary.hasGrowthPlan ? "plan active" : "plan empty",
+    ]);
+  }
+}
+
+function setActiveWorkspace(elements, workspaceKey) {
+  const activeKey = workspaceKeys.includes(workspaceKey) ? workspaceKey : "developer";
+  const mapping = [
+    { key: "developer", tab: elements.developerTab, panel: elements.developerWorkspacePanel },
+    { key: "project-brain", tab: elements.projectBrainTab, panel: elements.projectBrainPanel },
+    { key: "release", tab: elements.releaseTab, panel: elements.releaseWorkspacePanel },
+    { key: "growth", tab: elements.growthTab, panel: elements.growthWorkspacePanel },
+  ];
+
+  for (const entry of mapping) {
+    const isActive = entry.key === activeKey;
+    if (entry.tab) {
+      entry.tab.classList?.toggle("active", isActive);
+      if ("ariaSelected" in entry.tab) {
+        entry.tab.ariaSelected = isActive ? "true" : "false";
+      }
+    }
+    if (entry.panel) {
+      entry.panel.classList?.toggle("active", isActive);
+      entry.panel.hidden = !isActive;
+    }
+  }
+}
+
+export function applyDesignSystem(doc, project) {
+  const rootStyle = doc?.documentElement?.style;
+  if (!rootStyle) {
+    return;
+  }
+
+  const designTokens = normalizeObject(project.designTokens);
+  const colors = normalizeObject(designTokens.colors);
+  const spacing = normalizeObject(designTokens.spacing);
+  const radius = normalizeObject(designTokens.radius);
+  const borders = normalizeObject(designTokens.borders);
+  const shadows = normalizeObject(designTokens.shadows);
+  const typographySystem = normalizeObject(project.typographySystem);
+  const typeScale = normalizeObject(typographySystem.typeScale);
+  const layoutSystem = normalizeObject(project.layoutSystem);
+  const spacingScale = normalizeObject(layoutSystem.spacingScale);
+  const sectionRhythm = normalizeObject(layoutSystem.sectionRhythm);
+  const colorRules = normalizeObject(project.colorRules);
+  const roles = normalizeObject(colorRules.roles);
+  const states = normalizeObject(colorRules.states);
+
+  setCssVar(rootStyle, "--bg", roles.canvas?.token ?? colors.canvas);
+  setCssVar(rootStyle, "--panel", roles.surface?.token ?? colors.surface);
+  setCssVar(rootStyle, "--ink", roles.textPrimary?.token ?? colors.ink);
+  setCssVar(rootStyle, "--muted", roles.textMuted?.token ?? colors.muted);
+  setCssVar(rootStyle, "--line", roles.border?.token ?? colors.border);
+  setCssVar(rootStyle, "--accent", roles.accent?.token ?? colors.accent);
+  setCssVar(rootStyle, "--accent-strong", roles.accentStrong?.token ?? colors.accentStrong);
+  setCssVar(rootStyle, "--good", states.success?.token ?? colors.success);
+  setCssVar(rootStyle, "--warn", states.warning?.token ?? colors.warning);
+  setCssVar(rootStyle, "--bad", states.danger?.token ?? colors.danger);
+  setCssVar(rootStyle, "--font-display", typographySystem.displayFontFamily ?? designTokens.typography?.familyDisplay);
+  setCssVar(rootStyle, "--font-body", typographySystem.baseFontFamily ?? designTokens.typography?.familyBody);
+  setCssVar(rootStyle, "--font-size-display", `${typeScale.display?.fontSize ?? designTokens.typography?.sizeDisplay ?? 40}px`);
+  setCssVar(rootStyle, "--font-size-h1", `${typeScale.h1?.fontSize ?? designTokens.typography?.sizeXl ?? 28}px`);
+  setCssVar(rootStyle, "--font-size-h2", `${typeScale.h2?.fontSize ?? designTokens.typography?.sizeLg ?? 20}px`);
+  setCssVar(rootStyle, "--font-size-body", `${typeScale.body?.fontSize ?? designTokens.typography?.sizeMd ?? 16}px`);
+  setCssVar(rootStyle, "--font-size-meta", `${typeScale.meta?.fontSize ?? designTokens.typography?.sizeXs ?? 12}px`);
+  setCssVar(rootStyle, "--line-height-body", String(typeScale.body?.lineHeight ?? 1.5));
+  setCssVar(rootStyle, "--line-height-heading", String(typeScale.h1?.lineHeight ?? 1.1));
+  setCssVar(rootStyle, "--space-xs", `${spacingScale.xs ?? spacing.xs ?? 4}px`);
+  setCssVar(rootStyle, "--space-sm", `${spacingScale.sm ?? spacing.sm ?? 8}px`);
+  setCssVar(rootStyle, "--space-md", `${spacingScale.md ?? spacing.md ?? 12}px`);
+  setCssVar(rootStyle, "--space-lg", `${spacingScale.lg ?? spacing.lg ?? 20}px`);
+  setCssVar(rootStyle, "--space-xl", `${spacingScale.xl ?? spacing.xl ?? 32}px`);
+  setCssVar(rootStyle, "--space-xxl", `${spacingScale.xxl ?? spacing.xxl ?? 48}px`);
+  setCssVar(rootStyle, "--radius-sm", `${radius.sm ?? 6}px`);
+  setCssVar(rootStyle, "--radius-md", `${radius.md ?? 12}px`);
+  setCssVar(rootStyle, "--radius-lg", `${radius.lg ?? 20}px`);
+  setCssVar(rootStyle, "--radius-pill", `${radius.pill ?? 999}px`);
+  setCssVar(rootStyle, "--border-subtle", `${borders.subtle ?? 1}px`);
+  setCssVar(rootStyle, "--border-strong", `${borders.strong ?? 2}px`);
+  setCssVar(rootStyle, "--border-focus", `${borders.focus ?? 3}px`);
+  setCssVar(rootStyle, "--shadow-soft", shadows.soft);
+  setCssVar(rootStyle, "--shadow-medium", shadows.medium);
+  setCssVar(rootStyle, "--shadow-focus", shadows.focus);
+  setCssVar(rootStyle, "--layout-max-width", `${layoutSystem.grid?.maxContentWidth ?? 1280}px`);
+  setCssVar(rootStyle, "--layout-gap", `${layoutSystem.grid?.gutter ?? spacing.lg ?? 20}px`);
+  setCssVar(rootStyle, "--section-gap", `${sectionRhythm.sectionGap ?? spacing.xl ?? 32}px`);
+  setCssVar(rootStyle, "--panel-gap", `${sectionRhythm.panelGap ?? spacing.lg ?? 20}px`);
+  setCssVar(rootStyle, "--page-top", `${sectionRhythm.pageTop ?? spacing.xxl ?? 48}px`);
+}
+
+function renderTop(elements, project) {
+  const blockedTasks = normalizeArray(project.cycle?.roadmap).filter((task) => task.status === "blocked");
+  const activeTasks = normalizeArray(project.cycle?.roadmap).filter((task) => task.status === "assigned");
+  const activeAgents = normalizeArray(project.agents).filter((agent) => agent.status === "working").length;
+
+  elements.heroProjectName.textContent = project.name ?? "Project";
+  elements.heroGoal.textContent = project.goal ?? "המטרה תופיע כאן";
   elements.casinoBaseUrlInput.value = project.source?.baseUrl ?? "http://localhost:4101";
 
   elements.now.innerHTML = `
-    <div class="big-status ${project.status}">
-      <span>${t(project.status)}</span>
+    <div class="big-status ${escapeHtml(project.status ?? "idle")}">
+      <span>${escapeHtml(t(project.status ?? "idle"))}</span>
     </div>
-    <div class="now-grid">
-      <div><span class="mini-label">חסם מרכזי</span><strong>${project.overview.bottleneck}</strong></div>
-      <div><span class="mini-label">משימות פעילות</span><strong>${activeTasks.length}</strong></div>
-      <div><span class="mini-label">משימות חסומות</span><strong>${blockedTasks.length}</strong></div>
-      <div><span class="mini-label">סוכנים עובדים</span><strong>${activeAgents}</strong></div>
-    </div>
+    ${metricHtml([
+      { label: "חסם מרכזי", value: project.overview?.bottleneck ?? "לא זוהה" },
+      { label: "משימות פעילות", value: String(activeTasks.length) },
+      { label: "משימות חסומות", value: String(blockedTasks.length) },
+      { label: "סוכנים עובדים", value: String(activeAgents) },
+    ])}
   `;
 }
 
-function renderCritical(project) {
-  const firstApproval = project.approvals[0];
-  const blockedTask = project.cycle?.roadmap.find((task) => task.status === "blocked");
+function renderCritical(elements, project) {
+  const firstApproval = normalizeArray(project.approvals)[0];
+  const blockedTask = normalizeArray(project.cycle?.roadmap).find((task) => task.status === "blocked");
   const title = firstApproval ?? blockedTask?.summary ?? "כרגע אין פעולה דחופה";
   const reason = blockedTask
-    ? `זה תקוע בגלל: ${blockedTask.dependencies.join(", ") || "חסר מידע"}`
+    ? `זה תקוע בגלל: ${normalizeArray(blockedTask.dependencies).join(", ") || "חסר מידע"}`
     : "כרגע אין חסם גדול, אפשר להמשיך לסנכרן או לנתח.";
 
   elements.critical.innerHTML = `
-    <div class="critical-main">${title}</div>
-    <p class="critical-sub">${reason}</p>
+    <div class="critical-main">${escapeHtml(title)}</div>
+    <p class="critical-sub">${escapeHtml(reason)}</p>
   `;
 }
 
-function renderMissing(project) {
-  const scan = project.scan;
-  const external = project.externalSnapshot;
+function renderMissing(elements, project) {
+  const scan = normalizeObject(project.scan);
+  const external = normalizeObject(project.externalSnapshot);
   const items = [];
 
-  if (scan) {
+  if (scan.findings) {
     if (!scan.findings.hasMigrations) items.push({ title: "חסרות מיגרציות" });
     if (!scan.findings.hasEnvExample) items.push({ title: "חסר קובץ env לדוגמה" });
     if (!scan.findings.hasTests) items.push({ title: "חסרות בדיקות" });
   }
 
-  if (external) {
+  if (external.features) {
     if (!external.features.hasPayments) items.push({ title: "חסר תהליך תשלומים" });
     if (!external.features.hasWallet) items.push({ title: "חסר ארנק" });
-    if (external.roadmapContext?.knownMissingParts?.length) {
+    if (normalizeArray(external.roadmapContext?.knownMissingParts).length) {
       items.push(
-        ...external.roadmapContext.knownMissingParts.slice(0, 4).map((item) => ({
+        ...normalizeArray(external.roadmapContext?.knownMissingParts).slice(0, 4).map((item) => ({
           title: item,
         })),
       );
@@ -135,23 +365,35 @@ function renderMissing(project) {
   elements.missing.innerHTML = listHtml(items, "לא זוהו כרגע חוסרים בולטים.");
 }
 
-function renderExisting(project) {
-  const scan = project.scan;
-  const external = project.externalSnapshot;
+function renderExisting(elements, project) {
+  const scan = normalizeObject(project.scan);
+  const external = normalizeObject(project.externalSnapshot);
   const items = [];
 
-  if (scan?.findings.hasBackend) items.push({ title: "יש backend" });
-  if (scan?.findings.hasAuth) items.push({ title: "יש auth" });
-  if (scan?.findings.hasEnvExample) items.push({ title: "יש env לדוגמה" });
-  if (external?.features.hasAuth) items.push({ title: "ה־API של הקזינו מדווח ש־auth קיים" });
+  if (scan.findings?.hasBackend) items.push({ title: "יש backend" });
+  if (scan.findings?.hasAuth) items.push({ title: "יש auth" });
+  if (scan.findings?.hasEnvExample) items.push({ title: "יש env לדוגמה" });
+  if (external.features?.hasAuth) items.push({ title: "ה־API של הקזינו מדווח ש־auth קיים" });
 
   elements.existing.innerHTML = listHtml(items, "עדיין אין מספיק מידע חיובי להציג.");
 }
 
-function renderLive(project) {
-  const activeTasks = project.cycle?.roadmap.filter((task) => task.status === "assigned") ?? [];
-  const blockedTasks = project.cycle?.roadmap.filter((task) => task.status === "blocked") ?? [];
+function renderLive(elements, project) {
+  const activeTasks = normalizeArray(project.cycle?.roadmap).filter((task) => task.status === "assigned");
+  const blockedTasks = normalizeArray(project.cycle?.roadmap).filter((task) => task.status === "blocked");
+  const progressState = normalizeObject(project.progressState);
+  const reactiveWorkspaceState = normalizeObject(project.reactiveWorkspaceState);
+  const liveUpdateChannel = normalizeObject(project.liveUpdateChannel);
+  const realtimeEvents = normalizeArray(project.realtimeEventStream?.events);
   const items = [
+    {
+      title: `Live channel: ${liveUpdateChannel.transportMode ?? "polling"}`,
+      body: `refresh ${liveUpdateChannel.refreshStrategy ?? "scheduled-refresh"} | progress ${reactiveWorkspaceState.progressBar?.percent ?? progressState.percent ?? 0}%`,
+    },
+    ...realtimeEvents.slice(0, 2).map((event) => ({
+      title: event.message ?? event.streamType ?? "Live event",
+      body: `${event.streamType ?? "stream"} | ${t(event.status ?? "active")}`,
+    })),
     ...activeTasks.slice(0, 3).map((task) => ({
       title: task.summary,
       body: "קורה עכשיו",
@@ -165,13 +407,275 @@ function renderLive(project) {
   elements.live.innerHTML = listHtml(items, "כרגע אין פעילות מיוחדת.");
 }
 
-function renderDecision(project) {
-  const items = project.approvals.slice(0, 4).map((approval) => ({ title: approval }));
+function renderDecision(elements, project) {
+  const surface = normalizeObject(project.cockpitRecommendationSurface);
+  const recommendationPanel = normalizeObject(surface.recommendationPanel);
+
+  if (surface.surfaceId) {
+    const items = [
+      {
+        title: surface.headline ?? "No active recommendation",
+        body: surface.summary ?? recommendationPanel.reason ?? "",
+      },
+      {
+        title: surface.whyNow ?? "No recommendation reasoning yet",
+        body: recommendationPanel.expectedOutcome ?? "",
+      },
+      {
+        title: recommendationPanel.primaryCta?.label ?? "Review recommendation",
+        body: surface.approval?.requiresApproval
+          ? `${surface.approval?.riskLevel ?? "unknown"} | ${surface.approval?.whatIfRejected ?? "Approval required"}`
+          : `urgency ${recommendationPanel.urgency ?? "normal"}`,
+      },
+    ];
+
+    elements.decision.innerHTML = `
+      ${metricHtml([
+        { label: "Recommendation", value: surface.headline ?? "not-set" },
+        { label: "Approval", value: surface.approval?.requiresApproval ? "required" : "clear" },
+        { label: "Blockers", value: String(surface.summaryMeta?.blockerCount ?? 0) },
+        { label: "Urgency", value: recommendationPanel.urgency ?? "normal" },
+      ])}
+      ${stackHtml("Cockpit recommendation", items, "אין כרגע recommendation זמינה.")}
+    `;
+    return;
+  }
+
+  const items = normalizeArray(project.approvals).slice(0, 4).map((approval) => ({ title: approval }));
   elements.decision.innerHTML = listHtml(items, "אין כרגע משהו שצריך לאשר.");
 }
 
-function renderExternal(project) {
-  if (!project.externalSnapshot && !project.gitSnapshot) {
+function renderWorkspaceSummaries(elements, project) {
+  const developerWorkspace = normalizeObject(project.developerWorkspace);
+  const developerSummary = normalizeObject(developerWorkspace.contextSummary);
+  const projectBrainWorkspace = normalizeObject(project.projectBrainWorkspace);
+  const brainSummary = normalizeObject(projectBrainWorkspace.summary);
+  const releaseWorkspace = normalizeObject(project.releaseWorkspace);
+  const releaseSummary = normalizeObject(releaseWorkspace.summary);
+  const releaseValidation = normalizeObject(releaseWorkspace.validation);
+  const growthWorkspace = normalizeObject(project.growthWorkspace);
+  const growthSummary = normalizeObject(growthWorkspace.summary);
+
+  elements.developerWorkspaceSummary.innerHTML = metricHtml([
+    { label: "Progress", value: `${developerSummary.progressPercent ?? 0}%` },
+    { label: "Status", value: developerSummary.progressStatus ?? "idle" },
+    { label: "Next action", value: developerSummary.nextAction ?? "not-set" },
+    { label: "Incident", value: developerSummary.incidentStatus ?? "clear" },
+  ]);
+
+  elements.projectBrainSummary.innerHTML = metricHtml([
+    { label: "Domain", value: projectBrainWorkspace.overview?.domain ?? "generic" },
+    { label: "Phase", value: projectBrainWorkspace.overview?.currentPhase ?? "unknown" },
+    { label: "Blockers", value: String(brainSummary.blockerCount ?? 0) },
+    { label: "Approval", value: brainSummary.requiresApproval ? "required" : "clear" },
+  ]);
+
+  elements.releaseWorkspaceSummary.innerHTML = metricHtml([
+    { label: "Target", value: releaseWorkspace.releaseTarget ?? "not-set" },
+    { label: "Stage", value: releaseWorkspace.buildAndDeploy?.currentStage ?? "planned" },
+    { label: "Validation", value: releaseValidation.status ?? "unknown" },
+    { label: "Blocked", value: releaseSummary.isBlocked ? "yes" : "no" },
+  ]);
+
+  elements.growthWorkspaceSummary.innerHTML = metricHtml([
+    { label: "Pillars", value: String(growthSummary.totalPillars ?? 0) },
+    { label: "Channels", value: String(growthSummary.totalChannels ?? 0) },
+    { label: "KPIs", value: String(growthSummary.totalKpis ?? 0) },
+    { label: "Plan", value: growthSummary.hasGrowthPlan ? "active" : "not-set" },
+  ]);
+}
+
+function renderScreenReview(elements, project) {
+  const report = normalizeObject(project.screenReviewReport);
+  const reportSummary = normalizeObject(report.summary);
+  const checklistSummary = normalizeObject(project.screenValidationChecklist?.summary);
+  const screens = normalizeArray(report.screens);
+  const readyItems = screens
+    .filter((screen) => screen.summary?.isReady)
+    .slice(0, 2)
+    .map((screen) => ({
+      title: `${screen.screenType ?? screen.screenId} מוכן`,
+      body: "עבר את כל הולידטורים",
+    }));
+  const blockedItems = screens
+    .filter((screen) => !screen.summary?.isReady)
+    .slice(0, 3)
+    .map((screen) => ({
+      title: `${screen.screenType ?? screen.screenId} חסום`,
+      body: normalizeArray(screen.summary?.blockingIssues).join(" | ") || "נדרשת בדיקה נוספת",
+    }));
+
+  elements.screenReview.innerHTML = `
+    ${metricHtml([
+      { label: "מסכים מוכנים", value: String(reportSummary.readyScreens ?? 0) },
+      { label: "מסכים חסומים", value: String(reportSummary.blockedScreens ?? 0) },
+      { label: "סה״כ מסכים", value: String(checklistSummary.totalScreens ?? reportSummary.totalScreens ?? 0) },
+      { label: "מצב gate", value: (reportSummary.blockedScreens ?? 0) === 0 ? "Ready" : "Needs review" },
+    ])}
+    ${stackHtml("Pass", readyItems, "עדיין אין מסכים שסומנו כמוכנים.")}
+    ${stackHtml("Blocking issues", blockedItems, "אין כרגע חסימות פתוחות ברמת screen review.")}
+  `;
+}
+
+function extractLearningItems(project) {
+  const insightViewModel = normalizeObject(project.learningInsightViewModel);
+  const explicitInsights = normalizeArray(insightViewModel.insights);
+  if (explicitInsights.length > 0) {
+    return explicitInsights.map((insight) => ({
+      title: insight.title ?? insight.insightId ?? "Learning insight",
+      body: insight.summary ?? insight.reason ?? "",
+    }));
+  }
+
+  const fallbackItems = normalizeArray(insightViewModel.items);
+  return fallbackItems.map((item) => ({
+    title: item.title ?? item.id ?? "Learning insight",
+    body: item.summary ?? item.reason ?? "",
+  }));
+}
+
+function renderLearning(elements, project) {
+  const template = normalizeObject(project.aiLearningWorkspaceTemplate);
+  const composition = normalizeObject(template.composition);
+  const summary = normalizeObject(template.summary);
+  const confidence = normalizeObject(project.confidenceIndicator);
+  const items = extractLearningItems(project).slice(0, 3);
+
+  elements.learning.innerHTML = `
+    ${metricHtml([
+      { label: "Insights", value: String(composition.insightCount ?? items.length) },
+      { label: "Sections", value: String(summary.enabledSections ?? 0) },
+      { label: "Confidence", value: confidence.level ?? confidence.confidenceLevel ?? "not-set" },
+      { label: "Reasoning", value: summary.supportsRecommendationReasoning ? "enabled" : "basic" },
+    ])}
+    ${stackHtml("Top insights", items, "עדיין אין learning insights זמינים.")}
+  `;
+}
+
+function renderCompanion(elements, project) {
+  const state = normalizeObject(project.companionState);
+  const dock = normalizeObject(project.companionDock);
+  const panel = normalizeObject(project.companionPanel);
+  const settings = normalizeObject(project.companionModeSettings);
+  const suggestionItems = normalizeArray(panel.sections?.suggestions?.items).slice(0, 3).map((item) => ({
+    title: item,
+    body: "Companion signal",
+  }));
+  const actionItems = normalizeArray(panel.sections?.nextActions?.items).slice(0, 3).map((item) => ({
+    title: item,
+    body: "Next action",
+  }));
+
+  elements.companion.innerHTML = `
+    ${metricHtml([
+      { label: "State", value: state.state ?? "idle" },
+      { label: "Priority", value: dock.priority ?? "advisory" },
+      { label: "Mode", value: settings.selectedMode ?? "assistive" },
+      { label: "Dock", value: dock.visible ? "visible" : "hidden" },
+    ])}
+    ${stackHtml(
+      "Companion summary",
+      [
+        {
+          title: dock.summary?.headline ?? "The AI companion is available if you need help.",
+          body: normalizeArray(state.reasons).join(" | ") || "אין כרגע איתותים מיוחדים.",
+        },
+      ],
+      "אין כרגע companion summary.",
+    )}
+    ${stackHtml("Suggestions", suggestionItems, "אין כרגע suggestions פתוחות.")}
+    ${stackHtml("Next actions", actionItems, "אין כרגע next actions ל־companion.")}
+  `;
+}
+
+function renderCollaboration(elements, project) {
+  const feed = normalizeObject(project.collaborationFeed);
+  const summary = normalizeObject(feed.summary);
+  const presenceSummary = normalizeObject(project.projectPresenceState?.summary);
+  const items = normalizeArray(feed.items).slice(0, 4).map((item) => ({
+    title: item.headline ?? item.itemType ?? "Collaboration event",
+    body: `${item.actorName ?? "Nexus"} | ${item.workspaceArea ?? "workspace"} | ${t(item.status ?? "active")}`,
+  }));
+
+  elements.collaboration.innerHTML = `
+    ${metricHtml([
+      { label: "Feed items", value: String(summary.totalItems ?? 0) },
+      { label: "Active participants", value: String(project.projectPresenceState?.activeParticipantCount ?? presenceSummary.totalParticipants ?? 0) },
+      { label: "Shared presence", value: presenceSummary.hasSharedPresence ? "yes" : "no" },
+      { label: "Transitions", value: summary.containsWorkspaceTransitions ? "tracked" : "none" },
+    ])}
+    ${stackHtml("Latest activity", items, "עדיין אין activity שיתופית זמינה.")}
+  `;
+}
+
+function renderVersioning(elements, project) {
+  const snapshot = normalizeObject(project.snapshotRecord);
+  const restore = normalizeObject(project.restoreDecision);
+  const rollback = normalizeObject(project.rollbackExecutionResult);
+  const versions = normalizeObject(snapshot.versions);
+  const details = [
+    {
+      title: snapshot.snapshotId ?? snapshot.snapshotRecordId ?? "No snapshot yet",
+      body: `state v${versions.stateVersion ?? "?"} | graph v${versions.executionGraphVersion ?? "?"}`,
+    },
+    {
+      title: `Restore mode: ${restore.restoreMode ?? "unknown"}`,
+      body: restore.blockedReason ?? `Safe to execute: ${restore.summary?.isSafeToExecute ? "yes" : "no"}`,
+    },
+    {
+      title: `Rollback: ${rollback.executionStatus ?? "not-run"}`,
+      body: `Targets restored: ${rollback.summary?.restoredTargetCount ?? 0}`,
+    },
+  ];
+
+  elements.versioning.innerHTML = `
+    ${metricHtml([
+      { label: "Snapshot stored", value: snapshot.summary?.isStored ? "yes" : "no" },
+      { label: "Restore mode", value: restore.restoreMode ?? "unknown" },
+      { label: "Manual confirmation", value: restore.requiresManualConfirmation ? "yes" : "no" },
+      { label: "Rollback status", value: rollback.executionStatus ?? "not-run" },
+    ])}
+    ${stackHtml("State control", details, "עדיין אין נתוני versioning זמינים.")}
+  `;
+}
+
+function renderGrowth(elements, project) {
+  const growthWorkspace = normalizeObject(project.growthWorkspace);
+  const strategy = normalizeObject(growthWorkspace.strategy);
+  const campaigns = normalizeObject(growthWorkspace.campaigns);
+  const analytics = normalizeObject(growthWorkspace.analytics);
+  const pillarItems = normalizeArray(strategy.pillars).slice(0, 3).map((pillar) => ({
+    title: pillar.title ?? pillar.name ?? pillar,
+    body: pillar.summary ?? strategy.contentGoal ?? "",
+  }));
+  const campaignItems = normalizeArray(campaigns.tasks).slice(0, 3).map((task) => ({
+    title: task.title ?? task.summary ?? task.taskId ?? "Campaign task",
+    body: `${task.status ?? "planned"} | ${task.channel ?? task.owner ?? "growth"}`,
+  }));
+  const kpiItems = normalizeArray(analytics.kpis).slice(0, 3).map((kpi) => ({
+    title: kpi.label ?? kpi.name ?? "KPI",
+    body: `${kpi.value ?? kpi.current ?? "n/a"}${kpi.unit ? ` ${kpi.unit}` : ""}`,
+  }));
+
+  elements.growth.innerHTML = `
+    ${stackHtml(
+      "Strategy",
+      [
+        {
+          title: strategy.targetAudience ?? "No target audience yet",
+          body: `${strategy.gtmStage ?? "unknown"} | ${strategy.contentGoal ?? "no content goal"}`,
+        },
+      ],
+      "אין כרגע growth strategy זמינה.",
+    )}
+    ${stackHtml("Pillars", pillarItems, "אין כרגע pillars מוגדרים.")}
+    ${stackHtml("Campaigns", campaignItems, "אין כרגע משימות campaign פתוחות.")}
+    ${stackHtml("KPIs", kpiItems, "אין כרגע KPI נתונים להצגה.")}
+  `;
+}
+
+function renderExternal(elements, project) {
+  if (!project.externalSnapshot && !project.gitSnapshot && !project.runtimeSnapshot) {
     elements.external.innerHTML = `<p class="empty">עדיין לא בוצע חיבור חיצוני.</p>`;
     return;
   }
@@ -181,19 +685,19 @@ function renderExternal(project) {
   if (project.externalSnapshot) {
     const snapshot = project.externalSnapshot;
     items.push(
-      { title: `מצב הקזינו: ${snapshot.health.status}` },
+      { title: `מצב הקזינו: ${snapshot.health?.status ?? "unknown"}` },
       {
         title: "מסד נתונים",
         body:
-          snapshot.health.databaseConnected === null
-            ? snapshot.health.databaseConnectedReason
-            : snapshot.health.databaseConnected
+          snapshot.health?.databaseConnected === null
+            ? snapshot.health?.databaseConnectedReason
+            : snapshot.health?.databaseConnected
               ? "מחובר"
               : "לא מחובר",
       },
       {
         title: "זרימות חסומות",
-        body: snapshot.blockedFlows?.slice(0, 3).join(" | ") || "אין כרגע",
+        body: normalizeArray(snapshot.blockedFlows).slice(0, 3).join(" | ") || "אין כרגע",
       },
     );
   }
@@ -201,16 +705,16 @@ function renderExternal(project) {
   if (project.gitSnapshot) {
     items.push(
       {
-        title: `חיבור Git: ${project.gitSnapshot.repo.fullName}`,
-        body: `${project.gitSnapshot.provider} | ענף ראשי: ${project.gitSnapshot.repo.defaultBranch}`,
+        title: `חיבור Git: ${project.gitSnapshot.repo?.fullName ?? project.gitSnapshot.repo?.name ?? "unknown"}`,
+        body: `${project.gitSnapshot.provider ?? "git"} | ענף ראשי: ${project.gitSnapshot.repo?.defaultBranch ?? "unknown"}`,
       },
       {
         title: "Branches / PRs",
-        body: `${project.gitSnapshot.branches.length} branches | ${project.gitSnapshot.pullRequests.length} PR/MR`,
+        body: `${normalizeArray(project.gitSnapshot.branches).length} branches | ${normalizeArray(project.gitSnapshot.pullRequests).length} PR/MR`,
       },
       {
         title: "Commit אחרון",
-        body: project.gitSnapshot.commits[0]?.title ?? "אין commits זמינים",
+        body: project.gitSnapshot.commits?.[0]?.title ?? "אין commits זמינים",
       },
     );
   }
@@ -223,7 +727,7 @@ function renderExternal(project) {
       },
       {
         title: "Errors / Monitoring",
-        body: `${project.runtimeSnapshot.errorLogs?.reduce((sum, item) => sum + (item.count ?? 0), 0) ?? 0} שגיאות | ${project.runtimeSnapshot.monitoring?.filter((item) => item.status !== "ok").length ?? 0} התראות`,
+        body: `${normalizeArray(project.runtimeSnapshot.errorLogs).reduce((sum, item) => sum + (item.count ?? 0), 0)} שגיאות | ${normalizeArray(project.runtimeSnapshot.monitoring).filter((item) => item.status !== "ok").length} התראות`,
       },
     );
   }
@@ -231,7 +735,7 @@ function renderExternal(project) {
   elements.external.innerHTML = listHtml(items, "אין מידע חיצוני.");
 }
 
-function renderScanner(project) {
+function renderScanner(elements, project) {
   elements.scanPathInput.value = project.path ?? "";
   if (!project.scan) {
     elements.scanner.innerHTML = `<p class="empty">עדיין לא בוצעה סריקה.</p>`;
@@ -241,15 +745,15 @@ function renderScanner(project) {
   const scan = project.scan;
   elements.scanner.innerHTML = listHtml(
     [
-      { title: scan.summary },
-      { title: "חוסרים", body: scan.gaps.join(" | ") || "לא זוהו" },
-      { title: "בדיקות", body: (scan.evidence.testFiles ?? []).join(", ") || "לא זוהו" },
+      { title: scan.summary ?? "אין סיכום סריקה" },
+      { title: "חוסרים", body: normalizeArray(scan.gaps).join(" | ") || "לא זוהו" },
+      { title: "בדיקות", body: normalizeArray(scan.evidence?.testFiles).join(", ") || "לא זוהו" },
     ],
     "אין נתוני סריקה.",
   );
 }
 
-function renderAnalysis(project) {
+function renderAnalysis(elements, project) {
   if (!project.analysis) {
     elements.analysis.innerHTML = `<p class="empty">עדיין לא בוצע ניתוח AI.</p>`;
     return;
@@ -258,16 +762,16 @@ function renderAnalysis(project) {
   const analysis = project.analysis;
   elements.analysis.innerHTML = listHtml(
     [
-      { title: analysis.summary },
-      { title: "סיכונים", body: analysis.risks.join(" | ") || "אין כרגע" },
-      { title: "צעדים מומלצים", body: analysis.nextActions.join(" | ") || "אין כרגע" },
+      { title: analysis.summary ?? "אין סיכום ניתוח" },
+      { title: "סיכונים", body: normalizeArray(analysis.risks).join(" | ") || "אין כרגע" },
+      { title: "צעדים מומלצים", body: normalizeArray(analysis.nextActions).join(" | ") || "אין כרגע" },
     ],
     "אין ניתוח.",
   );
 }
 
-function renderGraph(project) {
-  const tasks = project.cycle?.roadmap ?? [];
+function renderGraph(elements, project) {
+  const tasks = normalizeArray(project.cycle?.roadmap);
   elements.graph.innerHTML = listHtml(
     tasks.map((task) => ({
       title: task.summary,
@@ -277,9 +781,9 @@ function renderGraph(project) {
   );
 }
 
-function renderAgents(project) {
+function renderAgents(elements, project) {
   elements.agents.innerHTML = listHtml(
-    project.agents.map((agent) => ({
+    normalizeArray(project.agents).map((agent) => ({
       title: `${agent.name} - ${t(agent.status)}`,
       body: agent.currentTask ?? "אין כרגע משימה",
     })),
@@ -287,79 +791,230 @@ function renderAgents(project) {
   );
 }
 
-function renderEvents(project) {
+function renderEvents(elements, project) {
   elements.events.innerHTML = listHtml(
-    project.events.slice().reverse().slice(0, 6).map((event) => ({
+    normalizeArray(project.events).slice().reverse().slice(0, 6).map((event) => ({
       title: t(event.type),
-      body: event.payload.task?.summary ?? event.payload.taskId ?? event.payload.projectId ?? "",
+      body: event.payload?.task?.summary ?? event.payload?.taskId ?? event.payload?.projectId ?? "",
     })),
     "אין אירועים.",
   );
 }
 
-async function loadProject(projectId) {
-  const project = await fetchJson(`/api/projects/${projectId}`);
-  currentProjectId = projectId;
-  renderTop(project);
-  renderCritical(project);
-  renderMissing(project);
-  renderExisting(project);
-  renderLive(project);
-  renderDecision(project);
-  renderExternal(project);
-  renderScanner(project);
-  renderAnalysis(project);
-  renderGraph(project);
-  renderAgents(project);
-  renderEvents(project);
+export function renderProject(elements, project) {
+  renderTop(elements, project);
+  renderWorkspaceTabs(elements, project);
+  renderWorkspaceSummaries(elements, project);
+  renderCritical(elements, project);
+  renderMissing(elements, project);
+  renderExisting(elements, project);
+  renderLive(elements, project);
+  renderDecision(elements, project);
+  renderScreenReview(elements, project);
+  renderLearning(elements, project);
+  renderCompanion(elements, project);
+  renderCollaboration(elements, project);
+  renderVersioning(elements, project);
+  renderGrowth(elements, project);
+  renderExternal(elements, project);
+  renderScanner(elements, project);
+  renderAnalysis(elements, project);
+  renderGraph(elements, project);
+  renderAgents(elements, project);
+  renderEvents(elements, project);
 }
 
-async function loadProjects() {
-  const { projects } = await fetchJson("/api/projects");
-  elements.projectSelect.innerHTML = projects
-    .map((project) => `<option value="${project.id}">${project.name}</option>`)
-    .join("");
-  if (projects[0]) {
-    await loadProject(projects[0].id);
+export function createCockpitApp({
+  doc = globalThis.document,
+  fetchImpl = globalThis.fetch,
+  setTimeoutImpl = globalThis.setTimeout,
+  clearTimeoutImpl = globalThis.clearTimeout,
+} = {}) {
+  if (!doc) {
+    throw new Error("Document is required to initialize the cockpit app.");
   }
+
+  const elements = queryElements(doc);
+  let currentProjectId = null;
+  let currentProject = null;
+  let refreshTimer = null;
+  let activeWorkspace = "developer";
+
+  async function fetchJson(url, options) {
+    const response = await fetchImpl(url, options);
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async function loadProject(projectId) {
+    const project = await fetchJson(`/api/projects/${projectId}`);
+    currentProjectId = projectId;
+    currentProject = project;
+    applyDesignSystem(doc, project);
+    renderProject(elements, project);
+    setActiveWorkspace(elements, activeWorkspace);
+    scheduleLiveRefresh();
+    return project;
+  }
+
+  function mergeLiveState(liveState) {
+    if (!currentProject) {
+      return;
+    }
+
+    currentProject = {
+      ...currentProject,
+      progressState: liveState.progressState ?? currentProject.progressState,
+      reactiveWorkspaceState: liveState.reactiveWorkspaceState ?? currentProject.reactiveWorkspaceState,
+      realtimeEventStream: liveState.realtimeEventStream ?? currentProject.realtimeEventStream,
+      liveUpdateChannel: liveState.liveUpdateChannel ?? currentProject.liveUpdateChannel,
+      collaborationFeed: liveState.collaborationFeed ?? currentProject.collaborationFeed,
+      events: liveState.events ?? currentProject.events,
+    };
+    renderLive(elements, currentProject);
+    renderCollaboration(elements, currentProject);
+    renderEvents(elements, currentProject);
+  }
+
+  async function refreshLiveState() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    try {
+      const liveState = await fetchJson(`/api/projects/${currentProjectId}/live-state`);
+      mergeLiveState(liveState);
+    } finally {
+      scheduleLiveRefresh();
+    }
+  }
+
+  function resolveRefreshDelay(channel) {
+    const normalizedChannel = normalizeObject(channel);
+    const reconnectPolicy = normalizeObject(normalizedChannel.reconnectPolicy);
+    const mode = normalizedChannel.transportMode ?? "polling";
+
+    if (mode === "websocket") {
+      return reconnectPolicy.initialDelayMs ?? 1000;
+    }
+
+    if (mode === "sse") {
+      return reconnectPolicy.initialDelayMs ?? 1500;
+    }
+
+    return reconnectPolicy.initialDelayMs ?? 5000;
+  }
+
+  function scheduleLiveRefresh() {
+    if (refreshTimer) {
+      clearTimeoutImpl(refreshTimer);
+      refreshTimer = null;
+    }
+
+    if (!currentProjectId || !currentProject) {
+      return;
+    }
+
+    const channel = normalizeObject(currentProject.liveUpdateChannel);
+    const delay = resolveRefreshDelay(channel);
+    refreshTimer = setTimeoutImpl(() => {
+      refreshLiveState().catch((error) => {
+        elements.events.innerHTML = `<p class="empty">Live refresh failed: ${escapeHtml(error.message)}</p>`;
+        scheduleLiveRefresh();
+      });
+    }, delay);
+  }
+
+  async function loadProjects() {
+    const { projects } = await fetchJson("/api/projects");
+    elements.projectSelect.innerHTML = normalizeArray(projects)
+      .map((project) => `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`)
+      .join("");
+
+    if (projects?.[0]) {
+      await loadProject(projects[0].id);
+    }
+
+    return projects;
+  }
+
+  elements.projectSelect?.addEventListener("change", async (event) => {
+    await loadProject(event.target.value);
+  });
+
+  elements.developerTab?.addEventListener("click", () => {
+    activeWorkspace = "developer";
+    setActiveWorkspace(elements, activeWorkspace);
+  });
+
+  elements.projectBrainTab?.addEventListener("click", () => {
+    activeWorkspace = "project-brain";
+    setActiveWorkspace(elements, activeWorkspace);
+  });
+
+  elements.releaseTab?.addEventListener("click", () => {
+    activeWorkspace = "release";
+    setActiveWorkspace(elements, activeWorkspace);
+  });
+
+  elements.growthTab?.addEventListener("click", () => {
+    activeWorkspace = "growth";
+    setActiveWorkspace(elements, activeWorkspace);
+  });
+
+  elements.runCycleButton?.addEventListener("click", async () => {
+    if (!currentProjectId) return;
+    await fetchJson(`/api/projects/${currentProjectId}/run-cycle`, { method: "POST" });
+    await loadProject(currentProjectId);
+  });
+
+  elements.analyzeButton?.addEventListener("click", async () => {
+    if (!currentProjectId) return;
+    await fetchJson(`/api/projects/${currentProjectId}/analyze`, { method: "POST" });
+    await loadProject(currentProjectId);
+  });
+
+  elements.scanButton?.addEventListener("click", async () => {
+    if (!currentProjectId) return;
+    await fetchJson(`/api/projects/${currentProjectId}/scan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: elements.scanPathInput.value }),
+    });
+    await loadProject(currentProjectId);
+  });
+
+  elements.syncCasinoButton?.addEventListener("click", async () => {
+    if (!currentProjectId) return;
+    await fetchJson(`/api/projects/${currentProjectId}/sync-casino`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ baseUrl: elements.casinoBaseUrlInput.value }),
+    });
+    await loadProject(currentProjectId);
+  });
+
+  const ready = loadProjects().catch((error) => {
+    elements.now.innerHTML = `<p class="empty">טעינת המסך נכשלה: ${escapeHtml(error.message)}</p>`;
+    throw error;
+  });
+
+  return {
+    elements,
+    loadProject,
+    loadProjects,
+    refreshLiveState,
+    setActiveWorkspace(workspaceKey) {
+      activeWorkspace = workspaceKey;
+      setActiveWorkspace(elements, activeWorkspace);
+    },
+    ready,
+  };
 }
 
-elements.projectSelect.addEventListener("change", async (event) => {
-  await loadProject(event.target.value);
-});
-
-elements.runCycleButton.addEventListener("click", async () => {
-  if (!currentProjectId) return;
-  await fetchJson(`/api/projects/${currentProjectId}/run-cycle`, { method: "POST" });
-  await loadProject(currentProjectId);
-});
-
-elements.analyzeButton.addEventListener("click", async () => {
-  if (!currentProjectId) return;
-  await fetchJson(`/api/projects/${currentProjectId}/analyze`, { method: "POST" });
-  await loadProject(currentProjectId);
-});
-
-elements.scanButton.addEventListener("click", async () => {
-  if (!currentProjectId) return;
-  await fetchJson(`/api/projects/${currentProjectId}/scan`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path: elements.scanPathInput.value }),
-  });
-  await loadProject(currentProjectId);
-});
-
-elements.syncCasinoButton.addEventListener("click", async () => {
-  if (!currentProjectId) return;
-  await fetchJson(`/api/projects/${currentProjectId}/sync-casino`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ baseUrl: elements.casinoBaseUrlInput.value }),
-  });
-  await loadProject(currentProjectId);
-});
-
-loadProjects().catch((error) => {
-  elements.now.innerHTML = `<p class="empty">טעינת המסך נכשלה: ${error.message}</p>`;
-});
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+  createCockpitApp();
+}

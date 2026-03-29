@@ -1,3 +1,5 @@
+import { defineProjectDraftSchema } from "./project-draft-schema.js";
+
 function toSlug(value, fallback = "project-draft") {
   return String(value ?? "")
     .toLowerCase()
@@ -8,29 +10,6 @@ function toSlug(value, fallback = "project-draft") {
 
 function createSessionId(projectDraftId) {
   return `onboarding-${projectDraftId}-${Date.now()}`;
-}
-
-function createDraftState(goal = "") {
-  return {
-    businessGoal: goal,
-    product: {
-      hasAuth: false,
-      hasStagingEnvironment: false,
-      hasLandingPage: false,
-      hasPaymentIntegration: false,
-    },
-    analytics: {
-      hasBaselineCampaign: false,
-    },
-    knowledge: {
-      knownGaps: [],
-    },
-    stack: {
-      frontend: "לא זוהה",
-      backend: "לא זוהה",
-      database: "לא זוהה",
-    },
-  };
 }
 
 function parseInitialInput(initialInput) {
@@ -242,6 +221,26 @@ function validatePayload(payload, schema = {}) {
   return true;
 }
 
+function createProjectDraftSnapshot({
+  userId,
+  projectDraftId,
+  initialInput = null,
+  existingProjectDraft = null,
+} = {}) {
+  return defineProjectDraftSchema({
+    userIdentity: {
+      userId: userId ?? null,
+      email: existingProjectDraft?.owner?.email ?? null,
+      displayName: existingProjectDraft?.owner?.displayName ?? null,
+    },
+    initialInput: {
+      ...(initialInput ?? {}),
+      projectDraftId,
+    },
+    existingProjectDraft,
+  }).projectDraft;
+}
+
 export class OnboardingService {
   constructor() {
     this.sessions = new Map();
@@ -269,12 +268,16 @@ export class OnboardingService {
       connectedSources: {
         repo: null,
       },
-      projectDraft: {
-        id: resolvedDraftId,
-        name: resolvedName,
-        goal: parsedInput.goal,
-        state: createDraftState(parsedInput.goal),
-      },
+      projectDraft: createProjectDraftSnapshot({
+        userId,
+        projectDraftId: resolvedDraftId,
+        initialInput: {
+          ...parsedInput,
+          projectName: resolvedName,
+          goal: parsedInput.goal,
+          creationSource: "onboarding-session",
+        },
+      }),
     };
 
     this.sessions.set(session.sessionId, session);
@@ -363,15 +366,23 @@ export class OnboardingService {
     return {
       ...session,
       updatedAt: now,
-      projectDraft: {
-        ...session.projectDraft,
-        name: projectName,
-        goal,
-        state: {
-          ...session.projectDraft.state,
-          businessGoal: goal,
+      projectDraft: createProjectDraftSnapshot({
+        userId: session.userId,
+        projectDraftId: session.projectDraftId,
+        initialInput: {
+          ...session.initialInput,
+          projectName,
+          goal,
+          creationSource: session.projectDraft?.creationSource ?? "onboarding-session",
         },
-      },
+        existingProjectDraft: {
+          ...session.projectDraft,
+          state: {
+            ...session.projectDraft.state,
+            businessGoal: goal,
+          },
+        },
+      }),
     };
   }
 
@@ -393,19 +404,30 @@ export class OnboardingService {
       nextStep: resolved.nextStep,
       requiredActions: resolved.requiredActions,
       projectIntake: intake.projectIntake,
-      projectDraft: {
-        ...session.projectDraft,
-        name: intake.projectIntake.projectName ?? session.projectDraft.name,
-        goal: intake.projectIntake.visionText || session.projectDraft.goal,
-        state: {
-          ...session.projectDraft.state,
-          businessGoal: intake.projectIntake.visionText || session.projectDraft.state.businessGoal,
-          knowledge: {
-            ...(session.projectDraft.state.knowledge ?? {}),
-            knownGaps: intake.missingInputs,
+      projectDraft: createProjectDraftSnapshot({
+        userId: session.userId,
+        projectDraftId: session.projectDraftId,
+        initialInput: {
+          ...session.initialInput,
+          projectName: intake.projectIntake.projectName ?? session.projectDraft.name,
+          goal: intake.projectIntake.visionText || session.projectDraft.goal,
+          attachments: intake.projectIntake.uploadedFiles,
+          links: intake.projectIntake.externalLinks,
+          requestedDeliverables: intake.projectIntake.requestedDeliverables,
+          creationSource: session.projectDraft?.creationSource ?? "onboarding-session",
+        },
+        existingProjectDraft: {
+          ...session.projectDraft,
+          state: {
+            ...session.projectDraft.state,
+            businessGoal: intake.projectIntake.visionText || session.projectDraft.state.businessGoal,
+            knowledge: {
+              ...(session.projectDraft.state.knowledge ?? {}),
+              knownGaps: intake.missingInputs,
+            },
           },
         },
-      },
+      }),
     };
   }
 

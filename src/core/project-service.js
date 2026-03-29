@@ -29,18 +29,29 @@ import { createApprovalRecordStore } from "./approval-record-store.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
 import { createSessionAndTokenManagement } from "./session-and-token-management.js";
+import { createAuthenticationRouteResolver } from "./authentication-route-resolver.js";
+import { buildAuthenticationScreenStates } from "./authentication-screen-states.js";
+import { createPostAuthRedirectResolver } from "./post-auth-redirect-resolver.js";
+import { createProjectDraftCreationService } from "./project-draft-creation-service.js";
+import { createProjectCreationExperienceModel } from "./project-creation-experience-model.js";
+import { createPostProjectCreationRedirectResolver } from "./post-project-creation-redirect-resolver.js";
+import { createProjectStateBootstrapService } from "./project-state-bootstrap-service.js";
+import { createOnboardingCompletionEvaluator } from "./onboarding-completion-evaluator.js";
+import { createOnboardingToStateHandoffContract } from "./onboarding-to-state-handoff-contract.js";
 import { createPasswordResetAndEmailVerificationFlow } from "./password-reset-email-verification-flow.js";
 import { defineWorkspaceAndMembershipModel } from "./workspace-membership-model.js";
 import { createProjectAccessControlModule } from "./project-access-control-module.js";
 import { createRoleAssignmentAndInvitationFlow } from "./role-assignment-invitation-flow.js";
 import { createOrganizationWorkspaceSettingsModule } from "./workspace-settings-module.js";
+import { createPlatformObservabilityTransport } from "./platform-observability-transport.js";
+import { createSystemAuditLogStore } from "./system-audit-log-store.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
 import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
 import { QaAgentWorker } from "../agents/qa-agent/worker.js";
 
 export class ProjectService {
-  constructor({ eventLogPath }) {
+  constructor({ eventLogPath, auditLogPath = null, platformObservabilityTransport = null, systemAuditLogStore = null }) {
     this.eventBus = new EventBus({
       eventLog: new FileEventLog({
         filePath: eventLogPath,
@@ -59,7 +70,18 @@ export class ProjectService {
     this.onboarding = new OnboardingService();
     this.sourceAdapters = new SourceAdapterRegistry([new CasinoSourceAdapter(), new RuntimeSourceAdapter()]);
     this.projects = new Map();
+    this.projectDrafts = new Map();
     this.users = new Map();
+    this.platformObservabilityTransport = platformObservabilityTransport ?? createPlatformObservabilityTransport();
+    this.systemAuditLogStore = systemAuditLogStore ?? createSystemAuditLogStore({ filePath: auditLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "system-audit.ndjson") });
+  }
+
+  findUserRecord(userInput = {}) {
+    const profile = userInput && typeof userInput === "object" ? userInput : {};
+
+    return [...this.users.values()].find((item) => item.userIdentity?.email === profile.email)
+      ?? [...this.users.values()].find((item) => item.userIdentity?.userId === profile.userId)
+      ?? null;
   }
 
   createDefaultAgents() {
@@ -168,6 +190,37 @@ export class ProjectService {
     });
   }
 
+  createProjectDraft({ userInput, projectCreationInput } = {}) {
+    const existing = this.findUserRecord(userInput);
+    if (!existing) {
+      return null;
+    }
+
+    const requestedDraftId = projectCreationInput?.projectDraftId ?? projectCreationInput?.draftId ?? null;
+    const { projectDraft, projectDraftId } = createProjectDraftCreationService({
+      userIdentity: existing.userIdentity,
+      projectCreationInput,
+      existingProjectDraft: requestedDraftId ? this.projectDrafts.get(requestedDraftId) ?? null : null,
+    });
+    const { projectCreationExperience } = createProjectCreationExperienceModel({
+      workspaceModel: existing.workspaceModel,
+      postLoginDestination: "project-creation",
+    });
+    const { projectCreationRedirect } = createPostProjectCreationRedirectResolver({
+      projectDraft,
+      projectCreationExperience,
+    });
+
+    this.projectDrafts.set(projectDraftId, projectDraft);
+
+    return {
+      projectDraft,
+      projectDraftId,
+      projectCreationExperience,
+      projectCreationRedirect,
+    };
+  }
+
   createProjectIntake({ visionText, uploadedFiles, externalLinks }) {
     return this.onboarding.createProjectIntake({
       visionText,
@@ -228,9 +281,67 @@ export class ProjectService {
 
     const session = finished.updatedSession;
     const projectDraft = finished.projectDraft ?? {};
+    const projectIntake = session.projectIntake ?? null;
+    const { onboardingCompletionDecision } = createOnboardingCompletionEvaluator({
+      projectIntake,
+      onboardingSession: session,
+    });
+    const { onboardingStateHandoff } = createOnboardingToStateHandoffContract({
+      projectDraft,
+      projectIntake,
+      onboardingCompletionDecision,
+      onboardingSession: session,
+    });
+
+    if (onboardingStateHandoff.summary?.canBuildProjectState !== true) {
+      return {
+        ...finished,
+        blocked: true,
+        onboardingCompletionDecision,
+        onboardingStateHandoff,
+        error: "Onboarding is not ready to build project state",
+      };
+    }
+
     const projectId = projectDraft.id ?? session.projectDraftId ?? null;
     const projectName = projectDraft.name ?? "Project Draft";
     const projectGoal = projectDraft.goal ?? session.projectIntake?.visionText ?? "";
+    const bootstrapped = createProjectStateBootstrapService({
+      stateBootstrapPayload: {
+        identity: {
+          projectId,
+        },
+        goals: {
+          businessGoal: projectGoal,
+        },
+        constraints: {},
+        readiness: {
+          canBootstrap: true,
+        },
+        ownership: {
+          ownerUserId: session.userId ?? null,
+          workspaceId: null,
+          role: "owner",
+        },
+        bootstrapMetadata: {},
+        approvals: session.approvals ?? [],
+        missingClarifications: [],
+        intake: session.projectIntake ?? null,
+        draftMetadata: {
+          draftId: projectId,
+          name: projectName,
+        },
+        summary: {
+          canBootstrap: true,
+        },
+      },
+      projectOwnershipBinding: {
+        projectId,
+        ownerUserId: session.userId ?? null,
+        workspaceId: null,
+        role: "owner",
+      },
+    });
 
     if (!this.projects.has(projectId)) {
       this.createProject({
@@ -239,16 +350,18 @@ export class ProjectService {
         goal: projectGoal,
         path: `/projects/${projectId}`,
         stack: "Unknown",
-        state: projectDraft.state ?? null,
+        state: bootstrapped.initialProjectState ?? projectDraft.state ?? null,
+        projectDraft,
         userId: session.userId ?? null,
         onboardingSession: session,
       });
     } else {
       const existingProject = this.projects.get(projectId);
       existingProject.onboardingSession = session;
+      existingProject.projectDraft = projectDraft;
       existingProject.name = projectName;
       existingProject.goal = projectGoal;
-      existingProject.state = projectDraft.state ?? existingProject.state;
+      existingProject.state = bootstrapped.initialProjectState ?? projectDraft.state ?? existingProject.state;
     }
 
     const project = this.projects.get(projectId);
@@ -257,12 +370,74 @@ export class ProjectService {
 
     return {
       ...finished,
+      blocked: false,
+      onboardingCompletionDecision,
+      onboardingStateHandoff,
       project: this.serializeProject(project),
     };
   }
 
   getOnboardingSession(sessionId) {
     return this.onboarding.getSession(sessionId);
+  }
+
+  submitProposalEdits({ projectId, userEditInput } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const normalizedInput = userEditInput && typeof userEditInput === "object" ? { ...userEditInput } : {};
+    normalizedInput.previousHistory = project.context?.proposalEditHistory?.entries ?? [];
+    project.context = {
+      ...(project.context ?? {}),
+      userEditInput: normalizedInput,
+    };
+
+    this.rebuildContext(projectId);
+    return this.serializeProject(project);
+  }
+
+  submitPartialAcceptance({ projectId, approvalOutcome } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    project.context = {
+      ...(project.context ?? {}),
+      approvalOutcome: approvalOutcome && typeof approvalOutcome === "object" ? { ...approvalOutcome } : {},
+    };
+
+    this.rebuildContext(projectId);
+    return this.serializeProject(project);
+  }
+
+  buildAuthPayloadState({
+    authenticationState = null,
+    sessionState = null,
+    verificationFlowState = null,
+    workspaceModel = null,
+  } = {}) {
+    const { authenticationRouteDecision } = createAuthenticationRouteResolver({
+      authenticationState,
+      sessionState,
+    });
+    const { authenticationViewState } = buildAuthenticationScreenStates({
+      authenticationRouteDecision,
+      verificationFlowState,
+    });
+    const { postAuthRedirect } = createPostAuthRedirectResolver({
+      authenticationRouteDecision,
+      sessionState,
+      workspaceModel,
+    });
+
+    return {
+      authenticationRouteDecision,
+      authenticationViewState,
+      postAuthRedirect,
+    };
   }
 
   signupUser({ userInput, credentials } = {}) {
@@ -314,13 +489,22 @@ export class ProjectService {
         ownerUserId: userId,
       },
     });
+    const { authenticationRouteDecision, authenticationViewState, postAuthRedirect } = this.buildAuthPayloadState({
+      authenticationState,
+      sessionState,
+      verificationFlowState,
+      workspaceModel,
+    });
 
     const authPayload = {
       userIdentity,
       authenticationState,
       sessionState,
       tokenBundle,
+      authenticationRouteDecision,
       verificationFlowState,
+      authenticationViewState,
+      postAuthRedirect,
       workspaceModel,
       membershipRecord,
       credentialReference,
@@ -335,8 +519,7 @@ export class ProjectService {
   loginUser({ userInput, credentials } = {}) {
     const profile = userInput && typeof userInput === "object" ? userInput : {};
     const authInput = credentials && typeof credentials === "object" ? credentials : {};
-    const existing = [...this.users.values()].find((item) => item.userIdentity?.email === profile.email)
-      ?? [...this.users.values()].find((item) => item.userIdentity?.userId === profile.userId);
+    const existing = this.findUserRecord(profile);
 
     if (!existing) {
       return null;
@@ -366,13 +549,22 @@ export class ProjectService {
           }
         : null,
     });
+    const { authenticationRouteDecision, authenticationViewState, postAuthRedirect } = this.buildAuthPayloadState({
+      authenticationState,
+      sessionState,
+      verificationFlowState,
+      workspaceModel: existing.workspaceModel,
+    });
 
     const authPayload = {
       ...existing,
       authenticationState,
       sessionState,
       tokenBundle,
+      authenticationRouteDecision,
       verificationFlowState,
+      authenticationViewState,
+      postAuthRedirect,
     };
     this.users.set(existing.userIdentity.userId, authPayload);
     return { authPayload };
@@ -380,8 +572,7 @@ export class ProjectService {
 
   logoutUser({ userInput } = {}) {
     const profile = userInput && typeof userInput === "object" ? userInput : {};
-    const existing = [...this.users.values()].find((item) => item.userIdentity?.email === profile.email)
-      ?? [...this.users.values()].find((item) => item.userIdentity?.userId === profile.userId);
+    const existing = this.findUserRecord(profile);
 
     if (!existing) {
       return null;
@@ -410,13 +601,22 @@ export class ProjectService {
           }
         : null,
     });
+    const { authenticationRouteDecision, authenticationViewState, postAuthRedirect } = this.buildAuthPayloadState({
+      authenticationState,
+      sessionState,
+      verificationFlowState,
+      workspaceModel: existing.workspaceModel,
+    });
 
     const authPayload = {
       ...existing,
       authenticationState,
       sessionState,
       tokenBundle,
+      authenticationRouteDecision,
       verificationFlowState,
+      authenticationViewState,
+      postAuthRedirect,
     };
     this.users.set(existing.userIdentity.userId, authPayload);
     return { authPayload };
@@ -424,8 +624,7 @@ export class ProjectService {
 
   requestEmailVerification({ userInput, verificationRequest } = {}) {
     const profile = userInput && typeof userInput === "object" ? userInput : {};
-    const existing = [...this.users.values()].find((item) => item.userIdentity?.email === profile.email)
-      ?? [...this.users.values()].find((item) => item.userIdentity?.userId === profile.userId);
+    const existing = this.findUserRecord(profile);
 
     if (!existing) {
       return null;
@@ -438,10 +637,19 @@ export class ProjectService {
         flowType: "email-verification",
       },
     });
+    const { authenticationRouteDecision, authenticationViewState, postAuthRedirect } = this.buildAuthPayloadState({
+      authenticationState: existing.authenticationState,
+      sessionState: existing.sessionState,
+      verificationFlowState,
+      workspaceModel: existing.workspaceModel,
+    });
 
     const authPayload = {
       ...existing,
+      authenticationRouteDecision,
       verificationFlowState,
+      authenticationViewState,
+      postAuthRedirect,
     };
     this.users.set(existing.userIdentity.userId, authPayload);
     return { authPayload };
@@ -449,8 +657,7 @@ export class ProjectService {
 
   requestPasswordReset({ userInput, verificationRequest } = {}) {
     const profile = userInput && typeof userInput === "object" ? userInput : {};
-    const existing = [...this.users.values()].find((item) => item.userIdentity?.email === profile.email)
-      ?? [...this.users.values()].find((item) => item.userIdentity?.userId === profile.userId);
+    const existing = this.findUserRecord(profile);
 
     if (!existing) {
       return null;
@@ -463,10 +670,19 @@ export class ProjectService {
         flowType: "password-reset",
       },
     });
+    const { authenticationRouteDecision, authenticationViewState, postAuthRedirect } = this.buildAuthPayloadState({
+      authenticationState: existing.authenticationState,
+      sessionState: existing.sessionState,
+      verificationFlowState,
+      workspaceModel: existing.workspaceModel,
+    });
 
     const authPayload = {
       ...existing,
+      authenticationRouteDecision,
       verificationFlowState,
+      authenticationViewState,
+      postAuthRedirect,
     };
     this.users.set(existing.userIdentity.userId, authPayload);
     return { authPayload };
@@ -474,8 +690,7 @@ export class ProjectService {
 
   inviteWorkspaceMember({ userInput, invitationRequest } = {}) {
     const profile = userInput && typeof userInput === "object" ? userInput : {};
-    const existing = [...this.users.values()].find((item) => item.userIdentity?.email === profile.email)
-      ?? [...this.users.values()].find((item) => item.userIdentity?.userId === profile.userId);
+    const existing = this.findUserRecord(profile);
 
     if (!existing) {
       return null;
@@ -497,8 +712,7 @@ export class ProjectService {
 
   updateWorkspaceSettings({ userInput, settingsInput } = {}) {
     const profile = userInput && typeof userInput === "object" ? userInput : {};
-    const existing = [...this.users.values()].find((item) => item.userIdentity?.email === profile.email)
-      ?? [...this.users.values()].find((item) => item.userIdentity?.userId === profile.userId);
+    const existing = this.findUserRecord(profile);
 
     if (!existing) {
       return null;
@@ -712,7 +926,10 @@ export class ProjectService {
 
     project.normalizedSources = normalizeProjectSources(project);
     project.state = buildObservedProjectState(project);
-    project.context = buildProjectContext(project);
+    project.context = buildProjectContext(project, {
+      observabilityTransport: this.platformObservabilityTransport,
+      auditLogStore: this.systemAuditLogStore,
+    });
     project.state = {
       ...project.state,
       businessGoal: project.goal,
@@ -731,6 +948,7 @@ export class ProjectService {
       stackRecommendation: project.context?.stackRecommendation ?? null,
       businessContext: project.context?.businessContext ?? null,
       projectIdentity: project.context?.projectIdentity ?? null,
+      projectDraft: project.context?.projectDraft ?? project.projectDraft ?? null,
       projectIdentityProfile: project.context?.projectIdentityProfile ?? null,
       identityCompleteness: project.context?.identityCompleteness ?? null,
       instantValuePlan: project.context?.instantValuePlan ?? null,
@@ -759,6 +977,7 @@ export class ProjectService {
       diffPreview: project.context?.diffPreview ?? null,
       businessBottleneck: project.context?.businessBottleneck ?? null,
       bottleneckState: project.context?.bottleneckState ?? null,
+      systemBottleneckSummary: project.context?.systemBottleneckSummary ?? null,
       activeBottleneck: project.context?.activeBottleneck ?? null,
       scoredBottleneck: project.context?.scoredBottleneck ?? null,
       unblockPlan: project.context?.unblockPlan ?? null,
@@ -774,8 +993,37 @@ export class ProjectService {
       userIdentity: project.context?.userIdentity ?? null,
       authenticationState: project.context?.authenticationState ?? null,
       sessionState: project.context?.sessionState ?? null,
+      authenticationRouteDecision: project.context?.authenticationRouteDecision ?? null,
       tokenBundle: project.context?.tokenBundle ?? null,
       verificationFlowState: project.context?.verificationFlowState ?? null,
+      authenticationViewState: project.context?.authenticationViewState ?? null,
+      postAuthRedirect: project.context?.postAuthRedirect ?? null,
+      projectCreationExperience: project.context?.projectCreationExperience ?? null,
+      projectCreationRedirect: project.context?.projectCreationRedirect ?? null,
+      onboardingProgress: project.context?.onboardingProgress ?? null,
+      onboardingViewState: project.context?.onboardingViewState ?? null,
+      onboardingCompletionDecision: project.context?.onboardingCompletionDecision ?? null,
+      onboardingStateHandoff: project.context?.onboardingStateHandoff ?? null,
+      projectOwnershipBinding: project.context?.projectOwnershipBinding ?? null,
+      initialProjectStateContract: project.context?.initialProjectStateContract ?? null,
+      initialProjectState: project.context?.initialProjectState ?? null,
+      initialProjectStateValidation: project.context?.initialProjectStateValidation ?? null,
+      stateValidationIssues: project.context?.stateValidationIssues ?? [],
+      initialTasks: project.context?.initialTasks ?? [],
+      taskSeedMetadata: project.context?.taskSeedMetadata ?? null,
+      selectedTask: project.context?.selectedTask ?? null,
+      selectionReason: project.context?.selectionReason ?? null,
+      nextTaskPresentation: project.context?.nextTaskPresentation ?? null,
+      nextTaskApprovalPanel: project.context?.nextTaskApprovalPanel ?? null,
+      recommendationDisplay: project.context?.recommendationDisplay ?? null,
+      recommendationSummaryPanel: project.context?.recommendationSummaryPanel ?? null,
+      editableProposal: project.context?.editableProposal ?? null,
+      editedProposal: project.context?.editedProposal ?? null,
+      proposalEditHistory: project.context?.proposalEditHistory ?? null,
+      partialAcceptanceDecision: project.context?.partialAcceptanceDecision ?? null,
+      remainingProposalScope: project.context?.remainingProposalScope ?? null,
+      cockpitRecommendationSurface: project.context?.cockpitRecommendationSurface ?? null,
+      stateBootstrapPayload: project.context?.stateBootstrapPayload ?? null,
       workspaceModel: project.context?.workspaceModel ?? null,
       membershipRecord: project.context?.membershipRecord ?? null,
       accessDecision: project.context?.accessDecision ?? null,
@@ -827,6 +1075,10 @@ export class ProjectService {
       crossProjectPatternPanel: project.context?.crossProjectPatternPanel ?? null,
       learningDisclosure: project.context?.learningDisclosure ?? null,
       aiLearningWorkspaceTemplate: project.context?.aiLearningWorkspaceTemplate ?? null,
+      contextRelevanceSchema: project.context?.contextRelevanceSchema ?? null,
+      relevanceFilteredContext: project.context?.relevanceFilteredContext ?? null,
+      slimmedContextPayload: project.context?.slimmedContextPayload ?? null,
+      droppedContextSummary: project.context?.droppedContextSummary ?? null,
       companionState: project.context?.companionState ?? null,
       companionTriggerDecision: project.context?.companionTriggerDecision ?? null,
       companionMessagePriority: project.context?.companionMessagePriority ?? null,
@@ -846,6 +1098,11 @@ export class ProjectService {
       reviewThreadState: project.context?.reviewThreadState ?? null,
       sharedApprovalState: project.context?.sharedApprovalState ?? null,
       collaborationFeed: project.context?.collaborationFeed ?? null,
+      projectStateSnapshot: project.context?.projectStateSnapshot ?? null,
+      snapshotRecord: project.context?.snapshotRecord ?? null,
+      stateDiff: project.context?.stateDiff ?? null,
+      restoreDecision: project.context?.restoreDecision ?? null,
+      rollbackExecutionResult: project.context?.rollbackExecutionResult ?? null,
       artifactBuildPanel: project.context?.artifactBuildPanel ?? null,
       developmentWorkspace: project.context?.developmentWorkspace ?? null,
       reactiveWorkspaceState: project.context?.reactiveWorkspaceState ?? null,
@@ -895,6 +1152,9 @@ export class ProjectService {
       platformLogs: project.context?.platformLogs ?? [],
       incidentAlert: project.context?.incidentAlert ?? null,
       auditLogRecord: project.context?.auditLogRecord ?? null,
+      projectAuditEvent: project.context?.projectAuditEvent ?? null,
+      projectAuditRecord: project.context?.projectAuditRecord ?? null,
+      actorActionTrace: project.context?.actorActionTrace ?? null,
       notificationPayload: project.context?.notificationPayload ?? null,
       notificationEvent: project.context?.notificationEvent ?? null,
       notificationCenterState: project.context?.notificationCenterState ?? null,
@@ -939,6 +1199,9 @@ export class ProjectService {
       providerCapabilities: project.context?.providerCapabilities ?? null,
       providerOperations: project.context?.providerOperations ?? [],
       providerConnector: project.context?.providerConnector ?? null,
+      providerDegradationState: project.context?.providerDegradationState ?? null,
+      circuitBreakerDecision: project.context?.circuitBreakerDecision ?? null,
+      providerRecoveryProbe: project.context?.providerRecoveryProbe ?? null,
       verificationResult: project.context?.verificationResult ?? null,
       ownershipPolicy: project.context?.ownershipPolicy ?? null,
       consentRecord: project.context?.consentRecord ?? null,
@@ -1005,6 +1268,14 @@ export class ProjectService {
     };
 
     return project.context;
+  }
+
+  getPlatformObservability() {
+    return this.platformObservabilityTransport.getSnapshot();
+  }
+
+  getSystemAuditLogs(filters = {}) {
+    return this.systemAuditLogStore.query(filters);
   }
 
   scanProject(projectId, overridePath) {
@@ -1563,6 +1834,7 @@ export class ProjectService {
       status: project.status,
       path: project.path,
       stack: project.stack,
+      projectDraft: project.projectDraft ?? project.context?.projectDraft ?? null,
       approvals: project.approvals,
       state: project.state,
       normalizedSources: project.normalizedSources,

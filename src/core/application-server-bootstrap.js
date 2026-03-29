@@ -7,6 +7,7 @@ import { createAuthMiddleware } from "./auth-middleware.js";
 import { createRequestValidationAndErrorBoundaryLayer } from "./request-validation-error-boundary-layer.js";
 import { createBackgroundWorkerRuntime } from "./background-worker-runtime.js";
 import { createHealthCheckAndReadinessEndpoints } from "./health-check-readiness-endpoints.js";
+import { createPlatformObservabilityTransport } from "./platform-observability-transport.js";
 import { ProjectService } from "./project-service.js";
 
 function resolveConfig(runtimeConfig = {}) {
@@ -16,6 +17,7 @@ function resolveConfig(runtimeConfig = {}) {
     publicDir: runtimeConfig.publicDir ?? path.resolve(rootDir, "web"),
     dataDir: runtimeConfig.dataDir ?? path.resolve(rootDir, "data"),
     eventLogPath: runtimeConfig.eventLogPath ?? path.resolve(runtimeConfig.dataDir ?? path.resolve(rootDir, "data"), "events.ndjson"),
+    auditLogPath: runtimeConfig.auditLogPath ?? path.resolve(runtimeConfig.dataDir ?? path.resolve(rootDir, "data"), "system-audit.ndjson"),
     host: runtimeConfig.host ?? process.env.HOST ?? "127.0.0.1",
     port: runtimeConfig.port ?? process.env.PORT ?? 4001,
     seedDemoProjects: runtimeConfig.seedDemoProjects === true,
@@ -31,10 +33,11 @@ export function createApplicationServerBootstrap({
 
   const config = resolveConfig(runtimeConfig);
   fs.mkdirSync(config.dataDir, { recursive: true });
+  const platformObservabilityTransport = createPlatformObservabilityTransport();
 
   const projectService = serviceFactory
-    ? serviceFactory({ eventLogPath: config.eventLogPath })
-    : new ProjectService({ eventLogPath: config.eventLogPath });
+    ? serviceFactory({ eventLogPath: config.eventLogPath, auditLogPath: config.auditLogPath, platformObservabilityTransport })
+    : new ProjectService({ eventLogPath: config.eventLogPath, auditLogPath: config.auditLogPath, platformObservabilityTransport });
 
   const startupSteps = [
     { step: "load-env", status: "completed" },
@@ -180,6 +183,32 @@ export function createApplicationServerBootstrap({
     step: "create-http-server",
     status: server ? "completed" : "pending",
   });
+  platformObservabilityTransport.recordTraceEnvelope({
+    platformTrace: {
+      traceId: `${runtimeId}:startup`,
+      route: "/runtime/startup",
+      method: "SYSTEM",
+      service: runtimeId,
+      status: "completed",
+      startedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+      steps: startupSteps.map((step, index) => ({
+        stepId: `startup-step-${index + 1}`,
+        source: runtimeId,
+        status: step.status ?? "observed",
+        timestamp: new Date().toISOString(),
+        message: step.step,
+      })),
+    },
+    platformLogs: startupSteps.map((step, index) => ({
+      logId: `${runtimeId}:startup-log-${index + 1}`,
+      level: step.status === "completed" ? "info" : "warn",
+      source: runtimeId,
+      message: `${step.step}:${step.status ?? "observed"}`,
+      timestamp: new Date().toISOString(),
+      metadata: step,
+    })),
+  });
 
   return {
     applicationRuntime: {
@@ -190,6 +219,7 @@ export function createApplicationServerBootstrap({
       publicDir: config.publicDir,
       dataDir: config.dataDir,
       eventLogPath: config.eventLogPath,
+      auditLogPath: config.auditLogPath,
       startupSteps,
       projectService,
       server,
@@ -201,6 +231,7 @@ export function createApplicationServerBootstrap({
       jobState,
       healthStatus,
       readinessStatus,
+      platformObservabilityTransport,
     },
   };
 }

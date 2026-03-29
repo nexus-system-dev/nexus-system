@@ -1,0 +1,13 @@
+---
+sourceLocationPrefix: /Users/yogevlavian/Desktop/The Nexus
+baselineLinesOfCode: 37346
+unicodeNewlines: true
+columnKind: utf16
+primaryLanguage: javascript
+creationMetadata:
+  sha: bc881dc8b40950dda85360466c8f49bc952fd8b1
+  cliVersion: 2.25.1
+  creationTime: 2026-03-27T16:09:42.265270Z
+overlayBaseDatabase: false
+overlayDatabase: false
+finalised: true

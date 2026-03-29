@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { createPlatformLoggingAndTracingLayer } from "../src/core/platform-logging-tracing-layer.js";
+import { createPlatformObservabilityTransport } from "../src/core/platform-observability-transport.js";
 
 test("platform logging and tracing layer returns canonical trace and logs", () => {
   const { platformTrace, platformLogs } = createPlatformLoggingAndTracingLayer({
@@ -45,4 +46,45 @@ test("platform logging and tracing layer falls back to empty canonical payloads"
 
   assert.equal(typeof platformTrace.traceId, "string");
   assert.equal(platformLogs.length, 0);
+});
+
+test("platform logging and tracing layer records trace and logs into observability transport", () => {
+  const observabilityTransport = createPlatformObservabilityTransport();
+
+  createPlatformLoggingAndTracingLayer({
+    runtimeEvents: {
+      runId: "run-transport-1",
+      status: "completed",
+      progressEntries: [
+        {
+          id: "progress-transport-1",
+          source: "worker",
+          status: "completed",
+          message: "Bootstrap finished",
+        },
+      ],
+      formattedLogs: [
+        {
+          logId: "log-transport-1",
+          level: "info",
+          source: "worker",
+          message: "Execution finished",
+        },
+      ],
+    },
+    requestContext: {
+      requestId: "request-transport-1",
+      route: "/runtime/bootstrap",
+      method: "SYSTEM",
+      actorId: "user-1",
+    },
+    observabilityTransport,
+  });
+
+  const snapshot = observabilityTransport.getSnapshot();
+
+  assert.equal(snapshot.summary.totalTraces, 1);
+  assert.equal(snapshot.summary.totalLogs, 1);
+  assert.equal(snapshot.platformTraces[0].traceId, "request-transport-1");
+  assert.equal(snapshot.platformLogs[0].message, "Execution finished");
 });

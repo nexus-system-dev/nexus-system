@@ -41,7 +41,10 @@ import { createExecutionLogFormatter } from "./execution-log-formatter.js";
 import { createExecutionCompletionNotifier } from "./execution-completion-notifier.js";
 import { createPlatformLoggingAndTracingLayer } from "./platform-logging-tracing-layer.js";
 import { createAlertingAndIncidentHooks } from "./alerting-incident-hooks.js";
+import { createSystemBottleneckDetector } from "./system-bottleneck-detector.js";
 import { createAuditLogForSystemActions } from "./system-audit-log.js";
+import { defineProjectAuditEventSchema } from "./project-audit-event-schema.js";
+import { createProjectAuditEventCollector } from "./project-audit-event-collector.js";
 import { defineNotificationEventSchema } from "./notification-event-schema.js";
 import { createInAppNotificationCenter } from "./in-app-notification-center.js";
 import { createEmailNotificationDeliveryModule } from "./email-notification-delivery-module.js";
@@ -62,6 +65,7 @@ import { createPolicyEnforcementGuard } from "./policy-enforcement-guard.js";
 import { createPolicyTraceBuilder } from "./policy-trace-builder.js";
 import { createExecutionPolicyEvaluator } from "./execution-policy-evaluator.js";
 import { definePolicySchema } from "./policy-schema.js";
+import { defineProjectDraftSchema } from "./project-draft-schema.js";
 import { defineDiffPreviewSchema } from "./diff-preview-schema.js";
 import { createCodeDiffCollector } from "./code-diff-collector.js";
 import { createConfigInfraDiffCollector } from "./config-infra-diff-collector.js";
@@ -75,6 +79,26 @@ import { createArtifactReadinessValidator } from "./artifact-readiness-validator
 import { createArtifactRegistryModule } from "./artifact-registry-module.js";
 import { createAccountVerificationModule } from "./account-verification-module.js";
 import { createAuthenticationModeContract } from "./authentication-mode-contract.js";
+import { buildAuthenticationScreenStates } from "./authentication-screen-states.js";
+import { createPostAuthRedirectResolver } from "./post-auth-redirect-resolver.js";
+import { createProjectCreationExperienceModel } from "./project-creation-experience-model.js";
+import { createPostProjectCreationRedirectResolver } from "./post-project-creation-redirect-resolver.js";
+import { createOnboardingProgressModel } from "./onboarding-progress-model.js";
+import { buildOnboardingScreenFlow } from "./onboarding-screen-flow.js";
+import { createOnboardingCompletionEvaluator } from "./onboarding-completion-evaluator.js";
+import { createOnboardingToStateHandoffContract } from "./onboarding-to-state-handoff-contract.js";
+import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
+import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
+import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
+import { createProjectStateBootstrapService } from "./project-state-bootstrap-service.js";
+import { createInitialProjectStateValidationModule } from "./initial-project-state-validation-module.js";
+import { createInitialTaskSeedingService } from "./initial-task-seeding-service.js";
+import { createNextTaskSelectionResolver } from "./next-task-selection-resolver.js";
+import { createNextTaskPresentationModel } from "./next-task-presentation-model.js";
+import { createNextTaskApprovalHandoffPanel } from "./next-task-approval-handoff-panel.js";
+import { createRecommendationDisplayContract } from "./recommendation-display-contract.js";
+import { createRecommendationSummaryPanel } from "./recommendation-summary-panel.js";
+import { createCockpitRecommendationSurface } from "./cockpit-recommendation-surface.js";
 import { createBuildTargetResolver } from "./build-target-resolver.js";
 import { createBlockingIssuesClassifier } from "./blocking-issues-classifier.js";
 import { createDeploymentArtifactPreparer } from "./deployment-artifact-preparer.js";
@@ -97,6 +121,9 @@ import { createProviderCapabilityDescriptor } from "./provider-capability-descri
 import { createProviderConnectorAssembler } from "./provider-connector-assembler.js";
 import { defineProviderConnectorSchema } from "./provider-connector-schema.js";
 import { createProviderConnectorContract } from "./provider-connector-contract.js";
+import { defineProviderDegradationSchema } from "./provider-degradation-schema.js";
+import { createProviderCircuitBreakerResolver } from "./provider-circuit-breaker-resolver.js";
+import { createProviderRecoveryProbeFlow } from "./provider-recovery-probe-flow.js";
 import { createProviderOperationContract } from "./provider-operation-contract.js";
 import { createProviderSessionFactory } from "./provider-session-factory.js";
 import { createReleaseValidationAssembler } from "./release-validation-assembler.js";
@@ -105,6 +132,12 @@ import { createReleaseStateUpdater } from "./release-state-updater.js";
 import { createReleaseTimelineBuilder } from "./release-timeline-builder.js";
 import { createStoreAndProviderStatusPollers } from "./store-provider-status-pollers.js";
 import { createVersioningService } from "./versioning-service.js";
+import { defineProjectStateSnapshotSchema } from "./project-state-snapshot-schema.js";
+import { createProjectSnapshotStore } from "./project-snapshot-store.js";
+import { createStateDiffAndCompareModule } from "./state-diff-compare-module.js";
+import { createProjectStateRestoreResolver } from "./project-state-restore-resolver.js";
+import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
+import { createActorActionTraceAssembler } from "./actor-action-trace-assembler.js";
 import { createRejectionAndFailureMapper } from "./rejection-failure-mapper.js";
 import { defineFailureRecoverySchema } from "./failure-recovery-schema.js";
 import { createRetryPolicyResolver } from "./retry-policy-resolver.js";
@@ -177,6 +210,12 @@ import { createUserPreferenceSignalView } from "./user-preference-signal-view.js
 import { createCrossProjectPatternDisclosurePanel } from "./cross-project-pattern-disclosure-panel.js";
 import { createPassiveLearningDisclosureBanner } from "./passive-learning-disclosure-banner.js";
 import { createAiLearningWorkspaceTemplate } from "./ai-learning-workspace-template.js";
+import { defineContextRelevanceSchema } from "./context-relevance-schema.js";
+import { createContextRelevanceFilter } from "./context-relevance-filter.js";
+import { createContextSlimmingPipeline } from "./context-slimming-pipeline.js";
+import { defineEditableProposalSchema } from "./editable-proposal-schema.js";
+import { createProposalEditingSystem } from "./proposal-editing-system.js";
+import { createPartialAcceptanceFlow } from "./partial-acceptance-flow.js";
 import { createCompanionStateModel } from "./companion-state-model.js";
 import { defineAiCompanionPresenceSchema } from "./ai-companion-presence-schema.js";
 import { createCompanionTriggerPolicy } from "./companion-trigger-policy.js";
@@ -209,6 +248,7 @@ import { createNexusDatabaseMigrations } from "./nexus-database-migrations.js";
 import { createRepositoryLayerForCoreEntities } from "./entity-repository-layer.js";
 import { createFileAndArtifactStorageModule } from "./file-artifact-storage-module.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
+import { createAuthenticationRouteResolver } from "./authentication-route-resolver.js";
 import { createSessionAndTokenManagement } from "./session-and-token-management.js";
 import { createPasswordResetAndEmailVerificationFlow } from "./password-reset-email-verification-flow.js";
 import { defineWorkspaceAndMembershipModel } from "./workspace-membership-model.js";
@@ -224,6 +264,119 @@ import { mapDomainCapabilities } from "./domain-capability-mapper.js";
 import { createDomainRegistry, resolveDomainProfile } from "./domain-registry.js";
 
 const MIN_DECISION_CONFIDENCE = 0.65;
+
+function buildProjectAuditAction({
+  project,
+  approvalStatus,
+  deploymentRequest,
+  providerSession,
+  stateDiff,
+  restoreDecision,
+  rollbackExecutionResult,
+  releaseStatus,
+}) {
+  if (rollbackExecutionResult?.status) {
+    return {
+      actionType: "project.state.rollback",
+      status: rollbackExecutionResult.status,
+      projectId: project.id,
+      targetType: "rollback-execution",
+      targetId: rollbackExecutionResult.rollbackExecutionId ?? null,
+      summary: rollbackExecutionResult.summary ?? "Project rollback evaluated",
+      reason: rollbackExecutionResult.reason ?? null,
+      source: "context-builder",
+      impactedAreas: ["state", "recovery"],
+      metadata: {
+        rollbackScope: rollbackExecutionResult.rollbackScope ?? null,
+      },
+    };
+  }
+
+  if (restoreDecision?.status) {
+    return {
+      actionType: "project.state.restore",
+      status: restoreDecision.status,
+      projectId: project.id,
+      targetType: "state-restore",
+      targetId: restoreDecision.restoreDecisionId ?? null,
+      summary: restoreDecision.summary ?? "Project restore decision recorded",
+      reason: restoreDecision.reason ?? null,
+      source: "context-builder",
+      impactedAreas: ["state", "versioning"],
+      metadata: {
+        restoreMode: restoreDecision.restoreMode ?? null,
+      },
+    };
+  }
+
+  if (approvalStatus?.status && approvalStatus.status !== "missing") {
+    return {
+      actionType: "project.approval.review",
+      status: approvalStatus.status,
+      projectId: project.id,
+      targetType: "approval",
+      targetId: project.approvalRecords?.[0]?.approvalRecordId ?? null,
+      summary: `Project approval state is ${approvalStatus.status}`,
+      reason: approvalStatus.reason ?? null,
+      source: "context-builder",
+      impactedAreas: ["approval", "governance"],
+      metadata: {
+        approvalRequired: approvalStatus.requiresApproval ?? false,
+      },
+    };
+  }
+
+  if (deploymentRequest?.requestId) {
+    return {
+      actionType: "project.deploy.requested",
+      status: releaseStatus?.status ?? "queued",
+      projectId: project.id,
+      targetType: "deployment-request",
+      targetId: deploymentRequest.requestId,
+      summary: `Deployment request prepared for ${deploymentRequest.provider ?? "generic"}`,
+      reason: deploymentRequest.environment ?? null,
+      source: "context-builder",
+      impactedAreas: ["deploy", "release"],
+      metadata: {
+        provider: deploymentRequest.provider ?? null,
+        target: deploymentRequest.target ?? null,
+      },
+    };
+  }
+
+  if (providerSession?.providerType) {
+    return {
+      actionType: "project.provider.call",
+      status: providerSession.status ?? "connected",
+      projectId: project.id,
+      targetType: "provider-session",
+      targetId: providerSession.sessionId ?? providerSession.providerType,
+      summary: `Provider session active for ${providerSession.providerType}`,
+      reason: providerSession.authMode ?? null,
+      source: "context-builder",
+      impactedAreas: ["provider"],
+      metadata: {
+        capabilityCount: Array.isArray(providerSession.capabilities) ? providerSession.capabilities.length : 0,
+      },
+    };
+  }
+
+  return {
+    actionType: "project.edit.state-change",
+    status: "recorded",
+    projectId: project.id,
+    targetType: "state-diff",
+    targetId: stateDiff?.comparisonTargetId ?? null,
+    summary: "Project state change recorded",
+    reason: null,
+    source: "context-builder",
+    impactedAreas: ["state-change", "edit"],
+    attachments: Array.isArray(stateDiff?.changes) ? stateDiff.changes.slice(0, 3) : [],
+    metadata: {
+      totalChanges: stateDiff?.changeSummary?.totalChanges ?? 0,
+    },
+  };
+}
 
 function inferPlannedChangeKind(command) {
   const text = [command?.command, ...(Array.isArray(command?.args) ? command.args : [])]
@@ -743,7 +896,7 @@ function buildRisks(project, context) {
   return risks;
 }
 
-export function buildProjectContext(project) {
+export function buildProjectContext(project, { observabilityTransport = null, auditLogStore = null } = {}) {
   const domainDecision = inferDomain(project);
   const domain = domainDecision.domain;
   const domainRegistry = createDomainRegistry();
@@ -778,13 +931,26 @@ export function buildProjectContext(project) {
     businessContext,
     domainDecision,
   });
+  const { projectDraft } = defineProjectDraftSchema({
+    userIdentity: {
+      userId: project.userId ?? project.manualContext?.userId ?? null,
+      email: project.manualContext?.userProfile?.email ?? null,
+      displayName: project.manualContext?.userProfile?.displayName ?? null,
+    },
+    initialInput: {
+      projectDraftId: project.projectDraft?.id ?? project.id,
+      projectName: project.projectDraft?.name ?? project.name ?? null,
+      goal: project.projectDraft?.goal ?? project.goal ?? null,
+      creationSource: project.projectDraft?.creationSource ?? "project-state",
+      requestedDeliverables: project.projectIntake?.requestedDeliverables ?? [],
+      attachments: project.projectIntake?.uploadedFiles ?? [],
+      links: project.projectIntake?.externalLinks ?? [],
+    },
+    existingProjectDraft: project.projectDraft ?? null,
+  });
   const { projectIdentityProfile, identityCompleteness } = createProjectIdentityAssembler({
     projectIdentity,
-    projectDraft: project.projectDraft ?? {
-      id: project.id,
-      name: project.name ?? null,
-      goal: project.goal ?? null,
-    },
+    projectDraft,
     onboardingSession: project.onboardingSession ?? null,
   });
   const { instantValuePlan } = createInstantValueOutputResolver({
@@ -1125,6 +1291,7 @@ export function buildProjectContext(project) {
       workspaceId: project.id,
       service: "context-builder",
     },
+    observabilityTransport,
   });
   const { notificationPayload } = createExecutionCompletionNotifier({
     executionResult: {
@@ -1149,6 +1316,18 @@ export function buildProjectContext(project) {
       logs: platformLogs,
     },
     healthStatus: project.state?.observed?.health ?? null,
+    projectId: project.id,
+    actorId: project.userId ?? project.manualContext?.userId ?? null,
+    userEmail: project.manualContext?.userProfile?.email ?? null,
+    deliveryPreferences: project.manualContext?.deliveryPreferences ?? null,
+    channelConfig: {
+      channelType: project.manualContext?.channelConfig?.channelType ?? "webhook",
+      provider: project.manualContext?.channelConfig?.provider ?? "external-webhook",
+      webhookUrl: project.manualContext?.channelConfig?.webhookUrl ?? null,
+      target: project.manualContext?.channelConfig?.target ?? null,
+      providerSessionId: project.manualContext?.channelConfig?.providerSessionId ?? null,
+    },
+    observabilityTransport,
   });
   const { releasePlan, releaseSteps } = createReleasePlanGenerator({
     projectState: {
@@ -1294,6 +1473,18 @@ export function buildProjectContext(project) {
     providerSession,
     providerCapabilities,
     providerOperations,
+  });
+  const { providerDegradationState } = defineProviderDegradationSchema({
+    providerSession,
+    incidentAlert,
+  });
+  const { circuitBreakerDecision } = createProviderCircuitBreakerResolver({
+    providerDegradationState,
+    runtimeHealthSignals: project.state?.observed?.health ?? null,
+  });
+  const { providerRecoveryProbe } = createProviderRecoveryProbeFlow({
+    circuitBreakerDecision,
+    providerSession,
   });
   const { verificationResult } = createAccountVerificationModule({
     providerSession,
@@ -1492,6 +1683,36 @@ export function buildProjectContext(project) {
   const { releaseTimeline } = createReleaseTimelineBuilder({
     releaseRun,
     statusEvents,
+  });
+  const { systemBottleneckSummary } = createSystemBottleneckDetector({
+    platformTrace: {
+      ...platformTrace,
+      logs: platformLogs,
+      steps: [
+        ...(platformTrace.steps ?? []),
+        ...(providerDegradationState?.summary?.hasIncidentSignal
+          ? [{
+              stepId: `provider-degradation:${providerSession.providerType ?? "provider"}`,
+              source: providerSession.providerType ?? "provider",
+              status: providerDegradationState.health === "outage" ? "failed" : "blocked",
+              timestamp: new Date().toISOString(),
+              message: providerDegradationState.summary?.headline ?? "Provider degradation detected",
+            }]
+          : []),
+      ],
+    },
+    healthStatus: {
+      ...(project.state?.observed?.health ?? {}),
+      incidentAlert,
+    },
+    queueObservability: {
+      queueName: pollingRequest?.providerType ? `queue:${pollingRequest.providerType}` : "nexus-background",
+      lagSeconds: pollingMetadata?.nextPollInSeconds ?? 0,
+      retryPressure: pollingMetadata?.attempt ?? 0,
+      queueDepth: bootstrapAssignments.length,
+      stuckJobCount: incidentAlert?.incidents?.filter((incident) => incident.type === "queue-stall").length ?? 0,
+      deadLetterCount: incidentAlert?.incidents?.filter((incident) => incident.type === "execution-failure").length ?? 0,
+    },
   });
   const stack = buildStack(project);
   const capabilities = buildCapabilities(project);
@@ -1807,6 +2028,49 @@ export function buildProjectContext(project) {
     screenTemplateSchema: defineScreenTemplateSchema({ screenType: "workspace" }).screenTemplateSchema,
     learningInsightViewModel,
   });
+  const { contextRelevanceSchema } = defineContextRelevanceSchema({
+    projectState: {
+      id: project.id,
+      screenReviewReport,
+      activeBottleneck,
+      progressState,
+      approvals: project.approvals ?? [],
+      events: project.events ?? [],
+    },
+    interactionContext: {
+      projectId: project.id,
+      currentSurface: "workspace",
+      currentTask: project.context?.currentTask ?? null,
+      urgency: activeBottleneck ? "high" : "normal",
+      visible: true,
+    },
+  });
+  const { relevanceFilteredContext } = createContextRelevanceFilter({
+    contextRelevanceSchema,
+    projectState: {
+      id: project.id,
+      screenReviewReport,
+      activeBottleneck,
+      progressState,
+      approvals: project.approvals ?? [],
+      events: project.events ?? [],
+    },
+    screenContext: {
+      projectId: project.id,
+      currentSurface: "workspace",
+      currentTask: project.context?.currentTask ?? null,
+      urgency: activeBottleneck ? "high" : "normal",
+      visible: true,
+    },
+  });
+  const { slimmedContextPayload, droppedContextSummary } = createContextSlimmingPipeline({
+    relevanceFilteredContext,
+    tokenBudget: {
+      rawBudget: 1200,
+      maxItems: 3,
+      maxSummaryItems: 2,
+    },
+  });
   const { companionState } = createCompanionStateModel({
     learningInsights: project.context?.learningInsights ?? null,
     decisionIntelligence,
@@ -1957,13 +2221,84 @@ export function buildProjectContext(project) {
     userIdentity,
     authenticationState,
   });
+  const { authenticationRouteDecision } = createAuthenticationRouteResolver({
+    authenticationState,
+    sessionState,
+  });
   const { verificationFlowState } = createPasswordResetAndEmailVerificationFlow({
     userIdentity,
     verificationRequest: project.manualContext?.verificationRequest ?? null,
   });
+  const { authenticationViewState } = buildAuthenticationScreenStates({
+    authenticationRouteDecision,
+    verificationFlowState,
+  });
   const { workspaceModel, membershipRecord } = defineWorkspaceAndMembershipModel({
     userIdentity,
     workspaceMetadata: project.manualContext?.workspaceMetadata ?? null,
+  });
+  const { postAuthRedirect } = createPostAuthRedirectResolver({
+    authenticationRouteDecision,
+    sessionState,
+    workspaceModel,
+  });
+  const { projectCreationExperience } = createProjectCreationExperienceModel({
+    workspaceModel,
+    postLoginDestination: postAuthRedirect.destination,
+  });
+  const { projectCreationRedirect } = createPostProjectCreationRedirectResolver({
+    projectDraft,
+    projectCreationExperience,
+  });
+  const { onboardingProgress } = createOnboardingProgressModel({
+    onboardingSession: project.onboardingSession ?? null,
+    currentStep: project.onboardingSession?.currentStep ?? null,
+  });
+  const { onboardingViewState } = buildOnboardingScreenFlow({
+    onboardingSession: project.onboardingSession ?? null,
+    onboardingProgress,
+    requiredActions: project.requiredActions ?? project.onboardingSession?.requiredActions ?? [],
+  });
+  const { onboardingCompletionDecision } = createOnboardingCompletionEvaluator({
+    projectIntake: project.projectIntake ?? project.onboardingSession?.projectIntake ?? null,
+    onboardingSession: project.onboardingSession ?? null,
+  });
+  const { onboardingStateHandoff } = createOnboardingToStateHandoffContract({
+    projectDraft,
+    projectIntake: project.projectIntake ?? project.onboardingSession?.projectIntake ?? null,
+    onboardingCompletionDecision,
+    onboardingSession: project.onboardingSession ?? null,
+  });
+  const projectOwnershipBinding = {
+    bindingId: `project-ownership:${project.id ?? projectDraft.id ?? "unknown"}`,
+    projectId: project.id ?? projectDraft.id ?? null,
+    ownerUserId: project.userId ?? userIdentity.userId ?? projectDraft.owner?.userId ?? null,
+    workspaceId: workspaceModel?.workspaceId ?? null,
+    role: membershipRecord?.role ?? membershipRecord?.roles?.[0] ?? "owner",
+  };
+  const { initialProjectStateContract } = defineInitialProjectStateCreationContract({
+    onboardingStateHandoff,
+    projectOwnershipBinding,
+  });
+  const { initialProjectState } = defineCanonicalInitialProjectStateSchema({
+    initialProjectStateContract,
+    projectIdentity,
+  });
+  const { stateBootstrapPayload } = createOnboardingToStateTransformationMapper({
+    onboardingStateHandoff,
+    initialProjectState,
+  });
+  const { initialProjectState: bootstrappedInitialProjectState } = createProjectStateBootstrapService({
+    stateBootstrapPayload,
+    projectOwnershipBinding,
+  });
+  const { initialProjectStateValidation, stateValidationIssues } = createInitialProjectStateValidationModule({
+    initialProjectState: bootstrappedInitialProjectState,
+    initialProjectStateContract,
+  });
+  const { initialTasks, taskSeedMetadata } = createInitialTaskSeedingService({
+    initialProjectState: bootstrappedInitialProjectState,
+    domainDecision,
   });
   const { accessDecision } = createProjectAccessControlModule({
     workspaceModel,
@@ -2071,6 +2406,8 @@ export function buildProjectContext(project) {
       source: "nexus-runtime",
       traceId: platformTrace.traceId,
     },
+    auditLogStore,
+    observabilityTransport,
   });
   const providerErrors = statusEvents
     .filter((event) => ["failed", "rejected"].includes(event.status))
@@ -2262,6 +2599,54 @@ export function buildProjectContext(project) {
     projectPresenceState,
     reviewThreadState,
   });
+  const { projectStateSnapshot } = defineProjectStateSnapshotSchema({
+    projectState: {
+      ...bootstrappedInitialProjectState,
+      projectId: project.id,
+      workspaceId: workspaceModel?.workspaceId ?? null,
+      workspaceArea: projectPresenceState?.workspaceArea ?? "developer-workspace",
+      workspaceVisibility: workspaceModel?.visibility ?? "workspace",
+      stateVersion: project.context?.projectStateSnapshot?.stateVersion ?? null,
+      executionGraphVersion: project.context?.projectStateSnapshot?.executionGraphVersion ?? null,
+      lifecyclePhase: project.state?.lifecycle?.phase ?? null,
+      hasArtifacts: Boolean(artifactRecord || packagedArtifact),
+      hasBlockers: Boolean(activeBottleneck),
+      artifactCount: artifactRecord?.artifactCount ?? 0,
+      outputPaths: artifactRecord?.outputPaths ?? [],
+      packageFormat: packagedArtifact?.packageFormat ?? null,
+      packagedFileCount: packagedArtifact?.metadata?.fileCount ?? packagedArtifact?.files?.length ?? 0,
+      verificationStatus: packagedArtifact?.metadata?.verificationStatus ?? "unknown",
+      approvalStatus: approvalStatus?.status ?? null,
+      updatedAt: new Date().toISOString(),
+    },
+    executionGraph: project.cycle?.executionGraph ?? null,
+  });
+  const { snapshotRecord } = createProjectSnapshotStore({
+    projectStateSnapshot,
+  });
+  const { stateDiff } = createStateDiffAndCompareModule({
+    snapshotRecord: {
+      ...snapshotRecord,
+      executionGraphSummary: projectStateSnapshot.executionGraphSummary,
+    },
+    comparisonTarget: {
+      comparisonTargetId: `comparison-target:${project.id}`,
+      versions: {
+        stateVersion: (projectStateSnapshot.stateVersion ?? 1) + 1,
+        executionGraphVersion: projectStateSnapshot.executionGraphVersion ?? 1,
+      },
+      workspaceReference: projectStateSnapshot.workspaceReference,
+      executionGraphSummary: projectStateSnapshot.executionGraphSummary,
+      artifactSummary: {
+        ...projectStateSnapshot.artifactSummary,
+        artifactCount: projectStateSnapshot.artifactSummary.artifactCount,
+        outputPaths: projectStateSnapshot.artifactSummary.outputPaths,
+        packageFormat: projectStateSnapshot.artifactSummary.packageFormat,
+        packagedFileCount: projectStateSnapshot.artifactSummary.packagedFileCount,
+        verificationStatus: projectStateSnapshot.artifactSummary.verificationStatus,
+      },
+    },
+  });
   const { artifactBuildPanel } = createArtifactAndBuildLogPanel({
     artifactRecord,
     packagedArtifact,
@@ -2271,6 +2656,43 @@ export function buildProjectContext(project) {
     projectWorkbenchLayout,
     fileEditorContract,
     commandConsoleView,
+  });
+  const { restoreDecision } = createProjectStateRestoreResolver({
+    snapshotRecord,
+    rollbackPlan,
+  });
+  const { rollbackExecutionResult } = createProjectRollbackExecutionModule({
+    restoreDecision,
+    snapshotRecord,
+  });
+  const projectAuditAction = buildProjectAuditAction({
+    project,
+    approvalStatus,
+    deploymentRequest,
+    providerSession,
+    stateDiff,
+    restoreDecision,
+    rollbackExecutionResult,
+    releaseStatus,
+  });
+  const { projectAuditEvent } = defineProjectAuditEventSchema({
+    projectAction: projectAuditAction,
+    actorContext: {
+      actorId: userIdentity?.userId ?? project.userId ?? null,
+      actorType: authenticationState?.isAuthenticated ? "user" : "system",
+      actorRole: membershipRecord?.roles?.[0] ?? null,
+      workspaceId: workspaceModel?.workspaceId ?? project.id,
+      projectId: project.id,
+      source: "nexus-runtime",
+      traceId: platformTrace.traceId,
+    },
+  });
+  const { projectAuditRecord } = createProjectAuditEventCollector({
+    projectAuditEvent,
+  });
+  const { actorActionTrace } = createActorActionTraceAssembler({
+    projectAuditRecord,
+    executionResult: bootstrapExecutionResult,
   });
   const { reactiveWorkspaceState } = createReactiveWorkspaceRefreshModel({
     liveUpdateChannel,
@@ -2291,6 +2713,59 @@ export function buildProjectContext(project) {
     },
     policyTrace,
     learningInsights: project.context?.learningInsights ?? null,
+  });
+  const { selectedTask, selectionReason } = createNextTaskSelectionResolver({
+    roadmap: project.cycle?.roadmap ?? initialTasks,
+    blockers: projectBrainWorkspace?.blockers ?? [],
+    approvalStatus,
+    schedulerAlternatives: project.cycle?.schedulerDecision?.alternatives ?? retryPolicy?.schedulerHint?.alternatives ?? [],
+  });
+  const { nextTaskPresentation } = createNextTaskPresentationModel({
+    schedulerDecision: project.cycle?.schedulerDecision ?? null,
+    nextActionExplanation,
+    approvalStatus,
+    selectedTask,
+    selectionReason,
+  });
+  const { nextTaskApprovalPanel } = createNextTaskApprovalHandoffPanel({
+    nextTaskPresentation,
+    approvalExplanation,
+  });
+  const { recommendationDisplay } = createRecommendationDisplayContract({
+    projectExplanation,
+    reasoningPanel,
+    nextTaskPresentation,
+  });
+  const { recommendationSummaryPanel } = createRecommendationSummaryPanel({
+    recommendationDisplay,
+    projectBrainWorkspace,
+  });
+  const { editableProposal } = defineEditableProposalSchema({
+    proposalType: project.context?.proposalType ?? "workspace-recommendation",
+    proposalPayload: {
+      sourceId: recommendationDisplay?.displayId ?? nextTaskPresentation?.presentationId ?? project.id,
+      recommendationDisplay,
+      nextTaskPresentation,
+      approvalStatus,
+      headline: recommendationDisplay?.headline ?? null,
+      whyNow: recommendationDisplay?.whyNow ?? null,
+      expectedImpact: recommendationDisplay?.expectedImpact ?? null,
+      nextAction: recommendationDisplay?.primaryCta ?? null,
+    },
+  });
+  const { editedProposal, proposalEditHistory } = createProposalEditingSystem({
+    editableProposal,
+    userEditInput: project.context?.userEditInput ?? null,
+  });
+  const { partialAcceptanceDecision, remainingProposalScope } = createPartialAcceptanceFlow({
+    editedProposal,
+    approvalOutcome: project.context?.approvalOutcome ?? null,
+  });
+  const { cockpitRecommendationSurface } = createCockpitRecommendationSurface({
+    projectExplanation,
+    approvalExplanation,
+    reasoningPanel,
+    recommendationSummaryPanel,
   });
   const { releaseWorkspace } = createReleaseWorkspace({
     releasePlan,
@@ -2517,6 +2992,7 @@ export function buildProjectContext(project) {
   context.defaultsTrace = defaultsTrace;
   context.stackRecommendation = stackRecommendation;
   context.businessContext = businessContext;
+  context.projectDraft = projectDraft;
   context.projectIdentity = projectIdentity;
   context.projectIdentityProfile = projectIdentityProfile;
   context.identityCompleteness = identityCompleteness;
@@ -2561,9 +3037,38 @@ export function buildProjectContext(project) {
   context.userIdentity = userIdentity;
   context.authenticationState = authenticationState;
   context.sessionState = sessionState;
+  context.authenticationRouteDecision = authenticationRouteDecision;
   context.tokenBundle = tokenBundle;
   context.verificationFlowState = verificationFlowState;
+  context.authenticationViewState = authenticationViewState;
   context.workspaceModel = workspaceModel;
+  context.postAuthRedirect = postAuthRedirect;
+  context.projectCreationExperience = projectCreationExperience;
+  context.projectCreationRedirect = projectCreationRedirect;
+  context.onboardingProgress = onboardingProgress;
+  context.onboardingViewState = onboardingViewState;
+  context.onboardingCompletionDecision = onboardingCompletionDecision;
+  context.onboardingStateHandoff = onboardingStateHandoff;
+  context.projectOwnershipBinding = projectOwnershipBinding;
+  context.initialProjectStateContract = initialProjectStateContract;
+  context.initialProjectState = bootstrappedInitialProjectState;
+  context.initialProjectStateValidation = initialProjectStateValidation;
+  context.stateValidationIssues = stateValidationIssues;
+  context.initialTasks = initialTasks;
+  context.taskSeedMetadata = taskSeedMetadata;
+  context.selectedTask = selectedTask;
+  context.selectionReason = selectionReason;
+  context.nextTaskPresentation = nextTaskPresentation;
+  context.nextTaskApprovalPanel = nextTaskApprovalPanel;
+  context.recommendationDisplay = recommendationDisplay;
+  context.recommendationSummaryPanel = recommendationSummaryPanel;
+  context.editableProposal = editableProposal;
+  context.editedProposal = editedProposal;
+  context.proposalEditHistory = proposalEditHistory;
+  context.partialAcceptanceDecision = partialAcceptanceDecision;
+  context.remainingProposalScope = remainingProposalScope;
+  context.cockpitRecommendationSurface = cockpitRecommendationSurface;
+  context.stateBootstrapPayload = stateBootstrapPayload;
   context.membershipRecord = membershipRecord;
   context.accessDecision = accessDecision;
   context.collaborationEvent = collaborationEvent;
@@ -2614,6 +3119,10 @@ export function buildProjectContext(project) {
   context.crossProjectPatternPanel = crossProjectPatternPanel;
   context.learningDisclosure = learningDisclosure;
   context.aiLearningWorkspaceTemplate = aiLearningWorkspaceTemplate;
+  context.contextRelevanceSchema = contextRelevanceSchema;
+  context.relevanceFilteredContext = relevanceFilteredContext;
+  context.slimmedContextPayload = slimmedContextPayload;
+  context.droppedContextSummary = droppedContextSummary;
   context.companionState = companionState;
   context.companionTriggerDecision = companionTriggerDecision;
   context.companionMessagePriority = companionMessagePriority;
@@ -2633,6 +3142,11 @@ export function buildProjectContext(project) {
   context.reviewThreadState = reviewThreadState;
   context.sharedApprovalState = sharedApprovalState;
   context.collaborationFeed = collaborationFeed;
+  context.projectStateSnapshot = projectStateSnapshot;
+  context.snapshotRecord = snapshotRecord;
+  context.stateDiff = stateDiff;
+  context.restoreDecision = restoreDecision;
+  context.rollbackExecutionResult = rollbackExecutionResult;
   context.artifactBuildPanel = artifactBuildPanel;
   context.developmentWorkspace = developmentWorkspace;
   context.reactiveWorkspaceState = reactiveWorkspaceState;
@@ -2681,7 +3195,11 @@ export function buildProjectContext(project) {
   context.platformTrace = platformTrace;
   context.platformLogs = platformLogs;
   context.incidentAlert = incidentAlert;
+  context.systemBottleneckSummary = systemBottleneckSummary;
   context.auditLogRecord = auditLogRecord;
+  context.projectAuditEvent = projectAuditEvent;
+  context.projectAuditRecord = projectAuditRecord;
+  context.actorActionTrace = actorActionTrace;
   context.notificationPayload = notificationPayload;
   context.notificationEvent = notificationEvent;
   context.notificationCenterState = notificationCenterState;
@@ -2726,6 +3244,9 @@ export function buildProjectContext(project) {
   context.providerCapabilities = providerCapabilities;
   context.providerOperations = providerOperations;
   context.providerConnector = providerConnector;
+  context.providerDegradationState = providerDegradationState;
+  context.circuitBreakerDecision = circuitBreakerDecision;
+  context.providerRecoveryProbe = providerRecoveryProbe;
   context.verificationResult = verificationResult;
   context.ownershipPolicy = ownershipPolicy;
   context.consentRecord = consentRecord;
