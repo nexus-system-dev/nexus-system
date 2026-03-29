@@ -5777,7 +5777,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 - הערת מצב: ה־schema כבר ממומש ב־`context-relevance-schema.js`, מחשב `relevance`, `priority`, `freshness` ו־`tokenWeight` עבור `projectState` ו־`interactionContext`, ומחובר ב־`context-builder` ל־`Project State` יחד עם guidance ל־AI, review ו־execution.
 
-2. `Create context relevance filter`  | סטטוס: 🔴 לא בוצע
+2. `Create context relevance filter`  | סטטוס: 🟢 בוצע
 - description: לבנות filter שמכריע אילו חלקי context נשארים בבקשה, אילו יורדים ואילו רק מסוכמים
 - input:
   - `contextRelevanceSchema`
@@ -5788,6 +5788,7 @@ Refinements מאושרים:
 - dependencies:
   - `Define context relevance schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- הערת מצב: ה־filter כבר ממומש ב־`context-relevance-filter.js`, מסווג חלקי context ל־`keep` / `summarize` / `drop` מתוך `contextRelevanceSchema`, `projectState` ו־`screenContext`, ומחובר ב־`context-builder` ל־`Project State` כ־`relevanceFilteredContext`.
 
 3. `Create context slimming pipeline`  | סטטוס: 🔴 לא בוצע
 - description: לבנות pipeline שממיר context גדול ל־minimal execution context עם summaries, drops ו־priority ordering לפני שליחה ל־AI או ל־provider
@@ -5798,7 +5799,7 @@ Refinements מאושרים:
   - `slimmedContextPayload`
   - `droppedContextSummary`
 - dependencies:
-  - `Create context relevance filter`  | סטטוס: 🔴 לא בוצע
+  - `Create context relevance filter`  | סטטוס: 🟢 בוצע
   - `AI Learning UX`
 - connects_to: `Execution Surface`
 

@@ -39,9 +39,9 @@
 ## Current Snapshot
 
 - סך הכל משימות ב־`Wave 2`: `249`
-- `🟢 בוצע`: `64`
+- `🟢 בוצע`: `65`
 - `🟡 חלקי`: `6`
-- `🔴 לא בוצע`: `179`
+- `🔴 לא בוצע`: `178`
 
 ## Open Work Execution Ordering
 
@@ -556,8 +556,7 @@
 - הערת מצב: ה־schema כבר ממומש ב־`context-relevance-schema.js`, מחשב `relevance`, `priority`, `freshness` ו־`tokenWeight` עבור `projectState` ו־`interactionContext`, ומחובר ב־`context-builder` ל־`Project State` יחד עם guidance ל־AI, review ו־execution.
 
 
-2. `Create context relevance filter`  | סטטוס: 🔴 לא בוצע
-- execution_order: `2`
+2. `Create context relevance filter`  | סטטוס: 🟢 בוצע
 - description: לבנות filter שמכריע אילו חלקי context נשארים בבקשה, אילו יורדים ואילו רק מסוכמים
 - input:
   - `contextRelevanceSchema`
@@ -568,6 +567,7 @@
 - dependencies:
   - `Define context relevance schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- הערת מצב: ה־filter כבר ממומש ב־`context-relevance-filter.js`, מסווג חלקי context ל־`keep` / `summarize` / `drop` מתוך `contextRelevanceSchema`, `projectState` ו־`screenContext`, ומחובר ב־`context-builder` ל־`Project State` כ־`relevanceFilteredContext`.
 
 
 3. `Create context slimming pipeline`  | סטטוס: 🔴 לא בוצע
@@ -580,7 +580,7 @@
   - `slimmedContextPayload`
   - `droppedContextSummary`
 - dependencies:
-  - `Create context relevance filter`  | סטטוס: 🔴 לא בוצע
+  - `Create context relevance filter`  | סטטוס: 🟢 בוצע
   - `AI Learning UX`
 - connects_to: `Execution Surface`
 
