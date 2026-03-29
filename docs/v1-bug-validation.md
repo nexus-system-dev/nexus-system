@@ -449,3 +449,42 @@
   - בדיקות נדרשות:
     - אחרי approval transition, handoff context מתעדכן לחסם החדש.
     - מעבר בין workspaces שומר על אותו `projectId` ועל resume action שימושי.
+
+## V1-BUG-010 - ה־app shell לא סוגר end-to-end את המסלול מ־empty app לפרויקט usable
+- סטטוס: פתוח
+- חומרה: קריטי
+- אזור: onboarding
+- התגלה ב: בדיקת מסך ריק ב־web app אחרי הסרת demo seed
+- תיאור:
+  למרות שה־backend כבר יודע ליצור `projectDraft`, לנהל onboarding sessions ולסיים onboarding לפרויקט usable דרך API, ה־app shell הראשי עדיין מתחיל רק מ־`GET /api/projects`. כשאין פרויקטים, אין handoff ל־create project, ל־onboarding או ל־`loadProject(project.id)`, ולכן המשתמש נשאר במסך ריק.
+- צעדי שחזור:
+  1. להרים את השרת בלי seed data.
+  2. לפתוח את ה־web app כש־`/api/projects` מחזיר רשימה ריקה.
+  3. לנסות להגיע מתוך המסך הראשי ליצירת פרויקט ראשון.
+- תוצאה בפועל:
+  המסך הראשי נטען ריק, בלי מסלול usable שמוביל ל־draft creation, onboarding finish וטעינת workspace.
+- תוצאה צפויה:
+  empty app state יוביל את המשתמש דרך `Create Project -> onboarding -> finish -> loadProject(project.id) -> workspace` בלי תלות ידנית ב־API או seed data.
+- הערות:
+  זה לא סותר את `V1-BUG-003`. שם נסגר ה־backend HTTP flow של onboarding ל־project usable; כאן הפער הוא בשכבת הכניסה הראשית של המוצר ובחוסר הוכחת end-to-end דרך ה־app shell עצמו.
+- משימת תיקון טכנית:
+  - כותרת: `Close empty app to first project workspace integration flow`
+  - מטרה:
+    לחבר את מצב `אין פרויקטים` במסך הראשי ליצירת draft, כניסה/חידוש onboarding, finish onboarding וטעינה אוטומטית של workspace לפרויקט החדש.
+  - קבצים רלוונטיים:
+    - `web/app.js`
+    - `web/index.html`
+    - `src/server.js`
+    - `src/core/project-service.js`
+    - `test/web-app-wave1-cockpit.test.js`
+    - `test/server-health-endpoints.test.js`
+  - דרישות מימוש:
+    - להציג empty state אמיתי כש־`/api/projects` ריק.
+    - לא לחבר CTA מטעה בלי מסלול usable מלא.
+    - לחבר `POST /api/project-drafts` למסלול entry נכון.
+    - לחבר onboarding entry/resume מתוך ה־app shell.
+    - אחרי finish onboarding לקרוא `loadProject(project.id)` ולנחות ב־workspace usable.
+  - בדיקות נדרשות:
+    - תרחיש app ריק מגיע ל־draft creation מתוך ה־UI.
+    - finish onboarding מחזיר `project.id` וה־UI טוען אותו.
+    - ה־workspace הראשון נטען בלי seed data ובלי קריאות ידניות ל־API מחוץ ל־flow.

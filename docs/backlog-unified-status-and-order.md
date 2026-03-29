@@ -593,6 +593,9 @@ Refinements מאושרים:
   - `Create onboarding session service`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
+הערת אינטגרציה:
+- שכבת ה־API/service של `projectDraft` ו־`finish onboarding -> project` כבר קיימת בפועל, אבל ה־app shell הראשי עדיין לא מחבר מצב `אין פרויקטים` ל־`project draft creation`, ל־entry/resume של onboarding ול־`loadProject(project.id)`; את הפער הזה צריך לסגור דרך המשימות `Create project creation experience model`, `Build onboarding screen flow`, `Create first project kickoff flow`, `Create entry state variants and redirects` ו־`Create entry loading and recovery states`, בלי להציג CTA מזויף לפני שהשרשרת מחוברת end-to-end.
+
 10. `Create project ownership binding model`  | סטטוס: 🔴 לא בוצע
 - description: לבנות מודל שקושר `projectDraft` ו־`projectState` למשתמש, ל־workspace ול־membership המתאימים כבר מרגע היצירה
 - input:
@@ -3396,6 +3399,22 @@ Refinements מאושרים:
   - `Workspace Recovery & Resume`
 - connects_to: `Project State`
 - הערת מצב: המשימה עצמה מומשה ומחזירה `acceptanceResult` קנוני עבור תרחיש workspace-continuity; שכבת acceptance של `v1` הושלמה.
+
+7. `Create empty app to first project workspace acceptance test`  | סטטוס: 🔴 לא בוצע
+- description: לבנות test end-to-end שמוכיח שמשתמש מתחיל מ־app ריק בלי פרויקטים, עובר דרך create project, onboarding finish, `loadProject(project.id)` ונוחת ב־workspace usable
+- input:
+  - `acceptanceScenario`
+  - `projectCreationExperience`
+  - `onboardingViewState`
+  - `entryStateVariants`
+- output:
+  - `acceptanceResult`
+- dependencies:
+  - `Create project creation experience model`  | סטטוס: 🔴 לא בוצע
+  - `Build onboarding screen flow`  | סטטוס: 🔴 לא בוצע
+  - `Create first project kickoff flow`  | סטטוס: 🔴 לא בוצע
+  - `Create entry state variants and redirects`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
 
 #### `External Accounts Connector`
 
