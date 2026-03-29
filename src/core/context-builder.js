@@ -45,6 +45,7 @@ import { createSystemBottleneckDetector } from "./system-bottleneck-detector.js"
 import { createAuditLogForSystemActions } from "./system-audit-log.js";
 import { defineProjectAuditEventSchema } from "./project-audit-event-schema.js";
 import { createProjectAuditEventCollector } from "./project-audit-event-collector.js";
+import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-model.js";
 import { defineNotificationEventSchema } from "./notification-event-schema.js";
 import { createInAppNotificationCenter } from "./in-app-notification-center.js";
 import { createEmailNotificationDeliveryModule } from "./email-notification-delivery-module.js";
@@ -2697,6 +2698,10 @@ export function buildProjectContext(project, { observabilityTransport = null, au
     projectAuditRecord,
     executionResult: bootstrapExecutionResult,
   });
+  const { projectAuditPayload } = createProjectAuditApiAndViewerModel({
+    actorActionTrace,
+    filters: null,
+  });
   const { reactiveWorkspaceState } = createReactiveWorkspaceRefreshModel({
     liveUpdateChannel,
     developerWorkspace,
@@ -3203,6 +3208,7 @@ export function buildProjectContext(project, { observabilityTransport = null, au
   context.projectAuditEvent = projectAuditEvent;
   context.projectAuditRecord = projectAuditRecord;
   context.actorActionTrace = actorActionTrace;
+  context.projectAuditPayload = projectAuditPayload;
   context.notificationPayload = notificationPayload;
   context.notificationEvent = notificationEvent;
   context.notificationCenterState = notificationCenterState;

@@ -45,6 +45,7 @@ import { createRoleAssignmentAndInvitationFlow } from "./role-assignment-invitat
 import { createOrganizationWorkspaceSettingsModule } from "./workspace-settings-module.js";
 import { createPlatformObservabilityTransport } from "./platform-observability-transport.js";
 import { createPersistentProjectSnapshotStore } from "./project-snapshot-store.js";
+import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-model.js";
 import { createSystemAuditLogStore } from "./system-audit-log-store.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
@@ -1166,6 +1167,7 @@ export class ProjectService {
       projectAuditEvent: project.context?.projectAuditEvent ?? null,
       projectAuditRecord: project.context?.projectAuditRecord ?? null,
       actorActionTrace: project.context?.actorActionTrace ?? null,
+      projectAuditPayload: project.context?.projectAuditPayload ?? null,
       notificationPayload: project.context?.notificationPayload ?? null,
       notificationEvent: project.context?.notificationEvent ?? null,
       notificationCenterState: project.context?.notificationCenterState ?? null,
@@ -1291,6 +1293,18 @@ export class ProjectService {
 
   getProjectSnapshots(filters = {}) {
     return this.projectSnapshotStore.query(filters);
+  }
+
+  getProjectAuditPayload(projectId, filters = {}) {
+    const project = this.projects.get(projectId);
+    if (!project?.context?.actorActionTrace) {
+      return null;
+    }
+
+    return createProjectAuditApiAndViewerModel({
+      actorActionTrace: project.context.actorActionTrace,
+      filters,
+    }).projectAuditPayload;
   }
 
   scanProject(projectId, overridePath) {

@@ -340,6 +340,22 @@ export function createServer(projectService, runtimeStatus = {}) {
         return;
       }
 
+      if (suffix === "audit") {
+        const projectAuditPayload = typeof projectService.getProjectAuditPayload === "function"
+          ? projectService.getProjectAuditPayload(projectId, {
+              actorId: url.searchParams.get("actorId") ?? null,
+              actionType: url.searchParams.get("actionType") ?? null,
+              sensitivity: url.searchParams.get("sensitivity") ?? null,
+            })
+          : null;
+        sendJson(
+          response,
+          projectAuditPayload ? 200 : 404,
+          projectAuditPayload ?? { error: "Project audit payload not found" },
+        );
+        return;
+      }
+
       if (suffix === "scan") {
         const project = projectService.getProject(projectId);
         sendJson(response, project ? 200 : 404, project ? { scan: project.scan } : { error: "Project not found" });

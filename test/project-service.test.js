@@ -538,6 +538,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.actorActionTrace?.actorActionTraceId, "string");
   assert.equal(typeof project.state.actorActionTrace?.outcome?.status, "string");
   assert.equal(Array.isArray(project.state.actorActionTrace?.affectedArtifacts), true);
+  assert.equal(typeof project.state.projectAuditPayload?.projectAuditPayloadId, "string");
+  assert.equal(Array.isArray(project.state.projectAuditPayload?.entries), true);
   assert.equal(typeof project.state.nexusPersistenceSchema?.schemaId, "string");
   assert.equal(typeof project.state.nexusPersistenceSchema?.summary?.totalEntities, "number");
   assert.equal(typeof project.state.migrationPlan?.migrationPlanId, "string");
@@ -1612,4 +1614,17 @@ test("project service refreshes workspace handoff context from live blocker and 
     approvedProject.state.workspaceNavigationModel?.handoffContext?.resumeToken ?? "",
     /^resume:giftwallet:project-brain:release-blocker$/,
   );
+});
+
+test("project service returns filtered project audit payload", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const projectAuditPayload = service.getProjectAuditPayload("giftwallet", {
+    actorId: "system",
+  });
+
+  assert.equal(projectAuditPayload.projectId, "giftwallet");
+  assert.equal(Array.isArray(projectAuditPayload.entries), true);
+  assert.equal(projectAuditPayload.summary.filtered, true);
 });

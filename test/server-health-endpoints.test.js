@@ -196,6 +196,28 @@ test("server exposes project live-state endpoint", async () => {
   assert.equal(Array.isArray(response.body.events), true);
 });
 
+test("server exposes project audit payload endpoint", async () => {
+  const server = createServer({
+    getProjectAuditPayload: (projectId, filters) => projectId === "giftwallet"
+      ? {
+          projectAuditPayloadId: "project-audit-payload:giftwallet",
+          projectId,
+          filters,
+          entries: [{ entryId: "actor-action-trace:1" }],
+          viewerModel: { supportsFiltering: true },
+          summary: { totalEntries: 1 },
+        }
+      : null,
+  });
+
+  const response = await requestJson(server, "/api/projects/giftwallet/audit?actorId=user-1");
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.projectId, "giftwallet");
+  assert.equal(response.body.filters.actorId, "user-1");
+  assert.equal(response.body.entries[0].entryId, "actor-action-trace:1");
+});
+
 test("server exposes project draft creation endpoint", async () => {
   const server = createServer({
     createProjectDraft: ({ userInput, projectCreationInput }) => ({

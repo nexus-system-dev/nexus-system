@@ -7665,7 +7665,7 @@ Refinements מאושרים:
   - `Execution Feedback Layer`
 - connects_to: `Project State`
 
-4. `Create project audit API and viewer model`  | סטטוס: 🔴 לא בוצע
+4. `Create project audit API and viewer model`  | סטטוס: 🟢 בוצע
 - description: לבנות API ו־viewer model להצגת היסטוריית פעולות ברמת פרויקט לפי actor, זמן, action type ו־sensitivity
 - input:
   - `actorActionTrace`
