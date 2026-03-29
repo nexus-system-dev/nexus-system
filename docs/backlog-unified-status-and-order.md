@@ -7643,7 +7643,7 @@ Refinements מאושרים:
   - `Project State`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-2. `Create project audit event collector`  | סטטוס: 🔴 לא בוצע
+2. `Create project audit event collector`  | סטטוס: 🟢 בוצע
 - description: לבנות collector שמקליט אירועי audit מכל execution path, approval flow ו־workspace action
 - input:
   - `projectAuditEvent`
@@ -7661,7 +7661,7 @@ Refinements מאושרים:
 - output:
   - `actorActionTrace`
 - dependencies:
-  - `Create project audit event collector`  | סטטוס: 🔴 לא בוצע
+  - `Create project audit event collector`  | סטטוס: 🟢 בוצע
   - `Execution Feedback Layer`
 - connects_to: `Project State`
 
