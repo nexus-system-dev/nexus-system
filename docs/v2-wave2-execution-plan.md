@@ -39,9 +39,9 @@
 ## Current Snapshot
 
 - סך הכל משימות ב־`Wave 2`: `249`
-- `🟢 בוצע`: `65`
+- `🟢 בוצע`: `66`
 - `🟡 חלקי`: `6`
-- `🔴 לא בוצע`: `178`
+- `🔴 לא בוצע`: `177`
 
 ## Open Work Execution Ordering
 
@@ -570,8 +570,7 @@
 - הערת מצב: ה־filter כבר ממומש ב־`context-relevance-filter.js`, מסווג חלקי context ל־`keep` / `summarize` / `drop` מתוך `contextRelevanceSchema`, `projectState` ו־`screenContext`, ומחובר ב־`context-builder` ל־`Project State` כ־`relevanceFilteredContext`.
 
 
-3. `Create context slimming pipeline`  | סטטוס: 🔴 לא בוצע
-- execution_order: `3`
+3. `Create context slimming pipeline`  | סטטוס: 🟢 בוצע
 - description: לבנות pipeline שממיר context גדול ל־minimal execution context עם summaries, drops ו־priority ordering לפני שליחה ל־AI או ל־provider
 - input:
   - `relevanceFilteredContext`
@@ -583,6 +582,7 @@
   - `Create context relevance filter`  | סטטוס: 🟢 בוצע
   - `AI Learning UX`
 - connects_to: `Execution Surface`
+- הערת מצב: ה־pipeline כבר ממומש ב־`context-slimming-pipeline.js`, ממיר `relevanceFilteredContext` ל־`slimmedContextPayload` עם `orderedContext`, `summaries` ו־`tokenBudget`, ומחזיר גם `droppedContextSummary`; הוא מחובר ב־`context-builder` לפני שליחה ל־execution/AI flows.
 
 
 #### `Human Editing & Partial Acceptance`

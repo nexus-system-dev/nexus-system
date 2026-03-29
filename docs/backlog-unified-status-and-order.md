@@ -5790,7 +5790,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 - הערת מצב: ה־filter כבר ממומש ב־`context-relevance-filter.js`, מסווג חלקי context ל־`keep` / `summarize` / `drop` מתוך `contextRelevanceSchema`, `projectState` ו־`screenContext`, ומחובר ב־`context-builder` ל־`Project State` כ־`relevanceFilteredContext`.
 
-3. `Create context slimming pipeline`  | סטטוס: 🔴 לא בוצע
+3. `Create context slimming pipeline`  | סטטוס: 🟢 בוצע
 - description: לבנות pipeline שממיר context גדול ל־minimal execution context עם summaries, drops ו־priority ordering לפני שליחה ל־AI או ל־provider
 - input:
   - `relevanceFilteredContext`
@@ -5802,6 +5802,7 @@ Refinements מאושרים:
   - `Create context relevance filter`  | סטטוס: 🟢 בוצע
   - `AI Learning UX`
 - connects_to: `Execution Surface`
+- הערת מצב: ה־pipeline כבר ממומש ב־`context-slimming-pipeline.js`, ממיר `relevanceFilteredContext` ל־`slimmedContextPayload` עם `orderedContext`, `summaries` ו־`tokenBudget`, ומחזיר גם `droppedContextSummary`; הוא מחובר ב־`context-builder` לפני שליחה ל־execution/AI flows.
 
 #### `Human Editing & Partial Acceptance`
 
