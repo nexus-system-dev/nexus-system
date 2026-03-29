@@ -241,6 +241,18 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
         },
       ],
     },
+    reviewThreadState: {
+      threadStateId: "review-thread-state:giftwallet",
+      threads: [
+        {
+          threadId: "thread:diff:exec-1",
+          title: "Review pending changes",
+          contextTarget: { resourceType: "diff" },
+          messages: [{ body: "Please review the latest diff" }],
+        },
+      ],
+      summary: { openThreads: 1 },
+    },
     projectPresenceState: {
       activeParticipantCount: 2,
       summary: { totalParticipants: 2, hasSharedPresence: true },
@@ -386,6 +398,7 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#learning-content").innerHTML, /Approval-first rollout copy works better/);
   assert.match(fakeDocument.elements.get("#companion-content").innerHTML, /review-warning/);
   assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Please review the latest diff/);
+  assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Review pending changes/);
   assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /project-state-snapshot:giftwallet:v3/);
   assert.match(fakeDocument.elements.get("#growth-content").innerHTML, /Draft Wave 2 teaser/);
   assert.match(fakeDocument.elements.get("#developer-workspace-summary").innerHTML, /36%/);
@@ -468,6 +481,19 @@ test("cockpit refreshes live progress without manual clicks", async () => {
       commandOutputs: [{ commandOutputId: "command-output:log-2", stream: "stdout", message: "npm run build", timestamp: null }],
       summary: { totalEntries: 2 },
     },
+    projectPresenceState: { summary: { totalParticipants: 2, hasSharedPresence: true } },
+    reviewThreadState: {
+      threadStateId: "review-thread-state:giftwallet",
+      threads: [
+        {
+          threadId: "thread:diff:exec-2",
+          title: "Release diff review",
+          contextTarget: { resourceType: "diff" },
+          messages: [{ body: "Validate the release notes" }],
+        },
+      ],
+      summary: { openThreads: 1 },
+    },
     collaborationFeed: { summary: { totalItems: 0, containsWorkspaceTransitions: false }, items: [] },
     events: [{ type: "state.updated", payload: { projectId: "giftwallet" } }],
   };
@@ -532,6 +558,7 @@ test("cockpit refreshes live progress without manual clicks", async () => {
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /Build almost done/);
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /npm run build/);
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /warning: skipped optional step/);
+  assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Release diff review/);
 });
 
 test("cockpit consumes sse live updates when push transport is available", async () => {

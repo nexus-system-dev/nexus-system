@@ -6558,7 +6558,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 - הערת מצב: ה־presence model מחובר עכשיו ל־heartbeat חי דרך `POST /api/projects/:id/presence`, נשען על registry פעיל ב־`ProjectService`, ומעדכן `projectPresenceState` בזמן אמת עם participants, workspace area, current task ו־last seen דרך `live-state` ו־`SSE`.
 
-3. `Create project comments and review threads module`  | סטטוס: 🟡 חלקי
+3. `Create project comments and review threads module`  | סטטוס: 🟢 בוצע
 - description: לבנות מודול ל־comments, review threads ו־contextual discussion על files, diffs, approvals ו־release steps
 - input:
   - `collaborationEvent`
@@ -6569,6 +6569,7 @@ Refinements מאושרים:
   - `Define collaboration event schema`  | סטטוס: 🟢 בוצע
   - `Create branch and diff activity panel`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- הערת מצב: מודול ה־review threads מחובר עכשיו ל־store קנוני עם persistence ל־`project-review-threads.ndjson`, תומך ב־`GET/POST /api/projects/:id/review-threads`, מתמזג עם threads הקונטקסטואליים של diff/approval/release בתוך `context-builder`, ונחשף בזמן אמת דרך `live-state`, `SSE` וה־UI של ה־cockpit.
 
 4. `Create shared approval flow model`  | סטטוס: 🟡 חלקי
 - description: לבנות model לשיתוף approval requests בין reviewers, owners ו־operators עם visibility ותיאום החלטות
@@ -6591,7 +6592,7 @@ Refinements מאושרים:
   - `collaborationFeed`
 - dependencies:
   - `Create project presence model`  | סטטוס: 🟢 בוצע
-  - `Create project comments and review threads module`  | סטטוס: 🟡 חלקי
+  - `Create project comments and review threads module`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 #### `Execution Topology Model`

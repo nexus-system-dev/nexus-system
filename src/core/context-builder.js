@@ -898,7 +898,15 @@ function buildRisks(project, context) {
   return risks;
 }
 
-export function buildProjectContext(project, { observabilityTransport = null, auditLogStore = null, snapshotStore = null } = {}) {
+export function buildProjectContext(
+  project,
+  {
+    observabilityTransport = null,
+    auditLogStore = null,
+    snapshotStore = null,
+    reviewThreadStore = null,
+  } = {},
+) {
   const domainDecision = inferDomain(project);
   const domain = domainDecision.domain;
   const domainRegistry = createDomainRegistry();
@@ -2596,6 +2604,10 @@ export function buildProjectContext(project, { observabilityTransport = null, au
   const { reviewThreadState } = createProjectCommentsAndReviewThreadsModule({
     collaborationEvent,
     branchDiffActivityPanel,
+    persistedThreads:
+      reviewThreadStore && typeof reviewThreadStore.query === "function"
+        ? reviewThreadStore.query({ projectId: project.id, limit: 100 })
+        : [],
   });
   const { sharedApprovalState } = createSharedApprovalFlowModel({
     approvalRequest: approvalRequestWithStatus,

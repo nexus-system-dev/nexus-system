@@ -89,6 +89,8 @@ function getProjectLiveState(projectService, projectId) {
     liveLogStream: project.liveLogStream ?? null,
     formattedLogs: project.formattedLogs ?? [],
     commandConsoleView: project.commandConsoleView ?? null,
+    projectPresenceState: project.projectPresenceState ?? null,
+    reviewThreadState: project.reviewThreadState ?? null,
     collaborationFeed: project.collaborationFeed ?? null,
     events: project.events ?? [],
   };
@@ -334,6 +336,19 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/review-threads")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.upsertProjectReviewThread === "function"
+        ? projectService.upsertProjectReviewThread({
+            projectId,
+            threadInput: body,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "GET" && url.pathname === "/api/projects") {
       sendJson(response, 200, { projects: projectService.listProjects() });
       return;
@@ -430,6 +445,22 @@ export function createServer(projectService, runtimeStatus = {}) {
           response,
           projectAuditPayload ? 200 : 404,
           projectAuditPayload ?? { error: "Project audit payload not found" },
+        );
+        return;
+      }
+
+      if (suffix === "review-threads") {
+        const reviewThreadState = typeof projectService.getProjectReviewThreadState === "function"
+          ? projectService.getProjectReviewThreadState(projectId, {
+              resourceType: url.searchParams.get("resourceType") ?? null,
+              status: url.searchParams.get("status") ?? null,
+              workspaceArea: url.searchParams.get("workspaceArea") ?? null,
+            })
+          : null;
+        sendJson(
+          response,
+          reviewThreadState ? 200 : 404,
+          reviewThreadState ? { reviewThreadState } : { error: "Project review threads not found" },
         );
         return;
       }

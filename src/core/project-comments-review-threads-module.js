@@ -6,6 +6,20 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function dedupeParticipants(participants) {
+  const seen = new Set();
+  return normalizeArray(participants).filter((participant) => {
+    const normalizedParticipant = normalizeObject(participant);
+    const participantId = normalizedParticipant.participantId ?? normalizedParticipant.displayName ?? null;
+    if (!participantId || seen.has(participantId)) {
+      return false;
+    }
+
+    seen.add(participantId);
+    return true;
+  });
+}
+
 function buildBaseContext(collaborationEvent, branchDiffActivityPanel) {
   const eventTarget = normalizeObject(collaborationEvent.target);
   const diffs = normalizeObject(branchDiffActivityPanel.diffs);
@@ -194,19 +208,67 @@ function buildReleaseThreads(branchDiffActivityPanel, baseContext) {
   });
 }
 
+function mergeThreadRecords(baseThread, persistedThread) {
+  const normalizedBaseThread = normalizeObject(baseThread);
+  const normalizedPersistedThread = normalizeObject(persistedThread);
+  if (!normalizedPersistedThread.threadId) {
+    return normalizedBaseThread;
+  }
+
+  return {
+    ...normalizedBaseThread,
+    ...normalizedPersistedThread,
+    contextTarget: {
+      ...normalizeObject(normalizedBaseThread.contextTarget),
+      ...normalizeObject(normalizedPersistedThread.contextTarget),
+    },
+    messages: [
+      ...normalizeArray(normalizedBaseThread.messages),
+      ...normalizeArray(normalizedPersistedThread.messages),
+    ],
+    participants: dedupeParticipants([
+      ...normalizeArray(normalizedBaseThread.participants),
+      ...normalizeArray(normalizedPersistedThread.participants),
+    ]),
+  };
+}
+
+function compareThreads(left = {}, right = {}) {
+  const leftTime = Date.parse(left.updatedAt ?? left.createdAt ?? 0) || 0;
+  const rightTime = Date.parse(right.updatedAt ?? right.createdAt ?? 0) || 0;
+  return leftTime - rightTime;
+}
+
 export function createProjectCommentsAndReviewThreadsModule({
   collaborationEvent = null,
   branchDiffActivityPanel = null,
+  persistedThreads = [],
 } = {}) {
   const normalizedCollaborationEvent = normalizeObject(collaborationEvent);
   const normalizedBranchDiffActivityPanel = normalizeObject(branchDiffActivityPanel);
   const baseContext = buildBaseContext(normalizedCollaborationEvent, normalizedBranchDiffActivityPanel);
-  const threads = [
+  const contextualThreads = [
     buildEventThread(normalizedCollaborationEvent, baseContext),
     buildDiffThread(normalizedBranchDiffActivityPanel, baseContext),
     ...buildApprovalThreads(normalizedBranchDiffActivityPanel, baseContext),
     ...buildReleaseThreads(normalizedBranchDiffActivityPanel, baseContext),
   ].filter(Boolean);
+  const threadsById = new Map(contextualThreads.map((thread) => [thread.threadId, thread]));
+
+  for (const persistedThread of normalizeArray(persistedThreads)) {
+    const normalizedPersistedThread = normalizeObject(persistedThread);
+    if (!normalizedPersistedThread.threadId) {
+      continue;
+    }
+
+    const mergedThread = mergeThreadRecords(
+      threadsById.get(normalizedPersistedThread.threadId),
+      normalizedPersistedThread,
+    );
+    threadsById.set(normalizedPersistedThread.threadId, mergedThread);
+  }
+
+  const threads = [...threadsById.values()].sort(compareThreads);
   const openThreads = threads.filter((thread) => !["resolved", "closed", "merged"].includes(thread.status)).length;
 
   return {

@@ -65,3 +65,47 @@ test("project comments and review threads module falls back safely", () => {
   assert.equal(typeof reviewThreadState.summary.totalThreads, "number");
   assert.equal(reviewThreadState.summary.hasContextualDiscussion, false);
 });
+
+test("project comments and review threads module merges persisted discussion threads", () => {
+  const { reviewThreadState } = createProjectCommentsAndReviewThreadsModule({
+    branchDiffActivityPanel: {
+      diffs: {
+        headline: "2 files changed",
+        executionRequestId: "exec-1",
+        totalChanges: 2,
+      },
+    },
+    persistedThreads: [
+      {
+        threadId: "thread:diff:exec-1",
+        projectId: "project-1",
+        title: "Review pending changes",
+        threadType: "review-thread",
+        contextTarget: {
+          workspaceArea: "developer-workspace",
+          resourceType: "diff",
+          resourceId: "exec-1",
+          filePath: "workspace/diff-preview",
+        },
+        messages: [
+          {
+            messageId: "persisted-message-1",
+            authorId: "user-1",
+            authorName: "Owner",
+            body: "Check the changed copy before merge",
+            status: "open",
+          },
+        ],
+        participants: [{ participantId: "user-1", displayName: "Owner" }],
+        status: "open",
+        createdAt: "2025-01-01T00:00:00.000Z",
+        updatedAt: "2025-01-01T00:01:00.000Z",
+      },
+    ],
+  });
+
+  assert.equal(reviewThreadState.threads.length, 1);
+  assert.equal(reviewThreadState.threads[0].messages.length, 2);
+  assert.equal(reviewThreadState.threads[0].messages[1].body, "Check the changed copy before merge");
+  assert.equal(reviewThreadState.summary.openThreads, 1);
+});

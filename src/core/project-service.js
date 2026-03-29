@@ -47,6 +47,7 @@ import { createPlatformObservabilityTransport } from "./platform-observability-t
 import { createPersistentProjectSnapshotStore } from "./project-snapshot-store.js";
 import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-model.js";
 import { createSystemAuditLogStore } from "./system-audit-log-store.js";
+import { createProjectReviewThreadStore } from "./project-review-thread-store.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
 import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
@@ -57,9 +58,11 @@ export class ProjectService {
     eventLogPath,
     auditLogPath = null,
     snapshotLogPath = null,
+    reviewThreadLogPath = null,
     platformObservabilityTransport = null,
     systemAuditLogStore = null,
     projectSnapshotStore = null,
+    projectReviewThreadStore = null,
   }) {
     this.eventBus = new EventBus({
       eventLog: new FileEventLog({
@@ -86,6 +89,142 @@ export class ProjectService {
     this.systemAuditLogStore = systemAuditLogStore ?? createSystemAuditLogStore({ filePath: auditLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "system-audit.ndjson") });
     this.projectSnapshotStore = projectSnapshotStore
       ?? createPersistentProjectSnapshotStore({ filePath: snapshotLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "project-snapshots.ndjson") });
+    this.projectReviewThreadStore = projectReviewThreadStore
+      ?? createProjectReviewThreadStore({ filePath: reviewThreadLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "project-review-threads.ndjson") });
+  }
+
+  getProjectReviewThreadState(projectId, filters = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const threadState = project.context?.reviewThreadState ?? null;
+    if (!threadState) {
+      return null;
+    }
+
+    const resourceType = filters.resourceType ?? null;
+    const status = filters.status ?? null;
+    const workspaceArea = filters.workspaceArea ?? null;
+    const filteredThreads = (Array.isArray(threadState.threads) ? threadState.threads : [])
+      .filter((thread) => (resourceType ? thread.contextTarget?.resourceType === resourceType : true))
+      .filter((thread) => (status ? thread.status === status : true))
+      .filter((thread) => (workspaceArea ? thread.contextTarget?.workspaceArea === workspaceArea : true));
+    const openThreads = filteredThreads.filter((thread) => !["resolved", "closed", "merged"].includes(thread.status)).length;
+
+    return {
+      ...threadState,
+      threads: filteredThreads,
+      summary: {
+        ...(threadState.summary ?? {}),
+        totalThreads: filteredThreads.length,
+        openThreads,
+        filtered: Boolean(resourceType || status || workspaceArea),
+      },
+    };
+  }
+
+  upsertProjectReviewThread({ projectId, threadInput } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const input = threadInput && typeof threadInput === "object" ? threadInput : {};
+    const timestamp = new Date().toISOString();
+    const actor = input.actor && typeof input.actor === "object" ? input.actor : {};
+    const initialBody = input.body ?? input.message ?? null;
+    const existingThread = input.threadId ? this.projectReviewThreadStore.getByThreadId(input.threadId) : null;
+    const messageId = input.messageId ?? `review-thread-message:${projectId}:${Date.now()}`;
+    const nextThreadId = existingThread?.threadId ?? input.threadId ?? `review-thread:${projectId}:${Date.now()}`;
+    const nextMessage =
+      initialBody
+        ? {
+            messageId,
+            authorId: actor.actorId ?? actor.userId ?? input.authorId ?? "local-operator",
+            authorName: actor.displayName ?? input.authorName ?? "Local operator",
+            body: initialBody,
+            mentions: Array.isArray(input.mentions) ? input.mentions : [],
+            status: input.messageStatus ?? input.status ?? existingThread?.status ?? "open",
+            createdAt: timestamp,
+          }
+        : null;
+
+    const record = existingThread
+      ? (nextMessage
+          ? this.projectReviewThreadStore.appendMessage({
+              threadId: existingThread.threadId,
+              projectId,
+              message: nextMessage,
+            })
+          : this.projectReviewThreadStore.upsert({
+              ...existingThread,
+              status: input.status ?? existingThread.status ?? "open",
+              updatedAt: timestamp,
+            }))
+      : this.projectReviewThreadStore.upsert({
+          threadId: nextThreadId,
+          projectId,
+          threadType: input.threadType ?? "comment-thread",
+          title: input.title ?? "Project discussion",
+          contextTarget: {
+            workspaceArea: input.contextTarget?.workspaceArea ?? "developer-workspace",
+            resourceType: input.contextTarget?.resourceType ?? "comment",
+            resourceId: input.contextTarget?.resourceId ?? null,
+            approvalRecordId: input.contextTarget?.approvalRecordId ?? null,
+            filePath: input.contextTarget?.filePath ?? null,
+            pullRequestId: input.contextTarget?.pullRequestId ?? null,
+            executionRequestId: input.contextTarget?.executionRequestId ?? null,
+            diffHeadline: input.contextTarget?.diffHeadline ?? null,
+          },
+          messages: nextMessage ? [nextMessage] : [],
+          participants: nextMessage
+            ? [
+                {
+                  participantId: nextMessage.authorId,
+                  displayName: nextMessage.authorName,
+                },
+              ]
+            : [],
+          status: input.status ?? nextMessage?.status ?? "open",
+          source: input.source ?? "project-review-thread-api",
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        });
+
+    if (!record) {
+      return null;
+    }
+
+    project.manualContext = {
+      ...(project.manualContext ?? {}),
+      collaborationEvent: {
+        eventId: `review-thread:${record.threadId}:${Date.now()}`,
+        eventType: "comment",
+        actor: {
+          actorId: nextMessage?.authorId ?? actor.actorId ?? "local-operator",
+          displayName: nextMessage?.authorName ?? actor.displayName ?? "Local operator",
+        },
+        target: {
+          projectId,
+          workspaceArea: record.contextTarget?.workspaceArea ?? "developer-workspace",
+          resourceId: record.contextTarget?.resourceId ?? record.threadId,
+        },
+        payload: {
+          message: nextMessage?.body ?? input.title ?? "Review thread updated",
+          reviewStatus: record.status ?? "open",
+          mentions: nextMessage?.mentions ?? [],
+        },
+      },
+    };
+
+    this.rebuildContext(projectId);
+    return {
+      project: this.serializeProject(project),
+      reviewThreadState: this.getProjectReviewThreadState(projectId),
+      reviewThreadRecord: record,
+    };
   }
 
   findUserRecord(userInput = {}) {
@@ -1028,6 +1167,7 @@ export class ProjectService {
       observabilityTransport: this.platformObservabilityTransport,
       auditLogStore: this.systemAuditLogStore,
       snapshotStore: this.projectSnapshotStore,
+      reviewThreadStore: this.projectReviewThreadStore,
     });
     project.state = {
       ...project.state,
@@ -1967,6 +2107,16 @@ export class ProjectService {
       notionSource: project.notionSource ?? null,
       notionSnapshot: project.notionSnapshot ?? null,
       source: project.source ?? null,
+      progressState: project.context?.progressState ?? null,
+      reactiveWorkspaceState: project.context?.reactiveWorkspaceState ?? null,
+      realtimeEventStream: project.context?.realtimeEventStream ?? null,
+      liveUpdateChannel: project.context?.liveUpdateChannel ?? null,
+      liveLogStream: project.context?.liveLogStream ?? null,
+      formattedLogs: project.context?.formattedLogs ?? [],
+      commandConsoleView: project.context?.commandConsoleView ?? null,
+      projectPresenceState: project.context?.projectPresenceState ?? null,
+      reviewThreadState: project.context?.reviewThreadState ?? null,
+      collaborationFeed: project.context?.collaborationFeed ?? null,
       agents: project.agents,
       overview: {
         bottleneck: blockedTasks[0] ?? "אין כרגע חסם מרכזי",

@@ -608,9 +608,15 @@ function renderCollaboration(elements, project) {
   const feed = normalizeObject(project.collaborationFeed);
   const summary = normalizeObject(feed.summary);
   const presenceSummary = normalizeObject(project.projectPresenceState?.summary);
+  const reviewThreadState = normalizeObject(project.reviewThreadState);
+  const reviewThreadSummary = normalizeObject(reviewThreadState.summary);
   const items = normalizeArray(feed.items).slice(0, 4).map((item) => ({
     title: item.headline ?? item.itemType ?? "Collaboration event",
     body: `${item.actorName ?? "Nexus"} | ${item.workspaceArea ?? "workspace"} | ${t(item.status ?? "active")}`,
+  }));
+  const threadItems = normalizeArray(reviewThreadState.threads).slice(0, 3).map((thread) => ({
+    title: thread.title ?? thread.threadType ?? "Review thread",
+    body: `${thread.contextTarget?.resourceType ?? "comment"} | ${thread.messages?.[thread.messages.length - 1]?.body ?? "No messages yet"}`,
   }));
 
   elements.collaboration.innerHTML = `
@@ -618,9 +624,10 @@ function renderCollaboration(elements, project) {
       { label: "Feed items", value: String(summary.totalItems ?? 0) },
       { label: "Active participants", value: String(project.projectPresenceState?.activeParticipantCount ?? presenceSummary.totalParticipants ?? 0) },
       { label: "Shared presence", value: presenceSummary.hasSharedPresence ? "yes" : "no" },
-      { label: "Transitions", value: summary.containsWorkspaceTransitions ? "tracked" : "none" },
+      { label: "Open threads", value: String(reviewThreadSummary.openThreads ?? 0) },
     ])}
     ${stackHtml("Latest activity", items, "עדיין אין activity שיתופית זמינה.")}
+    ${stackHtml("Review threads", threadItems, "עדיין אין review threads פתוחים.")}
   `;
 }
 
@@ -894,6 +901,8 @@ export function createCockpitApp({
       liveLogStream: liveState.liveLogStream ?? currentProject.liveLogStream,
       formattedLogs: liveState.formattedLogs ?? currentProject.formattedLogs,
       commandConsoleView: liveState.commandConsoleView ?? currentProject.commandConsoleView,
+      projectPresenceState: liveState.projectPresenceState ?? currentProject.projectPresenceState,
+      reviewThreadState: liveState.reviewThreadState ?? currentProject.reviewThreadState,
       collaborationFeed: liveState.collaborationFeed ?? currentProject.collaborationFeed,
       events: liveState.events ?? currentProject.events,
     };

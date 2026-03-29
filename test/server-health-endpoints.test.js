@@ -399,3 +399,55 @@ test("server exposes project presence heartbeat endpoint", async () => {
   assert.equal(response.body.state.projectPresenceState.participants[0].displayName, "Owner");
   assert.equal(response.body.state.projectPresenceState.participants[0].workspaceArea, "release-workspace");
 });
+
+test("server exposes project review thread endpoints", async () => {
+  const server = createServer({
+    upsertProjectReviewThread: ({ projectId, threadInput }) => ({
+      project: {
+        id: projectId,
+      },
+      reviewThreadRecord: {
+        threadId: "review-thread:giftwallet:1",
+        title: threadInput.title,
+      },
+      reviewThreadState: {
+        threadStateId: `review-thread-state:${projectId}`,
+        threads: [
+          {
+            threadId: "review-thread:giftwallet:1",
+            title: threadInput.title,
+            status: "open",
+          },
+        ],
+        summary: {
+          totalThreads: 1,
+          openThreads: 1,
+        },
+      },
+    }),
+    getProjectReviewThreadState: (projectId) => ({
+      threadStateId: `review-thread-state:${projectId}`,
+      threads: [
+        {
+          threadId: "review-thread:giftwallet:1",
+          title: "Review the payout copy",
+          status: "open",
+        },
+      ],
+      summary: {
+        totalThreads: 1,
+        openThreads: 1,
+      },
+    }),
+  });
+
+  const postResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/review-threads", {
+    title: "Review the payout copy",
+  });
+  const getResponse = await requestJson(server, "/api/projects/giftwallet/review-threads");
+
+  assert.equal(postResponse.statusCode, 200);
+  assert.equal(postResponse.body.reviewThreadRecord.title, "Review the payout copy");
+  assert.equal(getResponse.statusCode, 200);
+  assert.equal(getResponse.body.reviewThreadState.summary.totalThreads, 1);
+});

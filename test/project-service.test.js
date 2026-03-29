@@ -1657,3 +1657,36 @@ test("project service updates live project presence from participant heartbeats"
   assert.equal(project.state.projectPresenceState.participants[0].currentTask, "review deploy");
   assert.equal(project.state.projectPresenceState.summary.latestSeenAt !== null, true);
 });
+
+test("project service stores contextual review thread discussions and rebuilds project state", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const result = service.upsertProjectReviewThread({
+    projectId: "giftwallet",
+    threadInput: {
+      threadType: "review-thread",
+      title: "Review the payout copy",
+      body: "Please validate the final diff before merge.",
+      actor: {
+        actorId: "user-1",
+        displayName: "Owner",
+      },
+      contextTarget: {
+        workspaceArea: "developer-workspace",
+        resourceType: "diff",
+        resourceId: "exec-1",
+        filePath: "app/routes/payout.tsx",
+      },
+    },
+  });
+
+  assert.equal(result.reviewThreadState.threads.some((thread) => thread.title === "Review the payout copy"), true);
+  assert.equal(result.reviewThreadRecord.messages[0].body, "Please validate the final diff before merge.");
+
+  const filteredThreadState = service.getProjectReviewThreadState("giftwallet", {
+    resourceType: "diff",
+  });
+  assert.equal(filteredThreadState.summary.filtered, true);
+  assert.equal(filteredThreadState.threads.some((thread) => thread.contextTarget?.filePath === "app/routes/payout.tsx"), true);
+});
