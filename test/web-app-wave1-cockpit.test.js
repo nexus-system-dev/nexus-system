@@ -27,6 +27,14 @@ function createFakeDocument() {
     "#sync-casino-button",
     "#analyze-button",
     "#run-cycle-button",
+    "#workspace-board",
+    "#empty-app-state",
+    "#empty-project-message",
+    "#empty-project-status",
+    "#create-project-name-input",
+    "#create-project-vision-input",
+    "#create-project-link-input",
+    "#create-project-button",
     "#tab-developer",
     "#tab-project-brain",
     "#tab-release",
@@ -668,6 +676,276 @@ test("cockpit refreshes live progress without manual clicks", async () => {
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /warning: skipped optional step/);
   assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Release diff review/);
   assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Approval is waiting for owner/);
+});
+
+test("cockpit creates first project from empty app and lands in workspace", async () => {
+  const fakeDocument = createFakeDocument();
+  const storage = new Map();
+  const requests = [];
+  const projectPayload = {
+    id: "launch-app",
+    name: "Launch App",
+    goal: "Ship the first usable workspace",
+    status: "active",
+    source: { baseUrl: "http://localhost:4101" },
+    overview: { bottleneck: "Bootstrap is ready to continue" },
+    cycle: {
+      roadmap: [{ summary: "Review bootstrap output", status: "assigned", lane: "build", dependencies: [] }],
+    },
+    agents: [{ name: "Dev Agent", status: "working", currentTask: "Review bootstrap output" }],
+    approvals: [],
+    events: [{ type: "state.updated", payload: { projectId: "launch-app" } }],
+    developerWorkspace: {
+      contextSummary: {
+        progressPercent: 18,
+        progressStatus: "running",
+        nextAction: "Review bootstrap output",
+        incidentStatus: "clear",
+      },
+    },
+    projectBrainWorkspace: {
+      overview: { domain: "saas", currentPhase: "bootstrap" },
+      summary: { blockerCount: 0, requiresApproval: false },
+    },
+    releaseWorkspace: {
+      releaseTarget: "staging",
+      buildAndDeploy: { currentStage: "planned" },
+      validation: { status: "pending" },
+      summary: { isBlocked: false },
+    },
+    growthWorkspace: {
+      strategy: { targetAudience: "Product teams", gtmStage: "bootstrap", pillars: [], contentGoal: "Launch the first project" },
+      campaigns: { tasks: [] },
+      analytics: { kpis: [] },
+      summary: { totalPillars: 0, totalChannels: 0, totalKpis: 0, hasGrowthPlan: false },
+    },
+    designTokens: {
+      colors: {
+        canvas: "#101820",
+        surface: "#18212b",
+        ink: "#f3f4f6",
+        muted: "#9ca3af",
+        accent: "#14b8a6",
+        accentStrong: "#0f766e",
+        success: "#22c55e",
+        warning: "#f59e0b",
+        danger: "#ef4444",
+        border: "#334155",
+      },
+      spacing: { xs: 5, sm: 9, md: 13, lg: 21, xl: 34, xxl: 55 },
+      typography: {
+        familyDisplay: "\"Avenir Next\", sans-serif",
+        familyBody: "\"IBM Plex Sans\", sans-serif",
+        sizeDisplay: 42,
+        sizeXl: 30,
+        sizeLg: 22,
+        sizeMd: 17,
+        sizeXs: 11,
+      },
+      radius: { sm: 7, md: 14, lg: 24, pill: 999 },
+      borders: { subtle: 1, strong: 2, focus: 3 },
+      shadows: {
+        soft: "0 10px 30px rgba(0, 0, 0, 0.2)",
+        medium: "0 14px 36px rgba(0, 0, 0, 0.28)",
+        focus: "0 0 0 3px rgba(20, 184, 166, 0.25)",
+      },
+    },
+    typographySystem: {
+      baseFontFamily: "\"IBM Plex Sans\", sans-serif",
+      displayFontFamily: "\"Avenir Next\", sans-serif",
+      typeScale: {
+        display: { fontSize: 42 },
+        h1: { fontSize: 30, lineHeight: 1.08 },
+        h2: { fontSize: 22 },
+        body: { fontSize: 17, lineHeight: 1.6 },
+        meta: { fontSize: 11 },
+      },
+    },
+    layoutSystem: {
+      grid: { maxContentWidth: 1360, gutter: 24 },
+      spacingScale: { xs: 5, sm: 9, md: 13, lg: 21, xl: 34, xxl: 55 },
+      sectionRhythm: { pageTop: 55, sectionGap: 34, panelGap: 21 },
+    },
+    colorRules: {
+      roles: {
+        canvas: { token: "#101820" },
+        surface: { token: "#18212b" },
+        textPrimary: { token: "#f3f4f6" },
+        textMuted: { token: "#9ca3af" },
+        accent: { token: "#14b8a6" },
+        accentStrong: { token: "#0f766e" },
+        border: { token: "#334155" },
+      },
+      states: {
+        success: { token: "#22c55e" },
+        warning: { token: "#f59e0b" },
+        danger: { token: "#ef4444" },
+      },
+    },
+    primitiveComponents: {
+      componentLibraryId: "primitive-components:design-tokens:nexus",
+      baseContractId: "component-contract:button",
+      components: [],
+      summary: { totalComponents: 0, interactiveComponents: 0, includesFormPrimitives: false },
+    },
+  };
+
+  async function fetchImpl(url, options = {}) {
+    requests.push({ url, method: options.method ?? "GET", body: options.body ?? null });
+
+    if (url === "/api/projects") {
+      return {
+        ok: true,
+        async json() {
+          return { projects: [] };
+        },
+      };
+    }
+
+    if (url === "/api/auth/signup") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            authPayload: {
+              userIdentity: {
+                userId: "user-1",
+                email: "local-operator@nexus.local",
+                displayName: "Local operator",
+              },
+            },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/project-drafts") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            projectDraft: {
+              id: "launch-app",
+              owner: {
+                userId: "user-1",
+                email: "local-operator@nexus.local",
+              },
+            },
+            projectDraftId: "launch-app",
+            projectCreationRedirect: {
+              target: "onboarding",
+            },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/onboarding/sessions") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            onboardingSession: {
+              sessionId: "onboarding-launch-app",
+              projectDraftId: "launch-app",
+            },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/onboarding/sessions/onboarding-launch-app/intake") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            updatedSession: {
+              sessionId: "onboarding-launch-app",
+            },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/onboarding/sessions/onboarding-launch-app/finish") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            blocked: false,
+            project: {
+              id: "launch-app",
+            },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/projects/launch-app") {
+      return {
+        ok: true,
+        async json() {
+          return projectPayload;
+        },
+      };
+    }
+
+    if (url === "/api/projects/launch-app/presence") {
+      return {
+        ok: true,
+        async json() {
+          return projectPayload;
+        },
+      };
+    }
+
+    throw new Error(`Unexpected url: ${url}`);
+  }
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl,
+    storageImpl: {
+      getItem(key) {
+        return storage.get(key) ?? null;
+      },
+      setItem(key, value) {
+        storage.set(key, value);
+      },
+      removeItem(key) {
+        storage.delete(key);
+      },
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await app.ready;
+
+  assert.equal(fakeDocument.elements.get("#empty-app-state").hidden, false);
+  assert.equal(fakeDocument.elements.get("#workspace-board").hidden, true);
+  assert.equal(fakeDocument.elements.get("#create-project-button").textContent, "צור פרויקט");
+
+  fakeDocument.elements.get("#create-project-name-input").value = "Launch App";
+  fakeDocument.elements.get("#create-project-vision-input").value = "אפליקציה עם התחברות ו־approval flow";
+  fakeDocument.elements.get("#create-project-link-input").value = "https://github.com/example/launch-app";
+
+  await fakeDocument.elements.get("#create-project-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#create-project-button").textContent, "סיים Onboarding");
+  assert.match(fakeDocument.elements.get("#empty-project-status").textContent, /onboarding/i);
+
+  await fakeDocument.elements.get("#create-project-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#empty-app-state").hidden, true);
+  assert.equal(fakeDocument.elements.get("#workspace-board").hidden, false);
+  assert.equal(fakeDocument.elements.get("#hero-project-name").textContent, "Launch App");
+  assert.match(fakeDocument.elements.get("#developer-workspace-summary").innerHTML, /18%/);
+  assert.equal(requests.some((request) => request.url === "/api/project-drafts" && request.method === "POST"), true);
+  assert.equal(requests.some((request) => request.url === "/api/onboarding/sessions/onboarding-launch-app/finish" && request.method === "POST"), true);
+  assert.equal(requests.some((request) => request.url === "/api/projects/launch-app" && request.method === "GET"), true);
 });
 
 test("cockpit consumes sse live updates when push transport is available", async () => {

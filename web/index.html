@@ -23,6 +23,29 @@
       </header>
 
       <main class="main-grid">
+        <section id="empty-app-state" class="hero-card empty-app-state" hidden>
+          <span class="card-kicker">First Project</span>
+          <div class="empty-app-copy">
+            <h2 id="empty-project-message">אין פרויקטים</h2>
+            <p id="empty-project-status" class="empty">כדי להתחיל צריך ליצור פרויקט ראשון ולעבור onboarding קצר.</p>
+          </div>
+          <div class="empty-app-form">
+            <label class="empty-app-field">
+              <span class="mini-label">שם הפרויקט</span>
+              <input id="create-project-name-input" type="text" placeholder="Launch App" />
+            </label>
+            <label class="empty-app-field">
+              <span class="mini-label">מה אתה בונה</span>
+              <textarea id="create-project-vision-input" rows="4" placeholder="אפליקציה עם התחברות, workbench ו־approval flow"></textarea>
+            </label>
+            <label class="empty-app-field">
+              <span class="mini-label">קישור תומך ל־onboarding</span>
+              <input id="create-project-link-input" type="text" placeholder="https://github.com/example/project" />
+            </label>
+            <button id="create-project-button" type="button">צור פרויקט</button>
+          </div>
+        </section>
+
         <section class="hero-card now">
           <span class="card-kicker">מה המצב עכשיו</span>
           <div id="now-content"></div>
@@ -33,7 +56,7 @@
           <div id="critical-content"></div>
         </section>
 
-        <section class="workspace-board">
+        <section id="workspace-board" class="workspace-board">
           <nav class="workspace-tabs" aria-label="Workspace navigation">
             <button id="tab-developer" class="workspace-tab active" type="button" data-workspace="developer">Developer</button>
             <button id="tab-project-brain" class="workspace-tab" type="button" data-workspace="project-brain">Project Brain</button>

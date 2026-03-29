@@ -125,6 +125,14 @@ function queryElements(doc) {
     syncCasinoButton: doc.querySelector("#sync-casino-button"),
     analyzeButton: doc.querySelector("#analyze-button"),
     runCycleButton: doc.querySelector("#run-cycle-button"),
+    workspaceBoard: doc.querySelector("#workspace-board"),
+    emptyAppState: doc.querySelector("#empty-app-state"),
+    emptyProjectMessage: doc.querySelector("#empty-project-message"),
+    emptyProjectStatus: doc.querySelector("#empty-project-status"),
+    createProjectNameInput: doc.querySelector("#create-project-name-input"),
+    createProjectVisionInput: doc.querySelector("#create-project-vision-input"),
+    createProjectLinkInput: doc.querySelector("#create-project-link-input"),
+    createProjectButton: doc.querySelector("#create-project-button"),
     developerTab: doc.querySelector("#tab-developer"),
     projectBrainTab: doc.querySelector("#tab-project-brain"),
     releaseTab: doc.querySelector("#tab-release"),
@@ -966,6 +974,7 @@ export function createCockpitApp({
   doc = globalThis.document,
   fetchImpl = globalThis.fetch,
   EventSourceImpl = globalThis.EventSource,
+  storageImpl = globalThis.localStorage,
   setTimeoutImpl = globalThis.setTimeout,
   clearTimeoutImpl = globalThis.clearTimeout,
 } = {}) {
@@ -979,7 +988,17 @@ export function createCockpitApp({
   let refreshTimer = null;
   let liveEventSource = null;
   let activeWorkspace = "developer";
+  let onboardingFlow = null;
   const presenceParticipantId = `presence-${Math.random().toString(36).slice(2, 10)}`;
+  const appStorage = storageImpl && typeof storageImpl.getItem === "function" && typeof storageImpl.setItem === "function"
+    ? storageImpl
+    : {
+        getItem() {
+          return null;
+        },
+        setItem() {},
+        removeItem() {},
+      };
 
   async function fetchJson(url, options) {
     const response = await fetchImpl(url, options);
@@ -994,12 +1013,231 @@ export function createCockpitApp({
     const project = await fetchJson(`/api/projects/${projectId}`);
     currentProjectId = projectId;
     currentProject = project;
+    onboardingFlow = null;
     applyDesignSystem(doc, project);
     renderProject(elements, project);
+    if (elements.emptyAppState) {
+      elements.emptyAppState.hidden = true;
+    }
+    if (elements.workspaceBoard) {
+      elements.workspaceBoard.hidden = false;
+    }
     setActiveWorkspace(elements, activeWorkspace);
     updatePresence().catch(() => {});
     connectLiveUpdates();
     return project;
+  }
+
+  function readStoredAppUser() {
+    try {
+      const raw = appStorage.getItem("nexus.appUser");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeStoredAppUser(appUser) {
+    try {
+      appStorage.setItem("nexus.appUser", JSON.stringify(appUser));
+    } catch {}
+  }
+
+  function clearStoredAppUser() {
+    try {
+      appStorage.removeItem("nexus.appUser");
+    } catch {}
+  }
+
+  function formatVisionText(projectName, visionText) {
+    const normalizedName = String(projectName ?? "").trim();
+    const normalizedVision = String(visionText ?? "").trim();
+    if (!normalizedName && !normalizedVision) {
+      return "";
+    }
+    return `שם הפרויקט: ${normalizedName}\n${normalizedVision}`.trim();
+  }
+
+  function renderEmptyAppState({
+    mode = "create",
+    message = "אין פרויקטים",
+    status = "כדי להתחיל צריך ליצור פרויקט ראשון ולעבור onboarding קצר.",
+  } = {}) {
+    if (elements.emptyAppState) {
+      elements.emptyAppState.hidden = false;
+    }
+    if (elements.workspaceBoard) {
+      elements.workspaceBoard.hidden = true;
+    }
+    if (elements.emptyProjectMessage) {
+      elements.emptyProjectMessage.textContent = message;
+    }
+    if (elements.emptyProjectStatus) {
+      elements.emptyProjectStatus.textContent = status;
+    }
+    if (elements.createProjectButton) {
+      elements.createProjectButton.textContent = mode === "onboarding" ? "סיים Onboarding" : "צור פרויקט";
+    }
+    if (elements.heroProjectName && !currentProject) {
+      elements.heroProjectName.textContent = "אין פרויקטים";
+    }
+    if (elements.heroGoal && !currentProject) {
+      elements.heroGoal.textContent = "צריך ליצור פרויקט ראשון כדי להיכנס ל־workspace.";
+    }
+    if (elements.now && !currentProject) {
+      elements.now.innerHTML = `<p class="empty">אין פרויקטים פעילים כרגע.</p>`;
+    }
+    if (elements.critical && !currentProject) {
+      elements.critical.innerHTML = `<p class="empty">הפעולה הבאה היא ליצור פרויקט ראשון.</p>`;
+    }
+  }
+
+  async function ensureAppUser() {
+    const stored = readStoredAppUser();
+    if (stored?.email) {
+      return stored;
+    }
+
+    const email = `local-operator-${Date.now()}@nexus.local`;
+    const password = `nexus-${Math.random().toString(36).slice(2, 10)}`;
+    const signup = await fetchJson("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userInput: {
+          email,
+          displayName: "Local operator",
+        },
+        credentials: {
+          password,
+        },
+      }),
+    });
+    const appUser = {
+      email,
+      password,
+      userId: signup.authPayload?.userIdentity?.userId ?? null,
+      displayName: signup.authPayload?.userIdentity?.displayName ?? "Local operator",
+    };
+    writeStoredAppUser(appUser);
+    return appUser;
+  }
+
+  async function createFirstProjectFlow() {
+    const projectName = elements.createProjectNameInput?.value?.trim() ?? "";
+    const visionText = elements.createProjectVisionInput?.value?.trim() ?? "";
+    if (!projectName || !visionText) {
+      renderEmptyAppState({
+        mode: "create",
+        message: "אין פרויקטים",
+        status: "צריך להזין שם פרויקט ותיאור קצר לפני היצירה.",
+      });
+      return;
+    }
+
+    let appUser = await ensureAppUser();
+    let draftResult = null;
+
+    try {
+      draftResult = await fetchJson("/api/project-drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userInput: {
+            email: appUser.email,
+          },
+          projectCreationInput: {
+            projectName,
+            visionText,
+          },
+        }),
+      });
+    } catch {
+      clearStoredAppUser();
+      appUser = await ensureAppUser();
+      draftResult = await fetchJson("/api/project-drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userInput: {
+            email: appUser.email,
+          },
+          projectCreationInput: {
+            projectName,
+            visionText,
+          },
+        }),
+      });
+    }
+
+    const session = await fetchJson("/api/onboarding/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: appUser.userId,
+        projectDraftId: draftResult.projectDraftId,
+        initialInput: {
+          projectName,
+          visionText,
+        },
+      }),
+    });
+
+    onboardingFlow = {
+      mode: draftResult.projectCreationRedirect?.target === "onboarding" ? "onboarding" : "create",
+      sessionId: session.onboardingSession?.sessionId ?? null,
+      projectDraftId: draftResult.projectDraftId,
+    };
+
+    renderEmptyAppState({
+      mode: "onboarding",
+      message: "ממשיכים ל־onboarding",
+      status: "הוסף קישור תומך אחד לפחות ואז סיים onboarding כדי לפתוח את ה־workspace.",
+    });
+  }
+
+  async function finishFirstProjectOnboarding() {
+    if (!onboardingFlow?.sessionId) {
+      return;
+    }
+
+    const projectName = elements.createProjectNameInput?.value?.trim() ?? "";
+    const visionText = elements.createProjectVisionInput?.value?.trim() ?? "";
+    const supportingLink = elements.createProjectLinkInput?.value?.trim() ?? "";
+
+    if (!projectName || !visionText || !supportingLink) {
+      renderEmptyAppState({
+        mode: "onboarding",
+        message: "ממשיכים ל־onboarding",
+        status: "כדי לסיים onboarding צריך שם פרויקט, תיאור וקישור תומך אחד לפחות.",
+      });
+      return;
+    }
+
+    await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/intake`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        visionText: formatVisionText(projectName, visionText),
+        uploadedFiles: [],
+        externalLinks: [supportingLink],
+      }),
+    });
+
+    const finished = await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/finish`, {
+      method: "POST",
+    });
+
+    if (finished.blocked || !finished.project?.id) {
+      renderEmptyAppState({
+        mode: "onboarding",
+        message: "ממשיכים ל־onboarding",
+        status: finished.error ?? "Onboarding עדיין לא מוכן לבניית פרויקט usable.",
+      });
+      return;
+    }
+
+    await loadProject(finished.project.id);
   }
 
   function mergeLiveState(liveState) {
@@ -1162,7 +1400,17 @@ export function createCockpitApp({
       .join("");
 
     if (projects?.[0]) {
+      if (elements.emptyAppState) {
+        elements.emptyAppState.hidden = true;
+      }
+      if (elements.workspaceBoard) {
+        elements.workspaceBoard.hidden = false;
+      }
       await loadProject(projects[0].id);
+    } else {
+      currentProjectId = null;
+      currentProject = null;
+      renderEmptyAppState();
     }
 
     return projects;
@@ -1226,6 +1474,15 @@ export function createCockpitApp({
       body: JSON.stringify({ baseUrl: elements.casinoBaseUrlInput.value }),
     });
     await loadProject(currentProjectId);
+  });
+
+  elements.createProjectButton?.addEventListener("click", async () => {
+    if (onboardingFlow?.mode === "onboarding") {
+      await finishFirstProjectOnboarding();
+      return;
+    }
+
+    await createFirstProjectFlow();
   });
 
   const ready = loadProjects().catch((error) => {
