@@ -8,6 +8,7 @@ function createLayoutComponent({
   usage,
   layoutRules,
   responsiveBehavior,
+  preview,
 }) {
   return {
     componentId: `layout:${componentType}`,
@@ -16,6 +17,7 @@ function createLayoutComponent({
     usage,
     layoutRules,
     responsiveBehavior,
+    preview,
   };
 }
 
@@ -42,6 +44,10 @@ export function createLayoutComponents({
         mobile: "fills available width with reduced side padding",
         desktop: "centers content within canonical container widths",
       },
+      preview: {
+        label: "Page container",
+        items: ["Outer frame", "Inner content"],
+      },
     }),
     createLayoutComponent({
       componentType: "section",
@@ -55,6 +61,10 @@ export function createLayoutComponents({
       responsiveBehavior: {
         mobile: "compresses vertical rhythm while preserving section separation",
         desktop: "keeps full vertical rhythm for scanning and workbench structure",
+      },
+      preview: {
+        label: "Section rhythm",
+        items: ["Header", "Body", "Footer"],
       },
     }),
     createLayoutComponent({
@@ -70,6 +80,10 @@ export function createLayoutComponents({
         mobile: "defaults to vertical stacking",
         desktop: "supports both vertical and inline dense arrangements",
       },
+      preview: {
+        label: "Stack flow",
+        items: ["Item one", "Item two", "Item three"],
+      },
     }),
     createLayoutComponent({
       componentType: "grid",
@@ -83,6 +97,10 @@ export function createLayoutComponents({
       responsiveBehavior: {
         mobile: "collapses to 1 or 2 columns depending on screen density",
         desktop: "uses the full 12-column system with consistent gutters",
+      },
+      preview: {
+        label: "Grid layout",
+        columns: [4, 4, 4],
       },
     }),
     createLayoutComponent({
@@ -98,6 +116,10 @@ export function createLayoutComponents({
         mobile: "collapses chrome and prioritizes body content",
         desktop: "supports dense panel compositions for multi-pane workbench layouts",
       },
+      preview: {
+        label: "Panel surface",
+        items: ["Header", "Body", "Footer"],
+      },
     }),
     createLayoutComponent({
       componentType: "divider",
@@ -111,6 +133,10 @@ export function createLayoutComponents({
       responsiveBehavior: {
         mobile: "keeps short spacing to reduce visual noise",
         desktop: "maintains consistent rhythm between dense workbench regions",
+      },
+      preview: {
+        label: "Divider rule",
+        items: ["Section A", "Section B"],
       },
     }),
   ];

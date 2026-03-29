@@ -270,7 +270,7 @@
 - הערת מצב: ספריית `primitiveComponents` כוללת עכשיו גם preview metadata קנוני, ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר button, input, textarea, select, badge ו־icon button כממשק חי במקום להישאר descriptor בלבד.
 
 
-3. `Create layout components`  | סטטוס: 🔴 לא בוצע
+3. `Create layout components`  | סטטוס: 🟢 בוצע
 - execution_order: `11`
 - description: לבנות container, section, stack, grid, panel, divider
 - input:
@@ -280,6 +280,7 @@
 - dependencies:
   - `Create spacing and layout system`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- הערת מצב: ספריית `layoutComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר container, section, stack, grid, panel ו־divider כפריסות חיות במקום להישאר layout descriptor בלבד.
 
 
 4. `Create feedback components`  | סטטוס: 🔴 לא בוצע

@@ -67,6 +67,7 @@ function createFakeDocument() {
     "#scan-button",
     "#scanner-content",
     "#primitive-components-content",
+    "#layout-components-content",
     "#analysis-content",
     "#graph-content",
     "#agents-content",
@@ -402,6 +403,58 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
         includesFormPrimitives: true,
       },
     },
+    layoutComponents: {
+      layoutComponentLibraryId: "layout-components:layout-system:design-tokens:nexus",
+      components: [
+        {
+          componentId: "layout:container",
+          componentType: "container",
+          anatomy: ["outerFrame", "innerContent"],
+          usage: "page-level width control for dashboards, setup flows and workspaces",
+          layoutRules: {
+            maxWidth: 1180,
+            wideWidth: 1360,
+            paddingX: 21,
+          },
+          preview: {
+            items: ["Outer frame", "Inner content"],
+          },
+        },
+        {
+          componentId: "layout:section",
+          componentType: "section",
+          anatomy: ["header", "body", "footer"],
+          usage: "vertical content grouping with consistent spacing rhythm",
+          layoutRules: {
+            gap: 34,
+            contentGap: 13,
+            topOffset: 55,
+          },
+          preview: {
+            items: ["Header", "Body", "Footer"],
+          },
+        },
+        {
+          componentId: "layout:grid",
+          componentType: "grid",
+          anatomy: ["gridFrame", "gridItems"],
+          usage: "multi-column content arrangements across dashboards and workbench panels",
+          layoutRules: {
+            columns: 12,
+            gutter: 24,
+            maxContentWidth: 1360,
+          },
+          preview: {
+            columns: [4, 4, 4],
+          },
+        },
+      ],
+      summary: {
+        totalComponents: 3,
+        supportsWorkbenchLayouts: true,
+        hasResponsiveCoverage: true,
+      },
+    },
     typographySystem: {
       baseFontFamily: "\"IBM Plex Sans\", sans-serif",
       displayFontFamily: "\"Avenir Next\", sans-serif",
@@ -501,6 +554,9 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#primitive-components-content").innerHTML, /שלח לאישור/);
   assert.match(fakeDocument.elements.get("#primitive-components-content").innerHTML, /Checkout dashboard/);
   assert.match(fakeDocument.elements.get("#primitive-components-content").innerHTML, /Ready/);
+  assert.match(fakeDocument.elements.get("#layout-components-content").innerHTML, /page-level width control/);
+  assert.match(fakeDocument.elements.get("#layout-components-content").innerHTML, /span 4/);
+  assert.match(fakeDocument.elements.get("#layout-components-content").innerHTML, /maxWidth:1180/);
   assert.match(fakeDocument.elements.get("#tab-developer").innerHTML, /Wire cockpit layout/);
   assert.match(fakeDocument.elements.get("#tab-release").innerHTML, /blocked/);
   assert.equal(fakeDocument.elements.get("#workspace-developer").hidden, false);

@@ -34,7 +34,9 @@ test("createLayoutComponents builds canonical layout component library", () => {
   assert.equal(layoutComponents.layoutComponentLibraryId, "layout-components:layout-system:design-tokens:nexus");
   assert.equal(layoutComponents.components.length, 6);
   assert.equal(layoutComponents.components[0].componentType, "container");
+  assert.equal(layoutComponents.components[0].preview.items[1], "Inner content");
   assert.equal(layoutComponents.components[3].layoutRules.columns, 12);
+  assert.deepEqual(layoutComponents.components[3].preview.columns, [4, 4, 4]);
   assert.equal(layoutComponents.components[4].layoutRules.minWidth, 1180);
   assert.equal(layoutComponents.summary.totalComponents, 6);
   assert.equal(layoutComponents.summary.hasResponsiveCoverage, true);
@@ -45,5 +47,6 @@ test("createLayoutComponents falls back safely without explicit layout system", 
 
   assert.equal(layoutComponents.components.length, 6);
   assert.equal(layoutComponents.components[5].componentType, "divider");
+  assert.equal(layoutComponents.components[5].preview.items[0], "Section A");
   assert.equal(layoutComponents.summary.supportsWorkbenchLayouts, true);
 });

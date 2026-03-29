@@ -165,6 +165,7 @@ function queryElements(doc) {
     scanButton: doc.querySelector("#scan-button"),
     scanner: doc.querySelector("#scanner-content"),
     primitiveComponents: doc.querySelector("#primitive-components-content"),
+    layoutComponents: doc.querySelector("#layout-components-content"),
     analysis: doc.querySelector("#analysis-content"),
     graph: doc.querySelector("#graph-content"),
     agents: doc.querySelector("#agents-content"),
@@ -623,6 +624,103 @@ function renderPrimitiveComponents(elements, project) {
   `;
 }
 
+function renderLayoutPreview(component) {
+  const preview = normalizeObject(component.preview);
+  const items = normalizeArray(preview.items);
+  const columns = normalizeArray(preview.columns);
+
+  if (component.componentType === "container") {
+    return `
+      <div class="layout-preview-shell layout-preview-container">
+        <div class="layout-preview-outline">
+          <div class="layout-preview-inner">${escapeHtml(items[1] ?? "Inner content")}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (component.componentType === "section" || component.componentType === "panel") {
+    return `
+      <div class="layout-preview-shell layout-preview-section">
+        ${items.map((item) => `<div class="layout-preview-block">${escapeHtml(item)}</div>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "stack") {
+    return `
+      <div class="layout-preview-shell layout-preview-stack">
+        ${items.map((item) => `<div class="layout-preview-block">${escapeHtml(item)}</div>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "grid") {
+    return `
+      <div class="layout-preview-shell layout-preview-grid">
+        ${columns.map((column) => `<div class="layout-preview-grid-cell">span ${escapeHtml(String(column))}</div>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "divider") {
+    return `
+      <div class="layout-preview-shell layout-preview-divider">
+        <span>${escapeHtml(items[0] ?? "Section A")}</span>
+        <div class="layout-preview-divider-line"></div>
+        <span>${escapeHtml(items[1] ?? "Section B")}</span>
+      </div>
+    `;
+  }
+
+  return `<p class="empty">No preview available.</p>`;
+}
+
+function renderLayoutComponents(elements, project) {
+  if (!elements.layoutComponents) {
+    return;
+  }
+
+  const layoutLibrary = normalizeObject(project.layoutComponents);
+  const components = normalizeArray(layoutLibrary.components);
+  const summary = normalizeObject(layoutLibrary.summary);
+
+  if (!components.length) {
+    elements.layoutComponents.innerHTML = `<p class="empty">עדיין אין ספריית layout components זמינה.</p>`;
+    return;
+  }
+
+  const cards = components
+    .map(
+      (component) => `
+        <article class="layout-card">
+          <header class="layout-card-header">
+            <strong>${escapeHtml(component.componentType ?? "layout")}</strong>
+            <span class="mini-label">${escapeHtml(normalizeArray(component.anatomy).join(" · "))}</span>
+          </header>
+          <p class="layout-card-body">${escapeHtml(component.usage ?? "No usage guidance yet.")}</p>
+          ${renderLayoutPreview(component)}
+          <p class="layout-card-meta">${escapeHtml(
+            Object.entries(normalizeObject(component.layoutRules))
+              .map(([key, value]) => `${key}:${value}`)
+              .join(" · "),
+          )}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  elements.layoutComponents.innerHTML = `
+    ${metricHtml([
+      { label: "Layouts", value: String(summary.totalComponents ?? components.length) },
+      { label: "Workbench ready", value: summary.supportsWorkbenchLayouts ? "yes" : "no" },
+      { label: "Responsive", value: summary.hasResponsiveCoverage ? "yes" : "no" },
+      { label: "Library", value: layoutLibrary.layoutComponentLibraryId ?? "not-set" },
+    ])}
+    <div class="layout-grid">${cards}</div>
+  `;
+}
+
 function renderScreenReview(elements, project) {
   const report = normalizeObject(project.screenReviewReport);
   const reportSummary = normalizeObject(report.summary);
@@ -956,6 +1054,7 @@ export function renderProject(elements, project) {
   renderLive(elements, project);
   renderDecision(elements, project);
   renderPrimitiveComponents(elements, project);
+  renderLayoutComponents(elements, project);
   renderScreenReview(elements, project);
   renderLearning(elements, project);
   renderCompanion(elements, project);
