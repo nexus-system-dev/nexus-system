@@ -159,6 +159,20 @@ test("server exposes audit logs endpoint", async () => {
   assert.equal(response.body.auditLogs[0].auditLogId, "audit-1");
 });
 
+test("server exposes project snapshots endpoint", async () => {
+  const server = createServer({
+    getProjectSnapshots: ({ projectId }) => projectId === "giftwallet"
+      ? [{ snapshotRecordId: "snapshot-record:giftwallet:v3", projectId: "giftwallet" }]
+      : [],
+  });
+
+  const response = await requestJson(server, "/api/project-snapshots?projectId=giftwallet");
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(Array.isArray(response.body.projectSnapshots), true);
+  assert.equal(response.body.projectSnapshots[0].snapshotRecordId, "snapshot-record:giftwallet:v3");
+});
+
 test("server exposes project live-state endpoint", async () => {
   const server = createServer({
     listProjects: () => [],

@@ -18,6 +18,7 @@ function resolveConfig(runtimeConfig = {}) {
     dataDir: runtimeConfig.dataDir ?? path.resolve(rootDir, "data"),
     eventLogPath: runtimeConfig.eventLogPath ?? path.resolve(runtimeConfig.dataDir ?? path.resolve(rootDir, "data"), "events.ndjson"),
     auditLogPath: runtimeConfig.auditLogPath ?? path.resolve(runtimeConfig.dataDir ?? path.resolve(rootDir, "data"), "system-audit.ndjson"),
+    snapshotLogPath: runtimeConfig.snapshotLogPath ?? path.resolve(runtimeConfig.dataDir ?? path.resolve(rootDir, "data"), "project-snapshots.ndjson"),
     host: runtimeConfig.host ?? process.env.HOST ?? "127.0.0.1",
     port: runtimeConfig.port ?? process.env.PORT ?? 4001,
     seedDemoProjects: runtimeConfig.seedDemoProjects === true,
@@ -36,8 +37,18 @@ export function createApplicationServerBootstrap({
   const platformObservabilityTransport = createPlatformObservabilityTransport();
 
   const projectService = serviceFactory
-    ? serviceFactory({ eventLogPath: config.eventLogPath, auditLogPath: config.auditLogPath, platformObservabilityTransport })
-    : new ProjectService({ eventLogPath: config.eventLogPath, auditLogPath: config.auditLogPath, platformObservabilityTransport });
+    ? serviceFactory({
+        eventLogPath: config.eventLogPath,
+        auditLogPath: config.auditLogPath,
+        snapshotLogPath: config.snapshotLogPath,
+        platformObservabilityTransport,
+      })
+    : new ProjectService({
+        eventLogPath: config.eventLogPath,
+        auditLogPath: config.auditLogPath,
+        snapshotLogPath: config.snapshotLogPath,
+        platformObservabilityTransport,
+      });
 
   const startupSteps = [
     { step: "load-env", status: "completed" },
@@ -220,6 +231,7 @@ export function createApplicationServerBootstrap({
       dataDir: config.dataDir,
       eventLogPath: config.eventLogPath,
       auditLogPath: config.auditLogPath,
+      snapshotLogPath: config.snapshotLogPath,
       startupSteps,
       projectService,
       server,

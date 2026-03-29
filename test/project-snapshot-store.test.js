@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
-import { createProjectSnapshotStore } from "../src/core/project-snapshot-store.js";
+import { createPersistentProjectSnapshotStore, createProjectSnapshotStore } from "../src/core/project-snapshot-store.js";
 
 test("project snapshot store returns canonical stored snapshot record", () => {
   const { snapshotRecord } = createProjectSnapshotStore({
@@ -48,4 +51,37 @@ test("project snapshot store falls back safely", () => {
   assert.equal(typeof snapshotRecord.snapshotRecordId, "string");
   assert.equal(typeof snapshotRecord.storageMetadata.checksum, "string");
   assert.equal(typeof snapshotRecord.summary.canRestoreFull, "boolean");
+});
+
+test("project snapshot store persists and queries snapshot records", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "project-snapshot-store-"));
+  const filePath = path.join(tempDir, "project-snapshots.ndjson");
+  const snapshotStore = createPersistentProjectSnapshotStore({ filePath });
+
+  const { snapshotRecord } = createProjectSnapshotStore({
+    projectStateSnapshot: {
+      snapshotId: "project-state-snapshot:project-2:v5",
+      projectId: "project-2",
+      stateVersion: 5,
+      executionGraphVersion: 8,
+      workspaceReference: {
+        workspaceId: "workspace-2",
+      },
+      restoreMetadata: {
+        restoreScope: ["project-state"],
+      },
+      stateSummary: {
+        lifecyclePhase: "release",
+      },
+    },
+    snapshotStore,
+  });
+
+  const reloadedStore = createPersistentProjectSnapshotStore({ filePath });
+  const projectSnapshots = reloadedStore.query({ projectId: "project-2" });
+
+  assert.equal(snapshotRecord.reason, "pre-release-change");
+  assert.equal(projectSnapshots.length, 1);
+  assert.equal(projectSnapshots[0].snapshotRecordId, snapshotRecord.snapshotRecordId);
+  assert.equal(reloadedStore.getBySnapshotRecordId(snapshotRecord.snapshotRecordId)?.projectId, "project-2");
 });

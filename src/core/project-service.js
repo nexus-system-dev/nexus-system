@@ -44,6 +44,7 @@ import { createProjectAccessControlModule } from "./project-access-control-modul
 import { createRoleAssignmentAndInvitationFlow } from "./role-assignment-invitation-flow.js";
 import { createOrganizationWorkspaceSettingsModule } from "./workspace-settings-module.js";
 import { createPlatformObservabilityTransport } from "./platform-observability-transport.js";
+import { createPersistentProjectSnapshotStore } from "./project-snapshot-store.js";
 import { createSystemAuditLogStore } from "./system-audit-log-store.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
@@ -51,7 +52,14 @@ import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
 import { QaAgentWorker } from "../agents/qa-agent/worker.js";
 
 export class ProjectService {
-  constructor({ eventLogPath, auditLogPath = null, platformObservabilityTransport = null, systemAuditLogStore = null }) {
+  constructor({
+    eventLogPath,
+    auditLogPath = null,
+    snapshotLogPath = null,
+    platformObservabilityTransport = null,
+    systemAuditLogStore = null,
+    projectSnapshotStore = null,
+  }) {
     this.eventBus = new EventBus({
       eventLog: new FileEventLog({
         filePath: eventLogPath,
@@ -74,6 +82,8 @@ export class ProjectService {
     this.users = new Map();
     this.platformObservabilityTransport = platformObservabilityTransport ?? createPlatformObservabilityTransport();
     this.systemAuditLogStore = systemAuditLogStore ?? createSystemAuditLogStore({ filePath: auditLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "system-audit.ndjson") });
+    this.projectSnapshotStore = projectSnapshotStore
+      ?? createPersistentProjectSnapshotStore({ filePath: snapshotLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "project-snapshots.ndjson") });
   }
 
   findUserRecord(userInput = {}) {
@@ -929,6 +939,7 @@ export class ProjectService {
     project.context = buildProjectContext(project, {
       observabilityTransport: this.platformObservabilityTransport,
       auditLogStore: this.systemAuditLogStore,
+      snapshotStore: this.projectSnapshotStore,
     });
     project.state = {
       ...project.state,
@@ -1276,6 +1287,10 @@ export class ProjectService {
 
   getSystemAuditLogs(filters = {}) {
     return this.systemAuditLogStore.query(filters);
+  }
+
+  getProjectSnapshots(filters = {}) {
+    return this.projectSnapshotStore.query(filters);
   }
 
   scanProject(projectId, overridePath) {

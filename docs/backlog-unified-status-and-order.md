@@ -7089,7 +7089,7 @@ Refinements מאושרים:
   - `Nexus Persistence Layer`
 - connects_to: `Project State`
 
-2. `Create project snapshot store`  | סטטוס: 🔴 לא בוצע
+2. `Create project snapshot store`  | סטטוס: 🟢 בוצע
 - description: לבנות storage לשמירת snapshots לפני שינויים גדולים כמו bootstrap, migration, deploy או mass edits
 - input:
   - `projectStateSnapshot`
@@ -7107,7 +7107,7 @@ Refinements מאושרים:
 - output:
   - `stateDiff`
 - dependencies:
-  - `Create project snapshot store`  | סטטוס: 🔴 לא בוצע
+  - `Create project snapshot store`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 4. `Create project state restore resolver`  | סטטוס: 🟢 בוצע
@@ -7118,7 +7118,7 @@ Refinements מאושרים:
 - output:
   - `restoreDecision`
 - dependencies:
-  - `Create project snapshot store`  | סטטוס: 🔴 לא בוצע
+  - `Create project snapshot store`  | סטטוס: 🟢 בוצע
   - `Failure Recovery & Rollback`
 - connects_to: `Project State`
 

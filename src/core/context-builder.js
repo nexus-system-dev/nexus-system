@@ -896,7 +896,7 @@ function buildRisks(project, context) {
   return risks;
 }
 
-export function buildProjectContext(project, { observabilityTransport = null, auditLogStore = null } = {}) {
+export function buildProjectContext(project, { observabilityTransport = null, auditLogStore = null, snapshotStore = null } = {}) {
   const domainDecision = inferDomain(project);
   const domain = domainDecision.domain;
   const domainRegistry = createDomainRegistry();
@@ -2623,6 +2623,9 @@ export function buildProjectContext(project, { observabilityTransport = null, au
   });
   const { snapshotRecord } = createProjectSnapshotStore({
     projectStateSnapshot,
+    snapshotStore,
+    observabilityTransport,
+    traceId: `${platformTrace.traceId}:snapshot-store`,
   });
   const { stateDiff } = createStateDiffAndCompareModule({
     snapshotRecord: {

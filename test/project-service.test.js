@@ -200,6 +200,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.snapshotRecord?.snapshotRecordId, "string");
   assert.equal(typeof project.state.snapshotRecord?.storageMetadata?.checksum, "string");
   assert.equal(typeof project.state.snapshotRecord?.summary?.isStored, "boolean");
+  assert.equal(service.getProjectSnapshots({ projectId: "giftwallet" }).length >= 1, true);
   assert.equal(typeof project.state.stateDiff?.stateDiffId, "string");
   assert.equal(Array.isArray(project.state.stateDiff?.artifactChanges), true);
   assert.equal(typeof project.state.stateDiff?.summary?.totalChanges, "number");
