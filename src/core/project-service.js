@@ -1245,6 +1245,7 @@ export class ProjectService {
       onboardingStateHandoff: project.context?.onboardingStateHandoff ?? null,
       projectPermissionSchema: project.context?.projectPermissionSchema ?? null,
       roleCapabilityMatrix: project.context?.roleCapabilityMatrix ?? null,
+      projectAuthorizationDecision: project.context?.projectAuthorizationDecision ?? null,
       projectOwnershipBinding: project.context?.projectOwnershipBinding ?? null,
       initialProjectStateContract: project.context?.initialProjectStateContract ?? null,
       initialProjectState: project.context?.initialProjectState ?? null,

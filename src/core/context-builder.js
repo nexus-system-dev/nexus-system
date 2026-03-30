@@ -90,6 +90,7 @@ import { createOnboardingCompletionEvaluator } from "./onboarding-completion-eva
 import { createOnboardingToStateHandoffContract } from "./onboarding-to-state-handoff-contract.js";
 import { defineProjectPermissionSchema } from "./project-permission-schema.js";
 import { createProjectRoleCapabilityMatrix } from "./project-role-capability-matrix.js";
+import { createActionLevelProjectAuthorizationResolver } from "./action-level-project-authorization-resolver.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -2326,6 +2327,12 @@ export function buildProjectContext(
     actorType: project.manualContext?.actorType ?? membershipRecord?.role ?? "owner",
     policyDecision,
   });
+  const { projectAuthorizationDecision } = createActionLevelProjectAuthorizationResolver({
+    actorType: project.manualContext?.actorType ?? membershipRecord?.role ?? "owner",
+    projectAction: project.manualContext?.projectAction ?? policyDecision?.actionType ?? "view",
+    roleCapabilityMatrix,
+    policyDecision,
+  });
   const { invitationRecord, roleAssignment } = createRoleAssignmentAndInvitationFlow({
     workspaceModel,
     invitationRequest: project.manualContext?.invitationRequest ?? null,
@@ -3088,6 +3095,7 @@ export function buildProjectContext(
   context.onboardingStateHandoff = onboardingStateHandoff;
   context.projectPermissionSchema = projectPermissionSchema;
   context.roleCapabilityMatrix = roleCapabilityMatrix;
+  context.projectAuthorizationDecision = projectAuthorizationDecision;
   context.projectOwnershipBinding = projectOwnershipBinding;
   context.initialProjectStateContract = initialProjectStateContract;
   context.initialProjectState = bootstrappedInitialProjectState;

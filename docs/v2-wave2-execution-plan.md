@@ -1058,7 +1058,7 @@
 - הערת מצב: ה־matrix כבר ממומש ב־`project-role-capability-matrix.js`, מרחיב את `projectPermissionSchema` ל־roles קנוניים כמו `member` ו־`reviewer`, ומחובר ב־`context-builder` וב־`project-service` ל־`Project State`.
 
 
-3. `Create action-level project authorization resolver`  | סטטוס: 🔴 לא בוצע
+3. `Create action-level project authorization resolver`  | סטטוס: 🟢 בוצע
 - execution_order: `17`
 - description: לבנות resolver שמכריע אם actor מסוים רשאי לבצע פעולה ספציפית על פרויקט כמו deploy, code edit, release approval או credential link
 - input:
@@ -1068,9 +1068,10 @@
 - output:
   - `projectAuthorizationDecision`
 - dependencies:
-  - `Create project role capability matrix`  | סטטוס: 🔴 לא בוצע
+  - `Create project role capability matrix`  | סטטוס: 🟢 בוצע
   - `Policy Layer`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- הערת מצב: ה־resolver כבר ממומש ב־`action-level-project-authorization-resolver.js`, משלב `roleCapabilityMatrix` עם `policyDecision`, ומחזיר `projectAuthorizationDecision` קנוני דרך `context-builder` ו־`project-service`.
 
 
 4. `Create privileged action authority resolver`  | סטטוס: 🔴 לא בוצע
