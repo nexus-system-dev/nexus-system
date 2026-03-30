@@ -737,7 +737,7 @@
   - ולפני `Create workbench access entry resolver`
 - אם ההכנסה מתבצעת, יש לבצע `renumbering` מרוכז וזהיר לנקודה הזאת והלאה, במקום להמשיך ידנית במסלול כאילו הבלוק לא קיים.
 
-1. `Define editable proposal schema`  | סטטוס: 🔴 לא בוצע
+1. `Define editable proposal schema`  | סטטוס: 🟢 בוצע
 - execution_order: `22`
 - description: לבנות schema אחיד להצעות שניתן לערוך, לתקן, לאשר חלקית או לדחות ברמת section, component, copy ו־next action
 - input:
@@ -749,6 +749,7 @@
   - `AI Learning UX`
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
+- הערת מצב: ה־schema כבר ממומש ב־`editable-proposal-schema.js`, בונה `editableProposal` קנוני עם `sections`, `components`, `copy` ו־`nextAction`, ומחובר ב־`context-builder` וב־`project-service` כחלק מזרימת recommendation ו־human review.
 
 
 2. `Create proposal editing system`  | סטטוס: 🔴 לא בוצע

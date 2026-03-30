@@ -6077,7 +6077,7 @@ Refinements מאושרים:
 - לאחר שכל המשימות בבלוק זה מסומנות `🟢`, יש לבצע בדיקה מחודשת של מיקום `AI Design Integration` ולשקול העברתו מיד לאחר בלוק זה.
 - אם מתבצעת העברה, יש לבצע גם `renumbering` מלא לכל המשימות שמגיעות אחרי מיקום זה, כך ש־`execution_order` יישאר רציף, עקבי וללא כפילויות או חורים.
 
-1. `Define editable proposal schema`  | סטטוס: 🔴 לא בוצע
+1. `Define editable proposal schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד להצעות שניתן לערוך, לתקן, לאשר חלקית או לדחות ברמת section, component, copy ו־next action
 - input:
   - `proposalType`
@@ -6088,6 +6088,7 @@ Refinements מאושרים:
   - `AI Learning UX`
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
+- הערת מצב: ה־schema כבר ממומש ב־`editable-proposal-schema.js`, בונה `editableProposal` קנוני עם `sections`, `components`, `copy` ו־`nextAction`, ומחובר ב־`context-builder` וב־`project-service` כחלק מזרימת recommendation ו־human review.
 
 2. `Create proposal editing system`  | סטטוס: 🔴 לא בוצע
 - description: לבנות מערכת עריכה שמאפשרת למשתמש לשנות proposal קיים, להשאיר annotations וליצור revised proposal בלי לשבור את ה־history
