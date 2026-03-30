@@ -168,6 +168,7 @@ function queryElements(doc) {
     layoutComponents: doc.querySelector("#layout-components-content"),
     feedbackComponents: doc.querySelector("#feedback-components-content"),
     navigationComponents: doc.querySelector("#navigation-components-content"),
+    dataDisplayComponents: doc.querySelector("#data-display-components-content"),
     analysis: doc.querySelector("#analysis-content"),
     graph: doc.querySelector("#graph-content"),
     agents: doc.querySelector("#agents-content"),
@@ -932,6 +933,112 @@ function renderNavigationComponents(elements, project) {
   `;
 }
 
+function renderDataDisplayPreview(component) {
+  const preview = normalizeObject(component.preview);
+
+  if (component.componentType === "table") {
+    const headers = normalizeArray(preview.headers);
+    const rows = normalizeArray(preview.rows);
+    return `
+      <div class="data-display-preview-shell">
+        <div class="data-display-table-preview">
+          <div class="data-display-table-row header">
+            ${headers.map((header) => `<strong>${escapeHtml(header)}</strong>`).join("")}
+          </div>
+          ${rows.map((row) => `<div class="data-display-table-row">${normalizeArray(row).map((cell) => `<span>${escapeHtml(cell)}</span>`).join("")}</div>`).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  if (component.componentType === "stat-card") {
+    return `
+      <div class="data-display-preview-shell data-display-stat-preview">
+        <span class="mini-label">${escapeHtml(preview.headline ?? "Metric")}</span>
+        <strong>${escapeHtml(preview.value ?? "0")}</strong>
+        <span>${escapeHtml(preview.delta ?? "0%")}</span>
+      </div>
+    `;
+  }
+
+  if (component.componentType === "activity-log") {
+    return `
+      <div class="data-display-preview-shell data-display-stack">
+        ${normalizeArray(preview.items).map((item) => `<div class="data-display-log-item">${escapeHtml(item)}</div>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "timeline") {
+    const items = normalizeArray(preview.items);
+    const activeItem = preview.activeItem ?? items[0] ?? "";
+    return `
+      <div class="data-display-preview-shell data-display-timeline">
+        ${items.map((item) => `<div class="data-display-timeline-step${item === activeItem ? " active" : ""}">${escapeHtml(item)}</div>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "key-value-panel") {
+    return `
+      <div class="data-display-preview-shell data-display-key-value">
+        ${normalizeArray(preview.pairs).map((pair) => `<div class="data-display-kv-row"><span>${escapeHtml(pair?.[0] ?? "")}</span><strong>${escapeHtml(pair?.[1] ?? "")}</strong></div>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "status-chip") {
+    return `
+      <div class="data-display-preview-shell">
+        ${normalizeArray(preview.items).map((item, index) => `<span class="data-display-chip tone-${index % 3}">${escapeHtml(item)}</span>`).join("")}
+      </div>
+    `;
+  }
+
+  return `<p class="empty">No preview available.</p>`;
+}
+
+function renderDataDisplayComponents(elements, project) {
+  if (!elements.dataDisplayComponents) {
+    return;
+  }
+
+  const displayLibrary = normalizeObject(project.dataDisplayComponents);
+  const components = normalizeArray(displayLibrary.components);
+  const summary = normalizeObject(displayLibrary.summary);
+
+  if (!components.length) {
+    elements.dataDisplayComponents.innerHTML = `<p class="empty">עדיין אין ספריית data display components זמינה.</p>`;
+    return;
+  }
+
+  const cards = components
+    .map(
+      (component) => `
+        <article class="data-display-card">
+          <header class="data-display-card-header">
+            <strong>${escapeHtml(component.componentType ?? "data-display")}</strong>
+            <span class="mini-label">${escapeHtml(normalizeArray(component.supportedScreenTypes).join(" · "))}</span>
+          </header>
+          <p class="data-display-card-body">${escapeHtml(component.usage ?? "No usage guidance yet.")}</p>
+          ${renderDataDisplayPreview(component)}
+          <p class="data-display-card-meta">${escapeHtml(Object.entries(normalizeObject(component.dataRules)).map(([key, value]) => `${key}:${value}`).join(" · "))}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  elements.dataDisplayComponents.innerHTML = `
+    ${metricHtml([
+      { label: "Display", value: String(summary.totalComponents ?? components.length) },
+      { label: "Screen types", value: String(summary.totalSupportedScreenTypes ?? 0) },
+      { label: "Dashboards", value: summary.supportsOperationalDashboards ? "yes" : "no" },
+      { label: "Library", value: displayLibrary.dataDisplayLibraryId ?? "not-set" },
+    ])}
+    <div class="data-display-grid">${cards}</div>
+  `;
+}
+
 function renderScreenReview(elements, project) {
   const report = normalizeObject(project.screenReviewReport);
   const reportSummary = normalizeObject(report.summary);
@@ -1268,6 +1375,7 @@ export function renderProject(elements, project) {
   renderLayoutComponents(elements, project);
   renderFeedbackComponents(elements, project);
   renderNavigationComponents(elements, project);
+  renderDataDisplayComponents(elements, project);
   renderScreenReview(elements, project);
   renderLearning(elements, project);
   renderCompanion(elements, project);

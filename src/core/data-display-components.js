@@ -10,6 +10,7 @@ function createDisplayComponent({
   usage,
   supportedScreenTypes,
   dataRules,
+  preview,
 }) {
   return {
     componentId: `data-display:${componentType}`,
@@ -18,6 +19,7 @@ function createDisplayComponent({
     usage,
     supportedScreenTypes,
     dataRules,
+    preview,
   };
 }
 
@@ -38,6 +40,13 @@ export function createDataDisplayComponents({
         supportsEmptyRows: true,
         supportsInlineStatus: true,
       },
+      preview: {
+        headers: ["Service", "Status", "Owner"],
+        rows: [
+          ["API", "Healthy", "Ops"],
+          ["Billing", "Pending", "Finance"],
+        ],
+      },
     }),
     createDisplayComponent({
       componentType: "stat-card",
@@ -48,6 +57,11 @@ export function createDataDisplayComponents({
         highlightsSingleMetric: true,
         supportsTrendDelta: true,
         supportsStatusTone: true,
+      },
+      preview: {
+        headline: "Weekly activation",
+        value: "62%",
+        delta: "+8%",
       },
     }),
     createDisplayComponent({
@@ -60,6 +74,9 @@ export function createDataDisplayComponents({
         supportsActorMetadata: true,
         supportsFiltering: true,
       },
+      preview: {
+        items: ["Owner approved deploy", "QA finished regression", "Nexus refreshed context"],
+      },
     }),
     createDisplayComponent({
       componentType: "timeline",
@@ -70,6 +87,10 @@ export function createDataDisplayComponents({
         supportsOrderedMilestones: true,
         supportsCurrentStateMarker: true,
         supportsCompletionFlags: true,
+      },
+      preview: {
+        items: ["Intake", "Execution", "Release"],
+        activeItem: "Execution",
       },
     }),
     createDisplayComponent({
@@ -82,6 +103,13 @@ export function createDataDisplayComponents({
         supportsLongValues: true,
         supportsReadOnlySummaries: true,
       },
+      preview: {
+        pairs: [
+          ["Owner", "Yogev"],
+          ["Runtime", "Healthy"],
+          ["Primary goal", "Ship core flow"],
+        ],
+      },
     }),
     createDisplayComponent({
       componentType: "status-chip",
@@ -92,6 +120,9 @@ export function createDataDisplayComponents({
         supportsSemanticStates: true,
         supportsCompactDisplay: true,
         supportsInlineUsage: true,
+      },
+      preview: {
+        items: ["Ready", "Partial", "Blocked"],
       },
     }),
   ];

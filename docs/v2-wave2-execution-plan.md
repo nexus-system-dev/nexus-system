@@ -309,7 +309,7 @@
 - הערת מצב: ספריית `navigationComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר sidebar, tabs, breadcrumb, topbar ו־stepper כניווט חי במקום להישאר navigation descriptor בלבד.
 
 
-6. `Create data display components`  | סטטוס: 🔴 לא בוצע
+6. `Create data display components`  | סטטוס: 🟢 בוצע
 - execution_order: `14`
 - description: לבנות table, stat card, activity log, timeline, key-value panel, status chip
 - input:
@@ -319,6 +319,7 @@
 - dependencies:
   - `Define screen inventory`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- הערת מצב: ספריית `dataDisplayComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר table, stat card, activity log, timeline, key-value panel ו־status chip כמציגי נתונים חיים במקום להישאר display descriptor בלבד.
 
 
 #### `Screen Template System`

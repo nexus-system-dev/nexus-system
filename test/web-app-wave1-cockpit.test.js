@@ -70,6 +70,7 @@ function createFakeDocument() {
     "#layout-components-content",
     "#feedback-components-content",
     "#navigation-components-content",
+    "#data-display-components-content",
     "#analysis-content",
     "#graph-content",
     "#agents-content",
@@ -552,6 +553,64 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
         supportsWorkspaceNavigation: true,
       },
     },
+    dataDisplayComponents: {
+      dataDisplayLibraryId: "data-display-components:3",
+      components: [
+        {
+          componentId: "data-display:table",
+          componentType: "table",
+          usage: "dense tabular views for entities, approvals, releases and operational datasets",
+          supportedScreenTypes: ["dashboard", "workspace", "tracking"],
+          dataRules: {
+            supportsSorting: true,
+            supportsEmptyRows: true,
+            supportsInlineStatus: true,
+          },
+          preview: {
+            headers: ["Service", "Status", "Owner"],
+            rows: [
+              ["API", "Healthy", "Ops"],
+              ["Billing", "Pending", "Finance"],
+            ],
+          },
+        },
+        {
+          componentId: "data-display:stat-card",
+          componentType: "stat-card",
+          usage: "single KPI summaries for dashboards, growth views and release overviews",
+          supportedScreenTypes: ["dashboard", "workspace", "tracking"],
+          dataRules: {
+            highlightsSingleMetric: true,
+            supportsTrendDelta: true,
+            supportsStatusTone: true,
+          },
+          preview: {
+            headline: "Weekly activation",
+            value: "62%",
+            delta: "+8%",
+          },
+        },
+        {
+          componentId: "data-display:status-chip",
+          componentType: "status-chip",
+          usage: "inline semantic state display for blockers, releases, health and approvals",
+          supportedScreenTypes: ["dashboard", "workspace", "tracking"],
+          dataRules: {
+            supportsSemanticStates: true,
+            supportsCompactDisplay: true,
+            supportsInlineUsage: true,
+          },
+          preview: {
+            items: ["Ready", "Partial", "Blocked"],
+          },
+        },
+      ],
+      summary: {
+        totalComponents: 3,
+        totalSupportedScreenTypes: 3,
+        supportsOperationalDashboards: true,
+      },
+    },
     typographySystem: {
       baseFontFamily: "\"IBM Plex Sans\", sans-serif",
       displayFontFamily: "\"Avenir Next\", sans-serif",
@@ -660,6 +719,9 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#navigation-components-content").innerHTML, /persistent workspace navigation across major Nexus surfaces/);
   assert.match(fakeDocument.elements.get("#navigation-components-content").innerHTML, /Overview/);
   assert.match(fakeDocument.elements.get("#navigation-components-content").innerHTML, /Analysis/);
+  assert.match(fakeDocument.elements.get("#data-display-components-content").innerHTML, /dense tabular views for entities/);
+  assert.match(fakeDocument.elements.get("#data-display-components-content").innerHTML, /Weekly activation/);
+  assert.match(fakeDocument.elements.get("#data-display-components-content").innerHTML, /Ready/);
   assert.match(fakeDocument.elements.get("#tab-developer").innerHTML, /Wire cockpit layout/);
   assert.match(fakeDocument.elements.get("#tab-release").innerHTML, /blocked/);
   assert.equal(fakeDocument.elements.get("#workspace-developer").hidden, false);

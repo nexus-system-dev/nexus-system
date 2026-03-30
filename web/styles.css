@@ -464,6 +464,12 @@ select:focus-visible {
   gap: var(--space-sm);
 }
 
+.data-display-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
 .primitive-card {
   display: grid;
   gap: var(--space-sm);
@@ -697,6 +703,98 @@ select:focus-visible {
   justify-content: center;
   border-radius: 999px;
   background: color-mix(in srgb, var(--line) 42%, white 58%);
+}
+
+.data-display-card {
+  display: grid;
+  gap: var(--space-sm);
+  border: var(--border-subtle) solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) calc(var(--space-md) + var(--space-xs));
+  background: #fff;
+}
+
+.data-display-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.data-display-card-body,
+.data-display-card-meta {
+  margin: 0;
+  color: var(--muted);
+}
+
+.data-display-card-meta {
+  font-size: var(--font-size-meta);
+}
+
+.data-display-preview-shell {
+  display: grid;
+  gap: var(--space-xs);
+  border: var(--border-subtle) solid color-mix(in srgb, var(--line) 72%, white 28%);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  background: color-mix(in srgb, var(--panel) 70%, white 30%);
+}
+
+.data-display-table-preview,
+.data-display-stack,
+.data-display-key-value {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.data-display-table-row,
+.data-display-kv-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-xs);
+}
+
+.data-display-table-row.header {
+  color: var(--ink);
+}
+
+.data-display-log-item,
+.data-display-timeline-step,
+.data-display-chip {
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.data-display-timeline {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.data-display-timeline-step.active {
+  background: color-mix(in srgb, var(--accent) 18%, white 82%);
+  color: var(--accent-strong);
+}
+
+.data-display-stat-preview strong {
+  font-size: var(--font-size-h2);
+  color: var(--ink);
+}
+
+.data-display-chip.tone-0 {
+  background: color-mix(in srgb, var(--good) 14%, white 86%);
+  color: var(--good);
+}
+
+.data-display-chip.tone-1 {
+  background: color-mix(in srgb, var(--warn) 14%, white 86%);
+  color: var(--warn);
+}
+
+.data-display-chip.tone-2 {
+  background: color-mix(in srgb, var(--danger) 14%, white 86%);
+  color: var(--danger);
 }
 
 .layout-preview-shell {
