@@ -6102,7 +6102,7 @@ Refinements מאושרים:
   - `Define editable proposal schema`  | סטטוס: 🟢 בוצע
   - `Project State`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
-- הערת מצב: מערכת העריכה כבר ממומשת ב־`proposal-editing-system.js`, מייצרת `editedProposal` ו־`proposalEditHistory` מתוך `editableProposal` ו־`userEditInput`, ושומרת רצף revisions דרך `context-builder` ו־`project-service`.
+- הערת מצב: מערכת העריכה סגורה end-to-end: `proposal-editing-system.js` מייצרת `editedProposal` ו־`proposalEditHistory`, `project-service` ו־`server` חושפים mutation אמיתי, וב־`Release Workspace` יש עכשיו surface שמאפשר למשתמש לערוך section, next action ו־annotations ולראות revision history חי מתוך ה־UI.
 
 3. `Create partial acceptance flow`  | סטטוס: 🟢 בוצע
 - description: לבנות flow שמאפשר לאשר חלק מהצעה, לדחות חלק אחר, ולהחזיר רק את החלקים הבעייתיים ל־regeneration או review נוסף
@@ -6116,7 +6116,7 @@ Refinements מאושרים:
   - `Create proposal editing system`  | סטטוס: 🟢 בוצע
   - `Define approval outcome schema`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
-- הערת מצב: ה־flow כבר ממומש ב־`partial-acceptance-flow.js`, מחזיר `partialAcceptanceDecision` ו־`remainingProposalScope` מתוך `editedProposal` ו־`approvalOutcome`, ומחובר ב־`context-builder` וב־`project-service` להמשך recommendation ו־review.
+- הערת מצב: ה־partial acceptance flow סגור end-to-end: `partial-acceptance-flow.js` מחשב `partialAcceptanceDecision` ו־`remainingProposalScope`, `project-service` ו־`server` מקבלים mutation אמיתי, וב־`Release Workspace` המשתמש יכול לבחור approve/reject ברמת section/component/copy, לקבל follow-up action, ולראות regeneration scope ותוצאת ההחלטה חזרה בממשק.
 
 #### `AI Companion Experience`
 

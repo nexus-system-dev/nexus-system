@@ -910,6 +910,17 @@ select:focus-visible {
   margin-bottom: var(--space-md);
 }
 
+.proposal-review-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.proposal-review-form button {
+  align-self: end;
+}
+
 details summary {
   cursor: pointer;
   font-size: 1.05rem;
@@ -952,7 +963,8 @@ details summary {
   .signal-grid,
   .primitive-grid,
   .details-grid,
-  .sync-row {
+  .sync-row,
+  .proposal-review-form {
     grid-template-columns: 1fr;
   }
 

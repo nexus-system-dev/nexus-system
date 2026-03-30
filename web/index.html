@@ -192,6 +192,61 @@
               </section>
 
               <section class="workbench-card wide">
+                <h3>Proposal Review</h3>
+                <div id="proposal-review-content" class="detail-content"></div>
+                <div class="proposal-review-form">
+                  <label class="empty-app-field">
+                    <span class="mini-label">Section ראשי</span>
+                    <input id="proposal-section-title-input" type="text" placeholder="Overview" />
+                  </label>
+                  <label class="empty-app-field">
+                    <span class="mini-label">סיכום section</span>
+                    <textarea id="proposal-section-summary-input" rows="3" placeholder="מה צריך להשתנות בהצעה"></textarea>
+                  </label>
+                  <label class="empty-app-field">
+                    <span class="mini-label">Label לפעולה הבאה</span>
+                    <input id="proposal-next-action-label-input" type="text" placeholder="Review proposal" />
+                  </label>
+                  <label class="empty-app-field">
+                    <span class="mini-label">הערת עריכה</span>
+                    <textarea id="proposal-annotation-input" rows="3" placeholder="מה צריך לחדד או לתקן"></textarea>
+                  </label>
+                  <button id="proposal-edit-button" type="button">שמור עריכה</button>
+                </div>
+                <div class="proposal-review-form">
+                  <label class="empty-app-field">
+                    <span class="mini-label">החלטת section</span>
+                    <select id="partial-section-decision-select">
+                      <option value="approved">אשר</option>
+                      <option value="rejected">דחה</option>
+                      <option value="pending">השאר לבדיקה</option>
+                    </select>
+                  </label>
+                  <label class="empty-app-field">
+                    <span class="mini-label">החלטת component</span>
+                    <select id="partial-component-decision-select">
+                      <option value="approved">אשר</option>
+                      <option value="rejected">דחה</option>
+                      <option value="pending">השאר לבדיקה</option>
+                    </select>
+                  </label>
+                  <label class="empty-app-field">
+                    <span class="mini-label">החלטת copy</span>
+                    <select id="partial-copy-decision-select">
+                      <option value="approved">אשר</option>
+                      <option value="rejected">דחה</option>
+                      <option value="pending">השאר לבדיקה</option>
+                    </select>
+                  </label>
+                  <label class="empty-app-field">
+                    <span class="mini-label">הערת follow-up</span>
+                    <textarea id="partial-acceptance-note-input" rows="3" placeholder="מה צריך להיכנס ל־regeneration או review נוסף"></textarea>
+                  </label>
+                  <button id="partial-acceptance-button" type="button">אשר חלקית</button>
+                </div>
+              </section>
+
+              <section class="workbench-card wide">
                 <h3>Versioning And Restore</h3>
                 <div id="versioning-content" class="detail-content"></div>
               </section>

@@ -154,6 +154,17 @@ function queryElements(doc) {
     growthWorkspaceSummary: doc.querySelector("#growth-workspace-summary"),
     growthWorkspacePanel: doc.querySelector("#workspace-growth"),
     screenReview: doc.querySelector("#screen-review-content"),
+    proposalReview: doc.querySelector("#proposal-review-content"),
+    proposalSectionTitleInput: doc.querySelector("#proposal-section-title-input"),
+    proposalSectionSummaryInput: doc.querySelector("#proposal-section-summary-input"),
+    proposalNextActionLabelInput: doc.querySelector("#proposal-next-action-label-input"),
+    proposalAnnotationInput: doc.querySelector("#proposal-annotation-input"),
+    proposalEditButton: doc.querySelector("#proposal-edit-button"),
+    partialSectionDecisionSelect: doc.querySelector("#partial-section-decision-select"),
+    partialComponentDecisionSelect: doc.querySelector("#partial-component-decision-select"),
+    partialCopyDecisionSelect: doc.querySelector("#partial-copy-decision-select"),
+    partialAcceptanceNoteInput: doc.querySelector("#partial-acceptance-note-input"),
+    partialAcceptanceButton: doc.querySelector("#partial-acceptance-button"),
     learning: doc.querySelector("#learning-content"),
     companion: doc.querySelector("#companion-content"),
     collaboration: doc.querySelector("#collaboration-content"),
@@ -472,6 +483,111 @@ function renderDecision(elements, project) {
 
   const items = normalizeArray(project.approvals).slice(0, 4).map((approval) => ({ title: approval }));
   elements.decision.innerHTML = listHtml(items, "אין כרגע משהו שצריך לאשר.");
+}
+
+function renderProposalReview(elements, project) {
+  const state = normalizeObject(project.state);
+  const editableProposal = normalizeObject(project.editableProposal ?? state.editableProposal);
+  const editedProposal = normalizeObject(project.editedProposal ?? state.editedProposal);
+  const activeProposal = editedProposal.revisionId ? editedProposal : editableProposal;
+  const history = normalizeObject(project.proposalEditHistory ?? state.proposalEditHistory);
+  const partialAcceptanceDecision = normalizeObject(project.partialAcceptanceDecision ?? state.partialAcceptanceDecision);
+  const remainingProposalScope = normalizeObject(project.remainingProposalScope ?? state.remainingProposalScope);
+
+  if (!editableProposal.proposalId) {
+    if (elements.proposalReview) {
+      elements.proposalReview.innerHTML = `<p class="empty">עדיין אין proposal פתוח לעריכה או partial acceptance.</p>`;
+    }
+    if (elements.proposalSectionTitleInput) elements.proposalSectionTitleInput.value = "";
+    if (elements.proposalSectionSummaryInput) elements.proposalSectionSummaryInput.value = "";
+    if (elements.proposalNextActionLabelInput) elements.proposalNextActionLabelInput.value = "";
+    if (elements.proposalAnnotationInput) elements.proposalAnnotationInput.value = "";
+    if (elements.partialAcceptanceNoteInput) elements.partialAcceptanceNoteInput.value = "";
+    return;
+  }
+
+  const sections = normalizeArray(activeProposal.sections);
+  const components = normalizeArray(activeProposal.components);
+  const copyItems = normalizeArray(activeProposal.copy);
+  const firstSection = normalizeObject(sections[0]);
+  const firstComponent = normalizeObject(components[0]);
+  const firstCopy = normalizeObject(copyItems[0]);
+  const nextAction = normalizeObject(activeProposal.nextAction);
+  const historyEntries = normalizeArray(history.entries).slice(-3).reverse().map((entry) => ({
+    title: `Revision ${entry.revisionNumber ?? "?"} · ${entry.action ?? "edited"}`,
+    body: `${entry.proposalId ?? activeProposal.proposalId ?? "proposal"} | annotations ${entry.annotationCount ?? 0}`,
+  }));
+  const reviewScope = [
+    {
+      title: firstSection.label ?? firstSection.sectionId ?? "Section",
+      body: firstSection.contentSummary ?? "אין סיכום section זמין.",
+    },
+    {
+      title: firstComponent.componentType ?? firstComponent.componentId ?? "Component",
+      body: String(firstComponent.proposedValue ?? firstComponent.currentValue ?? "No proposed value"),
+    },
+    {
+      title: firstCopy.label ?? firstCopy.copyId ?? "Copy",
+      body: firstCopy.proposedText ?? firstCopy.currentText ?? "No proposed copy",
+    },
+  ];
+  const partialItems = partialAcceptanceDecision.decisionId
+    ? [
+        {
+          title: partialAcceptanceDecision.status ?? "unknown",
+          body: `follow-up: ${partialAcceptanceDecision.followUpAction ?? "not-set"}`,
+        },
+        {
+          title: "Approved",
+          body: String(partialAcceptanceDecision.summary?.approvedCount ?? 0),
+        },
+        {
+          title: "Remaining",
+          body: String(partialAcceptanceDecision.summary?.remainingCount ?? 0),
+        },
+        {
+          title: "Regeneration scope",
+          body:
+            normalizeArray(remainingProposalScope.componentsNeedingRegeneration)
+              .map((component) => component.componentId)
+              .join(" | ")
+            || "אין כרגע רכיבים פתוחים ל־regeneration.",
+        },
+      ]
+    : [];
+
+  if (elements.proposalSectionTitleInput) {
+    elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
+  }
+  if (elements.proposalSectionSummaryInput) {
+    elements.proposalSectionSummaryInput.value = firstSection.contentSummary ?? firstSection.body ?? "";
+  }
+  if (elements.proposalNextActionLabelInput) {
+    elements.proposalNextActionLabelInput.value = nextAction.label ?? "";
+  }
+  if (elements.partialSectionDecisionSelect && !elements.partialSectionDecisionSelect.value) {
+    elements.partialSectionDecisionSelect.value = "approved";
+  }
+  if (elements.partialComponentDecisionSelect && !elements.partialComponentDecisionSelect.value) {
+    elements.partialComponentDecisionSelect.value = "rejected";
+  }
+  if (elements.partialCopyDecisionSelect && !elements.partialCopyDecisionSelect.value) {
+    elements.partialCopyDecisionSelect.value = "approved";
+  }
+
+  if (elements.proposalReview) {
+    elements.proposalReview.innerHTML = `
+      ${metricHtml([
+        { label: "Proposal", value: activeProposal.proposalType ?? editableProposal.proposalType ?? "generic" },
+        { label: "Revision", value: String(editedProposal.revisionNumber ?? 1) },
+        { label: "History", value: String(normalizeArray(history.entries).length || 1) },
+        { label: "Partial status", value: partialAcceptanceDecision.status ?? "not-run" },
+      ])}
+      ${stackHtml("Current proposal scope", reviewScope, "עדיין אין scope זמין לעריכה.")}
+      ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
+      ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}
+    `;
+  }
 }
 
 function renderWorkspaceSummaries(elements, project) {
@@ -1377,6 +1493,7 @@ export function renderProject(elements, project) {
   renderNavigationComponents(elements, project);
   renderDataDisplayComponents(elements, project);
   renderScreenReview(elements, project);
+  renderProposalReview(elements, project);
   renderLearning(elements, project);
   renderCompanion(elements, project);
   renderCollaboration(elements, project);
@@ -1660,6 +1777,116 @@ export function createCockpitApp({
     await loadProject(finished.project.id);
   }
 
+  async function submitProposalEditsFromUi() {
+    const state = normalizeObject(currentProject?.state);
+    const editableProposal = normalizeObject(currentProject?.editableProposal ?? state.editableProposal);
+    const editedProposal = normalizeObject(currentProject?.editedProposal ?? state.editedProposal);
+    if (!currentProjectId || !editableProposal.proposalId) {
+      return;
+    }
+
+    const activeProposal = normalizeObject(
+      editedProposal.revisionId ? editedProposal : editableProposal,
+    );
+    const firstSection = normalizeObject(normalizeArray(activeProposal.sections)[0]);
+    const revisionNumber = Number(editedProposal.revisionNumber ?? 1) + 1;
+    const annotationNote = elements.proposalAnnotationInput?.value?.trim() ?? "";
+    const userEditInput = {
+      revisionNumber,
+      sectionEdits: firstSection.sectionId
+        ? [
+            {
+              sectionId: firstSection.sectionId,
+              label: elements.proposalSectionTitleInput?.value?.trim() || firstSection.label,
+              contentSummary: elements.proposalSectionSummaryInput?.value?.trim() || firstSection.contentSummary,
+            },
+          ]
+        : [],
+      nextActionEdit: {
+        label: elements.proposalNextActionLabelInput?.value?.trim() || activeProposal.nextAction?.label || "Review proposal",
+      },
+    };
+
+    if (annotationNote) {
+      userEditInput.annotations = [
+        {
+          targetType: "section",
+          targetId: firstSection.sectionId ?? "overview",
+          note: annotationNote,
+          severity: "warning",
+        },
+      ];
+    }
+
+    await fetchJson(`/api/projects/${currentProjectId}/proposal-edits`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userEditInput }),
+    });
+    activeWorkspace = "release";
+    await loadProject(currentProjectId);
+    if (elements.proposalAnnotationInput) {
+      elements.proposalAnnotationInput.value = "";
+    }
+  }
+
+  async function submitPartialAcceptanceFromUi() {
+    const state = normalizeObject(currentProject?.state);
+    const editableProposal = normalizeObject(currentProject?.editableProposal ?? state.editableProposal);
+    const editedProposal = normalizeObject(currentProject?.editedProposal ?? state.editedProposal);
+    if (!currentProjectId || !editableProposal.proposalId) {
+      return;
+    }
+
+    const activeProposal = normalizeObject(
+      editedProposal.revisionId ? editedProposal : editableProposal,
+    );
+    const firstSection = normalizeObject(normalizeArray(activeProposal.sections)[0]);
+    const firstComponent = normalizeObject(normalizeArray(activeProposal.components)[0]);
+    const firstCopy = normalizeObject(normalizeArray(activeProposal.copy)[0]);
+    const note = elements.partialAcceptanceNoteInput?.value?.trim() ?? "";
+    const approvalOutcome = {
+      sectionOutcomes: firstSection.sectionId
+        ? [
+            {
+              sectionId: firstSection.sectionId,
+              decision: elements.partialSectionDecisionSelect?.value ?? "approved",
+              note,
+            },
+          ]
+        : [],
+      componentOutcomes: firstComponent.componentId
+        ? [
+            {
+              componentId: firstComponent.componentId,
+              decision: elements.partialComponentDecisionSelect?.value ?? "rejected",
+              note,
+            },
+          ]
+        : [],
+      copyOutcomes: firstCopy.copyId
+        ? [
+            {
+              copyId: firstCopy.copyId,
+              decision: elements.partialCopyDecisionSelect?.value ?? "approved",
+              note,
+            },
+          ]
+        : [],
+    };
+
+    await fetchJson(`/api/projects/${currentProjectId}/partial-acceptance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ approvalOutcome }),
+    });
+    activeWorkspace = "release";
+    await loadProject(currentProjectId);
+    if (elements.partialAcceptanceNoteInput) {
+      elements.partialAcceptanceNoteInput.value = "";
+    }
+  }
+
   function mergeLiveState(liveState) {
     if (!currentProject) {
       return;
@@ -1903,6 +2130,14 @@ export function createCockpitApp({
     }
 
     await createFirstProjectFlow();
+  });
+
+  elements.proposalEditButton?.addEventListener("click", async () => {
+    await submitProposalEditsFromUi();
+  });
+
+  elements.partialAcceptanceButton?.addEventListener("click", async () => {
+    await submitPartialAcceptanceFromUi();
   });
 
   const ready = loadProjects().catch((error) => {

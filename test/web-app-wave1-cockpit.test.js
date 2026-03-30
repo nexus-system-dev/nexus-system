@@ -1,7 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 import { createCockpitApp } from "../web/app.js";
+import { ProjectService } from "../src/core/project-service.js";
+
+function createProjectService() {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-web-service-"));
+  return new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+}
 
 function createElement() {
   return {
@@ -56,6 +67,17 @@ function createFakeDocument() {
     "#growth-workspace-summary",
     "#workspace-growth",
     "#screen-review-content",
+    "#proposal-review-content",
+    "#proposal-section-title-input",
+    "#proposal-section-summary-input",
+    "#proposal-next-action-label-input",
+    "#proposal-annotation-input",
+    "#proposal-edit-button",
+    "#partial-section-decision-select",
+    "#partial-component-decision-select",
+    "#partial-copy-decision-select",
+    "#partial-acceptance-note-input",
+    "#partial-acceptance-button",
     "#learning-content",
     "#companion-content",
     "#collaboration-content",
@@ -1167,6 +1189,148 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
   assert.equal(requests.some((request) => request.url === "/api/project-drafts" && request.method === "POST"), true);
   assert.equal(requests.some((request) => request.url === "/api/onboarding/sessions/onboarding-launch-app/finish" && request.method === "POST"), true);
   assert.equal(requests.some((request) => request.url === "/api/projects/launch-app" && request.method === "GET"), true);
+});
+
+test("cockpit supports proposal editing and partial acceptance through the release workspace", async () => {
+  const fakeDocument = createFakeDocument();
+  const service = createProjectService();
+  const requests = [];
+  const signedUp = service.signupUser({
+    userInput: {
+      email: "web-mutation@example.com",
+      displayName: "Web Mutation",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+  const draft = service.createProjectDraft({
+    userInput: {
+      email: "web-mutation@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Mutation Flow",
+      visionText: "מערכת שמקדמת proposals עם editing ו־partial acceptance",
+      requestedDeliverables: ["auth", "workflow"],
+    },
+  });
+  const session = service.createOnboardingSession({
+    userId: signedUp.authPayload.userIdentity.userId,
+    projectDraftId: draft.projectDraftId,
+    initialInput: {
+      projectName: "Mutation Flow",
+    },
+  });
+  service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: Mutation Flow\nאפליקציה עם proposal review ו־approval flow",
+    uploadedFiles: [{ name: "spec.md", type: "markdown", content: "# Spec" }],
+    externalLinks: [],
+  });
+  const finished = service.finishOnboardingSession(session.sessionId);
+  const projectId = finished.project.id;
+
+  async function fetchImpl(url, options = {}) {
+    requests.push({ url, method: options.method ?? "GET", body: options.body ?? null });
+
+    if (url === "/api/projects") {
+      return {
+        ok: true,
+        async json() {
+          return { projects: service.listProjects() };
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}`) {
+      return {
+        ok: true,
+        async json() {
+          return service.getProject(projectId);
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/presence`) {
+      return {
+        ok: true,
+        async json() {
+          return service.getProject(projectId);
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/proposal-edits`) {
+      const body = JSON.parse(options.body ?? "{}");
+      return {
+        ok: true,
+        async json() {
+          return service.submitProposalEdits({
+            projectId,
+            userEditInput: body.userEditInput,
+          });
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/partial-acceptance`) {
+      const body = JSON.parse(options.body ?? "{}");
+      return {
+        ok: true,
+        async json() {
+          return service.submitPartialAcceptance({
+            projectId,
+            approvalOutcome: body.approvalOutcome,
+          });
+        },
+      };
+    }
+
+    throw new Error(`Unexpected url: ${url}`);
+  }
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl,
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await app.ready;
+  app.setActiveWorkspace("release");
+
+  assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Current proposal scope/);
+
+  fakeDocument.elements.get("#proposal-section-title-input").value = "Approval Handoff";
+  fakeDocument.elements.get("#proposal-section-summary-input").value = "להבהיר מה עובר אישור ומה נשלח ל־regeneration.";
+  fakeDocument.elements.get("#proposal-next-action-label-input").value = "אשר חלקית והמשך";
+  fakeDocument.elements.get("#proposal-annotation-input").value = "צריך לחדד את מסלול האישור.";
+
+  await fakeDocument.elements.get("#proposal-edit-button").listeners.click();
+
+  const editedProject = service.getProject(projectId);
+  assert.equal(editedProject.state.editedProposal.sections[0].label, "Approval Handoff");
+  assert.equal(editedProject.state.editedProposal.nextAction.label, "אשר חלקית והמשך");
+  assert.equal(editedProject.state.proposalEditHistory.entries.length >= 3, true);
+  assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Revision/);
+
+  fakeDocument.elements.get("#partial-section-decision-select").value = "approved";
+  fakeDocument.elements.get("#partial-component-decision-select").value = "rejected";
+  fakeDocument.elements.get("#partial-copy-decision-select").value = "approved";
+  fakeDocument.elements.get("#partial-acceptance-note-input").value = "רק הרכיב צריך regeneration.";
+
+  await fakeDocument.elements.get("#partial-acceptance-button").listeners.click();
+
+  const partialProject = service.getProject(projectId);
+  assert.equal(partialProject.state.partialAcceptanceDecision.status, "partially-accepted");
+  assert.equal(partialProject.state.partialAcceptanceDecision.followUpAction, "regenerate-rejected-scope");
+  assert.equal(Array.isArray(partialProject.state.remainingProposalScope.componentsNeedingRegeneration), true);
+  assert.equal(partialProject.state.remainingProposalScope.componentsNeedingRegeneration.length >= 1, true);
+  assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /regenerate-rejected-scope/);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/proposal-edits` && request.method === "POST"), true);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/partial-acceptance` && request.method === "POST"), true);
 });
 
 test("cockpit consumes sse live updates when push transport is available", async () => {
