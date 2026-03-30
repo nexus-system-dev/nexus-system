@@ -91,6 +91,7 @@ import { createOnboardingToStateHandoffContract } from "./onboarding-to-state-ha
 import { defineProjectPermissionSchema } from "./project-permission-schema.js";
 import { createProjectRoleCapabilityMatrix } from "./project-role-capability-matrix.js";
 import { createActionLevelProjectAuthorizationResolver } from "./action-level-project-authorization-resolver.js";
+import { createPrivilegedActionAuthorityResolver } from "./privileged-action-authority-resolver.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -2333,6 +2334,12 @@ export function buildProjectContext(
     roleCapabilityMatrix,
     policyDecision,
   });
+  const { privilegedAuthorityDecision } = createPrivilegedActionAuthorityResolver({
+    projectAuthorizationDecision,
+    approvalStatus,
+    deployPolicyDecision,
+    credentialPolicyDecision,
+  });
   const { invitationRecord, roleAssignment } = createRoleAssignmentAndInvitationFlow({
     workspaceModel,
     invitationRequest: project.manualContext?.invitationRequest ?? null,
@@ -3096,6 +3103,7 @@ export function buildProjectContext(
   context.projectPermissionSchema = projectPermissionSchema;
   context.roleCapabilityMatrix = roleCapabilityMatrix;
   context.projectAuthorizationDecision = projectAuthorizationDecision;
+  context.privilegedAuthorityDecision = privilegedAuthorityDecision;
   context.projectOwnershipBinding = projectOwnershipBinding;
   context.initialProjectStateContract = initialProjectStateContract;
   context.initialProjectState = bootstrappedInitialProjectState;

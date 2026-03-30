@@ -1074,7 +1074,7 @@
 - הערת מצב: ה־resolver כבר ממומש ב־`action-level-project-authorization-resolver.js`, משלב `roleCapabilityMatrix` עם `policyDecision`, ומחזיר `projectAuthorizationDecision` קנוני דרך `context-builder` ו־`project-service`.
 
 
-4. `Create privileged action authority resolver`  | סטטוס: 🔴 לא בוצע
+4. `Create privileged action authority resolver`  | סטטוס: 🟢 בוצע
 - execution_order: `18`
 - description: לבנות resolver לפעולות רגישות במיוחד כמו deploy, approval override, credential use ו־billing changes
 - input:
@@ -1083,9 +1083,10 @@
 - output:
   - `privilegedAuthorityDecision`
 - dependencies:
-  - `Create action-level project authorization resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create action-level project authorization resolver`  | סטטוס: 🟢 בוצע
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
+- הערת מצב: ה־resolver כבר ממומש ב־`privileged-action-authority-resolver.js`, מאחד את `projectAuthorizationDecision`, `approvalStatus`, `deployPolicyDecision` ו־`credentialPolicyDecision`, ומחזיר `privilegedAuthorityDecision` דרך `context-builder` ו־`project-service`.
 
 
 ### `Multi-Tenancy & Workspace Isolation`

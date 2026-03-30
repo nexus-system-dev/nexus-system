@@ -1246,6 +1246,7 @@ export class ProjectService {
       projectPermissionSchema: project.context?.projectPermissionSchema ?? null,
       roleCapabilityMatrix: project.context?.roleCapabilityMatrix ?? null,
       projectAuthorizationDecision: project.context?.projectAuthorizationDecision ?? null,
+      privilegedAuthorityDecision: project.context?.privilegedAuthorityDecision ?? null,
       projectOwnershipBinding: project.context?.projectOwnershipBinding ?? null,
       initialProjectStateContract: project.context?.initialProjectStateContract ?? null,
       initialProjectState: project.context?.initialProjectState ?? null,
