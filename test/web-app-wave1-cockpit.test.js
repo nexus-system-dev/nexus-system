@@ -69,6 +69,7 @@ function createFakeDocument() {
     "#primitive-components-content",
     "#layout-components-content",
     "#feedback-components-content",
+    "#navigation-components-content",
     "#analysis-content",
     "#graph-content",
     "#agents-content",
@@ -500,6 +501,57 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
         coversInlineFeedback: true,
       },
     },
+    navigationComponents: {
+      navigationComponentLibraryId: "navigation-components:2",
+      components: [
+        {
+          componentId: "navigation:sidebar",
+          componentType: "sidebar",
+          usage: "persistent workspace navigation across major Nexus surfaces",
+          anatomy: ["brand", "primaryLinks", "secondaryLinks", "workspaceStatus"],
+          navigationRules: {
+            supportsFlowTypes: ["onboarding", "execution"],
+            supportsProjectSwitching: true,
+          },
+          preview: {
+            items: ["Developer", "Project Brain", "Release"],
+          },
+        },
+        {
+          componentId: "navigation:tabs",
+          componentType: "tabs",
+          usage: "switching between related views inside a single workspace or panel",
+          anatomy: ["tabList", "tabTrigger", "tabIndicator"],
+          navigationRules: {
+            supportsFlowTypes: ["onboarding", "execution"],
+            maxRecommendedTabs: 6,
+          },
+          preview: {
+            items: ["Overview", "Activity", "Approvals"],
+            activeItem: "Activity",
+          },
+        },
+        {
+          componentId: "navigation:stepper",
+          componentType: "stepper",
+          usage: "guides users through onboarding, release, and sequenced project flows",
+          anatomy: ["steps", "activeStep", "completionState"],
+          navigationRules: {
+            supportsStepIds: ["intake", "workbench"],
+            supportsLinearProgress: true,
+          },
+          preview: {
+            items: ["Intake", "Analysis", "Workspace"],
+            activeItem: "Analysis",
+          },
+        },
+      ],
+      summary: {
+        totalComponents: 3,
+        totalFlowTypes: 2,
+        supportsWorkspaceNavigation: true,
+      },
+    },
     typographySystem: {
       baseFontFamily: "\"IBM Plex Sans\", sans-serif",
       displayFontFamily: "\"Avenir Next\", sans-serif",
@@ -605,6 +657,9 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#feedback-components-content").innerHTML, /טוען את סביבת העבודה/);
   assert.match(fakeDocument.elements.get("#feedback-components-content").innerHTML, /Approval חסר/);
   assert.match(fakeDocument.elements.get("#feedback-components-content").innerHTML, /guides users when a workspace or panel has no content yet/);
+  assert.match(fakeDocument.elements.get("#navigation-components-content").innerHTML, /persistent workspace navigation across major Nexus surfaces/);
+  assert.match(fakeDocument.elements.get("#navigation-components-content").innerHTML, /Overview/);
+  assert.match(fakeDocument.elements.get("#navigation-components-content").innerHTML, /Analysis/);
   assert.match(fakeDocument.elements.get("#tab-developer").innerHTML, /Wire cockpit layout/);
   assert.match(fakeDocument.elements.get("#tab-release").innerHTML, /blocked/);
   assert.equal(fakeDocument.elements.get("#workspace-developer").hidden, false);

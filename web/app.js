@@ -167,6 +167,7 @@ function queryElements(doc) {
     primitiveComponents: doc.querySelector("#primitive-components-content"),
     layoutComponents: doc.querySelector("#layout-components-content"),
     feedbackComponents: doc.querySelector("#feedback-components-content"),
+    navigationComponents: doc.querySelector("#navigation-components-content"),
     analysis: doc.querySelector("#analysis-content"),
     graph: doc.querySelector("#graph-content"),
     agents: doc.querySelector("#agents-content"),
@@ -837,6 +838,100 @@ function renderFeedbackComponents(elements, project) {
   `;
 }
 
+function renderNavigationPreview(component) {
+  const preview = normalizeObject(component.preview);
+  const items = normalizeArray(preview.items);
+
+  if (component.componentType === "sidebar") {
+    return `
+      <div class="navigation-preview-shell navigation-preview-sidebar">
+        ${items.map((item, index) => `<div class="navigation-chip${index === 0 ? " active" : ""}">${escapeHtml(item)}</div>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "tabs") {
+    const activeItem = preview.activeItem ?? items[0] ?? "";
+    return `
+      <div class="navigation-preview-shell navigation-preview-tabs">
+        ${items.map((item) => `<div class="navigation-tab${item === activeItem ? " active" : ""}">${escapeHtml(item)}</div>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "breadcrumb") {
+    return `
+      <div class="navigation-preview-shell navigation-preview-breadcrumb">
+        ${items.map((item, index) => `<span>${escapeHtml(item)}${index < items.length - 1 ? " / " : ""}</span>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "topbar") {
+    return `
+      <div class="navigation-preview-shell navigation-preview-topbar">
+        <strong>${escapeHtml(preview.title ?? "Workspace")}</strong>
+        <div class="navigation-preview-actions">
+          ${normalizeArray(preview.actions).map((action) => `<span class="navigation-chip">${escapeHtml(action)}</span>`).join("")}
+        </div>
+        <span class="mini-label">${escapeHtml(preview.status ?? "Live")}</span>
+      </div>
+    `;
+  }
+
+  if (component.componentType === "stepper") {
+    const activeItem = preview.activeItem ?? items[0] ?? "";
+    return `
+      <div class="navigation-preview-shell navigation-preview-stepper">
+        ${items.map((item, index) => `<div class="navigation-step${item === activeItem ? " active" : ""}"><span>${index + 1}</span><strong>${escapeHtml(item)}</strong></div>`).join("")}
+      </div>
+    `;
+  }
+
+  return `<p class="empty">No preview available.</p>`;
+}
+
+function renderNavigationComponents(elements, project) {
+  if (!elements.navigationComponents) {
+    return;
+  }
+
+  const navigationLibrary = normalizeObject(project.navigationComponents);
+  const components = normalizeArray(navigationLibrary.components);
+  const summary = normalizeObject(navigationLibrary.summary);
+
+  if (!components.length) {
+    elements.navigationComponents.innerHTML = `<p class="empty">עדיין אין ספריית navigation components זמינה.</p>`;
+    return;
+  }
+
+  const cards = components
+    .map(
+      (component) => `
+        <article class="navigation-card">
+          <header class="navigation-card-header">
+            <strong>${escapeHtml(component.componentType ?? "navigation")}</strong>
+            <span class="mini-label">${escapeHtml(normalizeArray(component.anatomy).join(" · "))}</span>
+          </header>
+          <p class="navigation-card-body">${escapeHtml(component.usage ?? "No usage guidance yet.")}</p>
+          ${renderNavigationPreview(component)}
+          <p class="navigation-card-meta">${escapeHtml(Object.entries(normalizeObject(component.navigationRules)).map(([key, value]) => `${key}:${Array.isArray(value) ? value.join(",") : value}`).join(" · "))}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  elements.navigationComponents.innerHTML = `
+    ${metricHtml([
+      { label: "Navigation", value: String(summary.totalComponents ?? components.length) },
+      { label: "Flow types", value: String(summary.totalFlowTypes ?? 0) },
+      { label: "Workspace ready", value: summary.supportsWorkspaceNavigation ? "yes" : "no" },
+      { label: "Library", value: navigationLibrary.navigationComponentLibraryId ?? "not-set" },
+    ])}
+    <div class="navigation-grid">${cards}</div>
+  `;
+}
+
 function renderScreenReview(elements, project) {
   const report = normalizeObject(project.screenReviewReport);
   const reportSummary = normalizeObject(report.summary);
@@ -1172,6 +1267,7 @@ export function renderProject(elements, project) {
   renderPrimitiveComponents(elements, project);
   renderLayoutComponents(elements, project);
   renderFeedbackComponents(elements, project);
+  renderNavigationComponents(elements, project);
   renderScreenReview(elements, project);
   renderLearning(elements, project);
   renderCompanion(elements, project);

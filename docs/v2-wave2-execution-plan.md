@@ -296,7 +296,7 @@
 - הערת מצב: ספריית `feedbackComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר loading, empty, error, toast, banner, progress ו־skeleton כמצבי ממשק חיים במקום להישאר feedback descriptor בלבד.
 
 
-5. `Create navigation components`  | סטטוס: 🔴 לא בוצע
+5. `Create navigation components`  | סטטוס: 🟢 בוצע
 - execution_order: `13`
 - description: לבנות sidebar, tabs, breadcrumb, topbar, stepper
 - input:
@@ -306,6 +306,7 @@
 - dependencies:
   - `Create screen-to-flow mapping`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- הערת מצב: ספריית `navigationComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר sidebar, tabs, breadcrumb, topbar ו־stepper כניווט חי במקום להישאר navigation descriptor בלבד.
 
 
 6. `Create data display components`  | סטטוס: 🔴 לא בוצע

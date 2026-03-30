@@ -18,6 +18,7 @@ function createNavigationComponent({
   usage,
   navigationRules,
   responsiveBehavior,
+  preview,
 }) {
   return {
     componentId: `navigation:${componentType}`,
@@ -26,6 +27,7 @@ function createNavigationComponent({
     usage,
     navigationRules,
     responsiveBehavior,
+    preview,
   };
 }
 
@@ -51,6 +53,9 @@ export function createNavigationComponents({
         mobile: "collapses into drawer navigation",
         desktop: "remains pinned for project continuity",
       },
+      preview: {
+        items: ["Developer", "Project Brain", "Release"],
+      },
     }),
     createNavigationComponent({
       componentType: "tabs",
@@ -64,6 +69,10 @@ export function createNavigationComponents({
       responsiveBehavior: {
         mobile: "becomes horizontally scrollable",
         desktop: "keeps visible tab set with active indicator",
+      },
+      preview: {
+        items: ["Overview", "Activity", "Approvals"],
+        activeItem: "Activity",
       },
     }),
     createNavigationComponent({
@@ -79,6 +88,9 @@ export function createNavigationComponents({
         mobile: "compresses middle levels first",
         desktop: "shows the full hierarchy when space allows",
       },
+      preview: {
+        items: ["Project", "Developer", "Execution"],
+      },
     }),
     createNavigationComponent({
       componentType: "topbar",
@@ -93,6 +105,11 @@ export function createNavigationComponents({
         mobile: "prioritizes title and one primary action",
         desktop: "shows quick actions and richer status details inline",
       },
+      preview: {
+        title: "Developer Workspace",
+        actions: ["Run cycle", "Analyze"],
+        status: "Live",
+      },
     }),
     createNavigationComponent({
       componentType: "stepper",
@@ -106,6 +123,10 @@ export function createNavigationComponents({
       responsiveBehavior: {
         mobile: "shows compact progress with current and next steps",
         desktop: "shows the full ordered step set with completion markers",
+      },
+      preview: {
+        items: ["Intake", "Analysis", "Workspace"],
+        activeItem: "Analysis",
       },
     }),
   ];
