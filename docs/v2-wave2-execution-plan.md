@@ -48,8 +48,8 @@
 - `🟢 audited`: משימה ירוקה שמכילה `completion_type`, `coverage_check`, `user_facing_path`, `green_criteria`, `missing_for_green`.
 - `🟢 legacy`: כל משימה ירוקה שעדיין לא עברה מיפוי כיסוי מלא לפי הכללים החדשים.
 - מצב נוכחי אחרי batch זה:
-  - `🟢 audited`: `16`
-  - `🟢 legacy`: `71`
+  - `🟢 audited`: `23`
+  - `🟢 legacy`: `64`
 
 ## Open Work Execution Ordering
 
@@ -837,6 +837,22 @@
   - `AI Learning UX`
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
+- completion_type: `schema_only`
+- coverage_check:
+  - `canonical editable proposal schema (sections/components/copy/next action)` → `full` | `src/core/editable-proposal-schema.js`, `test/editable-proposal-schema.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `schema consumption in user-facing proposal surface` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace → Proposal Review`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `editable proposal schema includes canonical editable scope and next action`
+  - `schema is bound into project state/context`
+  - `proposal review UI renders proposal scope derived from the schema`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־schema כבר ממומש ב־`editable-proposal-schema.js`, בונה `editableProposal` קנוני עם `sections`, `components`, `copy` ו־`nextAction`, ומחובר ב־`context-builder` וב־`project-service` כחלק מזרימת recommendation ו־human review.
 
 
@@ -1057,6 +1073,22 @@
   - `Define real-time event stream schema`  | סטטוס: 🟢 בוצע
   - `Application Runtime Layer`
 - connects_to: `Execution Surface`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `live transport model generation` → `full` | `src/core/live-update-transport-layer.js`, `test/live-update-transport-layer.test.js`
+  - `runtime wiring to live-state/sse endpoints` → `full` | `src/server.js`, `src/core/project-service.js`, `test/server-health-endpoints.test.js`
+  - `user-facing realtime transport consumption with fallback` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Developer Workspace live panels (auto via SSE/polling)`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `live update channel resolves transport and endpoint`
+  - `server exposes push channel and polling fallback`
+  - `workspace consumes transport and reflects updates without manual refresh`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־transport מחובר עכשיו ל־SSE אמיתי דרך `GET /api/projects/:id/live-events`, מייצר `deliveryEndpoint` ו־`serverTransport` ב־`liveUpdateChannel`, וה־web app צורך push updates דרך `EventSource` עם fallback ל־polling במקרה הצורך.
 
 
@@ -1072,6 +1104,22 @@
   - `Create live update transport layer`  | סטטוס: 🟢 בוצע
   - `Create terminal and command console view`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `live log stream assembly (stdout/stderr/command outputs)` → `full` | `src/core/live-log-streaming-module.js`, `test/live-log-streaming-module.test.js`
+  - `runtime wiring to project payload and live-state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `src/server.js`, `test/project-service.test.js`, `test/server-health-endpoints.test.js`
+  - `user-facing live log rendering` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Developer Workspace live panel`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `module emits canonical live log stream`
+  - `live log stream is served by runtime/live endpoints`
+  - `workspace renders live logs/command outputs in realtime`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־live log stream מחובר עכשיו ל־`live-state` ול־`SSE` payloads, נצרך ב־web app בזמן אמת, ומזריק `stdout`, `stderr` ו־`commandOutputs` לפאנל החי של ה־Developer Workspace עם fallback קיים ל־polling.
 
 
@@ -1116,6 +1164,22 @@
   - `Define collaboration event schema`  | סטטוס: 🟢 בוצע
   - `User Activity & Retention`
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `presence state model generation` → `full` | `src/core/project-presence-model.js`, `test/project-presence-model.test.js`
+  - `heartbeat API and runtime wiring` → `full` | `src/server.js`, `src/core/project-service.js`, `test/server-health-endpoints.test.js`, `test/project-service.test.js`
+  - `user-facing presence visibility in collaboration workspace` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Workspace tabs (presence heartbeat) + Collaboration panel`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `presence model returns canonical participants and workspace context`
+  - `presence heartbeat updates live state through API/runtime`
+  - `workspace shows active participants and shared presence status`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־presence model מחובר עכשיו ל־heartbeat חי דרך `POST /api/projects/:id/presence`, נשען על registry פעיל ב־`ProjectService`, ומעדכן `projectPresenceState` בזמן אמת עם participants, workspace area, current task ו־last seen דרך `live-state` ו־`SSE`.
 
 
@@ -1131,6 +1195,22 @@
   - `Define collaboration event schema`  | סטטוס: 🟢 בוצע
   - `Create branch and diff activity panel`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - `review thread/comment module generation` → `full` | `src/core/project-comments-review-threads-module.js`, `test/project-comments-review-threads-module.test.js`
+  - `persistence and api wiring (GET/POST review threads)` → `full` | `src/core/project-review-thread-store.js`, `src/core/project-service.js`, `src/server.js`, `test/server-health-endpoints.test.js`, `test/project-service.test.js`
+  - `user-facing review thread visibility` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Collaboration panel → Review threads`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `module returns canonical contextual review thread state`
+  - `review threads persist and are accessible via project api`
+  - `workspace collaboration panel displays contextual review threads`
+- missing_for_green:
+  - `none`
 - הערת מצב: מודול ה־review threads מחובר עכשיו ל־store קנוני עם persistence ל־`project-review-threads.ndjson`, תומך ב־`GET/POST /api/projects/:id/review-threads`, מתמזג עם threads הקונטקסטואליים של diff/approval/release בתוך `context-builder`, ונחשף בזמן אמת דרך `live-state`, `SSE` וה־UI של ה־cockpit.
 
 
@@ -1146,6 +1226,22 @@
   - `Approval System`  | סטטוס: 🟡 חלקי
   - `Collaboration Layer`
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - `shared approval coordination model generation` → `full` | `src/core/shared-approval-flow-model.js`, `test/shared-approval-flow-model.test.js`
+  - `runtime and approvals api wiring` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `src/server.js`, `test/server-health-endpoints.test.js`, `test/project-service.test.js`
+  - `user-facing visibility of shared approval coordination` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Approvals API + Collaboration panel signals`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `model returns canonical participant decisions/visibility/coordination status`
+  - `shared approval state is available in approval and project payloads`
+  - `workspace reflects shared approval coordination state`
+- missing_for_green:
+  - `none`
 - הערת מצב: מודל ה־shared approval מחושב עכשיו מתוך `approvalRequest`, `workspaceModel` ו־`approvalRecords`, כולל `participantDecisions`, `visibilityRules` ו־`coordinationStatus`; הוא נחשף גם דרך approval APIs (`GET /api/projects/:id/approvals` ו־approve/reject/revoke) כך שהמערכת כבר מציגה מי צריך להחליט, מי כבר החליט ומה עוד ממתין לסגירה.
 
 
@@ -1161,6 +1257,22 @@
   - `Create project presence model`  | סטטוס: 🟢 בוצע
   - `Create project comments and review threads module`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `collaboration feed aggregation (comments/approvals/presence/transitions)` → `full` | `src/core/collaboration-activity-feed.js`, `test/collaboration-activity-feed.test.js`
+  - `wiring into project context/state and live-state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `src/server.js`, `test/context-builder.test.js`, `test/project-service.test.js`, `test/server-health-endpoints.test.js`
+  - `user-facing collaboration feed rendering` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Collaboration panel`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `feed aggregates canonical collaboration signals into one timeline`
+  - `feed is wired to state/live update payloads`
+  - `workspace collaboration panel renders latest feed items and summary`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־collaboration feed מאחד עכשיו `comments`, `review threads`, `shared approval coordination`, `presence signals` ו־`workspace transitions` ל־feed אחד קנוני; הוא נבנה ב־`context-builder`, כולל approval coordination מתוך `sharedApprovalState`, ונחשף ב־`Project State`, `live-state`, `SSE` וב־UI של ה־cockpit.
 
 
