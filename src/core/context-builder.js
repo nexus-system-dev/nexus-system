@@ -89,6 +89,7 @@ import { buildOnboardingScreenFlow } from "./onboarding-screen-flow.js";
 import { createOnboardingCompletionEvaluator } from "./onboarding-completion-evaluator.js";
 import { createOnboardingToStateHandoffContract } from "./onboarding-to-state-handoff-contract.js";
 import { defineProjectPermissionSchema } from "./project-permission-schema.js";
+import { createProjectRoleCapabilityMatrix } from "./project-role-capability-matrix.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -2284,6 +2285,9 @@ export function buildProjectContext(
     workspaceModel,
     projectType: project.projectType ?? project.manualContext?.projectType ?? project.domain ?? null,
   });
+  const { roleCapabilityMatrix } = createProjectRoleCapabilityMatrix({
+    projectPermissionSchema,
+  });
   const projectOwnershipBinding = {
     bindingId: `project-ownership:${project.id ?? projectDraft.id ?? "unknown"}`,
     projectId: project.id ?? projectDraft.id ?? null,
@@ -3083,6 +3087,7 @@ export function buildProjectContext(
   context.onboardingCompletionDecision = onboardingCompletionDecision;
   context.onboardingStateHandoff = onboardingStateHandoff;
   context.projectPermissionSchema = projectPermissionSchema;
+  context.roleCapabilityMatrix = roleCapabilityMatrix;
   context.projectOwnershipBinding = projectOwnershipBinding;
   context.initialProjectStateContract = initialProjectStateContract;
   context.initialProjectState = bootstrappedInitialProjectState;

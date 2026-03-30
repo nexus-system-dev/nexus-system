@@ -7226,15 +7226,16 @@ Refinements מאושרים:
 - connects_to: `Project State`
 - הערת מצב: ה־schema כבר ממומש ב־`project-permission-schema.js`, מייצר `permissionsByRole` ו־`escalationRules` לפי `workspaceModel` ו־`projectType`, ומחובר ב־`context-builder` וב־`project-service` ל־`Project State`.
 
-2. `Create project role capability matrix`  | סטטוס: 🔴 לא בוצע
+2. `Create project role capability matrix`  | סטטוס: 🟢 בוצע
 - description: לבנות matrix שממפה roles כמו owner, member, operator, reviewer ו־viewer ליכולות מותרות בתוך פרויקט
 - input:
   - `projectPermissionSchema`
 - output:
   - `roleCapabilityMatrix`
 - dependencies:
-  - `Define project permission schema`  | סטטוס: 🔴 לא בוצע
+  - `Define project permission schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- הערת מצב: ה־matrix כבר ממומש ב־`project-role-capability-matrix.js`, מרחיב את `projectPermissionSchema` ל־roles קנוניים כמו `member` ו־`reviewer`, ומחובר ב־`context-builder` וב־`project-service` ל־`Project State`.
 
 3. `Create action-level project authorization resolver`  | סטטוס: 🔴 לא בוצע
 - description: לבנות resolver שמכריע אם actor מסוים רשאי לבצע פעולה ספציפית על פרויקט כמו deploy, code edit, release approval או credential link
