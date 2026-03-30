@@ -752,7 +752,7 @@
 - הערת מצב: ה־schema כבר ממומש ב־`editable-proposal-schema.js`, בונה `editableProposal` קנוני עם `sections`, `components`, `copy` ו־`nextAction`, ומחובר ב־`context-builder` וב־`project-service` כחלק מזרימת recommendation ו־human review.
 
 
-2. `Create proposal editing system`  | סטטוס: 🔴 לא בוצע
+2. `Create proposal editing system`  | סטטוס: 🟢 בוצע
 - execution_order: `23`
 - description: לבנות מערכת עריכה שמאפשרת למשתמש לשנות proposal קיים, להשאיר annotations וליצור revised proposal בלי לשבור את ה־history
 - input:
@@ -762,9 +762,10 @@
   - `editedProposal`
   - `proposalEditHistory`
 - dependencies:
-  - `Define editable proposal schema`  | סטטוס: 🔴 לא בוצע
+  - `Define editable proposal schema`  | סטטוס: 🟢 בוצע
   - `Project State`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- הערת מצב: מערכת העריכה כבר ממומשת ב־`proposal-editing-system.js`, מייצרת `editedProposal` ו־`proposalEditHistory` מתוך `editableProposal` ו־`userEditInput`, ושומרת רצף revisions דרך `context-builder` ו־`project-service`.
 
 
 3. `Create partial acceptance flow`  | סטטוס: 🔴 לא בוצע
