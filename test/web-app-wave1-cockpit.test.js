@@ -68,6 +68,7 @@ function createFakeDocument() {
     "#scanner-content",
     "#primitive-components-content",
     "#layout-components-content",
+    "#feedback-components-content",
     "#analysis-content",
     "#graph-content",
     "#agents-content",
@@ -455,6 +456,50 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
         hasResponsiveCoverage: true,
       },
     },
+    feedbackComponents: {
+      feedbackComponentLibraryId: "feedback-components:interaction-states:design-tokens:nexus",
+      components: [
+        {
+          componentId: "feedback:loading-state",
+          componentType: "loading-state",
+          tone: "informative",
+          usage: "full-screen or panel-level loading feedback while Nexus prepares data or execution context",
+          supportedStates: ["loading"],
+          preview: {
+            headline: "טוען את סביבת העבודה",
+            description: "Nexus מכינה context, state ו־next actions.",
+            progressLabel: "64%",
+          },
+        },
+        {
+          componentId: "feedback:empty-state",
+          componentType: "empty-state",
+          tone: "guiding",
+          usage: "guides users when a workspace or panel has no content yet",
+          supportedStates: ["empty"],
+          preview: {
+            headline: "עדיין אין תוצאות",
+            description: "אפשר להתחיל מסריקה, import או יצירת פרויקט חדש.",
+            actionLabel: "התחל סריקה",
+          },
+        },
+        {
+          componentId: "feedback:toast",
+          componentType: "toast",
+          tone: "ephemeral",
+          usage: "short-lived notifications for actions, completions and recoverable issues",
+          supportedStates: ["success", "warning", "destructive"],
+          preview: {
+            items: ["השינויים נשמרו", "Approval חסר", "הפריסה נכשלה"],
+          },
+        },
+      ],
+      summary: {
+        totalComponents: 3,
+        coversScreenStates: true,
+        coversInlineFeedback: true,
+      },
+    },
     typographySystem: {
       baseFontFamily: "\"IBM Plex Sans\", sans-serif",
       displayFontFamily: "\"Avenir Next\", sans-serif",
@@ -557,6 +602,9 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#layout-components-content").innerHTML, /page-level width control/);
   assert.match(fakeDocument.elements.get("#layout-components-content").innerHTML, /span 4/);
   assert.match(fakeDocument.elements.get("#layout-components-content").innerHTML, /maxWidth:1180/);
+  assert.match(fakeDocument.elements.get("#feedback-components-content").innerHTML, /טוען את סביבת העבודה/);
+  assert.match(fakeDocument.elements.get("#feedback-components-content").innerHTML, /Approval חסר/);
+  assert.match(fakeDocument.elements.get("#feedback-components-content").innerHTML, /guides users when a workspace or panel has no content yet/);
   assert.match(fakeDocument.elements.get("#tab-developer").innerHTML, /Wire cockpit layout/);
   assert.match(fakeDocument.elements.get("#tab-release").innerHTML, /blocked/);
   assert.equal(fakeDocument.elements.get("#workspace-developer").hidden, false);

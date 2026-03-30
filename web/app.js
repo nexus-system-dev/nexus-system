@@ -166,6 +166,7 @@ function queryElements(doc) {
     scanner: doc.querySelector("#scanner-content"),
     primitiveComponents: doc.querySelector("#primitive-components-content"),
     layoutComponents: doc.querySelector("#layout-components-content"),
+    feedbackComponents: doc.querySelector("#feedback-components-content"),
     analysis: doc.querySelector("#analysis-content"),
     graph: doc.querySelector("#graph-content"),
     agents: doc.querySelector("#agents-content"),
@@ -721,6 +722,121 @@ function renderLayoutComponents(elements, project) {
   `;
 }
 
+function renderFeedbackPreview(component) {
+  const preview = normalizeObject(component.preview);
+
+  if (component.componentType === "loading-state") {
+    return `
+      <div class="feedback-preview-shell">
+        <div class="feedback-loading-row">
+          <div class="feedback-spinner"></div>
+          <div>
+            <strong>${escapeHtml(preview.headline ?? "Loading")}</strong>
+            <p>${escapeHtml(preview.description ?? "")}</p>
+          </div>
+        </div>
+        <div class="feedback-progress-track">
+          <div class="feedback-progress-indicator" style="width:${escapeHtml(preview.progressLabel ?? "64%")}"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (component.componentType === "empty-state" || component.componentType === "error-state") {
+    return `
+      <div class="feedback-preview-shell">
+        <strong>${escapeHtml(preview.headline ?? "Feedback state")}</strong>
+        <p>${escapeHtml(preview.description ?? "")}</p>
+        <button type="button" class="feedback-action-preview">${escapeHtml(preview.actionLabel ?? "Continue")}</button>
+      </div>
+    `;
+  }
+
+  if (component.componentType === "toast") {
+    return `
+      <div class="feedback-preview-stack">
+        ${normalizeArray(preview.items).map((item, index) => `<div class="feedback-toast-preview tone-${index % 3}">${escapeHtml(item)}</div>`).join("")}
+      </div>
+    `;
+  }
+
+  if (component.componentType === "banner") {
+    return `
+      <div class="feedback-banner-preview">
+        <strong>${escapeHtml(preview.headline ?? "Banner")}</strong>
+        <p>${escapeHtml(preview.description ?? "")}</p>
+      </div>
+    `;
+  }
+
+  if (component.componentType === "progress") {
+    const percent = Number(preview.percent ?? 0);
+    return `
+      <div class="feedback-preview-shell">
+        <div class="feedback-progress-meta">
+          <strong>${escapeHtml(preview.label ?? "Progress")}</strong>
+          <span>${escapeHtml(String(percent))}%</span>
+        </div>
+        <div class="feedback-progress-track">
+          <div class="feedback-progress-indicator" style="width:${Math.max(0, Math.min(100, percent))}%"></div>
+        </div>
+        <p>${escapeHtml(preview.meta ?? "")}</p>
+      </div>
+    `;
+  }
+
+  if (component.componentType === "skeleton") {
+    return `
+      <div class="feedback-preview-stack">
+        ${Array.from({ length: Number(preview.rows ?? 3) }, (_, index) => `<div class="feedback-skeleton-row tone-${index % 3}"></div>`).join("")}
+      </div>
+    `;
+  }
+
+  return `<p class="empty">No preview available.</p>`;
+}
+
+function renderFeedbackComponents(elements, project) {
+  if (!elements.feedbackComponents) {
+    return;
+  }
+
+  const feedbackLibrary = normalizeObject(project.feedbackComponents);
+  const components = normalizeArray(feedbackLibrary.components);
+  const summary = normalizeObject(feedbackLibrary.summary);
+
+  if (!components.length) {
+    elements.feedbackComponents.innerHTML = `<p class="empty">עדיין אין ספריית feedback components זמינה.</p>`;
+    return;
+  }
+
+  const cards = components
+    .map(
+      (component) => `
+        <article class="feedback-card">
+          <header class="feedback-card-header">
+            <strong>${escapeHtml(component.componentType ?? "feedback")}</strong>
+            <span class="mini-label">${escapeHtml(component.tone ?? "neutral")}</span>
+          </header>
+          <p class="feedback-card-body">${escapeHtml(component.usage ?? "No usage guidance yet.")}</p>
+          ${renderFeedbackPreview(component)}
+          <p class="feedback-card-meta">${escapeHtml(normalizeArray(component.supportedStates).join(" · "))}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  elements.feedbackComponents.innerHTML = `
+    ${metricHtml([
+      { label: "Feedback", value: String(summary.totalComponents ?? components.length) },
+      { label: "Screen states", value: summary.coversScreenStates ? "yes" : "no" },
+      { label: "Inline feedback", value: summary.coversInlineFeedback ? "yes" : "no" },
+      { label: "Library", value: feedbackLibrary.feedbackComponentLibraryId ?? "not-set" },
+    ])}
+    <div class="feedback-grid">${cards}</div>
+  `;
+}
+
 function renderScreenReview(elements, project) {
   const report = normalizeObject(project.screenReviewReport);
   const reportSummary = normalizeObject(report.summary);
@@ -1055,6 +1171,7 @@ export function renderProject(elements, project) {
   renderDecision(elements, project);
   renderPrimitiveComponents(elements, project);
   renderLayoutComponents(elements, project);
+  renderFeedbackComponents(elements, project);
   renderScreenReview(elements, project);
   renderLearning(elements, project);
   renderCompanion(elements, project);

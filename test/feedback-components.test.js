@@ -22,8 +22,11 @@ test("createFeedbackComponents builds canonical feedback component library", () 
   assert.equal(feedbackComponents.feedbackComponentLibraryId, "feedback-components:interaction-states:design-tokens:nexus");
   assert.equal(feedbackComponents.components.length, 7);
   assert.equal(feedbackComponents.components[0].componentType, "loading-state");
+  assert.equal(feedbackComponents.components[0].preview.headline, "טוען את סביבת העבודה");
   assert.deepEqual(feedbackComponents.components[3].supportedStates, ["success", "warning", "destructive"]);
+  assert.deepEqual(feedbackComponents.components[3].preview.items, ["השינויים נשמרו", "Approval חסר", "הפריסה נכשלה"]);
   assert.equal(feedbackComponents.components[6].componentType, "skeleton");
+  assert.equal(feedbackComponents.components[6].preview.rows, 3);
   assert.equal(feedbackComponents.summary.totalComponents, 7);
   assert.equal(feedbackComponents.summary.coversScreenStates, true);
 });
@@ -33,5 +36,6 @@ test("createFeedbackComponents falls back safely without explicit interaction sy
 
   assert.equal(feedbackComponents.components.length, 7);
   assert.equal(feedbackComponents.components[2].componentType, "error-state");
+  assert.equal(feedbackComponents.components[2].preview.actionLabel, "נסה שוב");
   assert.equal(feedbackComponents.summary.coversInlineFeedback, true);
 });

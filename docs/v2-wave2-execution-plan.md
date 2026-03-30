@@ -283,7 +283,7 @@
 - הערת מצב: ספריית `layoutComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר container, section, stack, grid, panel ו־divider כפריסות חיות במקום להישאר layout descriptor בלבד.
 
 
-4. `Create feedback components`  | סטטוס: 🔴 לא בוצע
+4. `Create feedback components`  | סטטוס: 🟢 בוצע
 - execution_order: `12`
 - description: לבנות loading, empty state, error state, toast, banner, progress, skeleton
 - input:
@@ -293,6 +293,7 @@
 - dependencies:
   - `Create interaction states system`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- הערת מצב: ספריית `feedbackComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר loading, empty, error, toast, banner, progress ו־skeleton כמצבי ממשק חיים במקום להישאר feedback descriptor בלבד.
 
 
 5. `Create navigation components`  | סטטוס: 🔴 לא בוצע

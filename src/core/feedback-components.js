@@ -9,6 +9,7 @@ function createFeedbackComponent({
   usage,
   tone,
   tokens,
+  preview,
 }) {
   return {
     componentId: `feedback:${componentType}`,
@@ -18,6 +19,7 @@ function createFeedbackComponent({
     usage,
     tone,
     tokens,
+    preview,
   };
 }
 
@@ -38,6 +40,11 @@ export function createFeedbackComponents({
         emphasisColor: states.focus?.emphasisColor ?? "#0f766e",
         shadow: states.focus?.shadow ?? "0 0 0 3px rgba(15, 118, 110, 0.18)",
       },
+      preview: {
+        headline: "טוען את סביבת העבודה",
+        description: "Nexus מכינה context, state ו־next actions.",
+        progressLabel: "64%",
+      },
     }),
     createFeedbackComponent({
       componentType: "empty-state",
@@ -49,6 +56,11 @@ export function createFeedbackComponents({
         emphasisColor: states.disabled?.emphasisColor ?? "#6b7280",
         shadow: states.disabled?.shadow ?? "none",
       },
+      preview: {
+        headline: "עדיין אין תוצאות",
+        description: "אפשר להתחיל מסריקה, import או יצירת פרויקט חדש.",
+        actionLabel: "התחל סריקה",
+      },
     }),
     createFeedbackComponent({
       componentType: "error-state",
@@ -59,6 +71,11 @@ export function createFeedbackComponents({
       tokens: {
         emphasisColor: states.destructive?.emphasisColor ?? "#b91c1c",
         shadow: states.destructive?.shadow ?? "0 8px 24px rgba(15, 23, 42, 0.08)",
+      },
+      preview: {
+        headline: "החיבור נכשל",
+        description: "לא ניתן היה לטעון את נתוני הפרויקט. נסה שוב.",
+        actionLabel: "נסה שוב",
       },
     }),
     createFeedbackComponent({
@@ -72,6 +89,9 @@ export function createFeedbackComponents({
         warningColor: states.warning?.emphasisColor ?? "#b45309",
         dangerColor: states.destructive?.emphasisColor ?? "#b91c1c",
       },
+      preview: {
+        items: ["השינויים נשמרו", "Approval חסר", "הפריסה נכשלה"],
+      },
     }),
     createFeedbackComponent({
       componentType: "banner",
@@ -83,6 +103,10 @@ export function createFeedbackComponents({
         warningColor: states.warning?.emphasisColor ?? "#b45309",
         successColor: states.success?.emphasisColor ?? "#15803d",
         dangerColor: states.destructive?.emphasisColor ?? "#b91c1c",
+      },
+      preview: {
+        headline: "נדרשת פעולה לפני deploy",
+        description: "יש approval פתוח שחוסם את השחרור.",
       },
     }),
     createFeedbackComponent({
@@ -96,6 +120,11 @@ export function createFeedbackComponents({
         successColor: states.success?.emphasisColor ?? "#15803d",
         warningColor: states.warning?.emphasisColor ?? "#b45309",
       },
+      preview: {
+        label: "Execution progress",
+        percent: 72,
+        meta: "5/7 tasks completed",
+      },
     }),
     createFeedbackComponent({
       componentType: "skeleton",
@@ -106,6 +135,9 @@ export function createFeedbackComponents({
       tokens: {
         shimmerColor: states.hover?.emphasisColor ?? "#115e59",
         shadow: states.hover?.shadow ?? "0 8px 24px rgba(15, 23, 42, 0.08)",
+      },
+      preview: {
+        rows: 3,
       },
     }),
   ];
