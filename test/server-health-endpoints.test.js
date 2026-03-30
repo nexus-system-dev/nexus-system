@@ -191,6 +191,25 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
         triggerType,
       },
     }),
+    configureSnapshotRetentionPolicy: ({ projectId, retentionInput }) => ({
+      id: projectId,
+      snapshotRetentionPolicy: {
+        projectId,
+        enabled: retentionInput.enabled,
+        maxSnapshots: retentionInput.maxSnapshots,
+      },
+    }),
+    runSnapshotRetentionCleanup: ({ projectId, triggerType }) => ({
+      id: projectId,
+      snapshotRetentionDecision: {
+        projectId,
+        triggerType,
+        summary: {
+          pruneCount: 2,
+          totalAfterCleanup: 2,
+        },
+      },
+    }),
   });
 
   const scheduleResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-backup-schedule", {
@@ -203,12 +222,25 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
   const runResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-backups/run", {
     triggerType: "manual",
   });
+  const retentionPolicyResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-retention-policy", {
+    retentionInput: {
+      enabled: true,
+      maxSnapshots: 5,
+    },
+  });
+  const cleanupResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-retention-cleanup", {
+    triggerType: "manual-cleanup",
+  });
 
   assert.equal(scheduleResponse.statusCode, 200);
   assert.equal(scheduleResponse.body.snapshotSchedule.intervalSeconds, 300);
   assert.equal(scheduleResponse.body.snapshotSchedule.preChangeTriggers[0], "deploy");
   assert.equal(runResponse.statusCode, 200);
   assert.equal(runResponse.body.snapshotRecord.triggerType, "manual");
+  assert.equal(retentionPolicyResponse.statusCode, 200);
+  assert.equal(retentionPolicyResponse.body.snapshotRetentionPolicy.maxSnapshots, 5);
+  assert.equal(cleanupResponse.statusCode, 200);
+  assert.equal(cleanupResponse.body.snapshotRetentionDecision.summary.totalAfterCleanup, 2);
 });
 
 test("server exposes project live-state endpoint", async () => {

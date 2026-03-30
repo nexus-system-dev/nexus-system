@@ -169,6 +169,9 @@ function queryElements(doc) {
     snapshotTriggersInput: doc.querySelector("#snapshot-triggers-input"),
     snapshotScheduleButton: doc.querySelector("#snapshot-schedule-button"),
     runSnapshotBackupButton: doc.querySelector("#run-snapshot-backup-button"),
+    snapshotMaxInput: doc.querySelector("#snapshot-max-input"),
+    snapshotRetentionButton: doc.querySelector("#snapshot-retention-button"),
+    snapshotCleanupButton: doc.querySelector("#snapshot-cleanup-button"),
     executeRollbackButton: doc.querySelector("#execute-rollback-button"),
     projectAuditActorInput: doc.querySelector("#project-audit-actor-input"),
     projectAuditActionInput: doc.querySelector("#project-audit-action-input"),
@@ -1300,6 +1303,8 @@ function renderVersioning(elements, project) {
   const state = normalizeObject(project.state);
   const snapshot = normalizeObject(project.snapshotRecord ?? state.snapshotRecord);
   const schedule = normalizeObject(project.snapshotSchedule ?? state.snapshotSchedule);
+  const retentionPolicy = normalizeObject(project.snapshotRetentionPolicy ?? state.snapshotRetentionPolicy);
+  const retentionDecision = normalizeObject(project.snapshotRetentionDecision ?? state.snapshotRetentionDecision);
   const restore = normalizeObject(project.restoreDecision ?? state.restoreDecision);
   const rollback = normalizeObject(project.rollbackExecutionResult ?? state.rollbackExecutionResult);
   const versions = normalizeObject(snapshot.versions);
@@ -1315,6 +1320,10 @@ function renderVersioning(elements, project) {
       body: `Every ${schedule.intervalSeconds ?? "?"}s | pre-change: ${preChangeTriggers || "none"}`,
     },
     {
+      title: `Retention: ${retentionPolicy.summary?.policyStatus ?? "active"}`,
+      body: `max ${retentionPolicy.maxSnapshots ?? "?"} | pruned ${retentionDecision.summary?.pruneCount ?? 0}`,
+    },
+    {
       title: `Restore mode: ${restore.restoreMode ?? "unknown"}`,
       body: restore.blockedReason ?? `Safe to execute: ${restore.summary?.isSafeToExecute ? "yes" : "no"}`,
     },
@@ -1328,8 +1337,9 @@ function renderVersioning(elements, project) {
     ${metricHtml([
       { label: "Snapshot stored", value: snapshot.summary?.isStored ? "yes" : "no" },
       { label: "Schedule", value: schedule.summary?.scheduleStatus ?? "not-configured" },
+      { label: "Max snapshots", value: String(retentionPolicy.maxSnapshots ?? 20) },
+      { label: "Last cleanup", value: retentionPolicy.lastCleanupAt ?? "never" },
       { label: "Last backup", value: scheduleExecution.lastRunAt ?? "never" },
-      { label: "Restore mode", value: restore.restoreMode ?? "unknown" },
       { label: "Rollback status", value: rollback.executionStatus ?? "not-run" },
     ])}
     ${stackHtml("State control", details, "עדיין אין נתוני versioning זמינים.")}
@@ -1341,6 +1351,10 @@ function renderVersioning(elements, project) {
 
   if (elements.snapshotTriggersInput) {
     elements.snapshotTriggersInput.value = preChangeTriggers || "bootstrap,migration,deploy";
+  }
+
+  if (elements.snapshotMaxInput && retentionPolicy.maxSnapshots) {
+    elements.snapshotMaxInput.value = String(retentionPolicy.maxSnapshots);
   }
 }
 
@@ -2090,6 +2104,40 @@ export function createCockpitApp({
     await loadProject(currentProjectId);
   }
 
+  async function saveSnapshotRetentionFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    const maxSnapshots = Number(elements.snapshotMaxInput?.value ?? 20);
+    await fetchJson(`/api/projects/${currentProjectId}/snapshot-retention-policy`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        retentionInput: {
+          enabled: true,
+          maxSnapshots: Number.isFinite(maxSnapshots) ? maxSnapshots : 20,
+        },
+      }),
+    });
+    await loadProject(currentProjectId);
+  }
+
+  async function runSnapshotCleanupFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    await fetchJson(`/api/projects/${currentProjectId}/snapshot-retention-cleanup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        triggerType: "manual-cleanup",
+      }),
+    });
+    await loadProject(currentProjectId);
+  }
+
   function mergeLiveState(liveState) {
     if (!currentProject) {
       return;
@@ -2353,6 +2401,14 @@ export function createCockpitApp({
 
   elements.runSnapshotBackupButton?.addEventListener("click", async () => {
     await runSnapshotBackupFromUi();
+  });
+
+  elements.snapshotRetentionButton?.addEventListener("click", async () => {
+    await saveSnapshotRetentionFromUi();
+  });
+
+  elements.snapshotCleanupButton?.addEventListener("click", async () => {
+    await runSnapshotCleanupFromUi();
   });
 
   elements.projectAuditRefreshButton?.addEventListener("click", async () => {

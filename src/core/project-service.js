@@ -50,6 +50,7 @@ import { createSystemAuditLogStore } from "./system-audit-log-store.js";
 import { createProjectReviewThreadStore } from "./project-review-thread-store.js";
 import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
 import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
+import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
 import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
@@ -331,6 +332,8 @@ export class ProjectService {
       linkedAccounts: [],
       approvalRecords: approvalRecords ?? [],
       snapshotSchedule: null,
+      snapshotRetentionPolicy: null,
+      snapshotRetentionDecision: null,
     };
 
     this.projects.set(id, project);
@@ -628,6 +631,103 @@ export class ProjectService {
     }
   }
 
+  normalizeSnapshotRetentionPolicy(retentionInput = {}, previousPolicy = null, projectId = null) {
+    const input = retentionInput && typeof retentionInput === "object" ? retentionInput : {};
+    const previous = previousPolicy && typeof previousPolicy === "object" ? previousPolicy : {};
+    const normalizedMax = Number(input.maxSnapshots ?? previous.maxSnapshots);
+    const maxSnapshots = Number.isFinite(normalizedMax) && normalizedMax >= 1 ? Math.floor(normalizedMax) : 20;
+
+    return {
+      retentionPolicyId: previous.retentionPolicyId ?? `snapshot-retention-policy:${projectId ?? "unknown-project"}`,
+      projectId: projectId ?? previous.projectId ?? null,
+      enabled: typeof input.enabled === "boolean" ? input.enabled : (typeof previous.enabled === "boolean" ? previous.enabled : true),
+      maxSnapshots,
+      deletionStrategy: "oldest-first",
+      updatedAt: new Date().toISOString(),
+      summary: {
+        policyStatus: (typeof input.enabled === "boolean" ? input.enabled : (typeof previous.enabled === "boolean" ? previous.enabled : true))
+          ? "active"
+          : "paused",
+        supportsManualCleanup: true,
+      },
+    };
+  }
+
+  applySnapshotRetention({
+    projectId,
+    triggerType = "manual-cleanup",
+  } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const retentionPolicy = project.snapshotRetentionPolicy ?? project.context?.snapshotRetentionPolicy ?? null;
+    const snapshotSchedule = project.snapshotSchedule ?? project.context?.snapshotSchedule ?? null;
+    const snapshotRecord = project.context?.snapshotRecord ?? null;
+    const projectSnapshots = this.getProjectSnapshots({
+      projectId,
+      limit: 1000,
+    });
+    const { snapshotRetentionDecision } = createSnapshotRetentionGuard({
+      snapshotRecord,
+      snapshotSchedule,
+      snapshotRecords: projectSnapshots,
+      retentionPolicy,
+      triggerType,
+    });
+
+    let deletedSnapshotRecords = [];
+    if (
+      snapshotRetentionDecision.shouldPrune
+      && typeof this.projectSnapshotStore.deleteBySnapshotRecordIds === "function"
+      && snapshotRetentionDecision.deletedSnapshotRecordIds.length > 0
+    ) {
+      deletedSnapshotRecords = this.projectSnapshotStore.deleteBySnapshotRecordIds(
+        snapshotRetentionDecision.deletedSnapshotRecordIds,
+      );
+    }
+
+    const updatedDecision = {
+      ...snapshotRetentionDecision,
+      deletedSnapshotRecordIds: deletedSnapshotRecords
+        .map((record) => record.snapshotRecordId)
+        .filter((value) => typeof value === "string" && value.length > 0),
+      summary: {
+        ...(snapshotRetentionDecision.summary ?? {}),
+        pruneCount: deletedSnapshotRecords.length,
+        totalAfterCleanup: projectSnapshots.length - deletedSnapshotRecords.length,
+      },
+      cleanedAt: new Date().toISOString(),
+    };
+    const updatedPolicy = this.normalizeSnapshotRetentionPolicy(
+      {},
+      {
+        ...(retentionPolicy ?? {}),
+        maxSnapshots: snapshotRetentionDecision.maxSnapshots,
+        enabled: snapshotRetentionDecision.retentionEnabled,
+      },
+      projectId,
+    );
+
+    project.snapshotRetentionPolicy = {
+      ...updatedPolicy,
+      lastCleanupAt: updatedDecision.cleanedAt,
+      lastCleanupTrigger: triggerType,
+      lastDeletedCount: deletedSnapshotRecords.length,
+      summary: {
+        ...(updatedPolicy.summary ?? {}),
+        totalSnapshotsAfterCleanup: updatedDecision.summary.totalAfterCleanup,
+      },
+    };
+    project.snapshotRetentionDecision = updatedDecision;
+
+    return {
+      snapshotRetentionPolicy: project.snapshotRetentionPolicy,
+      snapshotRetentionDecision: updatedDecision,
+    };
+  }
+
   runSnapshotBackupNow({ projectId, triggerType = "manual", reason = null } = {}) {
     const project = this.projects.get(projectId);
     if (!project) {
@@ -678,6 +778,20 @@ export class ProjectService {
       ...(project.state ?? {}),
       snapshotRecord,
       snapshotSchedule: project.snapshotSchedule ?? null,
+    };
+    const retentionResult = this.applySnapshotRetention({
+      projectId,
+      triggerType: triggerType === "interval" ? "scheduled-cleanup" : "post-backup-cleanup",
+    });
+    project.context = {
+      ...(project.context ?? {}),
+      snapshotRetentionPolicy: retentionResult?.snapshotRetentionPolicy ?? project.snapshotRetentionPolicy ?? null,
+      snapshotRetentionDecision: retentionResult?.snapshotRetentionDecision ?? project.snapshotRetentionDecision ?? null,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      snapshotRetentionPolicy: retentionResult?.snapshotRetentionPolicy ?? project.snapshotRetentionPolicy ?? null,
+      snapshotRetentionDecision: retentionResult?.snapshotRetentionDecision ?? project.snapshotRetentionDecision ?? null,
     };
 
     return this.serializeProject(project);
@@ -734,6 +848,62 @@ export class ProjectService {
       snapshotSchedule,
     };
     this.startSnapshotBackupTimer(projectId);
+
+    return this.serializeProject(project);
+  }
+
+  configureSnapshotRetentionPolicy({ projectId, retentionInput = {} } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const snapshotRetentionPolicy = this.normalizeSnapshotRetentionPolicy(
+      retentionInput,
+      project.snapshotRetentionPolicy ?? project.context?.snapshotRetentionPolicy ?? null,
+      projectId,
+    );
+    project.snapshotRetentionPolicy = snapshotRetentionPolicy;
+
+    const retentionResult = this.applySnapshotRetention({
+      projectId,
+      triggerType: "policy-update",
+    });
+
+    project.context = {
+      ...(project.context ?? {}),
+      snapshotRetentionPolicy: retentionResult?.snapshotRetentionPolicy ?? snapshotRetentionPolicy,
+      snapshotRetentionDecision: retentionResult?.snapshotRetentionDecision ?? project.snapshotRetentionDecision ?? null,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      snapshotRetentionPolicy: retentionResult?.snapshotRetentionPolicy ?? snapshotRetentionPolicy,
+      snapshotRetentionDecision: retentionResult?.snapshotRetentionDecision ?? project.snapshotRetentionDecision ?? null,
+    };
+
+    return this.serializeProject(project);
+  }
+
+  runSnapshotRetentionCleanup({ projectId, triggerType = "manual-cleanup" } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const retentionResult = this.applySnapshotRetention({
+      projectId,
+      triggerType,
+    });
+    project.context = {
+      ...(project.context ?? {}),
+      snapshotRetentionPolicy: retentionResult?.snapshotRetentionPolicy ?? project.snapshotRetentionPolicy ?? null,
+      snapshotRetentionDecision: retentionResult?.snapshotRetentionDecision ?? project.snapshotRetentionDecision ?? null,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      snapshotRetentionPolicy: retentionResult?.snapshotRetentionPolicy ?? project.snapshotRetentionPolicy ?? null,
+      snapshotRetentionDecision: retentionResult?.snapshotRetentionDecision ?? project.snapshotRetentionDecision ?? null,
+    };
 
     return this.serializeProject(project);
   }
@@ -1113,6 +1283,8 @@ export class ProjectService {
       linkedAccounts: [],
       approvalRecords: [],
       snapshotSchedule: null,
+      snapshotRetentionPolicy: null,
+      snapshotRetentionDecision: null,
     };
 
     this.projects.set(projectId, project);
@@ -1181,6 +1353,8 @@ export class ProjectService {
       linkedAccounts: [],
       approvalRecords: [],
       snapshotSchedule: null,
+      snapshotRetentionPolicy: null,
+      snapshotRetentionDecision: null,
     };
 
     this.projects.set(projectId, project);
@@ -1351,10 +1525,16 @@ export class ProjectService {
       projectState: project.state ?? null,
       previousSchedule: existingSchedule,
     });
+    const snapshotRetentionPolicy = project.snapshotRetentionPolicy ?? builtContext.snapshotRetentionPolicy ?? null;
+    const snapshotRetentionDecision = project.snapshotRetentionDecision ?? builtContext.snapshotRetentionDecision ?? null;
     project.snapshotSchedule = snapshotSchedule;
+    project.snapshotRetentionPolicy = snapshotRetentionPolicy;
+    project.snapshotRetentionDecision = snapshotRetentionDecision;
     project.context = {
       ...builtContext,
       snapshotSchedule,
+      snapshotRetentionPolicy,
+      snapshotRetentionDecision,
     };
     project.state = {
       ...project.state,
@@ -1536,6 +1716,8 @@ export class ProjectService {
       projectStateSnapshot: project.context?.projectStateSnapshot ?? null,
       snapshotRecord: project.context?.snapshotRecord ?? null,
       snapshotSchedule: project.context?.snapshotSchedule ?? null,
+      snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
+      snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
       stateDiff: project.context?.stateDiff ?? null,
       restoreDecision: project.context?.restoreDecision ?? null,
       rollbackExecutionResult: project.context?.rollbackExecutionResult ?? null,
@@ -2391,6 +2573,8 @@ export class ProjectService {
       reviewThreadState: project.context?.reviewThreadState ?? null,
       collaborationFeed: project.context?.collaborationFeed ?? null,
       snapshotSchedule: project.context?.snapshotSchedule ?? null,
+      snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
+      snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
       agents: project.agents,
       overview: {
         bottleneck: blockedTasks[0] ?? "אין כרגע חסם מרכזי",

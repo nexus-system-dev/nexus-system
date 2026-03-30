@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 
 import { FileEventLog } from "./file-event-log.js";
@@ -120,6 +121,12 @@ export class ProjectSnapshotStore {
     return normalizedRecord;
   }
 
+  persistRecords() {
+    const records = this.readAll();
+    const payload = records.map((record) => JSON.stringify(record)).join("\n");
+    fs.writeFileSync(this.eventLog.filePath, payload ? `${payload}\n` : "", "utf8");
+  }
+
   readAll() {
     return [...this.records.values()].sort(compareStoredRecords);
   }
@@ -141,6 +148,29 @@ export class ProjectSnapshotStore {
       .filter((record) => (triggerType ? record.triggerType === triggerType : true))
       .filter((record) => (reason ? record.reason === reason : true))
       .slice(-limit);
+  }
+
+  deleteBySnapshotRecordIds(snapshotRecordIds = []) {
+    const idSet = new Set(
+      normalizeArray(snapshotRecordIds)
+        .map((value) => `${value ?? ""}`.trim())
+        .filter(Boolean),
+    );
+    if (idSet.size === 0) {
+      return [];
+    }
+
+    const deletedRecords = [];
+    for (const snapshotRecordId of idSet.values()) {
+      const record = this.records.get(snapshotRecordId);
+      if (record) {
+        deletedRecords.push(record);
+        this.records.delete(snapshotRecordId);
+      }
+    }
+
+    this.persistRecords();
+    return deletedRecords.sort(compareStoredRecords);
   }
 }
 

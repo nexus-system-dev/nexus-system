@@ -260,6 +260,14 @@
                   <button id="snapshot-schedule-button" type="button">Save schedule</button>
                   <button id="run-snapshot-backup-button" type="button">Run backup now</button>
                 </div>
+                <div class="proposal-review-form">
+                  <label class="empty-app-field">
+                    <span class="mini-label">Max snapshots</span>
+                    <input id="snapshot-max-input" type="number" min="1" step="1" value="20" />
+                  </label>
+                  <button id="snapshot-retention-button" type="button">Save retention</button>
+                  <button id="snapshot-cleanup-button" type="button">Run cleanup</button>
+                </div>
                 <button id="execute-rollback-button" type="button">Execute rollback</button>
                 <div id="versioning-content" class="detail-content"></div>
               </section>

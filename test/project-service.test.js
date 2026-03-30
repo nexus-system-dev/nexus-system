@@ -1765,3 +1765,45 @@ test("project service configures snapshot backup schedule and stores manual back
   assert.equal(disabled.snapshotSchedule.enabled, false);
   assert.equal(service.snapshotBackupTimers.has("giftwallet"), false);
 });
+
+test("project service enforces snapshot retention policy and cleanup decisions", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: true,
+      intervalSeconds: 60,
+      preChangeTriggers: ["deploy"],
+    },
+  });
+  const configuredRetention = service.configureSnapshotRetentionPolicy({
+    projectId: "giftwallet",
+    retentionInput: {
+      enabled: true,
+      maxSnapshots: 2,
+    },
+  });
+
+  service.runSnapshotBackupNow({ projectId: "giftwallet", triggerType: "manual" });
+  service.runSnapshotBackupNow({ projectId: "giftwallet", triggerType: "manual" });
+  service.runSnapshotBackupNow({ projectId: "giftwallet", triggerType: "manual" });
+  const afterCleanup = service.runSnapshotRetentionCleanup({
+    projectId: "giftwallet",
+    triggerType: "manual-cleanup",
+  });
+
+  assert.equal(configuredRetention.snapshotRetentionPolicy.maxSnapshots, 2);
+  assert.equal(afterCleanup.snapshotRetentionPolicy.maxSnapshots, 2);
+  assert.equal(afterCleanup.snapshotRetentionDecision.retentionEnabled, true);
+  assert.equal(afterCleanup.snapshotRetentionDecision.summary.totalAfterCleanup <= 2, true);
+  assert.equal(service.getProjectSnapshots({ projectId: "giftwallet", limit: 10 }).length <= 2, true);
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: false,
+    },
+  });
+});

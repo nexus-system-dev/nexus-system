@@ -90,6 +90,22 @@
 - dependencies:
   - `Business Context Layer`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `canonical journey definitions from goals/capabilities` → `full` | `src/core/primary-user-journeys.js`
+  - `journeys wired into context and project state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `journey generation behavior covered` → `full` | `test/primary-user-journeys.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `module returns canonical userJourneys + journeySteps`
+  - `context builder consumes and publishes journeys in project state`
+  - `tests validate journey generation`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־journeys הקנוניים מומשו ומחזירים `userJourneys` ו־`journeySteps` מתוך goals, capabilities ו־business context, והם כבר מוזנים ל־`Project State`; ה־journey map והמסכים ייבנו מעליהם בשלב הבא.
 
 
@@ -102,6 +118,22 @@
 - dependencies:
   - `Define primary user journeys`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `end-to-end journey flow map for onboarding/execution/approval/tracking` → `full` | `src/core/journey-map.js`
+  - `journey map wired into context and project state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `journey map behavior covered` → `full` | `test/journey-map.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `module returns canonical journeyMap with transitions`
+  - `journeyMap is published in live project state`
+  - `tests validate core flow mapping`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־journey map הקנוני מומש ומחזיר flows, entry steps ו־transitions עבור onboarding, execution, release ו־growth, והוא כבר מוזן ל־`Project State`; screen inventory ו־screen mapping ייבנו מעליו בשלב הבא.
 
 
@@ -114,6 +146,22 @@
 - dependencies:
   - `Create journey map for core flows`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `screen inventory derived from journey map` → `full` | `src/core/screen-inventory.js`
+  - `inventory wired into project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `inventory generation covered` → `full` | `test/screen-inventory.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `module returns canonical screenInventory`
+  - `screenInventory is available in project state`
+  - `tests validate inventory composition`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־screen inventory הקנוני מומש ומחזיר `screenInventory` עם screens, screen types ו־flow coverage מתוך `journeyMap`, והוא כבר מוזן ל־`Project State`; ה־screen-to-flow mapping ייבנה מעליו בשלב הבא.
 
 
@@ -127,6 +175,22 @@
 - dependencies:
   - `Define screen inventory`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `map each screen to flow step trigger and next action` → `full` | `src/core/screen-flow-map.js`
+  - `mapping wired into project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `mapping behavior covered` → `full` | `test/screen-flow-map.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `module returns canonical screenFlowMap`
+  - `screenFlowMap is exposed in project state`
+  - `tests validate flow linkage semantics`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־mapping הקנוני מומש ומחזיר `screenFlowMap` עם journey, step, trigger ו־next action לכל מסך, והוא כבר מוזן ל־`Project State`; שכבת `Screen UX Contracts` תיבנה מעליו בהמשך.
 
 
@@ -141,6 +205,22 @@
 - dependencies:
   - `Canonical Schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `schema_only`
+- coverage_check:
+  - `canonical screen contract schema by screen type` → `full` | `src/core/screen-contract-schema.js`
+  - `schema wiring into context-generated screen contracts` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `schema behavior validated` → `full` | `test/screen-contract-schema.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `schema returns canonical screenContract payload`
+  - `screen contracts are generated into project state`
+  - `tests verify required screen contract fields`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־schema הקנוני מומש ומחזיר `screenContract` לפי `screenType`, והוא כבר מוזן ל־`Project State` כ־`screenContracts`; שכבות CTA, mobile ו־states יבנו עליו בהמשך.
 
 
@@ -1912,7 +1992,7 @@
 - הערת מצב: המשימה מחוברת end-to-end: scheduler קנוני עם interval+triggers, timer פעיל ב־`ProjectService`, endpoints `POST /api/projects/:id/snapshot-backup-schedule` ו־`POST /api/projects/:id/snapshot-backups/run`, ו־UI controls ב־Versioning להפעלה/הרצה ידנית.
 
 
-3. `Create snapshot retention guard`  | סטטוס: 🔴 לא בוצע
+3. `Create snapshot retention guard`  | סטטוס: 🟢 בוצע
 - execution_order: `26`
 - description: לבנות guard פשוט שמגביל max snapshots, מזהה snapshots ישנים למחיקה ומכריע איזה history נשמר לכל פרויקט
 - input:
@@ -1921,9 +2001,30 @@
 - output:
   - `snapshotRetentionDecision`
 - dependencies:
-  - `Create snapshot backup scheduling module`  | סטטוס: 🔴 לא בוצע
+  - `Create snapshot backup scheduling module`  | סטטוס: 🟢 בוצע
   - `Create project snapshot store`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `retention guard computes max snapshots and prune decision` → `full` | `src/core/snapshot-retention-guard.js`, `test/snapshot-retention-guard.test.js`
+  - `old snapshot deletion is executed against persistent snapshot store` → `full` | `src/core/project-snapshot-store.js`, `test/project-snapshot-store.test.js`
+  - `retention integrated with backup scheduling/manual backup flow` → `full` | `src/core/project-service.js`, `test/project-service.test.js`
+  - `retention policy + cleanup API` → `full` | `src/server.js`, `test/server-health-endpoints.test.js`
+  - `versioning UI supports retention policy and manual cleanup` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Versioning And Restore → Save retention / Run cleanup`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `retention policy enforces max snapshot count`
+  - `cleanup removes oldest snapshots without unexpected data loss`
+  - `scheduling flow applies retention after backups`
+  - `API and UI can configure and run cleanup`
+  - `tests cover module/store/service/server/ui integration`
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־retention guard מחובר end-to-end: policy של `maxSnapshots`, מחיקה בטוחה oldest-first ב־snapshot store, אינטגרציה אוטומטית אחרי backup, ו־manual cleanup דרך API ו־Versioning UI.
 
 
 4. `Create snapshot backup worker job`  | סטטוס: 🔴 לא בוצע
@@ -1935,7 +2036,7 @@
 - output:
   - `snapshotJobState`
 - dependencies:
-  - `Create snapshot retention guard`  | סטטוס: 🔴 לא בוצע
+  - `Create snapshot retention guard`  | סטטוס: 🟢 בוצע
   - `Create background worker runtime`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 

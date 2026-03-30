@@ -82,6 +82,9 @@ function createFakeDocument() {
     "#snapshot-triggers-input",
     "#snapshot-schedule-button",
     "#run-snapshot-backup-button",
+    "#snapshot-max-input",
+    "#snapshot-retention-button",
+    "#snapshot-cleanup-button",
     "#execute-rollback-button",
     "#project-audit-actor-input",
     "#project-audit-action-input",
@@ -1754,6 +1757,32 @@ test("cockpit saves snapshot schedule and runs manual backup from versioning con
       };
     }
 
+    if (url === `/api/projects/${projectId}/snapshot-retention-policy`) {
+      const body = JSON.parse(options.body ?? "{}");
+      return {
+        ok: true,
+        async json() {
+          return service.configureSnapshotRetentionPolicy({
+            projectId,
+            retentionInput: body.retentionInput,
+          });
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/snapshot-retention-cleanup`) {
+      const body = JSON.parse(options.body ?? "{}");
+      return {
+        ok: true,
+        async json() {
+          return service.runSnapshotRetentionCleanup({
+            projectId,
+            triggerType: body.triggerType ?? "manual-cleanup",
+          });
+        },
+      };
+    }
+
     throw new Error(`Unexpected url: ${url}`);
   }
 
@@ -1772,6 +1801,9 @@ test("cockpit saves snapshot schedule and runs manual backup from versioning con
   fakeDocument.elements.get("#snapshot-triggers-input").value = "deploy,migration";
   await fakeDocument.elements.get("#snapshot-schedule-button").listeners.click();
   await fakeDocument.elements.get("#run-snapshot-backup-button").listeners.click();
+  fakeDocument.elements.get("#snapshot-max-input").value = "2";
+  await fakeDocument.elements.get("#snapshot-retention-button").listeners.click();
+  await fakeDocument.elements.get("#snapshot-cleanup-button").listeners.click();
   service.configureSnapshotBackupSchedule({
     projectId,
     scheduleInput: {
@@ -1782,7 +1814,10 @@ test("cockpit saves snapshot schedule and runs manual backup from versioning con
   const updatedProject = service.getProject(projectId);
   assert.equal(updatedProject.snapshotSchedule.intervalSeconds, 120);
   assert.equal(updatedProject.snapshotSchedule.preChangeTriggers.includes("deploy"), true);
+  assert.equal(updatedProject.snapshotRetentionPolicy.maxSnapshots, 2);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-backup-schedule`), true);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-backups/run`), true);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-retention-policy`), true);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-retention-cleanup`), true);
   assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /scheduled/i);
 });
