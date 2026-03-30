@@ -92,6 +92,8 @@ import { defineProjectPermissionSchema } from "./project-permission-schema.js";
 import { createProjectRoleCapabilityMatrix } from "./project-role-capability-matrix.js";
 import { createActionLevelProjectAuthorizationResolver } from "./action-level-project-authorization-resolver.js";
 import { createPrivilegedActionAuthorityResolver } from "./privileged-action-authority-resolver.js";
+import { defineTenantIsolationSchema } from "./tenant-isolation-schema.js";
+import { createWorkspaceIsolationGuard } from "./workspace-isolation-guard.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -2348,6 +2350,19 @@ export function buildProjectContext(
     workspaceModel,
     settingsInput: project.manualContext?.workspaceSettingsInput ?? null,
   });
+  const { tenantIsolationSchema } = defineTenantIsolationSchema({
+    workspaceModel,
+    resourceDefinitions: project.manualContext?.resourceDefinitions ?? null,
+  });
+  const { workspaceIsolationDecision } = createWorkspaceIsolationGuard({
+    tenantIsolationSchema,
+    requestContext: project.manualContext?.requestContext ?? {
+      workspaceId: workspaceModel?.workspaceId ?? null,
+      resourceType: "project-state",
+      resourceId: `project-state:${project.id}`,
+      actionType: project.manualContext?.projectAction ?? "view",
+    },
+  });
   const { collaborationEvent } = defineCollaborationEventSchema({
     workspaceAction: {
       eventId: project.manualContext?.workspaceAction?.eventId ?? null,
@@ -3104,6 +3119,8 @@ export function buildProjectContext(
   context.roleCapabilityMatrix = roleCapabilityMatrix;
   context.projectAuthorizationDecision = projectAuthorizationDecision;
   context.privilegedAuthorityDecision = privilegedAuthorityDecision;
+  context.tenantIsolationSchema = tenantIsolationSchema;
+  context.workspaceIsolationDecision = workspaceIsolationDecision;
   context.projectOwnershipBinding = projectOwnershipBinding;
   context.initialProjectStateContract = initialProjectStateContract;
   context.initialProjectState = bootstrappedInitialProjectState;

@@ -1093,7 +1093,7 @@
 
 #### `Multi-Tenancy & Workspace Isolation`
 
-1. `Define tenant isolation schema`  | סטטוס: 🔴 לא בוצע
+1. `Define tenant isolation schema`  | סטטוס: 🟢 בוצע
 - execution_order: `19`
 - description: לבנות schema אחיד לבידוד בין users, workspaces, projects ו־resources משותפים בלי דליפת מידע בין tenants
 - input:
@@ -1104,9 +1104,10 @@
 - dependencies:
   - `Workspace & Access Control`
 - connects_to: `Project State`
+- הערת מצב: ה־schema כבר ממומש ב־`tenant-isolation-schema.js`, מגדיר `isolatedResources`, `accessRules` ו־`leakSignals` לפי `workspaceModel` ו־`resourceDefinitions`, ומחובר ב־`context-builder` וב־`project-service` ל־`Project State`.
 
 
-2. `Create workspace isolation guard`  | סטטוס: 🔴 לא בוצע
+2. `Create workspace isolation guard`  | סטטוס: 🟢 בוצע
 - execution_order: `20`
 - description: לבנות guard שמוודא שכל קריאה לנתונים, artifacts, logs ו־linked accounts נשארת בגבולות ה־workspace הנכון
 - input:
@@ -1115,9 +1116,10 @@
 - output:
   - `workspaceIsolationDecision`
 - dependencies:
-  - `Define tenant isolation schema`  | סטטוס: 🔴 לא בוצע
+  - `Define tenant isolation schema`  | סטטוס: 🟢 בוצע
   - `Application Runtime Layer`
 - connects_to: `Execution Surface`
+- הערת מצב: ה־guard כבר ממומש ב־`workspace-isolation-guard.js`, בודק התאמה בין `requestContext`, `workspaceId` ו־`isolatedResources`, מחזיר `workspaceIsolationDecision` עם `checks` ו־`triggeredLeakSignals`, ומחובר ב־`context-builder` וב־`project-service`.
 
 
 3. `Create cross-tenant leak detector`  | סטטוס: 🔴 לא בוצע

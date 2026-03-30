@@ -180,6 +180,14 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.privilegedAuthorityDecision?.decision, "string");
   assert.equal(typeof project.state.privilegedAuthorityDecision?.isPrivilegedAction, "boolean");
   assert.equal(Array.isArray(project.state.privilegedAuthorityDecision?.checks), true);
+  assert.equal(typeof project.state.tenantIsolationSchema?.tenantIsolationSchemaId, "string");
+  assert.equal(Array.isArray(project.state.tenantIsolationSchema?.isolatedResources), true);
+  assert.equal(typeof project.state.tenantIsolationSchema?.isolatedResources[0]?.resourceType, "string");
+  assert.equal(typeof project.state.tenantIsolationSchema?.summary?.totalResources, "number");
+  assert.equal(typeof project.state.workspaceIsolationDecision?.workspaceIsolationDecisionId, "string");
+  assert.equal(typeof project.state.workspaceIsolationDecision?.decision, "string");
+  assert.equal(typeof project.state.workspaceIsolationDecision?.resourceType, "string");
+  assert.equal(Array.isArray(project.state.workspaceIsolationDecision?.checks), true);
   assert.equal(typeof project.state.projectOwnershipBinding?.bindingId, "string");
   assert.equal(typeof project.state.projectOwnershipBinding?.ownerUserId === "string" || project.state.projectOwnershipBinding?.ownerUserId === null, true);
   assert.equal(typeof project.state.initialProjectStateContract?.contractId, "string");

@@ -257,6 +257,14 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.privilegedAuthorityDecision?.decision, "string");
   assert.equal(typeof context.privilegedAuthorityDecision?.isPrivilegedAction, "boolean");
   assert.equal(Array.isArray(context.privilegedAuthorityDecision?.checks), true);
+  assert.equal(typeof context.tenantIsolationSchema?.tenantIsolationSchemaId, "string");
+  assert.equal(Array.isArray(context.tenantIsolationSchema?.isolatedResources), true);
+  assert.equal(typeof context.tenantIsolationSchema?.isolatedResources[0]?.tenantBoundary, "string");
+  assert.equal(typeof context.tenantIsolationSchema?.summary?.criticalResources, "number");
+  assert.equal(typeof context.workspaceIsolationDecision?.workspaceIsolationDecisionId, "string");
+  assert.equal(typeof context.workspaceIsolationDecision?.decision, "string");
+  assert.equal(typeof context.workspaceIsolationDecision?.resourceType, "string");
+  assert.equal(Array.isArray(context.workspaceIsolationDecision?.checks), true);
   assert.equal(typeof context.projectOwnershipBinding?.bindingId, "string");
   assert.equal(typeof context.projectOwnershipBinding?.ownerUserId === "string" || context.projectOwnershipBinding?.ownerUserId === null, true);
   assert.equal(typeof context.initialProjectStateContract?.contractId, "string");
