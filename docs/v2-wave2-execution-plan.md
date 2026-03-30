@@ -1514,6 +1514,22 @@
 - dependencies:
   - `Nexus Persistence Layer`
 - connects_to: `Project State`
+- completion_type: `schema_only`
+- coverage_check:
+  - `canonical snapshot schema with versions/workspace/restore metadata` → `full` | `src/core/project-state-snapshot-schema.js`
+  - `schema wired into canonical project context` → `full` | `src/core/context-builder.js`
+  - `schema behavior validated by tests` → `full` | `test/project-state-snapshot-schema.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `schema exports canonical snapshot payload`
+  - `context builder consumes schema output in live project state`
+  - `tests verify structure and versions`
+- missing_for_green:
+  - `none`
 
 
 2. `Create project snapshot store`  | סטטוס: 🟢 בוצע
@@ -1525,6 +1541,22 @@
 - dependencies:
   - `Define project state snapshot schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - `store snapshot records to persistent ndjson log` → `full` | `src/core/project-snapshot-store.js`
+  - `query snapshots by project/workspace/trigger/reason` → `full` | `src/core/project-snapshot-store.js`
+  - `service/api exposure for snapshot history` → `full` | `src/core/project-service.js`, `src/server.js`, `test/server-health-endpoints.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/project-snapshots`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `snapshot records are appended and queryable`
+  - `project service exposes snapshot query results`
+  - `API endpoint returns real snapshot records`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־snapshot store שומר עכשיו snapshots בפועל ל־`data/project-snapshots.ndjson`, מבצע upsert לפי `snapshotRecordId`, מאפשר query לפי project/workspace/trigger/reason, מחובר ל־`ProjectService.getProjectSnapshots()` ול־`GET /api/project-snapshots`, ורושם גם trace ל־observability transport בזמן שמירת snapshot.
 
 
@@ -1538,6 +1570,22 @@
 - dependencies:
   - `Create project snapshot store`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `compare snapshots across state/graph/artifact dimensions` → `full` | `src/core/state-diff-compare-module.js`
+  - `state diff wired into project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered by tests` → `full` | `test/state-diff-compare-module.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `module returns canonical diff payload`
+  - `diff is injected into project state`
+  - `tests validate comparison semantics`
+- missing_for_green:
+  - `none`
 
 
 4. `Create project state restore resolver`  | סטטוס: 🟢 בוצע
@@ -1551,6 +1599,22 @@
   - `Create project snapshot store`  | סטטוס: 🟢 בוצע
   - `Failure Recovery & Rollback`
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `resolver decides full/partial restore viability` → `full` | `src/core/project-state-restore-resolver.js`
+  - `restore decision wired into project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `resolver paths covered by tests` → `full` | `test/project-state-restore-resolver.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `resolver returns canonical restore decision`
+  - `decision reflects failure scope/approval constraints`
+  - `decision is available in project state for downstream modules`
+- missing_for_green:
+  - `none`
 
 
 5. `Create project rollback execution module`  | סטטוס: 🟢 בוצע
@@ -1796,8 +1860,24 @@
 - dependencies:
   - `Nexus Persistence Layer`
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `backup strategy model generated from persistence and storage records` → `full` | `src/core/backup-restore-strategy.js`
+  - `restore plan generated and exposed in project context` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `strategy module verified by tests` → `full` | `test/backup-restore-strategy.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `backup and restore contracts are generated consistently`
+  - `both artifacts are wired into live project state`
+  - `tests cover canonical strategy payload`
+- missing_for_green:
+  - `none`
 
-2. `Create snapshot backup scheduling module`  | סטטוס: 🔴 לא בוצע
+2. `Create snapshot backup scheduling module`  | סטטוס: 🟢 בוצע
 - execution_order: `25`
 - description: לבנות scheduling בסיסי ליצירת snapshots לפי interval קבוע ו־pre-change triggers כמו bootstrap, migration ו־deploy
 - input:
@@ -1809,6 +1889,27 @@
   - `Create backup and restore strategy`  | סטטוס: 🟢 בוצע
   - `Project State Versioning`
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `interval + pre-change schedule generation` → `full` | `src/core/snapshot-backup-scheduling-module.js`, `test/snapshot-backup-scheduling-module.test.js`
+  - `real timer-based scheduling execution` → `full` | `src/core/project-service.js`, `test/project-service.test.js`
+  - `snapshot creation and persistence from scheduler/manual trigger` → `full` | `src/core/project-service.js`, `src/core/project-snapshot-store.js`, `test/project-service.test.js`
+  - `API controls for configure + run` → `full` | `src/server.js`, `test/server-health-endpoints.test.js`
+  - `workspace UI controls and visible schedule state` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Versioning And Restore → Save schedule / Run backup now`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `schedule can be configured with interval and trigger list`
+  - `manual run stores snapshot backup through the real store`
+  - `timer scheduling is active in project service`
+  - `API and UI paths can trigger and observe schedule`
+  - `tests cover module, service, server, and UI paths`
+- missing_for_green:
+  - `none`
+- הערת מצב: המשימה מחוברת end-to-end: scheduler קנוני עם interval+triggers, timer פעיל ב־`ProjectService`, endpoints `POST /api/projects/:id/snapshot-backup-schedule` ו־`POST /api/projects/:id/snapshot-backups/run`, ו־UI controls ב־Versioning להפעלה/הרצה ידנית.
 
 
 3. `Create snapshot retention guard`  | סטטוס: 🔴 לא בוצע

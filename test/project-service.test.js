@@ -1724,3 +1724,44 @@ test("project service stores contextual review thread discussions and rebuilds p
   assert.equal(filteredThreadState.summary.filtered, true);
   assert.equal(filteredThreadState.threads.some((thread) => thread.contextTarget?.filePath === "app/routes/payout.tsx"), true);
 });
+
+test("project service configures snapshot backup schedule and stores manual backup records", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const configured = service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: true,
+      intervalSeconds: 60,
+      preChangeTriggers: ["deploy", "migration"],
+    },
+  });
+
+  assert.equal(configured.snapshotSchedule.enabled, true);
+  assert.equal(configured.snapshotSchedule.intervalSeconds, 60);
+  assert.equal(configured.snapshotSchedule.preChangeTriggers.includes("deploy"), true);
+  assert.equal(service.snapshotBackupTimers.has("giftwallet"), true);
+
+  const ranBackup = service.runSnapshotBackupNow({
+    projectId: "giftwallet",
+    triggerType: "manual",
+  });
+  assert.equal(ranBackup.state.snapshotRecord.triggerType, "manual");
+  assert.equal(ranBackup.state.snapshotRecord.reason, "manual-backup");
+
+  const manualSnapshots = service.getProjectSnapshots({
+    projectId: "giftwallet",
+    triggerType: "manual",
+  });
+  assert.equal(manualSnapshots.length >= 1, true);
+
+  const disabled = service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: false,
+    },
+  });
+  assert.equal(disabled.snapshotSchedule.enabled, false);
+  assert.equal(service.snapshotBackupTimers.has("giftwallet"), false);
+});

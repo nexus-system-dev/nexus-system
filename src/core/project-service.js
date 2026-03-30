@@ -44,11 +44,12 @@ import { createProjectAccessControlModule } from "./project-access-control-modul
 import { createRoleAssignmentAndInvitationFlow } from "./role-assignment-invitation-flow.js";
 import { createOrganizationWorkspaceSettingsModule } from "./workspace-settings-module.js";
 import { createPlatformObservabilityTransport } from "./platform-observability-transport.js";
-import { createPersistentProjectSnapshotStore } from "./project-snapshot-store.js";
+import { createPersistentProjectSnapshotStore, createProjectSnapshotStore } from "./project-snapshot-store.js";
 import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-model.js";
 import { createSystemAuditLogStore } from "./system-audit-log-store.js";
 import { createProjectReviewThreadStore } from "./project-review-thread-store.js";
 import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
+import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
 import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
@@ -92,6 +93,7 @@ export class ProjectService {
       ?? createPersistentProjectSnapshotStore({ filePath: snapshotLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "project-snapshots.ndjson") });
     this.projectReviewThreadStore = projectReviewThreadStore
       ?? createProjectReviewThreadStore({ filePath: reviewThreadLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "project-review-threads.ndjson") });
+    this.snapshotBackupTimers = new Map();
   }
 
   getProjectReviewThreadState(projectId, filters = {}) {
@@ -328,6 +330,7 @@ export class ProjectService {
       taskResults: [],
       linkedAccounts: [],
       approvalRecords: approvalRecords ?? [],
+      snapshotSchedule: null,
     };
 
     this.projects.set(id, project);
@@ -613,6 +616,124 @@ export class ProjectService {
       rollbackExecutionResult,
       rollbackExecutionTriggeredAt: new Date().toISOString(),
     };
+
+    return this.serializeProject(project);
+  }
+
+  stopSnapshotBackupTimer(projectId) {
+    const timer = this.snapshotBackupTimers.get(projectId);
+    if (timer) {
+      clearInterval(timer);
+      this.snapshotBackupTimers.delete(projectId);
+    }
+  }
+
+  runSnapshotBackupNow({ projectId, triggerType = "manual", reason = null } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    this.rebuildContext(projectId);
+    const projectStateSnapshot = project.context?.projectStateSnapshot;
+    if (!projectStateSnapshot) {
+      return null;
+    }
+
+    const snapshotReason =
+      reason
+      ?? (triggerType === "interval" ? "scheduled-backup" : triggerType === "manual" ? "manual-backup" : "pre-change-backup");
+    const { snapshotRecord } = createProjectSnapshotStore({
+      projectStateSnapshot,
+      recordOverrides: {
+        triggerType,
+        reason: snapshotReason,
+      },
+      snapshotStore: this.projectSnapshotStore,
+      observabilityTransport: this.platformObservabilityTransport,
+      traceId: `snapshot-backup:${projectId}:${Date.now()}`,
+    });
+    const previousSchedule = project.snapshotSchedule ?? null;
+
+    if (previousSchedule && previousSchedule.execution) {
+      project.snapshotSchedule = {
+        ...previousSchedule,
+        execution: {
+          ...previousSchedule.execution,
+          lastRunAt: new Date().toISOString(),
+          runCount: (previousSchedule.execution.runCount ?? 0) + 1,
+          nextRunAt: previousSchedule.enabled
+            ? new Date(Date.now() + ((previousSchedule.intervalMs ?? previousSchedule.intervalSeconds * 1000 ?? 0))).toISOString()
+            : null,
+        },
+      };
+    }
+
+    project.context = {
+      ...(project.context ?? {}),
+      snapshotRecord,
+      snapshotSchedule: project.snapshotSchedule ?? null,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      snapshotRecord,
+      snapshotSchedule: project.snapshotSchedule ?? null,
+    };
+
+    return this.serializeProject(project);
+  }
+
+  startSnapshotBackupTimer(projectId) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    this.stopSnapshotBackupTimer(projectId);
+    const schedule = project.snapshotSchedule ?? null;
+    if (!schedule?.enabled) {
+      return schedule;
+    }
+
+    const intervalMs = Number(schedule.intervalMs ?? (schedule.intervalSeconds ? schedule.intervalSeconds * 1000 : 0));
+    if (!Number.isFinite(intervalMs) || intervalMs < 30_000) {
+      return schedule;
+    }
+
+    const timer = setInterval(() => {
+      this.runSnapshotBackupNow({
+        projectId,
+        triggerType: "interval",
+      });
+    }, intervalMs);
+
+    this.snapshotBackupTimers.set(projectId, timer);
+    return schedule;
+  }
+
+  configureSnapshotBackupSchedule({ projectId, scheduleInput = {} } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    this.rebuildContext(projectId);
+    const { snapshotSchedule } = createSnapshotBackupSchedulingModule({
+      backupStrategy: project.context?.backupStrategy ?? null,
+      projectState: project.state ?? null,
+      previousSchedule: project.snapshotSchedule ?? project.context?.snapshotSchedule ?? null,
+      scheduleInput,
+    });
+    project.snapshotSchedule = snapshotSchedule;
+    project.context = {
+      ...(project.context ?? {}),
+      snapshotSchedule,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      snapshotSchedule,
+    };
+    this.startSnapshotBackupTimer(projectId);
 
     return this.serializeProject(project);
   }
@@ -991,6 +1112,7 @@ export class ProjectService {
       taskResults: [],
       linkedAccounts: [],
       approvalRecords: [],
+      snapshotSchedule: null,
     };
 
     this.projects.set(projectId, project);
@@ -1058,6 +1180,7 @@ export class ProjectService {
       taskResults: [],
       linkedAccounts: [],
       approvalRecords: [],
+      snapshotSchedule: null,
     };
 
     this.projects.set(projectId, project);
@@ -1216,12 +1339,23 @@ export class ProjectService {
 
     project.normalizedSources = normalizeProjectSources(project);
     project.state = buildObservedProjectState(project);
-    project.context = buildProjectContext(project, {
+    const builtContext = buildProjectContext(project, {
       observabilityTransport: this.platformObservabilityTransport,
       auditLogStore: this.systemAuditLogStore,
       snapshotStore: this.projectSnapshotStore,
       reviewThreadStore: this.projectReviewThreadStore,
     });
+    const existingSchedule = project.snapshotSchedule ?? builtContext.snapshotSchedule ?? null;
+    const { snapshotSchedule } = createSnapshotBackupSchedulingModule({
+      backupStrategy: builtContext.backupStrategy ?? null,
+      projectState: project.state ?? null,
+      previousSchedule: existingSchedule,
+    });
+    project.snapshotSchedule = snapshotSchedule;
+    project.context = {
+      ...builtContext,
+      snapshotSchedule,
+    };
     project.state = {
       ...project.state,
       businessGoal: project.goal,
@@ -1401,6 +1535,7 @@ export class ProjectService {
       collaborationFeed: project.context?.collaborationFeed ?? null,
       projectStateSnapshot: project.context?.projectStateSnapshot ?? null,
       snapshotRecord: project.context?.snapshotRecord ?? null,
+      snapshotSchedule: project.context?.snapshotSchedule ?? null,
       stateDiff: project.context?.stateDiff ?? null,
       restoreDecision: project.context?.restoreDecision ?? null,
       rollbackExecutionResult: project.context?.rollbackExecutionResult ?? null,
@@ -2255,6 +2390,7 @@ export class ProjectService {
       projectPresenceState: project.context?.projectPresenceState ?? null,
       reviewThreadState: project.context?.reviewThreadState ?? null,
       collaborationFeed: project.context?.collaborationFeed ?? null,
+      snapshotSchedule: project.context?.snapshotSchedule ?? null,
       agents: project.agents,
       overview: {
         bottleneck: blockedTasks[0] ?? "אין כרגע חסם מרכזי",

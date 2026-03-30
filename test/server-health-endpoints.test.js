@@ -173,6 +173,44 @@ test("server exposes project snapshots endpoint", async () => {
   assert.equal(response.body.projectSnapshots[0].snapshotRecordId, "snapshot-record:giftwallet:v3");
 });
 
+test("server exposes snapshot schedule and manual backup mutation endpoints", async () => {
+  const server = createServer({
+    configureSnapshotBackupSchedule: ({ projectId, scheduleInput }) => ({
+      id: projectId,
+      snapshotSchedule: {
+        projectId,
+        enabled: scheduleInput.enabled,
+        intervalSeconds: scheduleInput.intervalSeconds,
+        preChangeTriggers: scheduleInput.preChangeTriggers,
+      },
+    }),
+    runSnapshotBackupNow: ({ projectId, triggerType }) => ({
+      id: projectId,
+      snapshotRecord: {
+        snapshotRecordId: `snapshot-record:${projectId}:manual`,
+        triggerType,
+      },
+    }),
+  });
+
+  const scheduleResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-backup-schedule", {
+    scheduleInput: {
+      enabled: true,
+      intervalSeconds: 300,
+      preChangeTriggers: ["deploy"],
+    },
+  });
+  const runResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-backups/run", {
+    triggerType: "manual",
+  });
+
+  assert.equal(scheduleResponse.statusCode, 200);
+  assert.equal(scheduleResponse.body.snapshotSchedule.intervalSeconds, 300);
+  assert.equal(scheduleResponse.body.snapshotSchedule.preChangeTriggers[0], "deploy");
+  assert.equal(runResponse.statusCode, 200);
+  assert.equal(runResponse.body.snapshotRecord.triggerType, "manual");
+});
+
 test("server exposes project live-state endpoint", async () => {
   const server = createServer({
     listProjects: () => [],

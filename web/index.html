@@ -248,6 +248,18 @@
 
               <section class="workbench-card wide">
                 <h3>Versioning And Restore</h3>
+                <div class="proposal-review-form">
+                  <label class="empty-app-field">
+                    <span class="mini-label">Snapshot interval (seconds)</span>
+                    <input id="snapshot-interval-input" type="number" min="30" step="30" value="300" />
+                  </label>
+                  <label class="empty-app-field">
+                    <span class="mini-label">Pre-change triggers</span>
+                    <input id="snapshot-triggers-input" type="text" placeholder="bootstrap,migration,deploy" />
+                  </label>
+                  <button id="snapshot-schedule-button" type="button">Save schedule</button>
+                  <button id="run-snapshot-backup-button" type="button">Run backup now</button>
+                </div>
                 <button id="execute-rollback-button" type="button">Execute rollback</button>
                 <div id="versioning-content" class="detail-content"></div>
               </section>

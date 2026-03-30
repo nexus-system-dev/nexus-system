@@ -332,6 +332,33 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/snapshot-backup-schedule")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.configureSnapshotBackupSchedule === "function"
+        ? projectService.configureSnapshotBackupSchedule({
+            projectId,
+            scheduleInput: body.scheduleInput,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/snapshot-backups/run")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.runSnapshotBackupNow === "function"
+        ? projectService.runSnapshotBackupNow({
+            projectId,
+            triggerType: body.triggerType ?? "manual",
+            reason: body.reason ?? null,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/presence")) {
       const projectId = segments[3];
       const body = await parseBody(request).catch(() => ({}));

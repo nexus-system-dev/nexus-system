@@ -78,6 +78,10 @@ function createFakeDocument() {
     "#partial-copy-decision-select",
     "#partial-acceptance-note-input",
     "#partial-acceptance-button",
+    "#snapshot-interval-input",
+    "#snapshot-triggers-input",
+    "#snapshot-schedule-button",
+    "#run-snapshot-backup-button",
     "#execute-rollback-button",
     "#project-audit-actor-input",
     "#project-audit-action-input",
@@ -1685,4 +1689,100 @@ test("cockpit consumes sse live updates when push transport is available", async
   assert.match(fakeDocument.elements.get("#live-content").innerHTML, /build almost done/);
   app.closeLiveUpdates();
   assert.equal(eventSources[0].closed, true);
+});
+
+test("cockpit saves snapshot schedule and runs manual backup from versioning controls", async () => {
+  const fakeDocument = createFakeDocument();
+  const service = createProjectService();
+  service.seedDemoProject();
+  const requests = [];
+  const projectId = "giftwallet";
+
+  async function fetchImpl(url, options = {}) {
+    requests.push({ url, method: options.method ?? "GET", body: options.body ?? null });
+
+    if (url === "/api/projects") {
+      return {
+        ok: true,
+        async json() {
+          return { projects: service.listProjects() };
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}`) {
+      return {
+        ok: true,
+        async json() {
+          return service.getProject(projectId);
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/presence`) {
+      return {
+        ok: true,
+        async json() {
+          return service.getProject(projectId);
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/snapshot-backup-schedule`) {
+      const body = JSON.parse(options.body ?? "{}");
+      return {
+        ok: true,
+        async json() {
+          return service.configureSnapshotBackupSchedule({
+            projectId,
+            scheduleInput: body.scheduleInput,
+          });
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/snapshot-backups/run`) {
+      const body = JSON.parse(options.body ?? "{}");
+      return {
+        ok: true,
+        async json() {
+          return service.runSnapshotBackupNow({
+            projectId,
+            triggerType: body.triggerType ?? "manual",
+          });
+        },
+      };
+    }
+
+    throw new Error(`Unexpected url: ${url}`);
+  }
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl,
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+  await app.ready;
+  app.setActiveWorkspace("release");
+
+  fakeDocument.elements.get("#snapshot-interval-input").value = "120";
+  fakeDocument.elements.get("#snapshot-triggers-input").value = "deploy,migration";
+  await fakeDocument.elements.get("#snapshot-schedule-button").listeners.click();
+  await fakeDocument.elements.get("#run-snapshot-backup-button").listeners.click();
+  service.configureSnapshotBackupSchedule({
+    projectId,
+    scheduleInput: {
+      enabled: false,
+    },
+  });
+
+  const updatedProject = service.getProject(projectId);
+  assert.equal(updatedProject.snapshotSchedule.intervalSeconds, 120);
+  assert.equal(updatedProject.snapshotSchedule.preChangeTriggers.includes("deploy"), true);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-backup-schedule`), true);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-backups/run`), true);
+  assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /scheduled/i);
 });

@@ -165,6 +165,10 @@ function queryElements(doc) {
     partialCopyDecisionSelect: doc.querySelector("#partial-copy-decision-select"),
     partialAcceptanceNoteInput: doc.querySelector("#partial-acceptance-note-input"),
     partialAcceptanceButton: doc.querySelector("#partial-acceptance-button"),
+    snapshotIntervalInput: doc.querySelector("#snapshot-interval-input"),
+    snapshotTriggersInput: doc.querySelector("#snapshot-triggers-input"),
+    snapshotScheduleButton: doc.querySelector("#snapshot-schedule-button"),
+    runSnapshotBackupButton: doc.querySelector("#run-snapshot-backup-button"),
     executeRollbackButton: doc.querySelector("#execute-rollback-button"),
     projectAuditActorInput: doc.querySelector("#project-audit-actor-input"),
     projectAuditActionInput: doc.querySelector("#project-audit-action-input"),
@@ -1295,13 +1299,20 @@ function renderCollaboration(elements, project) {
 function renderVersioning(elements, project) {
   const state = normalizeObject(project.state);
   const snapshot = normalizeObject(project.snapshotRecord ?? state.snapshotRecord);
+  const schedule = normalizeObject(project.snapshotSchedule ?? state.snapshotSchedule);
   const restore = normalizeObject(project.restoreDecision ?? state.restoreDecision);
   const rollback = normalizeObject(project.rollbackExecutionResult ?? state.rollbackExecutionResult);
   const versions = normalizeObject(snapshot.versions);
+  const scheduleExecution = normalizeObject(schedule.execution);
+  const preChangeTriggers = normalizeArray(schedule.preChangeTriggers).join(", ");
   const details = [
     {
       title: snapshot.snapshotId ?? snapshot.snapshotRecordId ?? "No snapshot yet",
       body: `state v${versions.stateVersion ?? "?"} | graph v${versions.executionGraphVersion ?? "?"}`,
+    },
+    {
+      title: `Schedule: ${schedule.summary?.scheduleStatus ?? "not-configured"}`,
+      body: `Every ${schedule.intervalSeconds ?? "?"}s | pre-change: ${preChangeTriggers || "none"}`,
     },
     {
       title: `Restore mode: ${restore.restoreMode ?? "unknown"}`,
@@ -1316,12 +1327,21 @@ function renderVersioning(elements, project) {
   elements.versioning.innerHTML = `
     ${metricHtml([
       { label: "Snapshot stored", value: snapshot.summary?.isStored ? "yes" : "no" },
+      { label: "Schedule", value: schedule.summary?.scheduleStatus ?? "not-configured" },
+      { label: "Last backup", value: scheduleExecution.lastRunAt ?? "never" },
       { label: "Restore mode", value: restore.restoreMode ?? "unknown" },
-      { label: "Manual confirmation", value: restore.requiresManualConfirmation ? "yes" : "no" },
       { label: "Rollback status", value: rollback.executionStatus ?? "not-run" },
     ])}
     ${stackHtml("State control", details, "עדיין אין נתוני versioning זמינים.")}
   `;
+
+  if (elements.snapshotIntervalInput && schedule.intervalSeconds) {
+    elements.snapshotIntervalInput.value = String(schedule.intervalSeconds);
+  }
+
+  if (elements.snapshotTriggersInput) {
+    elements.snapshotTriggersInput.value = preChangeTriggers || "bootstrap,migration,deploy";
+  }
 }
 
 function renderProjectAudit(elements, payload) {
@@ -2031,6 +2051,45 @@ export function createCockpitApp({
     await loadProject(currentProjectId);
   }
 
+  async function saveSnapshotScheduleFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    const intervalSeconds = Number(elements.snapshotIntervalInput?.value ?? 300);
+    const preChangeTriggers = (elements.snapshotTriggersInput?.value ?? "bootstrap,migration,deploy")
+      .split(",")
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean);
+    await fetchJson(`/api/projects/${currentProjectId}/snapshot-backup-schedule`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        scheduleInput: {
+          enabled: true,
+          intervalSeconds: Number.isFinite(intervalSeconds) ? intervalSeconds : 300,
+          preChangeTriggers,
+        },
+      }),
+    });
+    await loadProject(currentProjectId);
+  }
+
+  async function runSnapshotBackupFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    await fetchJson(`/api/projects/${currentProjectId}/snapshot-backups/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        triggerType: "manual",
+      }),
+    });
+    await loadProject(currentProjectId);
+  }
+
   function mergeLiveState(liveState) {
     if (!currentProject) {
       return;
@@ -2286,6 +2345,14 @@ export function createCockpitApp({
 
   elements.executeRollbackButton?.addEventListener("click", async () => {
     await executeRollbackFromUi();
+  });
+
+  elements.snapshotScheduleButton?.addEventListener("click", async () => {
+    await saveSnapshotScheduleFromUi();
+  });
+
+  elements.runSnapshotBackupButton?.addEventListener("click", async () => {
+    await runSnapshotBackupFromUi();
   });
 
   elements.projectAuditRefreshButton?.addEventListener("click", async () => {

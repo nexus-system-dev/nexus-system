@@ -34,8 +34,9 @@ function inferTriggerType(snapshot) {
   return "state-change";
 }
 
-function buildSnapshotRecord(projectStateSnapshot = null) {
+function buildSnapshotRecord(projectStateSnapshot = null, overrides = null) {
   const normalizedSnapshot = normalizeObject(projectStateSnapshot);
+  const normalizedOverrides = normalizeObject(overrides);
   const snapshotId = normalizedSnapshot.snapshotId ?? "project-state-snapshot:unknown-project:v1";
   const stateVersion = normalizedSnapshot.stateVersion ?? 1;
   const executionGraphVersion = normalizedSnapshot.executionGraphVersion ?? 1;
@@ -45,8 +46,8 @@ function buildSnapshotRecord(projectStateSnapshot = null) {
     snapshotId,
     projectId: normalizedSnapshot.projectId ?? "unknown-project",
     storageType: "project-snapshot-store",
-    triggerType: inferTriggerType(normalizedSnapshot),
-    reason: inferSnapshotReason(normalizedSnapshot),
+    triggerType: normalizedOverrides.triggerType ?? inferTriggerType(normalizedSnapshot),
+    reason: normalizedOverrides.reason ?? inferSnapshotReason(normalizedSnapshot),
     versions: {
       stateVersion,
       executionGraphVersion,
@@ -145,11 +146,12 @@ export class ProjectSnapshotStore {
 
 export function createProjectSnapshotStore({
   projectStateSnapshot = null,
+  recordOverrides = null,
   snapshotStore = null,
   observabilityTransport = null,
   traceId = null,
 } = {}) {
-  const snapshotRecord = buildSnapshotRecord(projectStateSnapshot);
+  const snapshotRecord = buildSnapshotRecord(projectStateSnapshot, recordOverrides);
   const storedSnapshotRecord =
     snapshotStore && typeof snapshotStore.store === "function"
       ? snapshotStore.store(snapshotRecord)
