@@ -723,6 +723,20 @@
 - לאחר שכל המשימות בבלוק זה מסומנות `🟢`, יש לבצע בדיקה מחודשת של מיקום `AI Design Integration` ולשקול העברתו מיד לאחר בלוק זה.
 - אם מתבצעת העברה, יש לבצע גם `renumbering` מלא לכל המשימות שמגיעות אחרי מיקום זה, כך ש־`execution_order` יישאר רציף, עקבי וללא כפילויות או חורים.
 
+⚠️ `BRIDGE TRIGGER`:
+- לאחר השלמת `Create partial acceptance flow`, יש לעצור את המסלול הפעיל של `Wave 2` לפני המשך ל־`Backup & Recovery` ולבדוק אם צריך להכניס את בלוק `Recommendation Action Handoff` למסלול.
+- הבלוק ייכנס למסלול רק אם כל התנאים הבאים מתקיימים יחד:
+  - `Bind scheduler decision to project brain workspace` סגור, כך שה־workspace נשען על `workspaceNextTaskState` אחד ולא על סיכומים חלקיים.
+  - `Create execution status API` usable בפועל עבור מסלולי `run/action`, ולא רק עבור refresh כללי.
+  - `Create workbench access entry resolver` סגור, כך שנקודת הכניסה ל־workspace כבר מוכרעת בצורה קנונית.
+  - approval actions usable בפועל דרך ה־API הקנוני: `approve / reject / revoke`.
+  - קיימות לפחות שתי פעולות workspace יציבות שאפשר להפעיל מתוך קנוניזציה אחת, כמו `run-cycle` ו־`approve`.
+- כשכל התנאים מתקיימים, יש להכניס את בלוק `Recommendation Action Handoff` למסלול לפני המשך לבלוקים מאוחרים יותר, ולא להשאיר אותו רק ככיסוי תיעודי ב־backlog.
+- המיקום העתידי המחייב של הבלוק הוא בין שכבת ה־workspace/recommendation לבין המשך workbench orchestration:
+  - אחרי `Bind project explanation to cockpit recommendation surface`
+  - ולפני `Create workbench access entry resolver`
+- אם ההכנסה מתבצעת, יש לבצע `renumbering` מרוכז וזהיר לנקודה הזאת והלאה, במקום להמשיך ידנית במסלול כאילו הבלוק לא קיים.
+
 1. `Define editable proposal schema`  | סטטוס: 🔴 לא בוצע
 - execution_order: `22`
 - description: לבנות schema אחיד להצעות שניתן לערוך, לתקן, לאשר חלקית או לדחות ברמת section, component, copy ו־next action
