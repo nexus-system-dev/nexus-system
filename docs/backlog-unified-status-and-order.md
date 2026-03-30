@@ -7,6 +7,10 @@
 - 🟡 `חלקי`
 - 🔴 `לא בוצע`
 
+כלל אמינות ירוק:
+- `🟢 audited`: משימה ירוקה שמכילה `completion_type`, `coverage_check`, `user_facing_path`, `green_criteria`, `missing_for_green`.
+- `🟢 legacy`: משימה ירוקה שעדיין לא קיבלה מיפוי כיסוי מלא לפי הכללים החדשים.
+
 ## סדר מימוש נכון
 הערה: זהו סדר העבודה בפועל על הפרויקט מכאן והלאה, לפי `critical path` לגרסה עובדת.  
 ה־source of truth של המשימות בהמשך המסמך נשאר כמו שהוא; מה שמשתנה כאן הוא סדר המימוש בפועל.
@@ -5650,6 +5654,22 @@ Refinements מאושרים:
 - dependencies:
   - `Define component contract schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `primitive component library (button/input/textarea/select/badge/icon button)` → `full` | `src/core/primitive-components.js`, `test/primitive-components.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing rendering in workspace` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Developer Workspace → Primitive Components`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `all primitive types from task description are produced by the component library`
+  - `library is wired into project context/state payload`
+  - `developer workspace renders the primitive library preview`
+- missing_for_green:
+  - `none`
 - הערת מצב: ספריית `primitiveComponents` כוללת עכשיו גם preview metadata קנוני, ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר button, input, textarea, select, badge ו־icon button כממשק חי במקום להישאר descriptor בלבד.
 
 3. `Create layout components`  | סטטוס: 🟢 בוצע
@@ -5661,6 +5681,22 @@ Refinements מאושרים:
 - dependencies:
   - `Create spacing and layout system`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `layout component library (container/section/stack/grid/panel/divider)` → `full` | `src/core/layout-components.js`, `test/layout-components.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing rendering in workspace` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Developer Workspace → Layout Components`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `all layout types from task description are produced by the layout library`
+  - `library is wired into project context/state payload`
+  - `developer workspace renders the layout library preview`
+- missing_for_green:
+  - `none`
 - הערת מצב: ספריית `layoutComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר container, section, stack, grid, panel ו־divider כפריסות חיות במקום להישאר layout descriptor בלבד.
 
 4. `Create feedback components`  | סטטוס: 🟢 בוצע
@@ -5672,6 +5708,22 @@ Refinements מאושרים:
 - dependencies:
   - `Create interaction states system`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `feedback library (loading/empty/error/toast/banner/progress/skeleton)` → `full` | `src/core/feedback-components.js`, `test/feedback-components.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing rendering in workspace` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Developer Workspace → Feedback Components`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `all feedback types from task description are produced by the feedback library`
+  - `library is wired into project context/state payload`
+  - `developer workspace renders the feedback library preview`
+- missing_for_green:
+  - `none`
 - הערת מצב: ספריית `feedbackComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר loading, empty, error, toast, banner, progress ו־skeleton כמצבי ממשק חיים במקום להישאר feedback descriptor בלבד.
 
 5. `Create navigation components`  | סטטוס: 🟢 בוצע
@@ -5683,6 +5735,22 @@ Refinements מאושרים:
 - dependencies:
   - `Create screen-to-flow mapping`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `navigation library (sidebar/tabs/breadcrumb/topbar/stepper)` → `full` | `src/core/navigation-components.js`, `test/navigation-components.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing rendering in workspace` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Developer Workspace → Navigation Components`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `all navigation types from task description are produced by the navigation library`
+  - `library is wired into project context/state payload`
+  - `developer workspace renders the navigation library preview`
+- missing_for_green:
+  - `none`
 - הערת מצב: ספריית `navigationComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר sidebar, tabs, breadcrumb, topbar ו־stepper כניווט חי במקום להישאר navigation descriptor בלבד.
 
 6. `Create data display components`  | סטטוס: 🟢 בוצע
@@ -5694,6 +5762,22 @@ Refinements מאושרים:
 - dependencies:
   - `Define screen inventory`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `data display library (table/stat card/activity log/timeline/key-value panel/status chip)` → `full` | `src/core/data-display-components.js`, `test/data-display-components.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing rendering in workspace` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Developer Workspace → Data Display Components`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `all data display types from task description are produced by the display library`
+  - `library is wired into project context/state payload`
+  - `developer workspace renders the data display library preview`
+- missing_for_green:
+  - `none`
 - הערת מצב: ספריית `dataDisplayComponents` כוללת עכשיו preview metadata קנוני ונצרכת בפועל ב־Developer Workspace דרך section ייעודי שמרנדר table, stat card, activity log, timeline, key-value panel ו־status chip כמציגי נתונים חיים במקום להישאר display descriptor בלבד.
 
 #### `Screen Template System`
