@@ -1031,7 +1031,7 @@
 
 #### `Project Permission Matrix`
 
-1. `Define project permission schema`  | סטטוס: 🔴 לא בוצע
+1. `Define project permission schema`  | סטטוס: 🟢 בוצע
 - execution_order: `15`
 - description: לבנות schema אחיד להרשאות ברמת פרויקט כמו view, edit, run, approve, deploy, connect accounts ו־manage credentials
 - input:
@@ -1042,6 +1042,7 @@
 - dependencies:
   - `Workspace & Access Control`
 - connects_to: `Project State`
+- הערת מצב: ה־schema כבר ממומש ב־`project-permission-schema.js`, מייצר `permissionsByRole` ו־`escalationRules` לפי `workspaceModel` ו־`projectType`, ומחובר ב־`context-builder` וב־`project-service` ל־`Project State`.
 
 
 2. `Create project role capability matrix`  | סטטוס: 🔴 לא בוצע

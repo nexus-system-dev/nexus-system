@@ -164,6 +164,10 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.onboardingStateHandoff?.handoffStatus, "string");
   assert.equal(Array.isArray(project.state.onboardingStateHandoff?.missingClarifications), true);
   assert.equal(typeof project.state.onboardingStateHandoff?.summary?.canBuildProjectState, "boolean");
+  assert.equal(typeof project.state.projectPermissionSchema?.permissionSchemaId, "string");
+  assert.equal(Array.isArray(project.state.projectPermissionSchema?.permissionsByRole), true);
+  assert.equal(typeof project.state.projectPermissionSchema?.permissionsByRole[0]?.capabilities?.run, "boolean");
+  assert.equal(typeof project.state.projectPermissionSchema?.summary?.approvalCapableRoles, "number");
   assert.equal(typeof project.state.projectOwnershipBinding?.bindingId, "string");
   assert.equal(typeof project.state.projectOwnershipBinding?.ownerUserId === "string" || project.state.projectOwnershipBinding?.ownerUserId === null, true);
   assert.equal(typeof project.state.initialProjectStateContract?.contractId, "string");

@@ -241,6 +241,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.onboardingStateHandoff?.handoffStatus, "string");
   assert.equal(Array.isArray(context.onboardingStateHandoff?.missingClarifications), true);
   assert.equal(typeof context.onboardingStateHandoff?.summary?.canBuildProjectState, "boolean");
+  assert.equal(typeof context.projectPermissionSchema?.permissionSchemaId, "string");
+  assert.equal(Array.isArray(context.projectPermissionSchema?.permissionsByRole), true);
+  assert.equal(typeof context.projectPermissionSchema?.permissionsByRole[0]?.capabilities?.view, "boolean");
+  assert.equal(typeof context.projectPermissionSchema?.summary?.deployCapableRoles, "number");
   assert.equal(typeof context.projectOwnershipBinding?.bindingId, "string");
   assert.equal(typeof context.projectOwnershipBinding?.ownerUserId === "string" || context.projectOwnershipBinding?.ownerUserId === null, true);
   assert.equal(typeof context.initialProjectStateContract?.contractId, "string");

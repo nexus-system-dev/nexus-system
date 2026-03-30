@@ -7214,7 +7214,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Define project permission schema`  | סטטוס: 🔴 לא בוצע
+1. `Define project permission schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד להרשאות ברמת פרויקט כמו view, edit, run, approve, deploy, connect accounts ו־manage credentials
 - input:
   - `workspaceModel`
@@ -7224,6 +7224,7 @@ Refinements מאושרים:
 - dependencies:
   - `Workspace & Access Control`
 - connects_to: `Project State`
+- הערת מצב: ה־schema כבר ממומש ב־`project-permission-schema.js`, מייצר `permissionsByRole` ו־`escalationRules` לפי `workspaceModel` ו־`projectType`, ומחובר ב־`context-builder` וב־`project-service` ל־`Project State`.
 
 2. `Create project role capability matrix`  | סטטוס: 🔴 לא בוצע
 - description: לבנות matrix שממפה roles כמו owner, member, operator, reviewer ו־viewer ליכולות מותרות בתוך פרויקט
