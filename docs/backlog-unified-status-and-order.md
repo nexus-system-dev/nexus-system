@@ -468,7 +468,29 @@ Refinements מאושרים:
   - `Create onboarding API endpoints`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 
+⚠️ BRIDGE TRIGGER:
+כשהתנאים הבאים מתקיימים, יש לעצור ולהפעיל את בלוק `Imported Project Glue`:
+- `Create onboarding completion evaluator` סגור ומחזיר readiness ברור ל־imported intake
+- `Create onboarding-to-state handoff contract` סגור ומחזיר handoff usable
+- `Create onboarding progress model` ו־`Build onboarding screen flow` סגורים ומאפשרים להציג summary/clarification למשתמש
+- `Deep Code Scanner` ו־`Structured Analysis Pipeline` זמינים בפועל למסלול שאינו ידני
+- יש צורך מוצרי ברור ב־imported project onboarding, כלומר משתמש צריך להעלות קבצים קיימים ולקבל `מה יש / מה חסר / מה לעשות`
+
+ברגע שהתנאים האלה ירוקים, לא להמשיך ללטש onboarding כללי בלי לעצור ולחבר את imported project flow.
+
 #### 1.25 `Imported Project Glue`
+
+⚠️ ACTIVATION TRIGGER:
+צריך להתחיל לממש את הבלוק הזה רק כשהתנאים הבאים מתקיימים יחד:
+- intake onboarding כבר usable ולא רק parser מבודד
+- יש `onboardingViewState` usable להצגת summary, clarification ו־next action handoff
+- `onboardingCompletionDecision` ו־`onboardingStateHandoff` סגורים ויכולים להכריע אם אפשר להתקדם
+- `Deep Code Scanner` ו־`Structured Analysis Pipeline` זמינים להפעלה מתוך flow, לא רק דרך trigger ידני
+- יש `nextTaskPresentation` ו־`instantValuePlan` usable כדי לחבר summary לכיוון פעולה אמיתי
+- יש `entryStateVariants` usable כדי להכריע אם להיכנס ל־workspace או לעצור ב־clarification
+
+לא להפעיל את הבלוק מוקדם יותר, כי אחרת החיבור יישבר בין `analysis -> summary -> next actions -> workspace`.
+הרגע הנכון להתחיל הוא כשהמוצר כבר יודע גם לנתח חומר מיובא וגם להציג handoff ברור למשתמש, אבל לפני שנכנסים לליטושים מתקדמים של onboarding שאינם סוגרים את ה־flow הזה.
 
 משימות טכניות:
 
