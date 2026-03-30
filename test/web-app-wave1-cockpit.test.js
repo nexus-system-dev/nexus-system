@@ -84,6 +84,7 @@ function createFakeDocument() {
     "#project-audit-sensitivity-select",
     "#project-audit-refresh-button",
     "#project-audit-content",
+    "#access-isolation-content",
     "#learning-content",
     "#companion-content",
     "#collaboration-content",
@@ -680,6 +681,37 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
       executionStatus: "blocked",
       summary: { restoredTargetCount: 0 },
     },
+    projectAuthorizationDecision: {
+      authorizationDecisionId: "project-authorization:owner:deploy",
+      projectAction: "deploy",
+      requiredCapability: "deploy",
+      decision: "requires-approval",
+      reason: "Production deploy requires approval",
+      checks: ["policy-requires-approval", "privileged-deploy-action"],
+    },
+    privilegedAuthorityDecision: {
+      privilegedAuthorityDecisionId: "privileged-authority:deploy",
+      projectAction: "deploy",
+      decision: "requires-approval",
+      requiresApproval: true,
+      reason: "Privileged action requires approval",
+      checks: ["authorization-requires-approval"],
+    },
+    workspaceIsolationDecision: {
+      workspaceIsolationDecisionId: "workspace-isolation:workspace-1:deploy",
+      requestWorkspaceId: "workspace-1",
+      resourceType: "project-state",
+      decision: "allowed",
+      reason: "Request stays within the workspace isolation boundary",
+      checks: ["tenant-schema-loaded", "boundary:workspace"],
+    },
+    leakageAlert: {
+      leakageAlertId: "tenant-leakage:workspace-isolation:workspace-1:deploy",
+      severity: "clear",
+      reason: "Isolation checks and learning inputs remain inside the tenant boundary.",
+      checks: ["workspace-isolation:allowed", "no-cross-tenant-leak-detected"],
+      leakSignals: [],
+    },
     projectAuditPayload: {
       projectAuditPayloadId: "project-audit-payload:giftwallet",
       projectId: "giftwallet",
@@ -757,6 +789,7 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /reviewer marked approval as approved/);
   assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /project-state-snapshot:giftwallet:v3/);
   assert.match(fakeDocument.elements.get("#project-audit-content").innerHTML, /approval.granted/);
+  assert.match(fakeDocument.elements.get("#access-isolation-content").innerHTML, /Guard decisions/);
   assert.match(fakeDocument.elements.get("#growth-content").innerHTML, /Draft Wave 2 teaser/);
   assert.match(fakeDocument.elements.get("#developer-workspace-summary").innerHTML, /36%/);
   assert.match(fakeDocument.elements.get("#project-brain-summary").innerHTML, /saas/);

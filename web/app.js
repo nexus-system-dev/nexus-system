@@ -171,6 +171,7 @@ function queryElements(doc) {
     projectAuditSensitivitySelect: doc.querySelector("#project-audit-sensitivity-select"),
     projectAuditRefreshButton: doc.querySelector("#project-audit-refresh-button"),
     projectAudit: doc.querySelector("#project-audit-content"),
+    accessIsolation: doc.querySelector("#access-isolation-content"),
     learning: doc.querySelector("#learning-content"),
     companion: doc.querySelector("#companion-content"),
     collaboration: doc.querySelector("#collaboration-content"),
@@ -1347,6 +1348,73 @@ function renderProjectAudit(elements, payload) {
   `;
 }
 
+function renderAccessIsolation(elements, project) {
+  if (!elements.accessIsolation) {
+    return;
+  }
+
+  const state = normalizeObject(project.state);
+  const projectAuthorizationDecision = normalizeObject(project.projectAuthorizationDecision ?? state.projectAuthorizationDecision);
+  const privilegedAuthorityDecision = normalizeObject(project.privilegedAuthorityDecision ?? state.privilegedAuthorityDecision);
+  const workspaceIsolationDecision = normalizeObject(project.workspaceIsolationDecision ?? state.workspaceIsolationDecision);
+  const leakageAlert = normalizeObject(project.leakageAlert ?? state.leakageAlert);
+
+  const hasSignals = Boolean(
+    projectAuthorizationDecision.authorizationDecisionId
+    || privilegedAuthorityDecision.privilegedAuthorityDecisionId
+    || workspaceIsolationDecision.workspaceIsolationDecisionId
+    || leakageAlert.leakageAlertId,
+  );
+
+  if (!hasSignals) {
+    elements.accessIsolation.innerHTML = `<p class="empty">עדיין אין החלטות authorization/isolation זמינות.</p>`;
+    return;
+  }
+
+  const checks = [
+    ...normalizeArray(projectAuthorizationDecision.checks),
+    ...normalizeArray(privilegedAuthorityDecision.checks),
+    ...normalizeArray(workspaceIsolationDecision.checks),
+    ...normalizeArray(leakageAlert.checks),
+  ].slice(0, 8);
+
+  elements.accessIsolation.innerHTML = `
+    ${metricHtml([
+      { label: "Authorization", value: projectAuthorizationDecision.decision ?? "unknown" },
+      { label: "Privileged", value: privilegedAuthorityDecision.decision ?? "unknown" },
+      { label: "Isolation", value: workspaceIsolationDecision.decision ?? "unknown" },
+      { label: "Leakage", value: leakageAlert.severity ?? "clear" },
+    ])}
+    ${stackHtml(
+      "Guard decisions",
+      [
+        {
+          title: projectAuthorizationDecision.reason ?? "Authorization decision available",
+          body: `${projectAuthorizationDecision.projectAction ?? "view"} | ${projectAuthorizationDecision.requiredCapability ?? "view"}`,
+        },
+        {
+          title: privilegedAuthorityDecision.reason ?? "Privileged authority decision available",
+          body: `${privilegedAuthorityDecision.projectAction ?? "view"} | approval ${privilegedAuthorityDecision.requiresApproval ? "required" : "not-required"}`,
+        },
+        {
+          title: workspaceIsolationDecision.reason ?? "Workspace isolation decision available",
+          body: `${workspaceIsolationDecision.resourceType ?? "resource"} | ${workspaceIsolationDecision.requestWorkspaceId ?? "workspace"}`,
+        },
+        {
+          title: leakageAlert.reason ?? "Leak detector evaluated",
+          body: `${normalizeArray(leakageAlert.leakSignals).join(" | ") || "no leak signals"}`,
+        },
+      ],
+      "אין כרגע guard decisions.",
+    )}
+    ${stackHtml(
+      "Checks",
+      checks.map((check) => ({ title: check, body: "policy signal" })),
+      "אין checks זמינים.",
+    )}
+  `;
+}
+
 function renderGrowth(elements, project) {
   const growthWorkspace = normalizeObject(project.growthWorkspace);
   const strategy = normalizeObject(growthWorkspace.strategy);
@@ -1530,6 +1598,7 @@ export function renderProject(elements, project) {
   renderCollaboration(elements, project);
   renderVersioning(elements, project);
   renderProjectAudit(elements, project.projectAuditPayload ?? project.state?.projectAuditPayload);
+  renderAccessIsolation(elements, project);
   renderGrowth(elements, project);
   renderExternal(elements, project);
   renderScanner(elements, project);

@@ -48,8 +48,8 @@
 - `🟢 audited`: משימה ירוקה שמכילה `completion_type`, `coverage_check`, `user_facing_path`, `green_criteria`, `missing_for_green`.
 - `🟢 legacy`: כל משימה ירוקה שעדיין לא עברה מיפוי כיסוי מלא לפי הכללים החדשים.
 - מצב נוכחי אחרי batch זה:
-  - `🟢 audited`: `9`
-  - `🟢 legacy`: `78`
+  - `🟢 audited`: `16`
+  - `🟢 legacy`: `71`
 
 ## Open Work Execution Ordering
 
@@ -1179,6 +1179,22 @@
 - dependencies:
   - `Workspace & Access Control`
 - connects_to: `Project State`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `permission schema for view/edit/run/approve/deploy/connect/manage` → `full` | `src/core/project-permission-schema.js`, `test/project-permission-schema.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing visibility of permission decisions` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace → Access And Isolation`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `schema defines canonical project-level capability surface`
+  - `schema is wired into state/context used by downstream authorization`
+  - `authorization/isolation decision output is visible in workspace`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־schema כבר ממומש ב־`project-permission-schema.js`, מייצר `permissionsByRole` ו־`escalationRules` לפי `workspaceModel` ו־`projectType`, ומחובר ב־`context-builder` וב־`project-service` ל־`Project State`.
 
 
@@ -1192,6 +1208,22 @@
 - dependencies:
   - `Define project permission schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `role matrix for owner/member/operator/reviewer/viewer` → `full` | `src/core/project-role-capability-matrix.js`, `test/project-role-capability-matrix.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing visibility through downstream decisions` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace → Access And Isolation`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `matrix maps all canonical roles to allowed capabilities`
+  - `matrix feeds authorization resolver in runtime context`
+  - `decision outcome based on the matrix is visible to user`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־matrix כבר ממומש ב־`project-role-capability-matrix.js`, מרחיב את `projectPermissionSchema` ל־roles קנוניים כמו `member` ו־`reviewer`, ומחובר ב־`context-builder` וב־`project-service` ל־`Project State`.
 
 
@@ -1208,6 +1240,22 @@
   - `Create project role capability matrix`  | סטטוס: 🟢 בוצע
   - `Policy Layer`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `resolver decision for deploy/edit/approval/credential actions` → `full` | `src/core/action-level-project-authorization-resolver.js`, `test/action-level-project-authorization-resolver.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing visibility of authorization decision` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace → Access And Isolation`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `resolver returns canonical authorization decision with checks and reason`
+  - `decision is bound into execution context/state`
+  - `workspace shows current authorization decision to user`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־resolver כבר ממומש ב־`action-level-project-authorization-resolver.js`, משלב `roleCapabilityMatrix` עם `policyDecision`, ומחזיר `projectAuthorizationDecision` קנוני דרך `context-builder` ו־`project-service`.
 
 
@@ -1223,6 +1271,22 @@
   - `Create action-level project authorization resolver`  | סטטוס: 🟢 בוצע
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `privileged authority decision for deploy/override/credential/billing` → `full` | `src/core/privileged-action-authority-resolver.js`, `test/privileged-action-authority-resolver.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing visibility of privileged decision` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace → Access And Isolation`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `resolver returns canonical privileged authority decision with approval posture`
+  - `decision is bound into execution context/state`
+  - `workspace shows privileged decision and checks`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־resolver כבר ממומש ב־`privileged-action-authority-resolver.js`, מאחד את `projectAuthorizationDecision`, `approvalStatus`, `deployPolicyDecision` ו־`credentialPolicyDecision`, ומחזיר `privilegedAuthorityDecision` דרך `context-builder` ו־`project-service`.
 
 
@@ -1241,6 +1305,22 @@
 - dependencies:
   - `Workspace & Access Control`
 - connects_to: `Project State`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `tenant isolation schema for users/workspaces/projects/resources` → `full` | `src/core/tenant-isolation-schema.js`, `test/tenant-isolation-schema.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing visibility through isolation outputs` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace → Access And Isolation`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `schema defines canonical isolation boundary and leak signals`
+  - `schema feeds runtime isolation guard context`
+  - `isolation posture is visible in workspace`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־schema כבר ממומש ב־`tenant-isolation-schema.js`, מגדיר `isolatedResources`, `accessRules` ו־`leakSignals` לפי `workspaceModel` ו־`resourceDefinitions`, ומחובר ב־`context-builder` וב־`project-service` ל־`Project State`.
 
 
@@ -1256,6 +1336,22 @@
   - `Define tenant isolation schema`  | סטטוס: 🟢 בוצע
   - `Application Runtime Layer`
 - connects_to: `Execution Surface`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `guard decision for resource/data/artifact/log/account workspace boundary` → `full` | `src/core/workspace-isolation-guard.js`, `test/workspace-isolation-guard.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing visibility of isolation decision` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace → Access And Isolation`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `guard returns canonical workspace isolation decision with checks`
+  - `decision is wired into execution context/state`
+  - `workspace shows current isolation decision and reason`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־guard כבר ממומש ב־`workspace-isolation-guard.js`, בודק התאמה בין `requestContext`, `workspaceId` ו־`isolatedResources`, מחזיר `workspaceIsolationDecision` עם `checks` ו־`triggeredLeakSignals`, ומחובר ב־`context-builder` וב־`project-service`.
 
 
@@ -1271,6 +1367,22 @@
   - `Create workspace isolation guard`  | סטטוס: 🟢 בוצע
   - `Learning Layer`
 - connects_to: `Project State`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `detector for state/learning/provider cross-tenant leakage signals` → `full` | `src/core/cross-tenant-leak-detector.js`, `test/cross-tenant-leak-detector.test.js`
+  - `wiring into canonical project context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `user-facing visibility of leakage alert` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace → Access And Isolation`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `detector returns canonical leakage alert with severity/signals/checks`
+  - `alert is wired into project context/state`
+  - `workspace shows current leakage posture and signals`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־detector כבר ממומש ב־`cross-tenant-leak-detector.js`, משלב `workspaceIsolationDecision` עם `learningEvent`, מזהה `workspace-id-mismatch`, `learning-workspace-mismatch` ו־`provider-session-boundary-breach`, ומחזיר `leakageAlert` דרך `context-builder` ו־`project-service`.
 
 ---
