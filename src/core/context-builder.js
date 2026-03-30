@@ -94,6 +94,7 @@ import { createActionLevelProjectAuthorizationResolver } from "./action-level-pr
 import { createPrivilegedActionAuthorityResolver } from "./privileged-action-authority-resolver.js";
 import { defineTenantIsolationSchema } from "./tenant-isolation-schema.js";
 import { createWorkspaceIsolationGuard } from "./workspace-isolation-guard.js";
+import { createCrossTenantLeakDetector } from "./cross-tenant-leak-detector.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -2363,6 +2364,18 @@ export function buildProjectContext(
       actionType: project.manualContext?.projectAction ?? "view",
     },
   });
+  const { leakageAlert } = createCrossTenantLeakDetector({
+    workspaceIsolationDecision,
+    learningEvent: project.manualContext?.learningEvent ?? {
+      sourceWorkspaceId: project.context?.learningInsights?.sourceWorkspaceId
+        ?? project.context?.learningTrace?.sourceWorkspaceId
+        ?? workspaceModel?.workspaceId
+        ?? null,
+      crossTenantSource: project.manualContext?.learningTrace?.crossTenantSource === true,
+      providerBoundaryBreach: project.manualContext?.providerBoundaryBreach === true,
+      mixedResources: project.manualContext?.mixedResources ?? [],
+    },
+  });
   const { collaborationEvent } = defineCollaborationEventSchema({
     workspaceAction: {
       eventId: project.manualContext?.workspaceAction?.eventId ?? null,
@@ -3121,6 +3134,7 @@ export function buildProjectContext(
   context.privilegedAuthorityDecision = privilegedAuthorityDecision;
   context.tenantIsolationSchema = tenantIsolationSchema;
   context.workspaceIsolationDecision = workspaceIsolationDecision;
+  context.leakageAlert = leakageAlert;
   context.projectOwnershipBinding = projectOwnershipBinding;
   context.initialProjectStateContract = initialProjectStateContract;
   context.initialProjectState = bootstrappedInitialProjectState;

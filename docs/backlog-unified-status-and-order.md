@@ -7293,7 +7293,7 @@ Refinements מאושרים:
 - connects_to: `Execution Surface`
 - הערת מצב: ה־guard כבר ממומש ב־`workspace-isolation-guard.js`, בודק התאמה בין `requestContext`, `workspaceId` ו־`isolatedResources`, מחזיר `workspaceIsolationDecision` עם `checks` ו־`triggeredLeakSignals`, ומחובר ב־`context-builder` וב־`project-service`.
 
-3. `Create cross-tenant leak detector`  | סטטוס: 🔴 לא בוצע
+3. `Create cross-tenant leak detector`  | סטטוס: 🟢 בוצע
 - description: לבנות detector שמזהה ערבוב state, learning signals או provider data בין tenants שונים
 - input:
   - `workspaceIsolationDecision`
@@ -7301,9 +7301,10 @@ Refinements מאושרים:
 - output:
   - `leakageAlert`
 - dependencies:
-  - `Create workspace isolation guard`  | סטטוס: 🔴 לא בוצע
+  - `Create workspace isolation guard`  | סטטוס: 🟢 בוצע
   - `Learning Layer`
 - connects_to: `Project State`
+- הערת מצב: ה־detector כבר ממומש ב־`cross-tenant-leak-detector.js`, משלב `workspaceIsolationDecision` עם `learningEvent`, מזהה `workspace-id-mismatch`, `learning-workspace-mismatch` ו־`provider-session-boundary-breach`, ומחזיר `leakageAlert` דרך `context-builder` ו־`project-service`.
 
 ---
 

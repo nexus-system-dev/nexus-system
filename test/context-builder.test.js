@@ -265,6 +265,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.workspaceIsolationDecision?.decision, "string");
   assert.equal(typeof context.workspaceIsolationDecision?.resourceType, "string");
   assert.equal(Array.isArray(context.workspaceIsolationDecision?.checks), true);
+  assert.equal(typeof context.leakageAlert?.leakageAlertId, "string");
+  assert.equal(typeof context.leakageAlert?.severity, "string");
+  assert.equal(Array.isArray(context.leakageAlert?.leakSignals), true);
+  assert.equal(Array.isArray(context.leakageAlert?.checks), true);
   assert.equal(typeof context.projectOwnershipBinding?.bindingId, "string");
   assert.equal(typeof context.projectOwnershipBinding?.ownerUserId === "string" || context.projectOwnershipBinding?.ownerUserId === null, true);
   assert.equal(typeof context.initialProjectStateContract?.contractId, "string");

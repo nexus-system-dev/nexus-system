@@ -188,6 +188,10 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.workspaceIsolationDecision?.decision, "string");
   assert.equal(typeof project.state.workspaceIsolationDecision?.resourceType, "string");
   assert.equal(Array.isArray(project.state.workspaceIsolationDecision?.checks), true);
+  assert.equal(typeof project.state.leakageAlert?.leakageAlertId, "string");
+  assert.equal(typeof project.state.leakageAlert?.severity, "string");
+  assert.equal(Array.isArray(project.state.leakageAlert?.leakSignals), true);
+  assert.equal(Array.isArray(project.state.leakageAlert?.checks), true);
   assert.equal(typeof project.state.projectOwnershipBinding?.bindingId, "string");
   assert.equal(typeof project.state.projectOwnershipBinding?.ownerUserId === "string" || project.state.projectOwnershipBinding?.ownerUserId === null, true);
   assert.equal(typeof project.state.initialProjectStateContract?.contractId, "string");

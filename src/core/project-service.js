@@ -1249,6 +1249,7 @@ export class ProjectService {
       privilegedAuthorityDecision: project.context?.privilegedAuthorityDecision ?? null,
       tenantIsolationSchema: project.context?.tenantIsolationSchema ?? null,
       workspaceIsolationDecision: project.context?.workspaceIsolationDecision ?? null,
+      leakageAlert: project.context?.leakageAlert ?? null,
       projectOwnershipBinding: project.context?.projectOwnershipBinding ?? null,
       initialProjectStateContract: project.context?.initialProjectStateContract ?? null,
       initialProjectState: project.context?.initialProjectState ?? null,
