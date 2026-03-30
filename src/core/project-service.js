@@ -48,6 +48,7 @@ import { createPersistentProjectSnapshotStore } from "./project-snapshot-store.j
 import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-model.js";
 import { createSystemAuditLogStore } from "./system-audit-log-store.js";
 import { createProjectReviewThreadStore } from "./project-review-thread-store.js";
+import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
 import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
@@ -561,6 +562,58 @@ export class ProjectService {
     };
 
     this.rebuildContext(projectId);
+    return this.serializeProject(project);
+  }
+
+  executeProjectRollback({ projectId } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const restoreDecision = project.context?.restoreDecision ?? null;
+    const snapshotRecord = project.context?.snapshotRecord ?? null;
+    const { rollbackExecutionResult } = createProjectRollbackExecutionModule({
+      restoreDecision,
+      snapshotRecord,
+    });
+
+    const restoredProjectState = rollbackExecutionResult?.restoredProjectState;
+    const restoredExecutionGraph = rollbackExecutionResult?.restoredExecutionGraph;
+    const restoredWorkspaceReference = rollbackExecutionResult?.restoredWorkspaceReference;
+
+    if (rollbackExecutionResult.executed) {
+      if (restoredProjectState && Object.keys(restoredProjectState).length > 0) {
+        project.state = {
+          ...(project.state ?? {}),
+          ...restoredProjectState,
+        };
+      }
+
+      if (restoredExecutionGraph && Object.keys(restoredExecutionGraph).length > 0) {
+        project.cycle = {
+          ...(project.cycle ?? {}),
+          executionGraph: restoredExecutionGraph,
+        };
+      }
+
+      if (restoredWorkspaceReference && typeof restoredWorkspaceReference === "object") {
+        if (typeof restoredWorkspaceReference.workspacePath === "string" && restoredWorkspaceReference.workspacePath.length > 0) {
+          project.path = restoredWorkspaceReference.workspacePath;
+        }
+        project.workspaceReference = {
+          ...(project.workspaceReference ?? {}),
+          ...restoredWorkspaceReference,
+        };
+      }
+    }
+
+    project.context = {
+      ...(project.context ?? {}),
+      rollbackExecutionResult,
+      rollbackExecutionTriggeredAt: new Date().toISOString(),
+    };
+
     return this.serializeProject(project);
   }
 
@@ -1533,14 +1586,88 @@ export class ProjectService {
 
   getProjectAuditPayload(projectId, filters = {}) {
     const project = this.projects.get(projectId);
-    if (!project?.context?.actorActionTrace) {
+    if (!project) {
       return null;
     }
 
-    return createProjectAuditApiAndViewerModel({
-      actorActionTrace: project.context.actorActionTrace,
-      filters,
-    }).projectAuditPayload;
+    const actorIdFilter = filters.actorId ?? null;
+    const actionTypeFilter = filters.actionType ?? null;
+    const sensitivityFilter = filters.sensitivity ?? null;
+    const tracePayload = project.context?.actorActionTrace
+      ? createProjectAuditApiAndViewerModel({
+          actorActionTrace: project.context.actorActionTrace,
+          filters: {
+            actorId: actorIdFilter,
+            actionType: actionTypeFilter,
+            sensitivity: sensitivityFilter,
+          },
+        }).projectAuditPayload
+      : null;
+    const traceEntries = Array.isArray(tracePayload?.entries) ? tracePayload.entries : [];
+    const auditLogEntries = this.getSystemAuditLogs({
+      projectId,
+      actorId: actorIdFilter,
+    })
+      .map((record) => ({
+        entryId: record.auditLogId ?? `project-audit-entry:${projectId}:${Date.now()}`,
+        actorId: record.actorId ?? "system",
+        actorLabel: record.actorId ?? record.actorType ?? "system",
+        actorType: record.actorType ?? "system",
+        actionType: record.actionType ?? "system.observed",
+        category: record.category ?? "system",
+        headline: record.summary ?? record.actionType ?? "Project action observed",
+        outcomeStatus: record.status ?? "recorded",
+        timestamp: record.timestamp ?? null,
+        sensitivity: record.riskLevel ?? "low",
+        traceId: record.traceId ?? null,
+        resource: {
+          resourceType: record.targetType ?? "project",
+          resourceId: record.targetId ?? projectId,
+        },
+        providerSideEffects: [],
+        affectedArtifacts: [],
+        summary: {
+          providerEffectCount: 0,
+          artifactCount: 0,
+          hasExecutionOutcome: Boolean(record.status),
+        },
+      }))
+      .filter((entry) => (actionTypeFilter ? entry.actionType === actionTypeFilter : true))
+      .filter((entry) => (sensitivityFilter ? entry.sensitivity === sensitivityFilter : true));
+
+    const mergedEntriesById = new Map();
+    for (const entry of [...traceEntries, ...auditLogEntries]) {
+      if (entry?.entryId) {
+        mergedEntriesById.set(entry.entryId, entry);
+      }
+    }
+
+    const entries = [...mergedEntriesById.values()].sort((left, right) => {
+      const leftTs = Date.parse(left.timestamp ?? 0);
+      const rightTs = Date.parse(right.timestamp ?? 0);
+      return rightTs - leftTs;
+    });
+
+    return {
+      projectAuditPayloadId: `project-audit-payload:${projectId}`,
+      projectId,
+      filters: {
+        actorId: actorIdFilter,
+        actionType: actionTypeFilter,
+        sensitivity: sensitivityFilter,
+      },
+      entries,
+      viewerModel: {
+        tableColumns: ["actor", "action", "status", "sensitivity", "timestamp"],
+        emptyState: entries.length > 0 ? null : "No matching audit activity found",
+        supportsFiltering: true,
+      },
+      summary: {
+        totalEntries: entries.length,
+        filtered: Boolean(actorIdFilter || actionTypeFilter || sensitivityFilter),
+        latestEntryId: entries[0]?.entryId ?? null,
+      },
+    };
   }
 
   scanProject(projectId, overridePath) {

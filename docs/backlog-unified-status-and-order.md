@@ -6102,6 +6102,22 @@ Refinements מאושרים:
   - `Define editable proposal schema`  | סטטוס: 🟢 בוצע
   - `Project State`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `change proposal content and next action` → `full` | `src/core/proposal-editing-system.js`, `src/core/project-service.js`, `src/server.js`
+  - `preserve revision history` → `full` | `src/core/proposal-editing-system.js`, `test/project-service.test.js`
+  - `user-facing editing path` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace -> Proposal Review -> שמור עריכה`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `editing mutation persists revised proposal and history`
+  - `user can trigger edits from the UI`
+  - `user can see updated revision and history in the workspace`
+- missing_for_green:
+  - `none`
 - הערת מצב: מערכת העריכה סגורה end-to-end: `proposal-editing-system.js` מייצרת `editedProposal` ו־`proposalEditHistory`, `project-service` ו־`server` חושפים mutation אמיתי, וב־`Release Workspace` יש עכשיו surface שמאפשר למשתמש לערוך section, next action ו־annotations ולראות revision history חי מתוך ה־UI.
 
 3. `Create partial acceptance flow`  | סטטוס: 🟢 בוצע
@@ -6116,6 +6132,22 @@ Refinements מאושרים:
   - `Create proposal editing system`  | סטטוס: 🟢 בוצע
   - `Define approval outcome schema`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `approve/reject part of proposal` → `full` | `src/core/partial-acceptance-flow.js`, `src/core/project-service.js`, `src/server.js`
+  - `compute remaining scope and follow-up` → `full` | `src/core/partial-acceptance-flow.js`, `test/project-service.test.js`
+  - `user-facing partial acceptance path` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace -> Proposal Review -> אשר חלקית`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `user can submit partial outcomes from the UI`
+  - `system returns partialAcceptanceDecision and remainingProposalScope`
+  - `workspace shows follow-up action and regeneration scope`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־partial acceptance flow סגור end-to-end: `partial-acceptance-flow.js` מחשב `partialAcceptanceDecision` ו־`remainingProposalScope`, `project-service` ו־`server` מקבלים mutation אמיתי, וב־`Release Workspace` המשתמש יכול לבחור approve/reject ברמת section/component/copy, לקבל follow-up action, ולראות regeneration scope ותוצאת ההחלטה חזרה בממשק.
 
 #### `AI Companion Experience`
@@ -6503,7 +6535,7 @@ Refinements מאושרים:
   - `Create growth workspace`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-6. `Create next task presentation model`  | סטטוס: 🔴 לא בוצע
+6. `Create next task presentation model`  | סטטוס: 🟢 בוצע
 - description: לבנות view model אחיד להצגת המשימה הבאה למשתמש כולל selected task, reason, alternatives, approval state ו־expected outcome
 - input:
   - `schedulerDecision`
@@ -6516,7 +6548,7 @@ Refinements מאושרים:
   - `Explanation Layer`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-7. `Create next task approval handoff panel`  | סטטוס: 🔴 לא בוצע
+7. `Create next task approval handoff panel`  | סטטוס: 🟢 בוצע
 - description: לבנות פאנל workbench שבו המשתמש רואה אם הצעד הבא דורש approval, מה יקרה אחרי אישור, ומהן החלופות הבטוחות
 - input:
   - `nextTaskPresentation`
@@ -6554,7 +6586,7 @@ Refinements מאושרים:
   - `V1 Acceptance & Reality Test Harness`
 - connects_to: `Execution Surface`
 
-10. `Create recommendation display contract`  | סטטוס: 🔴 לא בוצע
+10. `Create recommendation display contract`  | סטטוס: 🟢 בוצע
 - description: לבנות contract אחיד להצגת recommendation למשתמש כולל headline, why now, expected impact, blockers, alternatives ו־primary CTA
 - input:
   - `projectExplanation`
@@ -6567,7 +6599,7 @@ Refinements מאושרים:
   - `Create recommendation reasoning panel contract`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
-11. `Create recommendation summary panel`  | סטטוס: 🔴 לא בוצע
+11. `Create recommendation summary panel`  | סטטוס: 🟢 בוצע
 - description: לבנות פאנל UI מרכזי שמציג למשתמש את ההמלצה הפעילה, את הסיבה, את רמת הדחיפות ואת תוצאת ההמשך הצפויה
 - input:
   - `recommendationDisplay`
@@ -6579,7 +6611,7 @@ Refinements מאושרים:
   - `Initial Nexus Screens`
 - connects_to: `Execution Surface`
 
-12. `Bind project explanation to cockpit recommendation surface`  | סטטוס: 🔴 לא בוצע
+12. `Bind project explanation to cockpit recommendation surface`  | סטטוס: 🟢 בוצע
 - description: לחבר את `projectExplanation`, `approvalExplanation`, `reasoningPanel` ו־`recommendationSummaryPanel` ל־cockpit כך שההמלצה למשתמש לא תופיע רק כ־metric או רשימת טקסטים חלקית
 - input:
   - `projectExplanation`
@@ -6616,7 +6648,103 @@ Refinements מאושרים:
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
 
-15. `Create workbench access entry resolver`  | סטטוס: 🔴 לא בוצע
+⚠️ ACTIVATION TRIGGER:
+צריך להתחיל לממש את בלוק `Recommendation Action Handoff` רק כשהתנאים הבאים מתקיימים יחד:
+- `Bind scheduler decision to project brain workspace` סגור, כך שה־UI כולו נשען על `workspaceNextTaskState` אחד ולא על סיכומים חלקיים נפרדים
+- `Create execution status API` usable בפועל למסלולי run/action ולא רק ל־refresh כללי
+- יש לפחות שתי פעולות workspace נתמכות ויציבות שאפשר להפעיל מקנוניזציה אחת, כמו `approve` ו־`run-cycle`, בלי לפרש CTA לפי טקסט תצוגה
+- `reactiveWorkspaceState` ו־`live-state` כבר מרעננים את ה־workspace אחרי mutation רלוונטי בלי לדרוש bootstrap ידני מהמשתמש
+- `Approval System` כבר סוגר approve/reject/revoke דרך ה־API הקנוני, וה־surface יודע להציג state עקבי לפני ואחרי ההחלטה
+
+לא להפעיל את הבלוק מוקדם יותר, כי אחרת נחבר את שכבת ה־Wave 2 UI ל־handlers נקודתיים ולא ל־`workspaceAction` יציב, ונקבע coupling שיקשה על ה־execution path בהמשך.
+הרגע הנכון להתחיל הוא כשה־surface כבר יציב, ה־live refresh כבר עובד, ויש קבוצה מצומצמת אבל קנונית של פעולות שהמערכת יודעת לבצע ולרענן אחריהן.
+
+#### `Recommendation Action Handoff`
+
+15. `Define workspace action schema`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: לבנות schema קנוני ל־`workspaceAction` כך שכל פעולה שהמשתמש מפעיל מתוך ה־workspace תיוצג בפורמט אחיד עם action type, source recommendation, target surface, execution mode, required approval ו־refresh expectation
+- input:
+  - `screenGoal`
+  - `primaryAction`
+  - `recommendationDisplay`
+- output:
+  - `workspaceActionSchema`
+- dependencies:
+  - `Create goal and CTA definition module`  | סטטוס: 🟢 בוצע
+  - `Create recommendation display contract`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+- הערת מצב: כרגע `workspaceAction` קיים רק כ־output implied של משימות handoff; המשימה הזאת מוסיפה contract מפורש כדי ש־UI, server ו־execution path יעבדו מול אותה ישות קנונית ולא מול intents מקומיים.
+
+16. `Create recommendation action resolver`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: למפות `recommendationDisplay`, `nextTaskPresentation`, `nextTaskApprovalPanel`, `approvalStatus` ו־`editedProposal` ל־`workspaceAction` קנוני אחד שהמשתמש יכול להפעיל בפועל, כמו `approve`, `run-cycle`, `open-proposal-review`, `request-handoff` או `request-clarification`
+- input:
+  - `recommendationDisplay`
+  - `nextTaskPresentation`
+  - `nextTaskApprovalPanel`
+  - `approvalStatus`
+  - `editedProposal`
+- output:
+  - `recommendationAction`
+  - `workspaceAction`
+- dependencies:
+  - `Define workspace action schema`  | סטטוס: 🔴 לא בוצע
+  - `Create recommendation display contract`  | סטטוס: 🟢 בוצע
+  - `Create next task approval handoff panel`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+- הערת מצב: שכבת ה־recommendation הקיימת כבר יודעת לייצר headline, why now ו־CTA label, אבל עדיין אין resolver שמתרגם אותם ל־intent executable אחד שהלקוח והשרת יכולים לשתף בלי לפרש טקסט חופשי.
+
+17. `Bind recommendation CTA to workspace action handlers`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: לחבר את ה־primary CTA של ה־recommendation ב־Project Brain, ב־Developer Workspace וב־cockpit ל־handlers אמיתיים שמפעילים פעולה רלוונטית כמו approval, run, proposal review או clarification במקום להציג CTA כטקסט בלבד
+- input:
+  - `recommendationAction`
+  - `workspaceAction`
+  - `workbenchEntryDecision`
+  - `reactiveWorkspaceState`
+- output:
+  - `recommendationActionBinding`
+  - `workspaceActionResult`
+- dependencies:
+  - `Create recommendation action resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create reactive workspace refresh model`  | סטטוס: 🟢 בוצע
+  - `Create execution status API`  | סטטוס: 🟡 חלקי
+- connects_to: `Execution Surface`
+- הערת מצב: זה החיבור שחסר היום במסך העבודה; ה־surface כבר יודע להראות recommendation, אבל אין binding שמוביל את לחיצת המשתמש ל־API או mutation שמתאימים לאותה המלצה.
+
+18. `Create recommendation action handoff acceptance test`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: לבנות test flow שמוכיח שהמשתמש רואה recommendation אחת ברורה, מבין למה היא הומלצה, לוחץ על CTA, ו־Nexus מבצעת פעולה שמחוברת לאותה recommendation ומרעננת את ה־workspace בהתאם
+- input:
+  - `recommendationDisplay`
+  - `recommendationActionBinding`
+  - `workspaceActionResult`
+- output:
+  - `acceptanceResult`
+- dependencies:
+  - `Bind recommendation CTA to workspace action handlers`  | סטטוס: 🔴 לא בוצע
+  - `Create recommendation clarity validation suite`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Validation Layer`
+- הערת מצב: הבדיקה הזאת נועדה לסגור את הפער המוצרי האמיתי; בלי test כזה אפשר להישאר עם recommendation קריאה ו־CTA יפה, אבל בלי הוכחה שה־handoff לפעולה באמת עובד מקצה לקצה.
+
+19. `Create approval action API`  | סטטוס: 🔴 לא בוצע
+- execution_order: `n/a`
+- description: לבנות API קנוני לפעולות approval כמו approve, reject ו־revoke כך שה־workspace יוכל להפעיל החלטות approval דרך surface אחיד שמחזיר approval state, audit trail ו־workspace action result
+- input:
+  - `approvalRequestId`
+  - `workspaceAction`
+  - `userInput`
+- output:
+  - `approvalActionResult`
+  - `approvalPayload`
+- dependencies:
+  - `Define workspace action schema`  | סטטוס: 🔴 לא בוצע
+  - `Create shared approval flow model`  | סטטוס: 🟢 בוצע
+- connects_to: `Execution Surface`
+- הערת מצב: יש כבר endpoints ויכולת בקוד ל־approve/reject/revoke, אבל הם עדיין לא מיוצגים כמשימת API קנונית ב־backlog; המשימה הזאת סוגרת את החור התיעודי בלי לשנות את המסלול הקיים.
+
+20. `Create workbench access entry resolver`  | סטטוס: 🔴 לא בוצע
 - description: לבנות resolver שמכריע לאיזה workspace המשתמש נכנס עכשיו לפי project state, role, blocked flows ו־current lifecycle phase
 - input:
   - `workspaceNavigationModel`
@@ -6629,7 +6757,7 @@ Refinements מאושרים:
   - `Identity & Auth`
 - connects_to: `Project State`
 
-16. `Create context visibility model`  | סטטוס: 🔴 לא בוצע
+21. `Create context visibility model`  | סטטוס: 🔴 לא בוצע
 - description: לבנות model שמציג איזה context פעיל למשתמש עכשיו, מאיפה הוא הגיע ומה רלוונטי ל־next step
 - input:
   - `projectBrainWorkspace`
@@ -6641,7 +6769,7 @@ Refinements מאושרים:
   - `Bind scheduler decision to project brain workspace`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
 
-17. `Create logs visibility model`  | סטטוס: 🔴 לא בוצע
+22. `Create logs visibility model`  | סטטוס: 🔴 לא בוצע
 - description: לבנות model מפורש להצגת logs, run phases ו־user-facing messages בתוך workbench אחד
 - input:
   - `formattedLogs`
@@ -6653,7 +6781,7 @@ Refinements מאושרים:
   - `Execution Feedback Layer`
 - connects_to: `Execution Surface`
 
-18. `Create diff visibility model`  | סטטוס: 🔴 לא בוצע
+23. `Create diff visibility model`  | סטטוס: 🔴 לא בוצע
 - description: לבנות model מפורש להצגת diffs, changed files ו־impact summaries כחלק מה־workbench השוטף
 - input:
   - `branchDiffActivityPanel`
@@ -6665,7 +6793,7 @@ Refinements מאושרים:
   - `Create diff and change explanation model`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
 
-19. `Create approvals workspace model`  | סטטוס: 🔴 לא בוצע
+24. `Create approvals workspace model`  | סטטוס: 🔴 לא בוצע
 - description: לבנות model ייעודי ל־approval inbox, request details, decision history ו־safe alternatives כחלק מה־workbench
 - input:
   - `approvalRequest`
@@ -6678,7 +6806,7 @@ Refinements מאושרים:
   - `Create human approval handoff state`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
 
-20. `Create next-step visibility model`  | סטטוס: 🔴 לא בוצע
+25. `Create next-step visibility model`  | סטטוס: 🔴 לא בוצע
 - description: לבנות model שמראה למשתמש מה הצעד הבא, מה יקרה אחריו, ומה ייחשב completion של השלב הנוכחי
 - input:
   - `workspaceNextTaskState`
@@ -7421,7 +7549,23 @@ Refinements מאושרים:
   - `Create project state restore resolver`  | סטטוס: 🟢 בוצע
   - `Execution Surface Layer`
 - connects_to: `Execution Surface`
-- הערת מצב: מודול ה־rollback מבצע עכשיו restore בפועל מתוך `snapshotRecord.restorePayload`, מחזיר `restoredProjectState`, `restoredExecutionGraph`, `restoredWorkspaceReference` ו־`linkedMetadataResults`, ומאפשר ל־execution surface לקבל תוצאת rollback עם payloadים משוחזרים במקום החלטה בלבד.
+- completion_type: `end_to_end`
+- coverage_check:
+  - `build rollback execution result` → `full` | `src/core/project-rollback-execution-module.js`, `test/project-rollback-execution-module.test.js`
+  - `apply restored state to live project/workspace` → `full` | `src/core/project-service.js`, `test/project-service-rollback-execution.test.js`
+  - `trigger rollback from user-facing path` → `full` | `src/server.js`, `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Versioning And Restore → Execute rollback`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `rollback request applies restored state to the live project`
+  - `workspace and linked metadata are actually switched to restored payload`
+  - `execution surface can trigger rollback and show applied result`
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־rollback מחובר כעת למסלול מלא: `POST /api/projects/:id/rollback-executions` מפעיל apply אמיתי על project state/workspace reference דרך `ProjectService.executeProjectRollback`, והתוצאה מוצגת ב־Versioning card ב־workspace.
 
 ---
 
@@ -7964,6 +8108,24 @@ Refinements מאושרים:
   - `Create actor action trace assembler`  | סטטוס: 🟢 בוצע
   - `UI / UX Foundation`
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `audit API endpoint` → `full` | `src/server.js`, `test/server-health-endpoints.test.js`
+  - `viewer payload shape` → `full` | `src/core/project-audit-api-viewer-model.js`, `src/core/project-service.js`
+  - `project action history across multiple entries` → `full` | `src/core/project-service.js`, `test/project-audit-payload-history.test.js`
+  - `user-facing viewer path` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Project Audit`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `API returns real project action history, not a single trace wrapper`
+  - `filters work over multiple audit entries`
+  - `UI viewer exists and exposes actor/time/action/sensitivity to the user`
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־API מחזיר כעת היסטוריית project audit מאוחדת (trace + system audit logs) עם filtering לפי `actorId/actionType/sensitivity`, וה־viewer זמין למשתמש דרך ה־workspace עם כפתור refresh ופילטרים.
 
 ---
 

@@ -248,7 +248,33 @@
 
               <section class="workbench-card wide">
                 <h3>Versioning And Restore</h3>
+                <button id="execute-rollback-button" type="button">Execute rollback</button>
                 <div id="versioning-content" class="detail-content"></div>
+              </section>
+
+              <section class="workbench-card wide">
+                <h3>Project Audit</h3>
+                <div class="proposal-review-form">
+                  <label class="empty-app-field">
+                    <span class="mini-label">Actor</span>
+                    <input id="project-audit-actor-input" type="text" placeholder="user-1" />
+                  </label>
+                  <label class="empty-app-field">
+                    <span class="mini-label">Action Type</span>
+                    <input id="project-audit-action-input" type="text" placeholder="approval.granted" />
+                  </label>
+                  <label class="empty-app-field">
+                    <span class="mini-label">Sensitivity</span>
+                    <select id="project-audit-sensitivity-select">
+                      <option value="">All</option>
+                      <option value="high">high</option>
+                      <option value="medium">medium</option>
+                      <option value="low">low</option>
+                    </select>
+                  </label>
+                  <button id="project-audit-refresh-button" type="button">Refresh audit</button>
+                </div>
+                <div id="project-audit-content" class="detail-content"></div>
               </section>
             </div>
           </div>

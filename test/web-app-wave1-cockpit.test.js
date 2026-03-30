@@ -78,6 +78,12 @@ function createFakeDocument() {
     "#partial-copy-decision-select",
     "#partial-acceptance-note-input",
     "#partial-acceptance-button",
+    "#execute-rollback-button",
+    "#project-audit-actor-input",
+    "#project-audit-action-input",
+    "#project-audit-sensitivity-select",
+    "#project-audit-refresh-button",
+    "#project-audit-content",
     "#learning-content",
     "#companion-content",
     "#collaboration-content",
@@ -674,6 +680,32 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
       executionStatus: "blocked",
       summary: { restoredTargetCount: 0 },
     },
+    projectAuditPayload: {
+      projectAuditPayloadId: "project-audit-payload:giftwallet",
+      projectId: "giftwallet",
+      filters: {
+        actorId: null,
+        actionType: null,
+        sensitivity: null,
+      },
+      entries: [
+        {
+          entryId: "actor-action-trace:1",
+          actorLabel: "owner-1",
+          actionType: "approval.granted",
+          sensitivity: "high",
+          outcomeStatus: "invoked",
+          timestamp: "2026-03-30T08:00:00.000Z",
+        },
+      ],
+      viewerModel: {
+        supportsFiltering: true,
+      },
+      summary: {
+        totalEntries: 1,
+        filtered: false,
+      },
+    },
   };
 
   async function fetchImpl(url) {
@@ -724,6 +756,7 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /Review pending changes/);
   assert.match(fakeDocument.elements.get("#collaboration-content").innerHTML, /reviewer marked approval as approved/);
   assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /project-state-snapshot:giftwallet:v3/);
+  assert.match(fakeDocument.elements.get("#project-audit-content").innerHTML, /approval.granted/);
   assert.match(fakeDocument.elements.get("#growth-content").innerHTML, /Draft Wave 2 teaser/);
   assert.match(fakeDocument.elements.get("#developer-workspace-summary").innerHTML, /36%/);
   assert.match(fakeDocument.elements.get("#project-brain-summary").innerHTML, /saas/);
@@ -1331,6 +1364,152 @@ test("cockpit supports proposal editing and partial acceptance through the relea
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /regenerate-rejected-scope/);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/proposal-edits` && request.method === "POST"), true);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/partial-acceptance` && request.method === "POST"), true);
+});
+
+test("cockpit supports rollback execution and project audit filtering from the workspace", async () => {
+  const fakeDocument = createFakeDocument();
+  const service = createProjectService();
+  const requests = [];
+  service.seedDemoProject();
+  const projectId = "giftwallet";
+  const project = service.projects.get(projectId);
+  project.context = {
+    ...(project.context ?? {}),
+    restoreDecision: {
+      restoreDecisionId: "restore-decision:giftwallet",
+      canRestore: true,
+      restoreMode: "full",
+      restoreTargets: ["project-state", "execution-graph", "workspace-reference"],
+    },
+    snapshotRecord: {
+      snapshotRecordId: "snapshot-record:giftwallet:v3",
+      versions: {
+        stateVersion: 3,
+        executionGraphVersion: 9,
+      },
+      restorePayload: {
+        projectState: {
+          riskLevel: "low",
+        },
+        executionGraph: {
+          nodes: [{ id: "restore-node" }],
+          edges: [],
+        },
+        workspaceReference: {
+          workspaceId: "workspace-giftwallet",
+          workspacePath: "/restored/workspace",
+          workspaceArea: "developer-workspace",
+        },
+      },
+    },
+    actorActionTrace: {
+      actorActionTraceId: "actor-action-trace:giftwallet:1",
+      projectId: "giftwallet",
+      actor: {
+        actorId: "owner-1",
+        actorType: "user",
+      },
+      action: {
+        actionType: "project.approval",
+        category: "approval",
+        summary: "Approval submitted",
+        riskLevel: "high",
+      },
+      outcome: {
+        status: "invoked",
+      },
+      timestamp: "2026-03-30T09:00:00.000Z",
+    },
+  };
+
+  async function fetchImpl(url, options = {}) {
+    requests.push({ url, method: options.method ?? "GET", body: options.body ?? null });
+
+    if (url === "/api/projects") {
+      return {
+        ok: true,
+        async json() {
+          return { projects: service.listProjects() };
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}`) {
+      return {
+        ok: true,
+        async json() {
+          return service.getProject(projectId);
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/presence`) {
+      return {
+        ok: true,
+        async json() {
+          return service.getProject(projectId);
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/rollback-executions`) {
+      return {
+        ok: true,
+        async json() {
+          return service.executeProjectRollback({ projectId });
+        },
+      };
+    }
+
+    if (url.startsWith(`/api/projects/${projectId}/audit`)) {
+      const targetUrl = new URL(`http://localhost${url}`);
+      return {
+        ok: true,
+        async json() {
+          return service.getProjectAuditPayload(projectId, {
+            actorId: targetUrl.searchParams.get("actorId") ?? null,
+            actionType: targetUrl.searchParams.get("actionType") ?? null,
+            sensitivity: targetUrl.searchParams.get("sensitivity") ?? null,
+          });
+        },
+      };
+    }
+
+    throw new Error(`Unexpected url: ${url}`);
+  }
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl,
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await app.ready;
+  app.setActiveWorkspace("release");
+
+  await fakeDocument.elements.get("#execute-rollback-button").listeners.click();
+
+  const rollbackProject = service.getProject(projectId);
+  assert.equal(rollbackProject.context.rollbackExecutionResult.executed, true);
+  assert.equal(rollbackProject.context.rollbackExecutionResult.summary.restoredTargetCount > 0, true);
+  assert.equal(
+    requests.some((request) => request.url === `/api/projects/${projectId}/rollback-executions` && request.method === "POST"),
+    true,
+  );
+
+  fakeDocument.elements.get("#project-audit-action-input").value = "project.approval";
+  fakeDocument.elements.get("#project-audit-sensitivity-select").value = "high";
+  await fakeDocument.elements.get("#project-audit-refresh-button").listeners.click();
+
+  assert.equal(
+    requests.some((request) => request.url.includes(`/api/projects/${projectId}/audit`) && request.url.includes("actionType=project.approval")),
+    true,
+  );
+  assert.match(fakeDocument.elements.get("#project-audit-content").innerHTML, /Audit history/);
+  assert.match(fakeDocument.elements.get("#project-audit-content").innerHTML, /high/);
 });
 
 test("cockpit consumes sse live updates when push transport is available", async () => {

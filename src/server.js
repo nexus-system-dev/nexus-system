@@ -323,6 +323,15 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/rollback-executions")) {
+      const projectId = segments[3];
+      const result = typeof projectService.executeProjectRollback === "function"
+        ? projectService.executeProjectRollback({ projectId })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/presence")) {
       const projectId = segments[3];
       const body = await parseBody(request).catch(() => ({}));

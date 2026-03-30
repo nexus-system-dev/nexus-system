@@ -765,6 +765,22 @@
   - `Define editable proposal schema`  | סטטוס: 🟢 בוצע
   - `Project State`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `change proposal content and next action` → `full` | `src/core/proposal-editing-system.js`, `src/core/project-service.js`, `src/server.js`
+  - `preserve revision history` → `full` | `src/core/proposal-editing-system.js`, `test/project-service.test.js`
+  - `user-facing editing path` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace -> Proposal Review -> שמור עריכה`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `editing mutation persists revised proposal and history`
+  - `user can trigger edits from the UI`
+  - `user can see updated revision and history in the workspace`
+- missing_for_green:
+  - `none`
 - הערת מצב: מערכת העריכה סגורה end-to-end: `proposal-editing-system.js` מייצרת `editedProposal` ו־`proposalEditHistory`, `project-service` ו־`server` חושפים mutation אמיתי, וב־`Release Workspace` יש עכשיו surface שמאפשר למשתמש לערוך section, next action ו־annotations ולראות revision history חי מתוך ה־UI.
 
 
@@ -781,6 +797,22 @@
   - `Create proposal editing system`  | סטטוס: 🟢 בוצע
   - `Define approval outcome schema`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `approve/reject part of proposal` → `full` | `src/core/partial-acceptance-flow.js`, `src/core/project-service.js`, `src/server.js`
+  - `compute remaining scope and follow-up` → `full` | `src/core/partial-acceptance-flow.js`, `test/project-service.test.js`
+  - `user-facing partial acceptance path` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release Workspace -> Proposal Review -> אשר חלקית`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `user can submit partial outcomes from the UI`
+  - `system returns partialAcceptanceDecision and remainingProposalScope`
+  - `workspace shows follow-up action and regeneration scope`
+- missing_for_green:
+  - `none`
 - הערת מצב: ה־partial acceptance flow סגור end-to-end: `partial-acceptance-flow.js` מחשב `partialAcceptanceDecision` ו־`remainingProposalScope`, `project-service` ו־`server` מקבלים mutation אמיתי, וב־`Release Workspace` המשתמש יכול לבחור approve/reject ברמת section/component/copy, לקבל follow-up action, ולראות regeneration scope ותוצאת ההחלטה חזרה בממשק.
 
 
@@ -1220,7 +1252,23 @@
   - `Create project state restore resolver`  | סטטוס: 🟢 בוצע
   - `Execution Surface Layer`
 - connects_to: `Execution Surface`
-- הערת מצב: מודול ה־rollback מבצע עכשיו restore בפועל מתוך `snapshotRecord.restorePayload`, מחזיר `restoredProjectState`, `restoredExecutionGraph`, `restoredWorkspaceReference` ו־`linkedMetadataResults`, ומאפשר ל־execution surface לקבל תוצאת rollback עם payloadים משוחזרים במקום החלטה בלבד.
+- completion_type: `end_to_end`
+- coverage_check:
+  - `build rollback execution result` → `full` | `src/core/project-rollback-execution-module.js`, `test/project-rollback-execution-module.test.js`
+  - `apply restored state to live project/workspace` → `full` | `src/core/project-service.js`, `test/project-service-rollback-execution.test.js`
+  - `trigger rollback from user-facing path` → `full` | `src/server.js`, `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Versioning And Restore → Execute rollback`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `rollback request applies restored state to the live project`
+  - `workspace and linked metadata are actually switched to restored payload`
+  - `execution surface can trigger rollback and show applied result`
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־rollback מחובר כעת למסלול מלא: `POST /api/projects/:id/rollback-executions` מפעיל apply אמיתי על project state/workspace reference דרך `ProjectService.executeProjectRollback`, והתוצאה מוצגת ב־Versioning card ב־workspace.
 
 ---
 
@@ -1399,6 +1447,24 @@
   - `Create actor action trace assembler`  | סטטוס: 🟢 בוצע
   - `UI / UX Foundation`
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `audit API endpoint` → `full` | `src/server.js`, `test/server-health-endpoints.test.js`
+  - `viewer payload shape` → `full` | `src/core/project-audit-api-viewer-model.js`, `src/core/project-service.js`
+  - `project action history across multiple entries` → `full` | `src/core/project-service.js`, `test/project-audit-payload-history.test.js`
+  - `user-facing viewer path` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Project Audit`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `API returns real project action history, not a single trace wrapper`
+  - `filters work over multiple audit entries`
+  - `UI viewer exists and exposes actor/time/action/sensitivity to the user`
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־API מחזיר כעת היסטוריית project audit מאוחדת (trace + system audit logs) עם filtering לפי `actorId/actionType/sensitivity`, וה־viewer זמין למשתמש דרך ה־workspace עם כפתור refresh ופילטרים.
 
 ---
 

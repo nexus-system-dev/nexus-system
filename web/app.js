@@ -165,6 +165,12 @@ function queryElements(doc) {
     partialCopyDecisionSelect: doc.querySelector("#partial-copy-decision-select"),
     partialAcceptanceNoteInput: doc.querySelector("#partial-acceptance-note-input"),
     partialAcceptanceButton: doc.querySelector("#partial-acceptance-button"),
+    executeRollbackButton: doc.querySelector("#execute-rollback-button"),
+    projectAuditActorInput: doc.querySelector("#project-audit-actor-input"),
+    projectAuditActionInput: doc.querySelector("#project-audit-action-input"),
+    projectAuditSensitivitySelect: doc.querySelector("#project-audit-sensitivity-select"),
+    projectAuditRefreshButton: doc.querySelector("#project-audit-refresh-button"),
+    projectAudit: doc.querySelector("#project-audit-content"),
     learning: doc.querySelector("#learning-content"),
     companion: doc.querySelector("#companion-content"),
     collaboration: doc.querySelector("#collaboration-content"),
@@ -1286,9 +1292,10 @@ function renderCollaboration(elements, project) {
 }
 
 function renderVersioning(elements, project) {
-  const snapshot = normalizeObject(project.snapshotRecord);
-  const restore = normalizeObject(project.restoreDecision);
-  const rollback = normalizeObject(project.rollbackExecutionResult);
+  const state = normalizeObject(project.state);
+  const snapshot = normalizeObject(project.snapshotRecord ?? state.snapshotRecord);
+  const restore = normalizeObject(project.restoreDecision ?? state.restoreDecision);
+  const rollback = normalizeObject(project.rollbackExecutionResult ?? state.rollbackExecutionResult);
   const versions = normalizeObject(snapshot.versions);
   const details = [
     {
@@ -1313,6 +1320,30 @@ function renderVersioning(elements, project) {
       { label: "Rollback status", value: rollback.executionStatus ?? "not-run" },
     ])}
     ${stackHtml("State control", details, "עדיין אין נתוני versioning זמינים.")}
+  `;
+}
+
+function renderProjectAudit(elements, payload) {
+  if (!elements.projectAudit) {
+    return;
+  }
+
+  const projectAuditPayload = normalizeObject(payload);
+  const summary = normalizeObject(projectAuditPayload.summary);
+  const filters = normalizeObject(projectAuditPayload.filters);
+  const entries = normalizeArray(projectAuditPayload.entries).map((entry) => ({
+    title: `${entry.actionType ?? "project.observed"} | ${entry.actorLabel ?? entry.actorId ?? "system"} | ${entry.sensitivity ?? "low"}`,
+    body: `${entry.timestamp ?? "no-timestamp"} | ${entry.outcomeStatus ?? "recorded"}`,
+  }));
+
+  elements.projectAudit.innerHTML = `
+    ${metricHtml([
+      { label: "Entries", value: String(summary.totalEntries ?? entries.length) },
+      { label: "Filtered", value: summary.filtered ? "yes" : "no" },
+      { label: "Actor filter", value: filters.actorId ?? "all" },
+      { label: "Sensitivity", value: filters.sensitivity ?? "all" },
+    ])}
+    ${stackHtml("Audit history", entries, projectAuditPayload.viewerModel?.emptyState ?? "No matching audit activity found.")}
   `;
 }
 
@@ -1498,6 +1529,7 @@ export function renderProject(elements, project) {
   renderCompanion(elements, project);
   renderCollaboration(elements, project);
   renderVersioning(elements, project);
+  renderProjectAudit(elements, project.projectAuditPayload ?? project.state?.projectAuditPayload);
   renderGrowth(elements, project);
   renderExternal(elements, project);
   renderScanner(elements, project);
@@ -1526,6 +1558,7 @@ export function createCockpitApp({
   let liveEventSource = null;
   let activeWorkspace = "developer";
   let onboardingFlow = null;
+  let currentProjectAuditPayload = null;
   const presenceParticipantId = `presence-${Math.random().toString(36).slice(2, 10)}`;
   const appStorage = storageImpl && typeof storageImpl.getItem === "function" && typeof storageImpl.setItem === "function"
     ? storageImpl
@@ -1550,6 +1583,7 @@ export function createCockpitApp({
     const project = await fetchJson(`/api/projects/${projectId}`);
     currentProjectId = projectId;
     currentProject = project;
+    currentProjectAuditPayload = project.projectAuditPayload ?? project.state?.projectAuditPayload ?? null;
     onboardingFlow = null;
     applyDesignSystem(doc, project);
     renderProject(elements, project);
@@ -1563,6 +1597,34 @@ export function createCockpitApp({
     updatePresence().catch(() => {});
     connectLiveUpdates();
     return project;
+  }
+
+  function buildProjectAuditQueryParams() {
+    const params = new URLSearchParams();
+    const actorId = elements.projectAuditActorInput?.value?.trim() ?? "";
+    const actionType = elements.projectAuditActionInput?.value?.trim() ?? "";
+    const sensitivity = elements.projectAuditSensitivitySelect?.value?.trim() ?? "";
+    if (actorId) {
+      params.set("actorId", actorId);
+    }
+    if (actionType) {
+      params.set("actionType", actionType);
+    }
+    if (sensitivity) {
+      params.set("sensitivity", sensitivity);
+    }
+    const query = params.toString();
+    return query ? `?${query}` : "";
+  }
+
+  async function refreshProjectAudit() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    const payload = await fetchJson(`/api/projects/${currentProjectId}/audit${buildProjectAuditQueryParams()}`);
+    currentProjectAuditPayload = payload;
+    renderProjectAudit(elements, currentProjectAuditPayload);
   }
 
   function readStoredAppUser() {
@@ -1887,6 +1949,19 @@ export function createCockpitApp({
     }
   }
 
+  async function executeRollbackFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    await fetchJson(`/api/projects/${currentProjectId}/rollback-executions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    await loadProject(currentProjectId);
+  }
+
   function mergeLiveState(liveState) {
     if (!currentProject) {
       return;
@@ -2138,6 +2213,14 @@ export function createCockpitApp({
 
   elements.partialAcceptanceButton?.addEventListener("click", async () => {
     await submitPartialAcceptanceFromUi();
+  });
+
+  elements.executeRollbackButton?.addEventListener("click", async () => {
+    await executeRollbackFromUi();
+  });
+
+  elements.projectAuditRefreshButton?.addEventListener("click", async () => {
+    await refreshProjectAudit();
   });
 
   const ready = loadProjects().catch((error) => {

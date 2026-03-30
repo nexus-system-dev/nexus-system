@@ -367,6 +367,26 @@ test("server exposes partial acceptance mutation endpoint", async () => {
   assert.equal(response.body.context.approvalOutcome.sectionOutcomes[0].decision, "approved");
 });
 
+test("server exposes rollback execution mutation endpoint", async () => {
+  const server = createServer({
+    executeProjectRollback: ({ projectId }) => ({
+      id: projectId,
+      state: {
+        rollbackExecutionResult: {
+          executionStatus: "executed-full",
+          executed: true,
+        },
+      },
+    }),
+  });
+
+  const response = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/rollback-executions", {});
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.id, "giftwallet");
+  assert.equal(response.body.state.rollbackExecutionResult.executionStatus, "executed-full");
+});
+
 test("server exposes project presence heartbeat endpoint", async () => {
   const server = createServer({
     updateProjectPresence: ({ projectId, presenceInput }) => ({
