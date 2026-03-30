@@ -6104,7 +6104,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 - הערת מצב: מערכת העריכה כבר ממומשת ב־`proposal-editing-system.js`, מייצרת `editedProposal` ו־`proposalEditHistory` מתוך `editableProposal` ו־`userEditInput`, ושומרת רצף revisions דרך `context-builder` ו־`project-service`.
 
-3. `Create partial acceptance flow`  | סטטוס: 🔴 לא בוצע
+3. `Create partial acceptance flow`  | סטטוס: 🟢 בוצע
 - description: לבנות flow שמאפשר לאשר חלק מהצעה, לדחות חלק אחר, ולהחזיר רק את החלקים הבעייתיים ל־regeneration או review נוסף
 - input:
   - `editedProposal`
@@ -6113,9 +6113,10 @@ Refinements מאושרים:
   - `partialAcceptanceDecision`
   - `remainingProposalScope`
 - dependencies:
-  - `Create proposal editing system`  | סטטוס: 🔴 לא בוצע
+  - `Create proposal editing system`  | סטטוס: 🟢 בוצע
   - `Define approval outcome schema`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
+- הערת מצב: ה־flow כבר ממומש ב־`partial-acceptance-flow.js`, מחזיר `partialAcceptanceDecision` ו־`remainingProposalScope` מתוך `editedProposal` ו־`approvalOutcome`, ומחובר ב־`context-builder` וב־`project-service` להמשך recommendation ו־review.
 
 #### `AI Companion Experience`
 
