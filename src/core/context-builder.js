@@ -257,6 +257,7 @@ import { createRepositoryLayerForCoreEntities } from "./entity-repository-layer.
 import { createFileAndArtifactStorageModule } from "./file-artifact-storage-module.js";
 import { createBackupAndRestoreStrategy } from "./backup-restore-strategy.js";
 import { createDisasterRecoveryChecklist } from "./disaster-recovery-checklist.js";
+import { createBusinessContinuityLifecycleManager } from "./business-continuity-lifecycle-manager.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
 import { createAuthenticationRouteResolver } from "./authentication-route-resolver.js";
 import { createSessionAndTokenManagement } from "./session-and-token-management.js";
@@ -2755,6 +2756,16 @@ export function buildProjectContext(
     restoreDecision,
     rollbackExecutionResult,
   });
+  const { businessContinuityState } = createBusinessContinuityLifecycleManager({
+    backupStrategy,
+    continuityPlan: project.context?.continuityPlan ?? project.manualContext?.continuityPlan ?? null,
+    disasterRecoveryChecklist,
+    incidentAlert,
+    snapshotSchedule: currentSnapshotSchedule,
+    snapshotBackupWorker: currentSnapshotWorker,
+    snapshotRetentionPolicy: currentSnapshotRetentionPolicy,
+    ownerContinuityDecision: project.manualContext?.ownerContinuityDecision ?? null,
+  });
   const projectAuditAction = buildProjectAuditAction({
     project,
     approvalStatus,
@@ -3185,6 +3196,7 @@ export function buildProjectContext(
   context.backupStrategy = backupStrategy;
   context.restorePlan = restorePlan;
   context.disasterRecoveryChecklist = disasterRecoveryChecklist;
+  context.businessContinuityState = businessContinuityState;
   context.userJourneys = userJourneys;
   context.journeySteps = journeySteps;
   context.journeyMap = journeyMap;

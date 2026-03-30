@@ -88,6 +88,9 @@ function createFakeDocument() {
     "#snapshot-worker-toggle-button",
     "#snapshot-worker-run-button",
     "#disaster-recovery-refresh-button",
+    "#continuity-action-select",
+    "#continuity-action-button",
+    "#continuity-refresh-button",
     "#execute-rollback-button",
     "#project-audit-actor-input",
     "#project-audit-action-input",
@@ -1824,6 +1827,31 @@ test("cockpit saves snapshot schedule and runs manual backup from versioning con
       };
     }
 
+    if (url === `/api/projects/${projectId}/business-continuity?refresh=1`) {
+      return {
+        ok: true,
+        async json() {
+          return service.getBusinessContinuityState({
+            projectId,
+            refresh: true,
+          });
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/business-continuity/actions`) {
+      const body = JSON.parse(options.body ?? "{}");
+      return {
+        ok: true,
+        async json() {
+          return service.applyBusinessContinuityAction({
+            projectId,
+            actionInput: body.actionInput,
+          });
+        },
+      };
+    }
+
     throw new Error(`Unexpected url: ${url}`);
   }
 
@@ -1848,6 +1876,9 @@ test("cockpit saves snapshot schedule and runs manual backup from versioning con
   await fakeDocument.elements.get("#snapshot-worker-run-button").listeners.click();
   await fakeDocument.elements.get("#snapshot-worker-toggle-button").listeners.click();
   await fakeDocument.elements.get("#disaster-recovery-refresh-button").listeners.click();
+  fakeDocument.elements.get("#continuity-action-select").value = "start-recovery";
+  await fakeDocument.elements.get("#continuity-action-button").listeners.click();
+  await fakeDocument.elements.get("#continuity-refresh-button").listeners.click();
   service.configureSnapshotBackupSchedule({
     projectId,
     scheduleInput: {
@@ -1866,6 +1897,9 @@ test("cockpit saves snapshot schedule and runs manual backup from versioning con
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-backup-worker/run`), true);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-backup-worker`), true);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/disaster-recovery-checklist?refresh=1`), true);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/business-continuity/actions`), true);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/business-continuity?refresh=1`), true);
   assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /scheduled/i);
   assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /Recovery readiness/i);
+  assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /Business continuity/i);
 });

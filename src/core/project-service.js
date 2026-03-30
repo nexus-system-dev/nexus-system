@@ -337,6 +337,7 @@ export class ProjectService {
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
       disasterRecoveryChecklist: null,
+      businessContinuityState: null,
     };
 
     this.projects.set(id, project);
@@ -1104,6 +1105,92 @@ export class ProjectService {
     };
   }
 
+  getBusinessContinuityState({ projectId, refresh = false } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const serializedProject = refresh ? this.rebuildContext(projectId) : this.serializeProject(project);
+    const businessContinuityState =
+      serializedProject?.businessContinuityState
+      ?? serializedProject?.state?.businessContinuityState
+      ?? serializedProject?.context?.businessContinuityState
+      ?? null;
+    if (!businessContinuityState) {
+      return null;
+    }
+
+    return {
+      projectId,
+      businessContinuityState,
+      summary: businessContinuityState.summary ?? null,
+      project: serializedProject,
+    };
+  }
+
+  applyBusinessContinuityAction({ projectId, actionInput = {} } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const normalizedActionInput = actionInput && typeof actionInput === "object" ? actionInput : {};
+    const actionType = typeof normalizedActionInput.actionType === "string"
+      ? normalizedActionInput.actionType
+      : "trigger-continuity-health-check";
+    const previousPlan = project.manualContext?.continuityPlan ?? project.context?.continuityPlan ?? {};
+    const nextPlan = {
+      ...(previousPlan ?? {}),
+      previousLifecycleState:
+        project.context?.businessContinuityState?.lifecycleState
+        ?? previousPlan.previousLifecycleState
+        ?? null,
+      failover: {
+        ...(previousPlan.failover ?? {}),
+        enabled:
+          actionType === "prepare-failover" || actionType === "force-failover"
+            ? true
+            : (typeof previousPlan.failover?.enabled === "boolean" ? previousPlan.failover.enabled : false),
+      },
+    };
+
+    if (actionType === "resume-normal") {
+      nextPlan.forcedLifecycleState = "normal";
+    } else if (actionType === "start-recovery") {
+      nextPlan.forcedLifecycleState = "recovery";
+    } else if (actionType === "force-failover") {
+      nextPlan.forcedLifecycleState = "failover";
+    } else if (actionType === "mark-incident") {
+      nextPlan.forcedLifecycleState = "incident";
+    } else {
+      nextPlan.forcedLifecycleState = previousPlan.forcedLifecycleState ?? null;
+    }
+
+    project.manualContext = {
+      ...(project.manualContext ?? {}),
+      continuityPlan: nextPlan,
+      ownerContinuityDecision: {
+        decisionId: `owner-continuity-decision:${projectId}:${Date.now()}`,
+        decisionType: actionType,
+        reason: typeof normalizedActionInput.reason === "string" ? normalizedActionInput.reason : null,
+        requestFailover: actionType === "prepare-failover" || actionType === "force-failover",
+        decidedAt: new Date().toISOString(),
+      },
+    };
+
+    const serializedProject = this.rebuildContext(projectId);
+    return {
+      projectId,
+      actionType,
+      businessContinuityState:
+        serializedProject?.businessContinuityState
+        ?? serializedProject?.state?.businessContinuityState
+        ?? null,
+      project: serializedProject,
+    };
+  }
+
   buildAuthPayloadState({
     authenticationState = null,
     sessionState = null,
@@ -1483,6 +1570,7 @@ export class ProjectService {
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
       disasterRecoveryChecklist: null,
+      businessContinuityState: null,
     };
 
     this.projects.set(projectId, project);
@@ -1555,6 +1643,7 @@ export class ProjectService {
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
       disasterRecoveryChecklist: null,
+      businessContinuityState: null,
     };
 
     this.projects.set(projectId, project);
@@ -1729,11 +1818,13 @@ export class ProjectService {
     const snapshotRetentionPolicy = project.snapshotRetentionPolicy ?? builtContext.snapshotRetentionPolicy ?? null;
     const snapshotRetentionDecision = project.snapshotRetentionDecision ?? builtContext.snapshotRetentionDecision ?? null;
     const disasterRecoveryChecklist = builtContext.disasterRecoveryChecklist ?? project.disasterRecoveryChecklist ?? null;
+    const businessContinuityState = builtContext.businessContinuityState ?? project.businessContinuityState ?? null;
     project.snapshotSchedule = snapshotSchedule;
     project.snapshotBackupWorker = snapshotBackupWorker;
     project.snapshotRetentionPolicy = snapshotRetentionPolicy;
     project.snapshotRetentionDecision = snapshotRetentionDecision;
     project.disasterRecoveryChecklist = disasterRecoveryChecklist;
+    project.businessContinuityState = businessContinuityState;
     project.context = {
       ...builtContext,
       snapshotSchedule,
@@ -1741,6 +1832,7 @@ export class ProjectService {
       snapshotRetentionPolicy,
       snapshotRetentionDecision,
       disasterRecoveryChecklist,
+      businessContinuityState,
     };
     project.state = {
       ...project.state,
@@ -1926,6 +2018,7 @@ export class ProjectService {
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
       disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
+      businessContinuityState: project.context?.businessContinuityState ?? null,
       stateDiff: project.context?.stateDiff ?? null,
       restoreDecision: project.context?.restoreDecision ?? null,
       rollbackExecutionResult: project.context?.rollbackExecutionResult ?? null,
@@ -2785,6 +2878,7 @@ export class ProjectService {
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
       disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
+      businessContinuityState: project.context?.businessContinuityState ?? null,
       agents: project.agents,
       overview: {
         bottleneck: blockedTasks[0] ?? "אין כרגע חסם מרכזי",

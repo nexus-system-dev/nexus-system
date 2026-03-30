@@ -93,6 +93,7 @@ function getProjectLiveState(projectService, projectId) {
     reviewThreadState: project.reviewThreadState ?? null,
     collaborationFeed: project.collaborationFeed ?? null,
     disasterRecoveryChecklist: project.disasterRecoveryChecklist ?? null,
+    businessContinuityState: project.businessContinuityState ?? null,
     events: project.events ?? [],
   };
 }
@@ -412,6 +413,19 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/business-continuity/actions")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.applyBusinessContinuityAction === "function"
+        ? projectService.applyBusinessContinuityAction({
+            projectId,
+            actionInput: body.actionInput,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/presence")) {
       const projectId = segments[3];
       const body = await parseBody(request).catch(() => ({}));
@@ -534,6 +548,21 @@ export function createServer(projectService, runtimeStatus = {}) {
           response,
           projectAuditPayload ? 200 : 404,
           projectAuditPayload ?? { error: "Project audit payload not found" },
+        );
+        return;
+      }
+
+      if (suffix === "business-continuity") {
+        const continuityPayload = typeof projectService.getBusinessContinuityState === "function"
+          ? projectService.getBusinessContinuityState({
+              projectId,
+              refresh: ["1", "true", "yes"].includes((url.searchParams.get("refresh") ?? "").toLowerCase()),
+            })
+          : null;
+        sendJson(
+          response,
+          continuityPayload ? 200 : 404,
+          continuityPayload ?? { error: "Project business continuity state not found" },
         );
         return;
       }

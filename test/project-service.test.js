@@ -1900,3 +1900,53 @@ test("project service exposes disaster recovery checklist with refresh integrati
     },
   });
 });
+
+test("project service evaluates and mutates business continuity lifecycle state", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: true,
+      intervalSeconds: 60,
+      preChangeTriggers: ["deploy"],
+    },
+  });
+  service.configureSnapshotRetentionPolicy({
+    projectId: "giftwallet",
+    retentionInput: {
+      enabled: true,
+      maxSnapshots: 3,
+    },
+  });
+  service.runSnapshotBackupNow({ projectId: "giftwallet", triggerType: "manual" });
+
+  const continuityPayload = service.getBusinessContinuityState({
+    projectId: "giftwallet",
+    refresh: true,
+  });
+
+  assert.equal(Boolean(continuityPayload?.businessContinuityState?.continuityStateId), true);
+  assert.equal(Array.isArray(continuityPayload.businessContinuityState.availableActions), true);
+  assert.equal(Boolean(continuityPayload.project.businessContinuityState), true);
+
+  const forcedFailover = service.applyBusinessContinuityAction({
+    projectId: "giftwallet",
+    actionInput: {
+      actionType: "force-failover",
+      reason: "manual continuity drill",
+    },
+  });
+
+  assert.equal(forcedFailover.businessContinuityState.lifecycleState, "failover");
+  assert.equal(forcedFailover.businessContinuityState.orchestration.failover.integrationStatus, "placeholder");
+  assert.equal(forcedFailover.businessContinuityState.orchestration.failover.isBlocking, true);
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: false,
+    },
+  });
+});

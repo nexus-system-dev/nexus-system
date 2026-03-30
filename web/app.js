@@ -175,6 +175,9 @@ function queryElements(doc) {
     snapshotWorkerToggleButton: doc.querySelector("#snapshot-worker-toggle-button"),
     snapshotWorkerRunButton: doc.querySelector("#snapshot-worker-run-button"),
     disasterRecoveryRefreshButton: doc.querySelector("#disaster-recovery-refresh-button"),
+    continuityActionSelect: doc.querySelector("#continuity-action-select"),
+    continuityActionButton: doc.querySelector("#continuity-action-button"),
+    continuityRefreshButton: doc.querySelector("#continuity-refresh-button"),
     executeRollbackButton: doc.querySelector("#execute-rollback-button"),
     projectAuditActorInput: doc.querySelector("#project-audit-actor-input"),
     projectAuditActionInput: doc.querySelector("#project-audit-action-input"),
@@ -1310,6 +1313,7 @@ function renderVersioning(elements, project) {
   const retentionPolicy = normalizeObject(project.snapshotRetentionPolicy ?? state.snapshotRetentionPolicy);
   const retentionDecision = normalizeObject(project.snapshotRetentionDecision ?? state.snapshotRetentionDecision);
   const disasterRecoveryChecklist = normalizeObject(project.disasterRecoveryChecklist ?? state.disasterRecoveryChecklist);
+  const businessContinuityState = normalizeObject(project.businessContinuityState ?? state.businessContinuityState);
   const restore = normalizeObject(project.restoreDecision ?? state.restoreDecision);
   const rollback = normalizeObject(project.rollbackExecutionResult ?? state.rollbackExecutionResult);
   const versions = normalizeObject(snapshot.versions);
@@ -1318,6 +1322,12 @@ function renderVersioning(elements, project) {
   const checklistSummary = normalizeObject(disasterRecoveryChecklist.summary);
   const checklistPrerequisites = normalizeArray(disasterRecoveryChecklist.prerequisites);
   const checklistSteps = normalizeArray(disasterRecoveryChecklist.steps);
+  const continuitySummary = normalizeObject(businessContinuityState.summary);
+  const continuityOrchestration = normalizeObject(businessContinuityState.orchestration);
+  const continuityActions = normalizeArray(businessContinuityState.availableActions).map((action) => ({
+    title: action,
+    body: `continuity action`,
+  }));
   const details = [
     {
       title: snapshot.snapshotId ?? snapshot.snapshotRecordId ?? "No snapshot yet",
@@ -1347,6 +1357,10 @@ function renderVersioning(elements, project) {
       title: `Recovery readiness: ${checklistSummary.readinessScore ?? 0}%`,
       body: `missing ${checklistSummary.missingPrerequisites ?? 0} | steps ${checklistSteps.length}`,
     },
+    {
+      title: `Continuity: ${businessContinuityState.lifecycleState ?? "unknown"}`,
+      body: `${businessContinuityState.continuityStatus ?? "unknown"} | failover ${continuitySummary.failoverReady ? "ready" : "placeholder"}`,
+    },
   ];
   const prerequisiteItems = checklistPrerequisites.slice(0, 5).map((item) => ({
     title: `${item.label ?? item.key ?? "Prerequisite"} | ${item.status ?? "unknown"}`,
@@ -1356,6 +1370,20 @@ function renderVersioning(elements, project) {
     title: `${step.order ?? "?"}. ${step.title ?? "Recovery step"}`,
     body: `${step.phase ?? "phase"} | ${step.ready === false ? "blocked" : "ready"} | ${step.description ?? ""}`,
   }));
+  const continuityItems = [
+    {
+      title: `Backup orchestration`,
+      body: `schedule ${continuityOrchestration.backup?.scheduleId ?? "n/a"} | worker ${continuityOrchestration.backup?.workerEnabled ? "enabled" : "disabled"}`,
+    },
+    {
+      title: `Retention orchestration`,
+      body: `policy ${continuityOrchestration.retention?.retentionPolicyId ?? "n/a"} | max ${continuityOrchestration.retention?.maxSnapshots ?? "?"}`,
+    },
+    {
+      title: `Failover integration`,
+      body: `${continuityOrchestration.failover?.integrationStatus ?? "placeholder"} | ${continuityOrchestration.failover?.note ?? "n/a"}`,
+    },
+  ];
 
   elements.versioning.innerHTML = `
     ${metricHtml([
@@ -1369,10 +1397,14 @@ function renderVersioning(elements, project) {
       { label: "Rollback status", value: rollback.executionStatus ?? "not-run" },
       { label: "Recovery ready", value: checklistSummary.canExecuteRecovery ? "yes" : "no" },
       { label: "Recovery score", value: `${checklistSummary.readinessScore ?? 0}%` },
+      { label: "Continuity state", value: businessContinuityState.lifecycleState ?? "unknown" },
+      { label: "Continuity risk", value: businessContinuityState.continuityStatus ?? "unknown" },
     ])}
     ${stackHtml("State control", details, "עדיין אין נתוני versioning זמינים.")}
     ${stackHtml("Recovery prerequisites", prerequisiteItems, "אין כרגע prerequisites של recovery.")}
     ${stackHtml("Recovery steps", recoveryStepItems, "אין כרגע recovery steps זמינים.")}
+    ${stackHtml("Business continuity", continuityItems, "אין כרגע business continuity state זמין.")}
+    ${stackHtml("Continuity actions", continuityActions, "אין כרגע continuity actions זמינות.")}
   `;
 
   if (elements.snapshotIntervalInput && schedule.intervalSeconds) {
@@ -2221,6 +2253,40 @@ async function runSnapshotWorkerTickFromUi() {
     await loadProject(currentProjectId);
   }
 
+  async function refreshBusinessContinuityFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    const payload = await fetchJson(`/api/projects/${currentProjectId}/business-continuity?refresh=1`);
+    const refreshedProject = payload?.project ?? null;
+    if (refreshedProject && typeof refreshedProject === "object") {
+      currentProject = refreshedProject;
+      renderProject(elements, currentProject);
+      return;
+    }
+
+    await loadProject(currentProjectId);
+  }
+
+  async function applyBusinessContinuityActionFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    const actionType = elements.continuityActionSelect?.value ?? "trigger-continuity-health-check";
+    await fetchJson(`/api/projects/${currentProjectId}/business-continuity/actions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        actionInput: {
+          actionType,
+        },
+      }),
+    });
+    await loadProject(currentProjectId);
+  }
+
   function mergeLiveState(liveState) {
     if (!currentProject) {
       return;
@@ -2238,6 +2304,7 @@ async function runSnapshotWorkerTickFromUi() {
       projectPresenceState: liveState.projectPresenceState ?? currentProject.projectPresenceState,
       reviewThreadState: liveState.reviewThreadState ?? currentProject.reviewThreadState,
       collaborationFeed: liveState.collaborationFeed ?? currentProject.collaborationFeed,
+      businessContinuityState: liveState.businessContinuityState ?? currentProject.businessContinuityState,
       events: liveState.events ?? currentProject.events,
     };
     renderLive(elements, currentProject);
@@ -2504,6 +2571,14 @@ async function runSnapshotWorkerTickFromUi() {
 
   elements.disasterRecoveryRefreshButton?.addEventListener("click", async () => {
     await refreshDisasterRecoveryChecklistFromUi();
+  });
+
+  elements.continuityActionButton?.addEventListener("click", async () => {
+    await applyBusinessContinuityActionFromUi();
+  });
+
+  elements.continuityRefreshButton?.addEventListener("click", async () => {
+    await refreshBusinessContinuityFromUi();
   });
 
   elements.projectAuditRefreshButton?.addEventListener("click", async () => {

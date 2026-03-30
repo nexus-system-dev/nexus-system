@@ -673,6 +673,22 @@
 - dependencies:
   - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `dashboard template contract is generated from screen template schema` → `full` | `src/core/dashboard-template.js`
+  - `dashboard template is wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered` → `full` | `test/dashboard-template.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `template returns canonical dashboard structure`
+  - `template payload is exposed in project context/state`
+  - `tests validate schema-driven and fallback dashboard template`
+- missing_for_green:
+  - `none`
 
 
 3. `Create detail page template`  | סטטוס: 🟢 בוצע
@@ -684,6 +700,22 @@
 - dependencies:
   - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `detail page template contract is generated from screen template schema` → `full` | `src/core/detail-page-template.js`
+  - `detail template is wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered` → `full` | `test/detail-page-template.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `template returns canonical detail-page structure`
+  - `template payload is exposed in project context/state`
+  - `tests validate schema-driven and fallback detail template`
+- missing_for_green:
+  - `none`
 
 
 4. `Create workflow template`  | סטטוס: 🟢 בוצע
@@ -695,6 +727,22 @@
 - dependencies:
   - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `workflow template contract is generated from screen template schema` → `full` | `src/core/workflow-template.js`
+  - `workflow template is wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered` → `full` | `test/workflow-template.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `template returns canonical workflow/wizard structure`
+  - `template payload is exposed in project context/state`
+  - `tests validate schema-driven and fallback workflow template`
+- missing_for_green:
+  - `none`
 
 
 5. `Create list and management template`  | סטטוס: 🟢 בוצע
@@ -2257,7 +2305,7 @@
 - הערת מצב: ה־checklist מומש end-to-end ומחובר ל־backup/restore/snapshot state בפועל; ניתן לרענן דרך API (`GET /api/projects/:id/disaster-recovery-checklist?refresh=1`) ודרך כפתור ייעודי ב־Versioning, עם תצוגת readiness, prerequisites ו־recovery steps.
 
 
-6. `Create business continuity lifecycle manager`  | סטטוס: 🔴 לא בוצע
+6. `Create business continuity lifecycle manager`  | סטטוס: 🟡 חלקי
 - execution_order: `29`
 - description: לבנות manager שמחבר backup, failover, incident recovery, retention policies ו־owner continuity decisions למסלול continuity אחד לאורך חיי המוצר
 - input:
@@ -2270,6 +2318,27 @@
   - `Create disaster recovery checklist`  | סטטוס: 🟢 בוצע
   - `Create failover and continuity planner`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `continuity lifecycle manager module with normal/degraded/incident/recovery/failover states` → `full` | `src/core/business-continuity-lifecycle-manager.js`, `test/business-continuity-lifecycle-manager.test.js`
+  - `orchestration across backup + retention + disaster recovery checklist + owner decisions` → `full` | `src/core/business-continuity-lifecycle-manager.js`, `src/core/context-builder.js`, `test/project-service.test.js`
+  - `failover integration point tied to missing planner dependency` → `partial` | `src/core/business-continuity-lifecycle-manager.js`, `src/core/project-service.js`, `test/business-continuity-lifecycle-manager.test.js`
+  - `API exposure and continuity actions` → `full` | `src/core/project-service.js`, `src/server.js`, `test/server-health-endpoints.test.js`
+  - `Versioning UI visibility and trigger path` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Versioning And Restore → Apply continuity action / Refresh continuity`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `manager computes lifecycle transitions from continuity inputs and runtime signals`
+  - `continuity state is wired into project context/state and API`
+  - `user can trigger continuity actions and observe resulting state`
+  - `tests cover lifecycle transitions and integration paths`
+  - `failover planner dependency is fully implemented and connected`
+- missing_for_green:
+  - `Failover execution is still placeholder because dependency \`Create failover and continuity planner\` is not implemented yet.`
+- הערת מצב: ה־manager ממומש ומחובר end-to-end ל־backup/retention/disaster recovery/owner decisions עם state transitions ו־API/UI פעילים; אך שכבת failover בפועל מסומנת כ־placeholder עד למימוש `Create failover and continuity planner`, ולכן הסטטוס נשאר 🟡.
 
 ---
 

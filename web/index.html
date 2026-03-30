@@ -273,6 +273,20 @@
                   <button id="snapshot-worker-run-button" type="button">Run worker tick</button>
                   <button id="disaster-recovery-refresh-button" type="button">Refresh recovery checklist</button>
                 </div>
+                <div class="proposal-review-form">
+                  <label class="empty-app-field">
+                    <span class="mini-label">Business continuity action</span>
+                    <select id="continuity-action-select">
+                      <option value="trigger-continuity-health-check">Continuity health check</option>
+                      <option value="start-recovery">Start recovery</option>
+                      <option value="prepare-failover">Prepare failover</option>
+                      <option value="force-failover">Force failover</option>
+                      <option value="resume-normal">Resume normal</option>
+                    </select>
+                  </label>
+                  <button id="continuity-action-button" type="button">Apply continuity action</button>
+                  <button id="continuity-refresh-button" type="button">Refresh continuity</button>
+                </div>
                 <button id="execute-rollback-button" type="button">Execute rollback</button>
                 <div id="versioning-content" class="detail-content"></div>
               </section>
