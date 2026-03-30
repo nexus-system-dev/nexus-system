@@ -5621,6 +5621,22 @@ Refinements מאושרים:
 - dependencies:
   - `Define screen contract schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `derive screen goal and primary/secondary actions from screen contract` → `full` | `src/core/screen-goal-cta.js`
+  - `goal/cta outputs wired into generated screen contracts` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered` → `full` | `test/screen-goal-cta.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `module returns canonical screenGoal + action set`
+  - `outputs are integrated into project state contracts`
+  - `tests verify wizard and dashboard action generation`
+- missing_for_green:
+  - `none`
 - הערת מצב: המודול הקנוני מומש ומחזיר `screenGoal`, `primaryAction` ו־`secondaryActions` לפי `screenContract`, והוא כבר מוזן ל־`Project State` דרך `screenContracts`; שכבות mobile, states וה־review יעמיקו את החוזה בהמשך.
 
 3. `Create mobile readiness checklist`  | סטטוס: 🟢 בוצע
@@ -5632,6 +5648,22 @@ Refinements מאושרים:
 - dependencies:
   - `Define screen contract schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `build mobile usability checklist from screen contract` → `full` | `src/core/mobile-readiness-checklist.js`
+  - `mobile checklist wired into context and project state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered` → `full` | `test/mobile-readiness-checklist.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `checklist includes canonical mobile constraints per screen`
+  - `checklist is available in live project state`
+  - `tests validate checklist construction and fallback behavior`
+- missing_for_green:
+  - `none`
 
 4. `Create loading empty error states definition`  | סטטוס: 🟢 בוצע
 - description: להגדיר לכל מסך מצבי `loading`, `empty`, `error`, `success`
@@ -5642,6 +5674,22 @@ Refinements מאושרים:
 - dependencies:
   - `Define screen contract schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `define canonical loading/empty/error/success states by screen` → `full` | `src/core/loading-empty-error-states-definition.js`
+  - `screen state definitions wired into context/state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `state definition behavior covered` → `full` | `test/loading-empty-error-states-definition.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `module returns canonical screenStates payload`
+  - `states are integrated into project state for downstream templates`
+  - `tests validate state coverage and fallback`
+- missing_for_green:
+  - `none`
 
 5. `Create screen validation checklist`  | סטטוס: 🟢 בוצע
 - description: לבנות checklist קבוע לכל מסך לפני implementation
@@ -5655,6 +5703,22 @@ Refinements מאושרים:
   - `Create mobile readiness checklist`  | סטטוס: 🟢 בוצע
   - `Create loading empty error states definition`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `validate screen readiness across contract/mobile/states` → `full` | `src/core/screen-validation-checklist.js`
+  - `validation checklist wired into context and state` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `validation behavior covered` → `full` | `test/screen-validation-checklist.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `checklist reports ready/blocked screens with issues`
+  - `checklist is available for downstream screen review`
+  - `tests validate both ready and blocking scenarios`
+- missing_for_green:
+  - `none`
 
 #### `Design System`
 
@@ -5669,6 +5733,22 @@ Refinements מאושרים:
 - dependencies:
   - `UI / UX Foundation`
 - connects_to: `Project State`
+- completion_type: `schema_only`
+- coverage_check:
+  - `define canonical tokens for color/spacing/typography/radius/border/shadow` → `full` | `src/core/design-token-schema.js`
+  - `design tokens wired into context and applied in cockpit` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `web/app.js`
+  - `schema behavior covered` → `full` | `test/design-token-schema.test.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Workspace render pipeline (design token application)`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `schema returns canonical design token families`
+  - `tokens are published in project state and applied to UI CSS vars`
+  - `tests validate schema + UI token application`
+- missing_for_green:
+  - `none`
 
 2. `Create typography system`  | סטטוס: 🟢 בוצע
 - description: להגדיר scale קבוע לכותרות, טקסט גוף, labels ו־meta text
@@ -8682,7 +8762,7 @@ Refinements מאושרים:
   - `none`
 - הערת מצב: ה־retention guard מחובר end-to-end: policy של `maxSnapshots`, מחיקה בטוחה oldest-first ב־snapshot store, אינטגרציה אוטומטית אחרי backup, ו־manual cleanup דרך API ו־Versioning UI.
 
-4. `Create snapshot backup worker job`  | סטטוס: 🔴 לא בוצע
+4. `Create snapshot backup worker job`  | סטטוס: 🟢 בוצע
 - description: לבנות worker/job שמריץ snapshot creation בפועל לפי schedule ומוחק snapshots ישנים לפי retention guard
 - input:
   - `snapshotSchedule`
@@ -8693,6 +8773,28 @@ Refinements מאושרים:
   - `Create snapshot retention guard`  | סטטוס: 🟢 בוצע
   - `Create background worker runtime`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `background worker/job executes scheduled snapshot backups` → `full` | `src/core/snapshot-backup-worker-job.js`, `src/core/project-service.js`, `test/snapshot-backup-worker-job.test.js`, `test/project-service.test.js`
+  - `worker integrates with backup scheduling module` → `full` | `src/core/project-service.js`, `test/project-service.test.js`
+  - `retention guard is applied after worker backup run` → `full` | `src/core/project-service.js`, `test/project-service.test.js`
+  - `worker reports status (enabled/disabled, success/failure, last/next run)` → `full` | `src/core/project-service.js`, `src/server.js`, `test/project-service.test.js`, `test/server-health-endpoints.test.js`
+  - `worker control and visibility are exposed via API and Versioning UI` → `full` | `src/server.js`, `web/index.html`, `web/app.js`, `test/server-health-endpoints.test.js`, `test/web-app-wave1-cockpit.test.js`
+  - `error handling path is covered` → `full` | `test/project-service.test.js`, `test/snapshot-backup-worker-job.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Versioning And Restore → Toggle Snapshot Worker / Run Worker Tick`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `worker runs snapshot backups based on saved schedule`
+  - `worker updates run status and handles failure without breaking loop`
+  - `worker applies retention cleanup after backup`
+  - `worker is controllable via API and visible in Versioning UI`
+  - `tests cover module + service + server + ui integration`
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־worker מומש end-to-end: timer מבוסס schedule ב־`ProjectService`, ריצת backup אוטומטית עם retention post-run, סטטוס הרצה (`enabled`, `lastRunAt`, `nextRunAt`, `lastStatus`) ב־project state, API להפעלה/כיבוי והרצה ידנית, ו־UI ב־Versioning לניהול וצפייה.
 
 5. `Create data retention policy module`  | סטטוס: 🔴 לא בוצע
 - description: לבנות מודול מתקדם שמגדיר retention windows, archival rules, data-class policies ו־deletion workflows לנתוני Nexus

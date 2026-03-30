@@ -172,6 +172,8 @@ function queryElements(doc) {
     snapshotMaxInput: doc.querySelector("#snapshot-max-input"),
     snapshotRetentionButton: doc.querySelector("#snapshot-retention-button"),
     snapshotCleanupButton: doc.querySelector("#snapshot-cleanup-button"),
+    snapshotWorkerToggleButton: doc.querySelector("#snapshot-worker-toggle-button"),
+    snapshotWorkerRunButton: doc.querySelector("#snapshot-worker-run-button"),
     executeRollbackButton: doc.querySelector("#execute-rollback-button"),
     projectAuditActorInput: doc.querySelector("#project-audit-actor-input"),
     projectAuditActionInput: doc.querySelector("#project-audit-action-input"),
@@ -1303,6 +1305,7 @@ function renderVersioning(elements, project) {
   const state = normalizeObject(project.state);
   const snapshot = normalizeObject(project.snapshotRecord ?? state.snapshotRecord);
   const schedule = normalizeObject(project.snapshotSchedule ?? state.snapshotSchedule);
+  const worker = normalizeObject(project.snapshotBackupWorker ?? state.snapshotBackupWorker);
   const retentionPolicy = normalizeObject(project.snapshotRetentionPolicy ?? state.snapshotRetentionPolicy);
   const retentionDecision = normalizeObject(project.snapshotRetentionDecision ?? state.snapshotRetentionDecision);
   const restore = normalizeObject(project.restoreDecision ?? state.restoreDecision);
@@ -1324,6 +1327,10 @@ function renderVersioning(elements, project) {
       body: `max ${retentionPolicy.maxSnapshots ?? "?"} | pruned ${retentionDecision.summary?.pruneCount ?? 0}`,
     },
     {
+      title: `Worker: ${worker.lastExecutionStatus ?? "not-run"}`,
+      body: `status ${worker.status ?? "idle"} | errors ${worker.errorCount ?? 0}`,
+    },
+    {
       title: `Restore mode: ${restore.restoreMode ?? "unknown"}`,
       body: restore.blockedReason ?? `Safe to execute: ${restore.summary?.isSafeToExecute ? "yes" : "no"}`,
     },
@@ -1337,6 +1344,8 @@ function renderVersioning(elements, project) {
     ${metricHtml([
       { label: "Snapshot stored", value: snapshot.summary?.isStored ? "yes" : "no" },
       { label: "Schedule", value: schedule.summary?.scheduleStatus ?? "not-configured" },
+      { label: "Worker", value: worker.enabled ? (worker.status ?? "active") : "disabled" },
+      { label: "Worker next run", value: worker.nextRunAt ?? scheduleExecution.nextRunAt ?? "n/a" },
       { label: "Max snapshots", value: String(retentionPolicy.maxSnapshots ?? 20) },
       { label: "Last cleanup", value: retentionPolicy.lastCleanupAt ?? "never" },
       { label: "Last backup", value: scheduleExecution.lastRunAt ?? "never" },
@@ -1355,6 +1364,10 @@ function renderVersioning(elements, project) {
 
   if (elements.snapshotMaxInput && retentionPolicy.maxSnapshots) {
     elements.snapshotMaxInput.value = String(retentionPolicy.maxSnapshots);
+  }
+
+  if (elements.snapshotWorkerToggleButton) {
+    elements.snapshotWorkerToggleButton.textContent = worker.enabled ? "Disable worker" : "Enable worker";
   }
 }
 
@@ -2138,6 +2151,39 @@ export function createCockpitApp({
     await loadProject(currentProjectId);
   }
 
+  async function toggleSnapshotWorkerFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    const currentWorker = normalizeObject(currentProject?.snapshotBackupWorker ?? currentProject?.state?.snapshotBackupWorker);
+    await fetchJson(`/api/projects/${currentProjectId}/snapshot-backup-worker`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        workerInput: {
+          enabled: !currentWorker.enabled,
+        },
+      }),
+    });
+    await loadProject(currentProjectId);
+  }
+
+  async function runSnapshotWorkerTickFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    await fetchJson(`/api/projects/${currentProjectId}/snapshot-backup-worker/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        triggerType: "manual-worker-run",
+      }),
+    });
+    await loadProject(currentProjectId);
+  }
+
   function mergeLiveState(liveState) {
     if (!currentProject) {
       return;
@@ -2409,6 +2455,14 @@ export function createCockpitApp({
 
   elements.snapshotCleanupButton?.addEventListener("click", async () => {
     await runSnapshotCleanupFromUi();
+  });
+
+  elements.snapshotWorkerToggleButton?.addEventListener("click", async () => {
+    await toggleSnapshotWorkerFromUi();
+  });
+
+  elements.snapshotWorkerRunButton?.addEventListener("click", async () => {
+    await runSnapshotWorkerTickFromUi();
   });
 
   elements.projectAuditRefreshButton?.addEventListener("click", async () => {

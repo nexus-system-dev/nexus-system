@@ -51,6 +51,7 @@ import { createProjectReviewThreadStore } from "./project-review-thread-store.js
 import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
 import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
 import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
+import { createSnapshotBackupWorkerJob } from "./snapshot-backup-worker-job.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
 import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
@@ -332,6 +333,7 @@ export class ProjectService {
       linkedAccounts: [],
       approvalRecords: approvalRecords ?? [],
       snapshotSchedule: null,
+      snapshotBackupWorker: null,
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
     };
@@ -631,6 +633,23 @@ export class ProjectService {
     }
   }
 
+  ensureSnapshotBackupWorker(projectId, workerInput = null) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const { snapshotBackupWorker } = createSnapshotBackupWorkerJob({
+      projectId,
+      snapshotSchedule: project.snapshotSchedule ?? project.context?.snapshotSchedule ?? null,
+      previousWorkerState: project.snapshotBackupWorker ?? project.context?.snapshotBackupWorker ?? null,
+      workerInput,
+    });
+
+    project.snapshotBackupWorker = snapshotBackupWorker;
+    return snapshotBackupWorker;
+  }
+
   normalizeSnapshotRetentionPolicy(retentionInput = {}, previousPolicy = null, projectId = null) {
     const input = retentionInput && typeof retentionInput === "object" ? retentionInput : {};
     const previous = previousPolicy && typeof previousPolicy === "object" ? previousPolicy : {};
@@ -797,7 +816,107 @@ export class ProjectService {
     return this.serializeProject(project);
   }
 
-  startSnapshotBackupTimer(projectId) {
+  runSnapshotBackupWorkerTick({ projectId, triggerType = "interval" } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const worker = this.ensureSnapshotBackupWorker(projectId);
+    const nowIso = new Date().toISOString();
+    if (!worker?.enabled) {
+      project.snapshotBackupWorker = {
+        ...(worker ?? {}),
+        status: "paused",
+        updatedAt: nowIso,
+      };
+      project.context = {
+        ...(project.context ?? {}),
+        snapshotBackupWorker: project.snapshotBackupWorker,
+      };
+      project.state = {
+        ...(project.state ?? {}),
+        snapshotBackupWorker: project.snapshotBackupWorker,
+      };
+      return this.serializeProject(project);
+    }
+
+    try {
+      const backupResult = this.runSnapshotBackupNow({
+        projectId,
+        triggerType,
+      });
+      const refreshedProject = this.projects.get(projectId);
+      if (!backupResult || !refreshedProject) {
+        throw new Error("Snapshot backup worker run did not produce a backup result");
+      }
+
+      const currentWorker = refreshedProject.snapshotBackupWorker ?? worker ?? {};
+      const schedule = refreshedProject.snapshotSchedule ?? null;
+      refreshedProject.snapshotBackupWorker = {
+        ...currentWorker,
+        enabled: true,
+        status: "active",
+        lastExecutionStatus: "success",
+        lastRunAt: nowIso,
+        runCount: (currentWorker.runCount ?? 0) + 1,
+        nextRunAt: schedule?.enabled
+          ? new Date(Date.now() + (schedule.intervalMs ?? schedule.intervalSeconds * 1000 ?? 0)).toISOString()
+          : null,
+        lastError: null,
+        updatedAt: nowIso,
+        summary: {
+          workerStatus: "enabled",
+          runCount: (currentWorker.runCount ?? 0) + 1,
+          errorCount: currentWorker.errorCount ?? 0,
+          lastExecutionStatus: "success",
+        },
+      };
+      refreshedProject.context = {
+        ...(refreshedProject.context ?? {}),
+        snapshotBackupWorker: refreshedProject.snapshotBackupWorker,
+      };
+      refreshedProject.state = {
+        ...(refreshedProject.state ?? {}),
+        snapshotBackupWorker: refreshedProject.snapshotBackupWorker,
+      };
+
+      return this.serializeProject(refreshedProject);
+    } catch (error) {
+      const failedProject = this.projects.get(projectId);
+      if (!failedProject) {
+        return null;
+      }
+      const currentWorker = failedProject.snapshotBackupWorker ?? worker ?? {};
+      failedProject.snapshotBackupWorker = {
+        ...currentWorker,
+        enabled: true,
+        status: "degraded",
+        lastExecutionStatus: "failed",
+        lastRunAt: nowIso,
+        errorCount: (currentWorker.errorCount ?? 0) + 1,
+        lastError: error instanceof Error ? error.message : "Unknown worker error",
+        updatedAt: nowIso,
+        summary: {
+          workerStatus: "enabled",
+          runCount: currentWorker.runCount ?? 0,
+          errorCount: (currentWorker.errorCount ?? 0) + 1,
+          lastExecutionStatus: "failed",
+        },
+      };
+      failedProject.context = {
+        ...(failedProject.context ?? {}),
+        snapshotBackupWorker: failedProject.snapshotBackupWorker,
+      };
+      failedProject.state = {
+        ...(failedProject.state ?? {}),
+        snapshotBackupWorker: failedProject.snapshotBackupWorker,
+      };
+      return this.serializeProject(failedProject);
+    }
+  }
+
+  syncSnapshotBackupWorkerTimer(projectId) {
     const project = this.projects.get(projectId);
     if (!project) {
       return null;
@@ -805,24 +924,56 @@ export class ProjectService {
 
     this.stopSnapshotBackupTimer(projectId);
     const schedule = project.snapshotSchedule ?? null;
-    if (!schedule?.enabled) {
-      return schedule;
+    const worker = this.ensureSnapshotBackupWorker(projectId);
+    if (!schedule?.enabled || !worker?.enabled) {
+      project.context = {
+        ...(project.context ?? {}),
+        snapshotBackupWorker: worker,
+      };
+      project.state = {
+        ...(project.state ?? {}),
+        snapshotBackupWorker: worker,
+      };
+      return worker;
     }
 
     const intervalMs = Number(schedule.intervalMs ?? (schedule.intervalSeconds ? schedule.intervalSeconds * 1000 : 0));
     if (!Number.isFinite(intervalMs) || intervalMs < 30_000) {
-      return schedule;
+      return worker;
     }
 
     const timer = setInterval(() => {
-      this.runSnapshotBackupNow({
+      this.runSnapshotBackupWorkerTick({
         projectId,
         triggerType: "interval",
       });
     }, intervalMs);
 
     this.snapshotBackupTimers.set(projectId, timer);
-    return schedule;
+    project.snapshotBackupWorker = {
+      ...worker,
+      status: "active",
+      nextRunAt: new Date(Date.now() + intervalMs).toISOString(),
+      updatedAt: new Date().toISOString(),
+      summary: {
+        ...(worker.summary ?? {}),
+        workerStatus: "enabled",
+      },
+    };
+    project.context = {
+      ...(project.context ?? {}),
+      snapshotBackupWorker: project.snapshotBackupWorker,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      snapshotBackupWorker: project.snapshotBackupWorker,
+    };
+
+    return project.snapshotBackupWorker;
+  }
+
+  startSnapshotBackupTimer(projectId) {
+    return this.syncSnapshotBackupWorkerTimer(projectId);
   }
 
   configureSnapshotBackupSchedule({ projectId, scheduleInput = {} } = {}) {
@@ -847,7 +998,27 @@ export class ProjectService {
       ...(project.state ?? {}),
       snapshotSchedule,
     };
-    this.startSnapshotBackupTimer(projectId);
+    this.syncSnapshotBackupWorkerTimer(projectId);
+
+    return this.serializeProject(project);
+  }
+
+  configureSnapshotBackupWorker({ projectId, workerInput = {} } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const snapshotBackupWorker = this.ensureSnapshotBackupWorker(projectId, workerInput);
+    project.context = {
+      ...(project.context ?? {}),
+      snapshotBackupWorker,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      snapshotBackupWorker,
+    };
+    this.syncSnapshotBackupWorkerTimer(projectId);
 
     return this.serializeProject(project);
   }
@@ -1283,6 +1454,7 @@ export class ProjectService {
       linkedAccounts: [],
       approvalRecords: [],
       snapshotSchedule: null,
+      snapshotBackupWorker: null,
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
     };
@@ -1353,6 +1525,7 @@ export class ProjectService {
       linkedAccounts: [],
       approvalRecords: [],
       snapshotSchedule: null,
+      snapshotBackupWorker: null,
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
     };
@@ -1525,14 +1698,17 @@ export class ProjectService {
       projectState: project.state ?? null,
       previousSchedule: existingSchedule,
     });
+    const snapshotBackupWorker = project.snapshotBackupWorker ?? builtContext.snapshotBackupWorker ?? null;
     const snapshotRetentionPolicy = project.snapshotRetentionPolicy ?? builtContext.snapshotRetentionPolicy ?? null;
     const snapshotRetentionDecision = project.snapshotRetentionDecision ?? builtContext.snapshotRetentionDecision ?? null;
     project.snapshotSchedule = snapshotSchedule;
+    project.snapshotBackupWorker = snapshotBackupWorker;
     project.snapshotRetentionPolicy = snapshotRetentionPolicy;
     project.snapshotRetentionDecision = snapshotRetentionDecision;
     project.context = {
       ...builtContext,
       snapshotSchedule,
+      snapshotBackupWorker,
       snapshotRetentionPolicy,
       snapshotRetentionDecision,
     };
@@ -1716,6 +1892,7 @@ export class ProjectService {
       projectStateSnapshot: project.context?.projectStateSnapshot ?? null,
       snapshotRecord: project.context?.snapshotRecord ?? null,
       snapshotSchedule: project.context?.snapshotSchedule ?? null,
+      snapshotBackupWorker: project.context?.snapshotBackupWorker ?? null,
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
       stateDiff: project.context?.stateDiff ?? null,
@@ -2573,6 +2750,7 @@ export class ProjectService {
       reviewThreadState: project.context?.reviewThreadState ?? null,
       collaborationFeed: project.context?.collaborationFeed ?? null,
       snapshotSchedule: project.context?.snapshotSchedule ?? null,
+      snapshotBackupWorker: project.context?.snapshotBackupWorker ?? null,
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
       agents: project.agents,

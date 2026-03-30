@@ -210,6 +210,27 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
         },
       },
     }),
+    configureSnapshotBackupWorker: ({ projectId, workerInput }) => ({
+      id: projectId,
+      snapshotBackupWorker: {
+        projectId,
+        enabled: workerInput.enabled,
+        status: workerInput.enabled ? "active" : "paused",
+      },
+    }),
+    runSnapshotBackupWorkerTick: ({ projectId, triggerType }) => ({
+      id: projectId,
+      snapshotBackupWorker: {
+        projectId,
+        enabled: true,
+        status: "active",
+        lastExecutionStatus: "success",
+      },
+      snapshotRecord: {
+        snapshotRecordId: `snapshot-record:${projectId}:worker`,
+        triggerType,
+      },
+    }),
   });
 
   const scheduleResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-backup-schedule", {
@@ -231,6 +252,14 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
   const cleanupResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-retention-cleanup", {
     triggerType: "manual-cleanup",
   });
+  const workerToggleResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-backup-worker", {
+    workerInput: {
+      enabled: false,
+    },
+  });
+  const workerRunResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-backup-worker/run", {
+    triggerType: "manual-worker-run",
+  });
 
   assert.equal(scheduleResponse.statusCode, 200);
   assert.equal(scheduleResponse.body.snapshotSchedule.intervalSeconds, 300);
@@ -241,6 +270,10 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
   assert.equal(retentionPolicyResponse.body.snapshotRetentionPolicy.maxSnapshots, 5);
   assert.equal(cleanupResponse.statusCode, 200);
   assert.equal(cleanupResponse.body.snapshotRetentionDecision.summary.totalAfterCleanup, 2);
+  assert.equal(workerToggleResponse.statusCode, 200);
+  assert.equal(workerToggleResponse.body.snapshotBackupWorker.enabled, false);
+  assert.equal(workerRunResponse.statusCode, 200);
+  assert.equal(workerRunResponse.body.snapshotRecord.triggerType, "manual-worker-run");
 });
 
 test("server exposes project live-state endpoint", async () => {

@@ -1807,3 +1807,53 @@ test("project service enforces snapshot retention policy and cleanup decisions",
     },
   });
 });
+
+test("project service runs snapshot backup worker tick with status reporting and toggling", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: true,
+      intervalSeconds: 60,
+    },
+  });
+  service.configureSnapshotRetentionPolicy({
+    projectId: "giftwallet",
+    retentionInput: {
+      enabled: true,
+      maxSnapshots: 2,
+    },
+  });
+
+  const ranTick = service.runSnapshotBackupWorkerTick({
+    projectId: "giftwallet",
+    triggerType: "manual-worker-run",
+  });
+  assert.equal(ranTick.snapshotBackupWorker.lastExecutionStatus, "success");
+  assert.equal(ranTick.snapshotBackupWorker.runCount >= 1, true);
+  assert.equal(ranTick.state.snapshotRetentionDecision.summary.totalAfterCleanup <= 2, true);
+
+  const disabled = service.configureSnapshotBackupWorker({
+    projectId: "giftwallet",
+    workerInput: {
+      enabled: false,
+    },
+  });
+  assert.equal(disabled.snapshotBackupWorker.enabled, false);
+  assert.equal(service.snapshotBackupTimers.has("giftwallet"), false);
+
+  const pausedTick = service.runSnapshotBackupWorkerTick({
+    projectId: "giftwallet",
+    triggerType: "manual-worker-run",
+  });
+  assert.equal(pausedTick.snapshotBackupWorker.status, "paused");
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: false,
+    },
+  });
+});

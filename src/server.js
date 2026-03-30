@@ -359,6 +359,32 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/snapshot-backup-worker")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.configureSnapshotBackupWorker === "function"
+        ? projectService.configureSnapshotBackupWorker({
+            projectId,
+            workerInput: body.workerInput,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/snapshot-backup-worker/run")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.runSnapshotBackupWorkerTick === "function"
+        ? projectService.runSnapshotBackupWorkerTick({
+            projectId,
+            triggerType: body.triggerType ?? "manual-worker-run",
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/snapshot-retention-policy")) {
       const projectId = segments[3];
       const body = await parseBody(request).catch(() => ({}));

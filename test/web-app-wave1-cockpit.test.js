@@ -85,6 +85,8 @@ function createFakeDocument() {
     "#snapshot-max-input",
     "#snapshot-retention-button",
     "#snapshot-cleanup-button",
+    "#snapshot-worker-toggle-button",
+    "#snapshot-worker-run-button",
     "#execute-rollback-button",
     "#project-audit-actor-input",
     "#project-audit-action-input",
@@ -1783,6 +1785,32 @@ test("cockpit saves snapshot schedule and runs manual backup from versioning con
       };
     }
 
+    if (url === `/api/projects/${projectId}/snapshot-backup-worker`) {
+      const body = JSON.parse(options.body ?? "{}");
+      return {
+        ok: true,
+        async json() {
+          return service.configureSnapshotBackupWorker({
+            projectId,
+            workerInput: body.workerInput,
+          });
+        },
+      };
+    }
+
+    if (url === `/api/projects/${projectId}/snapshot-backup-worker/run`) {
+      const body = JSON.parse(options.body ?? "{}");
+      return {
+        ok: true,
+        async json() {
+          return service.runSnapshotBackupWorkerTick({
+            projectId,
+            triggerType: body.triggerType ?? "manual-worker-run",
+          });
+        },
+      };
+    }
+
     throw new Error(`Unexpected url: ${url}`);
   }
 
@@ -1804,6 +1832,8 @@ test("cockpit saves snapshot schedule and runs manual backup from versioning con
   fakeDocument.elements.get("#snapshot-max-input").value = "2";
   await fakeDocument.elements.get("#snapshot-retention-button").listeners.click();
   await fakeDocument.elements.get("#snapshot-cleanup-button").listeners.click();
+  await fakeDocument.elements.get("#snapshot-worker-run-button").listeners.click();
+  await fakeDocument.elements.get("#snapshot-worker-toggle-button").listeners.click();
   service.configureSnapshotBackupSchedule({
     projectId,
     scheduleInput: {
@@ -1819,5 +1849,7 @@ test("cockpit saves snapshot schedule and runs manual backup from versioning con
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-backups/run`), true);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-retention-policy`), true);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-retention-cleanup`), true);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-backup-worker/run`), true);
+  assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/snapshot-backup-worker`), true);
   assert.match(fakeDocument.elements.get("#versioning-content").innerHTML, /scheduled/i);
 });
