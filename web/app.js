@@ -174,6 +174,7 @@ function queryElements(doc) {
     snapshotCleanupButton: doc.querySelector("#snapshot-cleanup-button"),
     snapshotWorkerToggleButton: doc.querySelector("#snapshot-worker-toggle-button"),
     snapshotWorkerRunButton: doc.querySelector("#snapshot-worker-run-button"),
+    disasterRecoveryRefreshButton: doc.querySelector("#disaster-recovery-refresh-button"),
     executeRollbackButton: doc.querySelector("#execute-rollback-button"),
     projectAuditActorInput: doc.querySelector("#project-audit-actor-input"),
     projectAuditActionInput: doc.querySelector("#project-audit-action-input"),
@@ -1308,11 +1309,15 @@ function renderVersioning(elements, project) {
   const worker = normalizeObject(project.snapshotBackupWorker ?? state.snapshotBackupWorker);
   const retentionPolicy = normalizeObject(project.snapshotRetentionPolicy ?? state.snapshotRetentionPolicy);
   const retentionDecision = normalizeObject(project.snapshotRetentionDecision ?? state.snapshotRetentionDecision);
+  const disasterRecoveryChecklist = normalizeObject(project.disasterRecoveryChecklist ?? state.disasterRecoveryChecklist);
   const restore = normalizeObject(project.restoreDecision ?? state.restoreDecision);
   const rollback = normalizeObject(project.rollbackExecutionResult ?? state.rollbackExecutionResult);
   const versions = normalizeObject(snapshot.versions);
   const scheduleExecution = normalizeObject(schedule.execution);
   const preChangeTriggers = normalizeArray(schedule.preChangeTriggers).join(", ");
+  const checklistSummary = normalizeObject(disasterRecoveryChecklist.summary);
+  const checklistPrerequisites = normalizeArray(disasterRecoveryChecklist.prerequisites);
+  const checklistSteps = normalizeArray(disasterRecoveryChecklist.steps);
   const details = [
     {
       title: snapshot.snapshotId ?? snapshot.snapshotRecordId ?? "No snapshot yet",
@@ -1338,7 +1343,19 @@ function renderVersioning(elements, project) {
       title: `Rollback: ${rollback.executionStatus ?? "not-run"}`,
       body: `Targets restored: ${rollback.summary?.restoredTargetCount ?? 0}`,
     },
+    {
+      title: `Recovery readiness: ${checklistSummary.readinessScore ?? 0}%`,
+      body: `missing ${checklistSummary.missingPrerequisites ?? 0} | steps ${checklistSteps.length}`,
+    },
   ];
+  const prerequisiteItems = checklistPrerequisites.slice(0, 5).map((item) => ({
+    title: `${item.label ?? item.key ?? "Prerequisite"} | ${item.status ?? "unknown"}`,
+    body: item.reason ?? "No reason provided.",
+  }));
+  const recoveryStepItems = checklistSteps.slice(0, 5).map((step) => ({
+    title: `${step.order ?? "?"}. ${step.title ?? "Recovery step"}`,
+    body: `${step.phase ?? "phase"} | ${step.ready === false ? "blocked" : "ready"} | ${step.description ?? ""}`,
+  }));
 
   elements.versioning.innerHTML = `
     ${metricHtml([
@@ -1350,8 +1367,12 @@ function renderVersioning(elements, project) {
       { label: "Last cleanup", value: retentionPolicy.lastCleanupAt ?? "never" },
       { label: "Last backup", value: scheduleExecution.lastRunAt ?? "never" },
       { label: "Rollback status", value: rollback.executionStatus ?? "not-run" },
+      { label: "Recovery ready", value: checklistSummary.canExecuteRecovery ? "yes" : "no" },
+      { label: "Recovery score", value: `${checklistSummary.readinessScore ?? 0}%` },
     ])}
     ${stackHtml("State control", details, "עדיין אין נתוני versioning זמינים.")}
+    ${stackHtml("Recovery prerequisites", prerequisiteItems, "אין כרגע prerequisites של recovery.")}
+    ${stackHtml("Recovery steps", recoveryStepItems, "אין כרגע recovery steps זמינים.")}
   `;
 
   if (elements.snapshotIntervalInput && schedule.intervalSeconds) {
@@ -2169,7 +2190,7 @@ export function createCockpitApp({
     await loadProject(currentProjectId);
   }
 
-  async function runSnapshotWorkerTickFromUi() {
+async function runSnapshotWorkerTickFromUi() {
     if (!currentProjectId) {
       return;
     }
@@ -2181,6 +2202,22 @@ export function createCockpitApp({
         triggerType: "manual-worker-run",
       }),
     });
+    await loadProject(currentProjectId);
+  }
+
+  async function refreshDisasterRecoveryChecklistFromUi() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    const payload = await fetchJson(`/api/projects/${currentProjectId}/disaster-recovery-checklist?refresh=1`);
+    const refreshedProject = payload?.project ?? null;
+    if (refreshedProject && typeof refreshedProject === "object") {
+      currentProject = refreshedProject;
+      renderProject(elements, currentProject);
+      return;
+    }
+
     await loadProject(currentProjectId);
   }
 
@@ -2463,6 +2500,10 @@ export function createCockpitApp({
 
   elements.snapshotWorkerRunButton?.addEventListener("click", async () => {
     await runSnapshotWorkerTickFromUi();
+  });
+
+  elements.disasterRecoveryRefreshButton?.addEventListener("click", async () => {
+    await refreshDisasterRecoveryChecklistFromUi();
   });
 
   elements.projectAuditRefreshButton?.addEventListener("click", async () => {

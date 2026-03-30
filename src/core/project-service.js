@@ -336,6 +336,7 @@ export class ProjectService {
       snapshotBackupWorker: null,
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
+      disasterRecoveryChecklist: null,
     };
 
     this.projects.set(id, project);
@@ -1079,6 +1080,30 @@ export class ProjectService {
     return this.serializeProject(project);
   }
 
+  getDisasterRecoveryChecklist({ projectId, refresh = false } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const serializedProject = refresh ? this.rebuildContext(projectId) : this.serializeProject(project);
+    const disasterRecoveryChecklist =
+      serializedProject?.disasterRecoveryChecklist
+      ?? serializedProject?.state?.disasterRecoveryChecklist
+      ?? serializedProject?.context?.disasterRecoveryChecklist
+      ?? null;
+    if (!disasterRecoveryChecklist) {
+      return null;
+    }
+
+    return {
+      projectId,
+      disasterRecoveryChecklist,
+      summary: disasterRecoveryChecklist.summary ?? null,
+      project: serializedProject,
+    };
+  }
+
   buildAuthPayloadState({
     authenticationState = null,
     sessionState = null,
@@ -1457,6 +1482,7 @@ export class ProjectService {
       snapshotBackupWorker: null,
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
+      disasterRecoveryChecklist: null,
     };
 
     this.projects.set(projectId, project);
@@ -1528,6 +1554,7 @@ export class ProjectService {
       snapshotBackupWorker: null,
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
+      disasterRecoveryChecklist: null,
     };
 
     this.projects.set(projectId, project);
@@ -1701,16 +1728,19 @@ export class ProjectService {
     const snapshotBackupWorker = project.snapshotBackupWorker ?? builtContext.snapshotBackupWorker ?? null;
     const snapshotRetentionPolicy = project.snapshotRetentionPolicy ?? builtContext.snapshotRetentionPolicy ?? null;
     const snapshotRetentionDecision = project.snapshotRetentionDecision ?? builtContext.snapshotRetentionDecision ?? null;
+    const disasterRecoveryChecklist = builtContext.disasterRecoveryChecklist ?? project.disasterRecoveryChecklist ?? null;
     project.snapshotSchedule = snapshotSchedule;
     project.snapshotBackupWorker = snapshotBackupWorker;
     project.snapshotRetentionPolicy = snapshotRetentionPolicy;
     project.snapshotRetentionDecision = snapshotRetentionDecision;
+    project.disasterRecoveryChecklist = disasterRecoveryChecklist;
     project.context = {
       ...builtContext,
       snapshotSchedule,
       snapshotBackupWorker,
       snapshotRetentionPolicy,
       snapshotRetentionDecision,
+      disasterRecoveryChecklist,
     };
     project.state = {
       ...project.state,
@@ -1895,6 +1925,7 @@ export class ProjectService {
       snapshotBackupWorker: project.context?.snapshotBackupWorker ?? null,
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
+      disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
       stateDiff: project.context?.stateDiff ?? null,
       restoreDecision: project.context?.restoreDecision ?? null,
       rollbackExecutionResult: project.context?.rollbackExecutionResult ?? null,
@@ -2753,6 +2784,7 @@ export class ProjectService {
       snapshotBackupWorker: project.context?.snapshotBackupWorker ?? null,
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
+      disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
       agents: project.agents,
       overview: {
         bottleneck: blockedTasks[0] ?? "אין כרגע חסם מרכזי",

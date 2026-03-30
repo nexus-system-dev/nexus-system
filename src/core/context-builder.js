@@ -256,6 +256,7 @@ import { createNexusDatabaseMigrations } from "./nexus-database-migrations.js";
 import { createRepositoryLayerForCoreEntities } from "./entity-repository-layer.js";
 import { createFileAndArtifactStorageModule } from "./file-artifact-storage-module.js";
 import { createBackupAndRestoreStrategy } from "./backup-restore-strategy.js";
+import { createDisasterRecoveryChecklist } from "./disaster-recovery-checklist.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
 import { createAuthenticationRouteResolver } from "./authentication-route-resolver.js";
 import { createSessionAndTokenManagement } from "./session-and-token-management.js";
@@ -2436,6 +2437,9 @@ export function buildProjectContext(
     nexusPersistenceSchema,
     storageRecords: storageRecord,
   });
+  const currentSnapshotSchedule = project.snapshotSchedule ?? project.context?.snapshotSchedule ?? null;
+  const currentSnapshotWorker = project.snapshotBackupWorker ?? project.context?.snapshotBackupWorker ?? null;
+  const currentSnapshotRetentionPolicy = project.snapshotRetentionPolicy ?? project.context?.snapshotRetentionPolicy ?? null;
   const { auditLogRecord } = createAuditLogForSystemActions({
     systemAction: {
       actionType: incidentAlert?.status === "active"
@@ -2739,6 +2743,17 @@ export function buildProjectContext(
   const { rollbackExecutionResult } = createProjectRollbackExecutionModule({
     restoreDecision,
     snapshotRecord,
+  });
+  const { disasterRecoveryChecklist } = createDisasterRecoveryChecklist({
+    backupStrategy,
+    restorePlan,
+    incidentAlert,
+    snapshotSchedule: currentSnapshotSchedule,
+    snapshotBackupWorker: currentSnapshotWorker,
+    snapshotRetentionPolicy: currentSnapshotRetentionPolicy,
+    snapshotRecord,
+    restoreDecision,
+    rollbackExecutionResult,
   });
   const projectAuditAction = buildProjectAuditAction({
     project,
@@ -3169,6 +3184,7 @@ export function buildProjectContext(
   context.storageRecord = storageRecord;
   context.backupStrategy = backupStrategy;
   context.restorePlan = restorePlan;
+  context.disasterRecoveryChecklist = disasterRecoveryChecklist;
   context.userJourneys = userJourneys;
   context.journeySteps = journeySteps;
   context.journeyMap = journeyMap;

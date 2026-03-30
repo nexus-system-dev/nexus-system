@@ -1857,3 +1857,46 @@ test("project service runs snapshot backup worker tick with status reporting and
     },
   });
 });
+
+test("project service exposes disaster recovery checklist with refresh integration", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: true,
+      intervalSeconds: 60,
+      preChangeTriggers: ["deploy"],
+    },
+  });
+  service.configureSnapshotRetentionPolicy({
+    projectId: "giftwallet",
+    retentionInput: {
+      enabled: true,
+      maxSnapshots: 3,
+    },
+  });
+  service.runSnapshotBackupNow({ projectId: "giftwallet", triggerType: "manual" });
+
+  const checklistPayload = service.getDisasterRecoveryChecklist({
+    projectId: "giftwallet",
+    refresh: true,
+  });
+
+  assert.equal(Boolean(checklistPayload?.disasterRecoveryChecklist?.checklistId), true);
+  assert.equal(checklistPayload.disasterRecoveryChecklist.summary.readinessScore >= 0, true);
+  assert.equal(Array.isArray(checklistPayload.disasterRecoveryChecklist.prerequisites), true);
+  assert.equal(Array.isArray(checklistPayload.disasterRecoveryChecklist.steps), true);
+
+  const serialized = service.getProject("giftwallet");
+  assert.equal(Boolean(serialized.disasterRecoveryChecklist?.checklistId), true);
+  assert.equal(serialized.state.disasterRecoveryChecklist?.summary?.canExecuteRecovery !== undefined, true);
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: false,
+    },
+  });
+});

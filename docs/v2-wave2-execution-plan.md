@@ -376,6 +376,22 @@
 - dependencies:
   - `Define design token schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `typography scale for headings/body/labels/meta is generated from design tokens` → `full` | `src/core/typography-system.js`
+  - `typography system is wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered` → `full` | `test/typography-system.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `typography scale is generated from canonical design tokens`
+  - `typography payload is available in project context/state`
+  - `tests validate token-driven and fallback typography behavior`
+- missing_for_green:
+  - `none`
 
 
 3. `Create spacing and layout system`  | סטטוס: 🟢 בוצע
@@ -387,6 +403,22 @@
 - dependencies:
   - `Define design token schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `layout system generates grid/spacing/container rhythm from design tokens` → `full` | `src/core/spacing-layout-system.js`
+  - `layout system is wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered` → `full` | `test/spacing-layout-system.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `layout system returns canonical spacing/grid/container outputs`
+  - `layout payload is exposed in project context/state`
+  - `tests validate token-driven and fallback layout behavior`
+- missing_for_green:
+  - `none`
 
 
 4. `Create color usage rules`  | סטטוס: 🟢 בוצע
@@ -398,6 +430,22 @@
 - dependencies:
   - `Define design token schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `semantic color usage rules (roles + states) are generated from design tokens` → `full` | `src/core/color-usage-rules.js`
+  - `color rules are wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered` → `full` | `test/color-usage-rules.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `color role/state mapping is generated canonically`
+  - `color rules are exposed in project context/state`
+  - `tests validate semantic mapping and fallback rules`
+- missing_for_green:
+  - `none`
 
 
 5. `Create interaction states system`  | סטטוס: 🟢 בוצע
@@ -409,6 +457,22 @@
 - dependencies:
   - `Define design token schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `interaction state system defines hover/active/focus/disabled/destructive/success/warning` → `full` | `src/core/interaction-states-system.js`
+  - `interaction states are wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `module behavior covered` → `full` | `test/interaction-states-system.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `interaction state contract includes all required state families`
+  - `interaction state payload is exposed in project context/state`
+  - `tests validate token-driven and fallback interaction rules`
+- missing_for_green:
+  - `none`
 
 
 #### `Component Library`
@@ -422,6 +486,22 @@
 - dependencies:
   - `Design System`
 - connects_to: `Project State`
+- completion_type: `schema_only`
+- coverage_check:
+  - `component contract schema defines canonical structure per component type` → `full` | `src/core/component-contract-schema.js`
+  - `component contract is wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `schema behavior covered` → `full` | `test/component-contract-schema.test.js`, `test/project-service.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `schema outputs canonical component contract for supported component types`
+  - `component contract is available in project context/state`
+  - `tests validate canonical and fallback contract generation`
+- missing_for_green:
+  - `none`
 
 
 2. `Create primitive components`  | סטטוס: 🟢 בוצע
@@ -2143,7 +2223,7 @@
 - הערת מצב: ה־worker מומש end-to-end: timer מבוסס schedule ב־`ProjectService`, ריצת backup אוטומטית עם retention post-run, סטטוס הרצה (`enabled`, `lastRunAt`, `nextRunAt`, `lastStatus`) ב־project state, API להפעלה/כיבוי והרצה ידנית, ו־UI ב־Versioning לניהול וצפייה.
 
 
-5. `Create disaster recovery checklist`  | סטטוס: 🔴 לא בוצע
+5. `Create disaster recovery checklist`  | סטטוס: 🟢 בוצע
 - execution_order: `28`
 - description: לבנות checklist אופרטיבי להתאוששות מתקלות חמורות, אובדן נתונים ו־runtime outages
 - input:
@@ -2155,6 +2235,26 @@
   - `Create backup and restore strategy`  | סטטוס: 🟢 בוצע
   - `Platform Observability`
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `canonical disaster recovery checklist structure with readiness + ordered steps` → `full` | `src/core/disaster-recovery-checklist.js`, `test/disaster-recovery-checklist.test.js`
+  - `checklist is wired into context/state/project payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/project-service.test.js`
+  - `API endpoint exposes checklist with refresh integration` → `full` | `src/server.js`, `test/server-health-endpoints.test.js`
+  - `Versioning UI shows readiness, prerequisites, and recovery steps with refresh trigger` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Versioning And Restore → Refresh recovery checklist`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `checklist includes prerequisites, readiness score, and ordered recovery steps`
+  - `checklist is connected to backup/restore/snapshot/retention/worker state`
+  - `API can return refreshed checklist for a project`
+  - `UI presents checklist readiness and recovery flow in Versioning`
+  - `tests cover module + service + server + ui integration`
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־checklist מומש end-to-end ומחובר ל־backup/restore/snapshot state בפועל; ניתן לרענן דרך API (`GET /api/projects/:id/disaster-recovery-checklist?refresh=1`) ודרך כפתור ייעודי ב־Versioning, עם תצוגת readiness, prerequisites ו־recovery steps.
 
 
 6. `Create business continuity lifecycle manager`  | סטטוס: 🔴 לא בוצע
@@ -2167,7 +2267,7 @@
 - output:
   - `businessContinuityState`
 - dependencies:
-  - `Create disaster recovery checklist`  | סטטוס: 🔴 לא בוצע
+  - `Create disaster recovery checklist`  | סטטוס: 🟢 בוצע
   - `Create failover and continuity planner`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
 

@@ -92,6 +92,7 @@ function getProjectLiveState(projectService, projectId) {
     projectPresenceState: project.projectPresenceState ?? null,
     reviewThreadState: project.reviewThreadState ?? null,
     collaborationFeed: project.collaborationFeed ?? null,
+    disasterRecoveryChecklist: project.disasterRecoveryChecklist ?? null,
     events: project.events ?? [],
   };
 }
@@ -533,6 +534,21 @@ export function createServer(projectService, runtimeStatus = {}) {
           response,
           projectAuditPayload ? 200 : 404,
           projectAuditPayload ?? { error: "Project audit payload not found" },
+        );
+        return;
+      }
+
+      if (suffix === "disaster-recovery-checklist") {
+        const checklistPayload = typeof projectService.getDisasterRecoveryChecklist === "function"
+          ? projectService.getDisasterRecoveryChecklist({
+              projectId,
+              refresh: ["1", "true", "yes"].includes((url.searchParams.get("refresh") ?? "").toLowerCase()),
+            })
+          : null;
+        sendJson(
+          response,
+          checklistPayload ? 200 : 404,
+          checklistPayload ?? { error: "Project disaster recovery checklist not found" },
         );
         return;
       }

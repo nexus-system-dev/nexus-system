@@ -231,6 +231,24 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
         triggerType,
       },
     }),
+    getDisasterRecoveryChecklist: ({ projectId, refresh }) => ({
+      projectId,
+      summary: {
+        canExecuteRecovery: true,
+        readinessScore: 100,
+      },
+      disasterRecoveryChecklist: {
+        checklistId: `disaster-recovery:${projectId}`,
+        summary: {
+          canExecuteRecovery: true,
+          readinessScore: 100,
+        },
+      },
+      project: {
+        id: projectId,
+      },
+      refreshed: refresh === true,
+    }),
   });
 
   const scheduleResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-backup-schedule", {
@@ -260,6 +278,7 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
   const workerRunResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/snapshot-backup-worker/run", {
     triggerType: "manual-worker-run",
   });
+  const recoveryChecklistResponse = await requestJson(server, "/api/projects/giftwallet/disaster-recovery-checklist?refresh=1");
 
   assert.equal(scheduleResponse.statusCode, 200);
   assert.equal(scheduleResponse.body.snapshotSchedule.intervalSeconds, 300);
@@ -274,6 +293,9 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
   assert.equal(workerToggleResponse.body.snapshotBackupWorker.enabled, false);
   assert.equal(workerRunResponse.statusCode, 200);
   assert.equal(workerRunResponse.body.snapshotRecord.triggerType, "manual-worker-run");
+  assert.equal(recoveryChecklistResponse.statusCode, 200);
+  assert.equal(recoveryChecklistResponse.body.disasterRecoveryChecklist.checklistId, "disaster-recovery:giftwallet");
+  assert.equal(recoveryChecklistResponse.body.refreshed, true);
 });
 
 test("server exposes project live-state endpoint", async () => {
@@ -292,6 +314,7 @@ test("server exposes project live-state endpoint", async () => {
         summary: { totalEntries: 1 },
       },
       collaborationFeed: { feedId: "collaboration-feed:giftwallet", items: [], summary: { totalItems: 0 } },
+      disasterRecoveryChecklist: { checklistId: "disaster-recovery:giftwallet" },
       events: [{ type: "state.updated", payload: { projectId } }],
     }),
   });
@@ -303,6 +326,7 @@ test("server exposes project live-state endpoint", async () => {
   assert.equal(response.body.progressState.percent, 48);
   assert.equal(response.body.liveUpdateChannel.transportMode, "polling");
   assert.equal(response.body.liveLogStream.summary.totalEntries, 1);
+  assert.equal(response.body.disasterRecoveryChecklist.checklistId, "disaster-recovery:giftwallet");
   assert.equal(Array.isArray(response.body.events), true);
 });
 
