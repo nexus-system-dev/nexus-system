@@ -98,6 +98,7 @@ import { createWorkspaceIsolationGuard } from "./workspace-isolation-guard.js";
 import { createCrossTenantLeakDetector } from "./cross-tenant-leak-detector.js";
 import { defineReliabilityAndSlaSchema } from "./reliability-sla-model.js";
 import { defineFeatureFlagSchema } from "./feature-flag-schema.js";
+import { createFeatureFlagResolver } from "./feature-flag-resolver.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -3065,6 +3066,17 @@ export function buildProjectContext(
     featureDefinitions: project.manualContext?.featureDefinitions ?? null,
     environmentConfig,
   });
+  const { featureFlagDecision } = createFeatureFlagResolver({
+    featureFlagSchema,
+    requestContext: {
+      workspaceId: workspaceModel?.workspaceId ?? project.id,
+      userId: userIdentity?.userId ?? project.userId ?? null,
+      actorId: userIdentity?.userId ?? project.userId ?? null,
+      environment: environmentConfig.environment,
+      riskLevel: project.manualContext?.requestContext?.riskLevel ?? null,
+      riskFlags,
+    },
+  });
   const { executionTopology } = defineExecutionTopologySchema({
     executionSurfaces: bootstrapResolvedSurfaces,
     environmentConfig,
@@ -3250,6 +3262,7 @@ export function buildProjectContext(
   context.sessionSecurityDecision = sessionSecurityDecision;
   context.authenticationRouteDecision = authenticationRouteDecision;
   context.featureFlagSchema = featureFlagSchema;
+  context.featureFlagDecision = featureFlagDecision;
   context.tokenBundle = tokenBundle;
   context.verificationFlowState = verificationFlowState;
   context.authenticationViewState = authenticationViewState;

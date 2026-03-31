@@ -2682,7 +2682,7 @@
 - הערת מצב: זו שכבת foundation בלבד; אין כאן runtime resolution, hashing, route gating או UI switching. המשימה הבאה (`Create feature flag resolver`) עכשיו unblocked.
 
 
-2. `Create feature flag resolver`  | סטטוס: 🔴 לא בוצע
+2. `Create feature flag resolver`  | סטטוס: 🟢 בוצע
 - execution_order: `35`
 - description: לבנות resolver שמכריע אילו capabilities, routes או actions מופעלים לפי workspace, user, environment ו־risk level
 - input:
@@ -2692,8 +2692,30 @@
   - `featureFlagDecision`
 - dependencies:
   - `Define feature flag schema`  | סטטוס: 🟢 בוצע
-  - `Workspace & Access Control`
+  - `Application Runtime Layer`
 - connects_to: `Execution Surface`
+- completion_type: `api_ready`
+- coverage_check:
+  - `description` → `full` | ממומש ב־`src/core/feature-flag-resolver.js`, `src/core/rollout-hash-utility.js`, `src/core/feature-flag-route-registry.js`, ובחיבור ל־`src/core/context-builder.js` ו־`src/server.js`
+  - `input` → `full` | `featureFlagSchema` נצרך כ־source of truth ו־`requestContext` מנורמל ל־workspace/user/environment/risk
+  - `output` → `full` | `featureFlagDecision` כולל `flagResults`, `enabledCapabilities`, `blockedRoutes` ו־`summary`, ונחשף דרך `context.featureFlagDecision`
+  - `dependencies` → `full` | נשען על `Define feature flag schema` ועל `Application Runtime Layer` דרך `server.js` ו־request runtime context
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `API routes שמוחזרים עליהם 403` ו־consumers שקוראים `context.featureFlagDecision`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - resolver אמיתי קיים
+  - workspace/user/environment/risk evaluation עובדים
+  - kill switch override עובד
+  - percentage rollout deterministic
+  - `context.featureFlagDecision` מוחזר
+  - `server.js` חוסם route חסום עם `403`
+  - טסטים עוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־resolver בנוי רק לשכבת decision/runtime routing. הוא לא מוסיף admin UI, dynamic management או kill-switch guard מתקדם, וזה נשאר למשימה 36.
 
 
 3. `Create emergency kill switch guard`  | סטטוס: 🔴 לא בוצע
@@ -2705,7 +2727,7 @@
 - output:
   - `killSwitchDecision`
 - dependencies:
-  - `Create feature flag resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create feature flag resolver`  | סטטוס: 🟢 בוצע
   - `Create alerting and incident hooks`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
 

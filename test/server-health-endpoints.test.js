@@ -227,6 +227,61 @@ test("server exposes credential rotation endpoint", async () => {
   assert.equal(response.body.rotationResult.oldReference.secretReferenceLifecycle.revoked, true);
 });
 
+test("server returns 403 for routes blocked by feature flag decision", async () => {
+  const server = createServer({
+    getProject: () => ({
+      state: {
+        featureFlagSchema: {
+          featureFlagSchemaId: "feature-flag-schema:giftwallet",
+          environmentConfig: {
+            environment: "production",
+          },
+          flags: [
+            {
+              flagId: "provider-runtime-execution",
+              description: "Provider mutations",
+              enabled: true,
+              rolloutScope: "global",
+              rolloutPercentage: 100,
+              environmentTargets: ["production"],
+              workspaceTargets: [],
+              userTargets: [],
+              riskSensitive: true,
+              isKillSwitch: false,
+              defaultFallback: "queue-and-review",
+            },
+          ],
+        },
+      },
+    }),
+    linkExternalAccount: () => ({
+      linkedAccounts: [],
+    }),
+  });
+
+  const response = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects/giftwallet/accounts/link",
+    {
+      providerType: "hosting",
+      userInput: {
+        accountId: "blocked-account",
+      },
+    },
+    {
+      headers: {
+        "x-user-id": "user-1",
+        "x-risk-level": "high",
+      },
+    },
+  );
+
+  assert.equal(response.statusCode, 403);
+  assert.equal(response.body.reason, "feature-disabled");
+  assert.equal(response.body.flagId, "provider-runtime-execution");
+});
+
 test("server exposes project snapshots endpoint", async () => {
   const server = createServer({
     getProjectSnapshots: ({ projectId }) => projectId === "giftwallet"

@@ -20,6 +20,15 @@ function normalizeEnvironmentTargets(value) {
   return normalized.length > 0 ? normalized : ["unknown"];
 }
 
+function normalizeTargets(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .map((entry) => (typeof entry === "string" && entry.trim() ? entry.trim() : null))
+    .filter(Boolean);
+}
+
 function normalizeEnvironmentConfig(environmentConfig = null) {
   const config = environmentConfig && typeof environmentConfig === "object" ? environmentConfig : {};
   const sourceEnvironment = config.environment
@@ -76,6 +85,9 @@ export function defineFeatureFlagSchema({
       rolloutScope: normalizeRolloutScope(definition.rolloutScope),
       rolloutPercentage: normalizePercentage(definition.rolloutPercentage),
       environmentTargets: normalizeEnvironmentTargets(definition.environmentTargets),
+      workspaceTargets: normalizeTargets(definition.workspaceTargets),
+      userTargets: normalizeTargets(definition.userTargets),
+      riskSensitive: definition.riskSensitive === true,
       isKillSwitch,
       defaultFallback: definition.defaultFallback ?? "disabled",
     };

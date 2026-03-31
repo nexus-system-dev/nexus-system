@@ -8,6 +8,7 @@ import {
   createInMemoryRateLimitStore,
   createRateLimitingAndAbuseProtection,
 } from "./core/rate-limiting-abuse-protection.js";
+import { createFeatureFlagResolver } from "./core/feature-flag-resolver.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -93,6 +94,43 @@ function resolveIpAddress(request) {
 function resolveRequestUserId(request) {
   const headerValue = request.headers?.["x-user-id"];
   return typeof headerValue === "string" && headerValue.trim().length > 0 ? headerValue.trim() : null;
+}
+
+function resolveRequestEnvironment(request, fallback = null) {
+  const headerValue = request.headers?.["x-environment"];
+  if (typeof headerValue === "string" && headerValue.trim()) {
+    return headerValue.trim();
+  }
+  return fallback;
+}
+
+function resolveRequestRiskLevel(request) {
+  const headerValue = request.headers?.["x-risk-level"];
+  return typeof headerValue === "string" && headerValue.trim() ? headerValue.trim() : null;
+}
+
+function resolveRequestRiskFlags(request) {
+  const headerValue = request.headers?.["x-risk-flags"];
+  if (typeof headerValue !== "string" || !headerValue.trim()) {
+    return [];
+  }
+  return headerValue
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function routeMatchesPattern(pathname, pattern) {
+  const normalizedPath = typeof pathname === "string" ? pathname : "/";
+  const normalizedPattern = typeof pattern === "string" ? pattern : "";
+  if (!normalizedPattern.includes("*")) {
+    return normalizedPath === normalizedPattern;
+  }
+  const escaped = normalizedPattern
+    .split("*")
+    .map((segment) => segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("[^/]+");
+  return new RegExp(`^${escaped}$`).test(normalizedPath);
 }
 
 function resolveRouteDefinition(method, pathname) {
@@ -242,13 +280,15 @@ export function createServer(projectService, runtimeStatus = {}) {
     const requestId = request.headers?.["x-request-id"] ?? `${request.method ?? "GET"}:${url.pathname}:${Date.now()}`;
     const requestStartedAt = Date.now();
     const requestTimestamp = Date.now();
+    const workspaceId = resolveWorkspaceId(url.pathname);
+    const resolvedUserId = resolveRequestUserId(request);
     const baseRequestContext = {
       requestId,
       pathName: url.pathname,
       method: request.method ?? "GET",
       ipAddress: resolveIpAddress(request),
       timestamp: requestTimestamp,
-      userId: resolveRequestUserId(request),
+      userId: resolvedUserId,
     };
     const { rateLimitDecision } = createRateLimitingAndAbuseProtection({
       requestContext: baseRequestContext,
@@ -276,6 +316,39 @@ export function createServer(projectService, runtimeStatus = {}) {
         rateLimitDecision,
       }, {
         "Retry-After": String(rateLimitDecision.retryAfterSeconds ?? 1),
+      });
+      return;
+    }
+
+    const routedProject = workspaceId && typeof projectService?.getProject === "function"
+      ? projectService.getProject(workspaceId)
+      : null;
+    const featureFlagSchema = routedProject?.state?.featureFlagSchema ?? routedProject?.context?.featureFlagSchema ?? null;
+    const { featureFlagDecision } = createFeatureFlagResolver({
+      featureFlagSchema,
+      requestContext: {
+        workspaceId,
+        userId: resolvedUserId,
+        actorId: resolvedUserId,
+        environment: resolveRequestEnvironment(request, featureFlagSchema?.environmentConfig?.environment ?? null),
+        riskLevel: resolveRequestRiskLevel(request),
+        riskFlags: resolveRequestRiskFlags(request),
+      },
+    });
+    const blockedRouteEntry = (featureFlagDecision?.blockedRoutes ?? []).find((entry) => routeMatchesPattern(url.pathname, entry.route));
+    if (blockedRouteEntry) {
+      observabilityTransport?.finishHttpRequest({
+        traceId: requestTrace?.traceId ?? requestId,
+        route: url.pathname,
+        method: request.method,
+        statusCode: 403,
+        durationMs: Date.now() - requestStartedAt,
+        service: runtimeStatus.runtimeId ?? "http-server",
+      });
+      sendJson(response, 403, {
+        reason: "feature-disabled",
+        flagId: blockedRouteEntry.flagId,
+        featureFlagDecision,
       });
       return;
     }
