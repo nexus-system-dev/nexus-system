@@ -2317,6 +2317,7 @@ export class ProjectService {
       notificationEvent: project.context?.notificationEvent ?? null,
       notificationCenterState: project.context?.notificationCenterState ?? null,
       notificationPreferences: project.context?.notificationPreferences ?? null,
+      complianceConsentState: project.context?.complianceConsentState ?? null,
       emailDeliveryResult: project.context?.emailDeliveryResult ?? null,
       externalDeliveryResult: project.context?.externalDeliveryResult ?? null,
       releasePlan: project.context?.releasePlan ?? null,

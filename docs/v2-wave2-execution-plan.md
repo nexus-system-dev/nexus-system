@@ -2833,7 +2833,7 @@
 - הערת מצב: ה־resolver צורך את `dataPrivacyClassification` הקנוני ואת policy inputs מ־`storageRecord`, `nexusPersistenceSchema` ו־`backupStrategy.storagePolicy`, אבל לא ממחזר snapshot retention ולא מחזיר config גולמי; הוא מחזיר החלטה אופרטיבית אחת ש־task 40 יכול לצרוך ישירות.
 
 
-3. `Create compliance consent and legal basis registry`  | סטטוס: 🔴 לא בוצע
+3. `Create compliance consent and legal basis registry`  | סטטוס: 🟢 בוצע
 - execution_order: `39`
 - description: לבנות registry להסכמות, legal basis ו־processing scopes עבור data usage, learning ו־notifications
 - input:
@@ -2845,6 +2845,35 @@
   - `Identity & Auth`
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `description: canonical multi-entry consent and legal basis registry` → `full` | `src/core/compliance-consent-and-legal-basis-registry.js`
+  - `baseline scopes data-usage learning notifications` → `full` | `src/core/compliance-consent-and-legal-basis-registry.js`
+  - `multi-scope support global/workspace/project` → `full` | `src/core/compliance-consent-and-legal-basis-registry.js`
+  - `legal basis canonical enum handling` → `full` | `src/core/compliance-consent-and-legal-basis-registry.js`
+  - `withdrawn/expired are operationally invalid and derive restrictions` → `full` | `src/core/compliance-consent-and-legal-basis-registry.js`
+  - `input: userIdentity` → `full` | `src/core/context-builder.js`
+  - `input: consentRecord used only as supporting signal` → `full` | `src/core/context-builder.js`, `src/core/compliance-consent-and-legal-basis-registry.js`
+  - `dependencies: approval records remain audit support and not source of truth` → `full` | `src/core/compliance-consent-and-legal-basis-registry.js`
+  - `context and state wiring` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `serialized payload exposure` → `full` | `src/core/project-service.js`, `src/server.js`
+  - `tests verify unit and integration behavior` → `full` | `test/compliance-consent-and-legal-basis-registry.test.js`, `test/context-builder.test.js`, `test/project-service.test.js`, `test/server-health-endpoints.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `registry stores multiple consent entries across scopes`
+  - `baseline scopes always exist even on partial input`
+  - `legal basis is canonical and restrictions are derived`
+  - `withdrawn and expired entries are treated as invalid`
+  - `registry is written to context and project state`
+  - `serialized project payload exposes complianceConsentState`
+  - `unit and integration tests pass`
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־registry משתמש ב־`userIdentity` כ־identity anchor, ב־`consentRecord` הישן רק כסיגנל project-scoped תומך, וב־`notificationPreferences` כסיגנל עזר בלבד; approval state נשאר audit support ולא הופך ל־consent source of truth.
 
 
 4. `Create privacy rights execution module`  | סטטוס: 🔴 לא בוצע

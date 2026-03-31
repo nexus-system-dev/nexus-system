@@ -102,6 +102,7 @@ import { createFeatureFlagResolver } from "./feature-flag-resolver.js";
 import { createEmergencyKillSwitchGuard } from "./emergency-kill-switch-guard.js";
 import { defineDataPrivacyClassificationSchema } from "./data-privacy-classification-schema.js";
 import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-retention-and-deletion-policy-resolver.js";
+import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -2442,6 +2443,17 @@ export function buildProjectContext(
     userIdentity,
     workspaceMetadata: project.manualContext?.workspaceMetadata ?? null,
   });
+  const { complianceConsentState } = createComplianceConsentAndLegalBasisRegistry({
+    userIdentity,
+    consentRecord: project.manualContext?.consentRecordOverride ?? consentRecord,
+    notificationPreferences,
+    approvalRecords,
+    consentEntries: project.manualContext?.consentEntries ?? [],
+    scopeContext: {
+      workspaceId: workspaceModel?.workspaceId ?? null,
+      projectId: project.id ?? null,
+    },
+  });
   const { postAuthRedirect } = createPostAuthRedirectResolver({
     authenticationRouteDecision,
     sessionState,
@@ -3642,6 +3654,7 @@ export function buildProjectContext(
   context.notificationEvent = notificationEvent;
   context.notificationCenterState = notificationCenterState;
   context.notificationPreferences = notificationPreferences;
+  context.complianceConsentState = complianceConsentState;
   context.emailDeliveryResult = emailDeliveryResult;
   context.externalDeliveryResult = externalDeliveryResult;
   context.releasePlan = releasePlan;

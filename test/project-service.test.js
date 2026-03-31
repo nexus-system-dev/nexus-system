@@ -597,6 +597,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.notificationCenterState?.inbox), true);
   assert.equal(typeof project.state.notificationPreferences?.frequency, "string");
   assert.equal(Array.isArray(project.state.notificationPreferences?.channels), true);
+  assert.equal(typeof project.state.complianceConsentState?.complianceConsentStateId, "string");
+  assert.equal(Array.isArray(project.state.complianceConsentState?.consentEntries), true);
   assert.equal(typeof project.state.emailDeliveryResult?.deliveryStatus, "string");
   assert.equal(project.state.emailDeliveryResult?.deliveryChannel, "email");
   assert.equal(typeof project.state.externalDeliveryResult?.deliveryStatus, "string");
@@ -2101,4 +2103,16 @@ test("project service serializes data privacy classification into state and cont
   assert.equal(typeof project.context?.privacyPolicyDecision?.privacyPolicyDecisionId, "string");
   assert.equal(typeof project.state?.privacyPolicyDecision?.privacyPolicyDecisionId, "string");
   assert.equal(project.state.privacyPolicyDecision.retentionAction, project.context.privacyPolicyDecision.retentionAction);
+});
+
+test("project service serializes compliance consent state into state payload", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.getProject("giftwallet");
+
+  assert.equal(typeof project.context?.complianceConsentState?.complianceConsentStateId, "string");
+  assert.equal(typeof project.state?.complianceConsentState?.complianceConsentStateId, "string");
+  assert.equal(Array.isArray(project.state.complianceConsentState.processingScopes), true);
+  assert.equal(Array.isArray(project.state.complianceConsentState.activeRestrictions), true);
 });

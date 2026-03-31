@@ -689,6 +689,9 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(Array.isArray(context.notificationCenterState?.inbox), true);
   assert.equal(typeof context.notificationPreferences?.frequency, "string");
   assert.equal(Array.isArray(context.notificationPreferences?.channels), true);
+  assert.equal(typeof context.complianceConsentState?.complianceConsentStateId, "string");
+  assert.equal(Array.isArray(context.complianceConsentState?.consentEntries), true);
+  assert.equal(Array.isArray(context.complianceConsentState?.activeRestrictions), true);
   assert.equal(typeof context.emailDeliveryResult?.deliveryStatus, "string");
   assert.equal(context.emailDeliveryResult?.deliveryChannel, "email");
   assert.equal(typeof context.externalDeliveryResult?.deliveryStatus, "string");
@@ -880,4 +883,33 @@ test("context builder derives data privacy classification from storage, tenant, 
   assert.equal(context.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");
   assert.equal(context.privacyPolicyDecision.retentionAction, "delete-required");
   assert.equal(context.privacyPolicyDecision.backupAllowed, false);
+});
+
+test("context builder derives compliance consent state with baseline scopes and restrictions", () => {
+  const context = buildProjectContext({
+    id: "giftwallet",
+    name: "GiftWallet",
+    goal: "Stay compliant",
+    state: {},
+    manualContext: {
+      consentEntries: [
+        {
+          processingScope: "learning",
+          scopeType: "workspace",
+          scopeId: "workspace-user-1",
+          status: "granted",
+          legalBasis: "legitimate-interest",
+        },
+      ],
+    },
+  });
+
+  assert.equal(typeof context.complianceConsentState?.complianceConsentStateId, "string");
+  assert.equal(context.complianceConsentState.processingScopes.includes("data-usage"), true);
+  assert.equal(context.complianceConsentState.processingScopes.includes("learning"), true);
+  assert.equal(context.complianceConsentState.processingScopes.includes("notifications"), true);
+  assert.equal(
+    context.complianceConsentState.activeRestrictions.some((entry) => entry.processingScope === "learning" && entry.restrictionType === "learning-restricted"),
+    true,
+  );
 });

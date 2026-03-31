@@ -207,6 +207,9 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.context?.privacyPolicyDecision?.privacyPolicyDecisionId, "string");
   assert.equal(typeof response.body.state?.privacyPolicyDecision?.privacyPolicyDecisionId, "string");
   assert.equal(response.body.state.privacyPolicyDecision.retentionAction, response.body.context.privacyPolicyDecision.retentionAction);
+  assert.equal(typeof response.body.context?.complianceConsentState?.complianceConsentStateId, "string");
+  assert.equal(typeof response.body.state?.complianceConsentState?.complianceConsentStateId, "string");
+  assert.equal(Array.isArray(response.body.state.complianceConsentState.processingScopes), true);
 });
 
 test("server exposes credential rotation endpoint", async () => {
