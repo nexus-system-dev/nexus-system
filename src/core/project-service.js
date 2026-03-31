@@ -2321,6 +2321,7 @@ export class ProjectService {
       executionModeDecision: project.context?.executionModeDecision ?? null,
       sandboxDecision: project.context?.sandboxDecision ?? null,
       agentLimitDecision: project.context?.agentLimitDecision ?? null,
+      agentGovernanceTrace: project.context?.agentGovernanceTrace ?? null,
       bootstrapPlan: project.context?.bootstrapPlan ?? null,
       bootstrapTasks: project.context?.bootstrapTasks ?? [],
       bootstrapAssignments: project.context?.bootstrapAssignments ?? [],
@@ -3204,6 +3205,7 @@ export class ProjectService {
       agentGovernancePolicy: project.context?.agentGovernancePolicy ?? null,
       sandboxDecision: project.context?.sandboxDecision ?? null,
       agentLimitDecision: project.context?.agentLimitDecision ?? null,
+      agentGovernanceTrace: project.context?.agentGovernanceTrace ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {

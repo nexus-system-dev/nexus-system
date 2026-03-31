@@ -27,6 +27,10 @@ function resolveCategory(actionType) {
     return "provider";
   }
 
+  if (normalized.startsWith("project.agent-governance") || normalized.includes("governance")) {
+    return "governance";
+  }
+
   if (normalized.startsWith("project.state") || normalized.includes("restore") || normalized.includes("rollback")) {
     return "state-change";
   }

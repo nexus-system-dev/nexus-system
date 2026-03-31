@@ -70,6 +70,7 @@ import { definePolicySchema } from "./policy-schema.js";
 import { defineAgentGovernancePolicySchema } from "./agent-governance-policy-schema.js";
 import { createAgentSandboxPolicyResolver } from "./agent-sandbox-policy-resolver.js";
 import { createAgentActionLimitGuard } from "./agent-action-limit-guard.js";
+import { createAgentGovernanceTrace } from "./agent-governance-trace.js";
 import { defineProjectDraftSchema } from "./project-draft-schema.js";
 import { defineDiffPreviewSchema } from "./diff-preview-schema.js";
 import { createCodeDiffCollector } from "./code-diff-collector.js";
@@ -293,6 +294,7 @@ const MIN_DECISION_CONFIDENCE = 0.65;
 
 function buildProjectAuditAction({
   project,
+  agentGovernanceTrace,
   approvalStatus,
   deploymentRequest,
   providerSession,
@@ -301,6 +303,27 @@ function buildProjectAuditAction({
   rollbackExecutionResult,
   releaseStatus,
 }) {
+  if (agentGovernanceTrace?.agentGovernanceTraceId) {
+    return {
+      actionType: "project.agent-governance.decision",
+      status: agentGovernanceTrace.finalDecision,
+      projectId: project.id,
+      targetType: "agent-governance",
+      targetId: agentGovernanceTrace.agentGovernanceTraceId ?? null,
+      summary: `Agent governance decision is ${agentGovernanceTrace.finalDecision} for ${agentGovernanceTrace.taskType}`,
+      reason: agentGovernanceTrace.escalationHint?.reason ?? null,
+      source: "context-builder",
+      impactedAreas: ["governance", "execution"],
+      metadata: {
+        agentGovernanceTrace,
+        agentType: agentGovernanceTrace.agentType,
+        taskType: agentGovernanceTrace.taskType,
+        scopeType: agentGovernanceTrace.scopeType,
+        scopeId: agentGovernanceTrace.scopeId,
+      },
+    };
+  }
+
   if (rollbackExecutionResult?.status) {
     return {
       actionType: "project.state.rollback",
@@ -3075,47 +3098,11 @@ export function buildProjectContext(
     snapshotRetentionPolicy: currentSnapshotRetentionPolicy,
     ownerContinuityDecision: project.manualContext?.ownerContinuityDecision ?? null,
   });
-  const projectAuditAction = buildProjectAuditAction({
-    project,
-    approvalStatus,
-    deploymentRequest,
-    providerSession,
-    stateDiff,
-    restoreDecision,
-    rollbackExecutionResult,
-    releaseStatus,
-  });
-  const { projectAuditEvent } = defineProjectAuditEventSchema({
-    projectAction: projectAuditAction,
-    actorContext: {
-      actorId: userIdentity?.userId ?? project.userId ?? null,
-      actorType: authenticationState?.isAuthenticated ? "user" : "system",
-      actorRole: membershipRecord?.roles?.[0] ?? null,
-      workspaceId: workspaceModel?.workspaceId ?? project.id,
-      projectId: project.id,
-      source: "nexus-runtime",
-      traceId: platformTrace.traceId,
-    },
-  });
-  const { projectAuditRecord } = createProjectAuditEventCollector({
-    projectAuditEvent,
-  });
-  const { actorActionTrace } = createActorActionTraceAssembler({
-    projectAuditRecord,
-    executionResult: bootstrapExecutionResult,
-  });
-  const { projectAuditPayload } = createProjectAuditApiAndViewerModel({
-    actorActionTrace,
-    filters: null,
-  });
-  const { complianceAuditSummary } = createComplianceAuditSummary({
-    dataPrivacyClassification,
-    privacyPolicyDecision,
-    complianceConsentState,
-    privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
-    projectAuditRecord,
-    projectAuditPayload,
-  });
+  let projectAuditEvent = null;
+  let projectAuditRecord = null;
+  let actorActionTrace = null;
+  let projectAuditPayload = null;
+  let complianceAuditSummary = null;
   const { reactiveWorkspaceState } = createReactiveWorkspaceRefreshModel({
     liveUpdateChannel,
     developerWorkspace,
@@ -3404,6 +3391,53 @@ export function buildProjectContext(
     circuitBreakerDecision,
     providerOperations,
   });
+  const { agentGovernanceTrace } = createAgentGovernanceTrace({
+    agentGovernancePolicy,
+    sandboxDecision,
+    agentLimitDecision,
+  });
+  const projectAuditAction = buildProjectAuditAction({
+    project,
+    agentGovernanceTrace,
+    approvalStatus,
+    deploymentRequest,
+    providerSession,
+    stateDiff,
+    restoreDecision,
+    rollbackExecutionResult,
+    releaseStatus,
+  });
+  ({ projectAuditEvent } = defineProjectAuditEventSchema({
+    projectAction: projectAuditAction,
+    actorContext: {
+      actorId: userIdentity?.userId ?? project.userId ?? null,
+      actorType: authenticationState?.isAuthenticated ? "user" : "system",
+      actorRole: membershipRecord?.roles?.[0] ?? null,
+      workspaceId: workspaceModel?.workspaceId ?? project.id,
+      projectId: project.id,
+      source: "nexus-runtime",
+      traceId: platformTrace.traceId,
+    },
+  }));
+  ({ projectAuditRecord } = createProjectAuditEventCollector({
+    projectAuditEvent,
+  }));
+  ({ actorActionTrace } = createActorActionTraceAssembler({
+    projectAuditRecord,
+    executionResult: bootstrapExecutionResult,
+  }));
+  ({ projectAuditPayload } = createProjectAuditApiAndViewerModel({
+    actorActionTrace,
+    filters: null,
+  }));
+  ({ complianceAuditSummary } = createComplianceAuditSummary({
+    dataPrivacyClassification,
+    privacyPolicyDecision,
+    complianceConsentState,
+    privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
+    projectAuditRecord,
+    projectAuditPayload,
+  }));
   const { fallbackStrategy } = createFallbackStrategyResolver({
     failureRecoveryModel,
     executionModeDecision,
@@ -3668,6 +3702,7 @@ export function buildProjectContext(
   context.executionModeDecision = executionModeDecision;
   context.sandboxDecision = sandboxDecision;
   context.agentLimitDecision = agentLimitDecision;
+  context.agentGovernanceTrace = agentGovernanceTrace;
   context.bootstrapPlan = bootstrapPlan;
   context.bootstrapTasks = bootstrapTasks;
   context.bootstrapAssignments = bootstrapAssignments;

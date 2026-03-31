@@ -212,6 +212,11 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.state?.agentLimitDecision?.agentLimitDecisionId, "string");
   assert.equal(typeof response.body.state?.agentLimitDecision?.decision, "string");
   assert.equal(Array.isArray(response.body.state?.agentLimitDecision?.providerSideEffectChecks), true);
+  assert.equal(typeof response.body.context?.agentGovernanceTrace?.agentGovernanceTraceId, "string");
+  assert.equal(typeof response.body.state?.agentGovernanceTrace?.agentGovernanceTraceId, "string");
+  assert.equal(typeof response.body.state?.agentGovernanceTrace?.finalDecision, "string");
+  assert.equal(Array.isArray(response.body.state?.agentGovernanceTrace?.allChecks), true);
+  assert.equal(response.body.state?.projectAuditEvent?.actionType, "project.agent-governance.decision");
   assert.equal(response.body.state.dataPrivacyClassification.exposureLevel, response.body.context.dataPrivacyClassification.exposureLevel);
   assert.equal(response.body.state.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");
   assert.equal(typeof response.body.context?.privacyPolicyDecision?.privacyPolicyDecisionId, "string");

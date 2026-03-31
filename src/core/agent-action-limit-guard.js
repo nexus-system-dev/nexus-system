@@ -232,11 +232,15 @@ export function createAgentActionLimitGuard({
   return {
     agentLimitDecision: {
       agentLimitDecisionId: `agent-limit-decision:${normalizedAgentGovernancePolicy.agentType ?? "unknown-agent"}:${normalizedTaskContext.taskType}:${normalizedTaskContext.scopeId ?? "unknown-scope"}`,
+      taskType: normalizedTaskContext.taskType,
+      scopeType: normalizedTaskContext.scopeType ?? null,
+      scopeId: normalizedTaskContext.scopeId ?? null,
       decision: finalDecision,
       allowed: finalDecision === "allowed",
       requiresEscalation: finalDecision === "requires-escalation",
       blockedActions,
       allowedActions,
+      hardBlockChecks,
       limitChecks,
       costChecks,
       providerSideEffectChecks,

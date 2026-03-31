@@ -482,6 +482,10 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.agentLimitDecision?.limitChecks), true);
   assert.equal(Array.isArray(project.state.agentLimitDecision?.costChecks), true);
   assert.equal(Array.isArray(project.state.agentLimitDecision?.providerSideEffectChecks), true);
+  assert.equal(typeof project.state.agentGovernanceTrace?.agentGovernanceTraceId, "string");
+  assert.equal(typeof project.state.agentGovernanceTrace?.finalDecision, "string");
+  assert.equal(Array.isArray(project.state.agentGovernanceTrace?.allChecks), true);
+  assert.equal(typeof project.state.agentGovernanceTrace?.summary?.totalChecks, "number");
   assert.equal(typeof project.state.cloudWorkspaceModel?.workspaceId, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.surface?.topologyType, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.summary?.isWritable, "boolean");
@@ -574,6 +578,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.auditLogRecord?.category, "string");
   assert.equal(typeof project.state.projectAuditEvent?.projectAuditEventId, "string");
   assert.equal(typeof project.state.projectAuditEvent?.category, "string");
+  assert.equal(project.state.projectAuditEvent?.actionType, "project.agent-governance.decision");
   assert.equal(typeof project.state.projectAuditEvent?.actor?.actorId, "string");
   assert.equal(typeof project.state.projectAuditRecord?.projectAuditRecordId, "string");
   assert.equal(typeof project.state.projectAuditRecord?.category, "string");

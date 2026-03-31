@@ -9630,10 +9630,11 @@ Refinements מאושרים:
   - `none`
 - הערת מצב: כשה־upstream של `budgetDecision` עדיין חסר, ה־guard משתמש ב־fallback דפנסיבי מתוך `agentGovernancePolicy.spendThresholds`; זה wiring זמני אך מפורש, ולא מחליף את contract המלא של `Platform Cost & Usage Control` downstream.
 
-4. `Create agent governance audit trail`  | סטטוס: 🔴 לא בוצע
+4. `Create agent governance audit trail`  | סטטוס: 🟢 בוצע
 - description: לבנות trace שמסביר אילו limits הוחלו על agent, מה נחסם ומה דרש escalation
 - input:
   - `agentGovernancePolicy`
+  - `sandboxDecision`
   - `agentLimitDecision`
 - output:
   - `agentGovernanceTrace`
@@ -9641,6 +9642,29 @@ Refinements מאושרים:
   - `Create agent action limit guard`  | סטטוס: 🟢 בוצע
   - `Project Audit Trail`
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - description: `full` — המימוש יוצר `agentGovernanceTrace` קנוני ב־[src/core/agent-governance-trace.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/agent-governance-trace.js), משמר sections לפי מקור (`limit/cost/provider/hard-block`), גוזר `allChecks` ו־`summary`, ומעתיק את `finalDecision` ישירות מ־`agentLimitDecision.decision` בלי recompute.
+  - input: `full` — `agentGovernancePolicy`, `sandboxDecision` ו־`agentLimitDecision` נצרכים דרך [src/core/context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js) ומוזנים ל־trace assembler.
+  - output: `full` — מוחזר `agentGovernanceTrace` מלא עם `agentType`, `taskType`, `scopeType`, `scopeId`, `sandboxLevel`, `finalDecision`, sections, `allChecks`, `escalationHint` ו־`summary`; נכתב גם ל־`context`, גם ל־`state`, וגם נחשף ב־payload דרך [src/core/project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js).
+  - dependencies: `full` — ה־trace נשען על `Create agent action limit guard` ומתחבר ל־`Project Audit Trail` דרך `project.agent-governance.decision` ב־[src/core/context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js) ובקטלוג הקטגוריות של [src/core/project-audit-event-schema.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-audit-event-schema.js).
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - יש `agentGovernanceTrace` קנוני
+  - `finalDecision` הוא mirror מדויק של `agentLimitDecision.decision`
+  - נשמרים `limitChecks`, `costChecks`, `providerSideEffectChecks`, `hardBlockChecks`
+  - `allChecks` נגזר מה־sections בלבד
+  - `summary` נגזר מ־`allChecks` ומ־`finalDecision` בלבד
+  - `escalationHint` מועתק ישירות מה־guard
+  - יש חיבור ל־`context` ול־`state`
+  - נרשם audit event עם `actionType: project.agent-governance.decision`
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 ---
 

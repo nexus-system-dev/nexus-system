@@ -176,6 +176,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(Array.isArray(context.agentLimitDecision?.limitChecks), true);
   assert.equal(Array.isArray(context.agentLimitDecision?.costChecks), true);
   assert.equal(Array.isArray(context.agentLimitDecision?.providerSideEffectChecks), true);
+  assert.equal(typeof context.agentGovernanceTrace?.agentGovernanceTraceId, "string");
+  assert.equal(typeof context.agentGovernanceTrace?.finalDecision, "string");
+  assert.equal(Array.isArray(context.agentGovernanceTrace?.allChecks), true);
+  assert.equal(typeof context.agentGovernanceTrace?.summary?.totalChecks, "number");
   assert.equal(typeof context.actionPolicy?.id, "string");
   assert.equal(typeof context.actionPolicy?.kind, "string");
   assert.equal(typeof context.policyDecision?.decision, "string");
@@ -667,6 +671,7 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.auditLogRecord?.category, "string");
   assert.equal(typeof context.projectAuditEvent?.projectAuditEventId, "string");
   assert.equal(typeof context.projectAuditEvent?.category, "string");
+  assert.equal(context.projectAuditEvent?.actionType, "project.agent-governance.decision");
   assert.equal(typeof context.projectAuditEvent?.actor?.actorId, "string");
   assert.equal(typeof context.projectAuditRecord?.projectAuditRecordId, "string");
   assert.equal(typeof context.projectAuditRecord?.category, "string");

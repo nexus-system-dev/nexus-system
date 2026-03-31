@@ -46,3 +46,20 @@ test("project audit event schema classifies deployment actions", () => {
   assert.equal(projectAuditEvent.resource.targetId, "deploy-1");
   assert.equal(projectAuditEvent.summaryFlags.isHighRisk, true);
 });
+
+test("project audit event schema classifies agent governance actions", () => {
+  const { projectAuditEvent } = defineProjectAuditEventSchema({
+    projectAction: {
+      actionType: "project.agent-governance.decision",
+      status: "requires-escalation",
+      projectId: "giftwallet",
+      targetType: "agent-governance",
+      targetId: "agent-governance-trace:1",
+      summary: "Agent governance requires escalation",
+      impactedAreas: ["governance", "execution"],
+    },
+  });
+
+  assert.equal(projectAuditEvent.category, "governance");
+  assert.equal(projectAuditEvent.resource.targetType, "agent-governance");
+});
