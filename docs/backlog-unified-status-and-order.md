@@ -9783,17 +9783,41 @@ Refinements מאושרים:
 - missing_for_green:
   - `none`
 
-4. `Create storage and artifact cost tracker`  | סטטוס: 🔴 לא בוצע
+4. `Create storage and artifact cost tracker`  | סטטוס: 🟢 בוצע
 - description: לבנות tracker לעלויות קבצים, artifacts, logs ו־snapshots לפי נפח, שמירה ומשך חיים
 - input:
   - `storageRecord`
-  - `artifactMetadata`
+  - `retentionWindow`
 - output:
   - `storageCostMetric`
 - dependencies:
   - `Create file and artifact storage module`  | סטטוס: 🟢 בוצע
-  - `Define platform usage cost schema`  | סטטוס: 🔴 לא בוצע
+  - `Define platform usage cost schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - description: `full` — המודול ב־[src/core/storage-and-artifact-cost-tracker.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/storage-and-artifact-cost-tracker.js) בונה `storageCostMetric` קנוני, לא משתמש ב־counts כתחליף ל־volume, ומחשב billable quantity רק מ־attachment volume אמיתי ו־retention window אמיתי.
+  - input: `full` — tracker נצרך מ־`storageRecord` שנבנה ב־file artifact storage module, מ־`privacyPolicyDecision.retentionWindow` כ־lifecycle source קיים, ומ־`manualContext` רק לצורך source fallback; אין המצאת נפח ל־artifacts/logs/snapshots.
+  - output: `full` — מוחזר `storageCostMetric` עם `usageType: storage`, `quantity`, `unit: gb-month`, breakdown מפורט (`artifactVolumeGb/attachmentVolumeGb/logVolumeGb/snapshotVolumeGb`), `retentionPolicy`, `lifecycleWindowDays`, `source`, `recordedAt` ו־`summary`; נכתב ל־`context`, ל־`state`, ונחשף ב־payload דרך [src/core/project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js).
+  - dependencies: `full` — נשען על `Create file and artifact storage module` כמקור היחיד ל־attachment sizes ועל `Define platform usage cost schema` ברמת shape compatibility ישירה ל־Task 46, בלי adapter נוסף.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - יש `storageCostMetric` קנוני
+  - `quantity` מחושב רק מ־attachment volume אמיתי ו־lifecycle window אמיתי
+  - `unit = gb-month`
+  - `usageType = storage`
+  - אין שימוש ב־counts כתחליף ל־volume
+  - partial coverage משוקף במפורש ב־`summary`
+  - breakdown קיים תמיד
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 5. `Create build and deploy cost tracker`  | סטטוס: 🔴 לא בוצע
 - description: לבנות tracker לעלויות build, package, deploy ו־specialized runners כמו remote mac

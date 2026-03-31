@@ -109,6 +109,7 @@ import { definePlatformUsageCostSchema } from "./platform-usage-cost-schema.js";
 import { createAiUsageMeter } from "./ai-usage-meter.js";
 import { createWorkspaceComputeUsageTracker } from "./workspace-compute-usage-tracker.js";
 import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-retention-and-deletion-policy-resolver.js";
+import { createStorageAndArtifactCostTracker } from "./storage-and-artifact-cost-tracker.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
@@ -2732,6 +2733,11 @@ export function buildProjectContext(
       backupStrategy,
     }),
   });
+  const { storageCostMetric } = createStorageAndArtifactCostTracker({
+    storageRecord,
+    retentionWindow: privacyPolicyDecision?.retentionWindow ?? null,
+    manualContext: project.manualContext ?? null,
+  });
   const currentSnapshotSchedule = project.snapshotSchedule ?? project.context?.snapshotSchedule ?? null;
   const currentSnapshotWorker = project.snapshotBackupWorker ?? project.context?.snapshotBackupWorker ?? null;
   const currentSnapshotRetentionPolicy = project.snapshotRetentionPolicy ?? project.context?.snapshotRetentionPolicy ?? null;
@@ -3649,6 +3655,7 @@ export function buildProjectContext(
   context.platformCostMetric = platformCostMetric;
   context.aiUsageMetric = aiUsageMetric;
   context.workspaceComputeMetric = workspaceComputeMetric;
+  context.storageCostMetric = storageCostMetric;
   context.privacyPolicyDecision = privacyPolicyDecision;
   context.privacyRightsResult = project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null;
   context.backupStrategy = backupStrategy;

@@ -189,6 +189,9 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.workspaceComputeMetric?.workspaceComputeMetricId, "string");
   assert.equal(context.workspaceComputeMetric?.usageType, "workspace");
   assert.equal(context.workspaceComputeMetric?.unit, "workspace-minute");
+  assert.equal(typeof context.storageCostMetric?.storageCostMetricId, "string");
+  assert.equal(context.storageCostMetric?.usageType, "storage");
+  assert.equal(context.storageCostMetric?.unit, "gb-month");
   assert.equal(typeof context.actionPolicy?.id, "string");
   assert.equal(typeof context.actionPolicy?.kind, "string");
   assert.equal(typeof context.policyDecision?.decision, "string");
@@ -908,6 +911,31 @@ test("context builder derives data privacy classification from storage, tenant, 
   assert.equal(context.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");
   assert.equal(context.privacyPolicyDecision.retentionAction, "delete-required");
   assert.equal(context.privacyPolicyDecision.backupAllowed, false);
+});
+
+test("context builder derives storage cost metric from attachment volume and retention window", () => {
+  const context = buildProjectContext({
+    id: "giftwallet",
+    name: "GiftWallet",
+    goal: "Track artifact storage",
+    state: {},
+    manualContext: {
+      attachments: [
+        {
+          id: "attachment-1",
+          name: "bundle.zip",
+          type: "application/zip",
+          size: 1024 ** 3,
+        },
+      ],
+    },
+  });
+
+  assert.equal(typeof context.storageCostMetric?.storageCostMetricId, "string");
+  assert.equal(context.storageCostMetric.usageType, "storage");
+  assert.equal(context.storageCostMetric.unit, "gb-month");
+  assert.equal(context.storageCostMetric.attachmentVolumeGb, 1);
+  assert.equal(typeof context.storageCostMetric.lifecycleWindowDays, "number");
 });
 
 test("context builder derives compliance consent state with baseline scopes and restrictions", () => {
