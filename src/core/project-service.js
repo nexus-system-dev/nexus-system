@@ -2320,6 +2320,7 @@ export class ProjectService {
       remoteMacRunner: project.context?.remoteMacRunner ?? null,
       executionModeDecision: project.context?.executionModeDecision ?? null,
       sandboxDecision: project.context?.sandboxDecision ?? null,
+      agentLimitDecision: project.context?.agentLimitDecision ?? null,
       bootstrapPlan: project.context?.bootstrapPlan ?? null,
       bootstrapTasks: project.context?.bootstrapTasks ?? [],
       bootstrapAssignments: project.context?.bootstrapAssignments ?? [],
@@ -3202,6 +3203,7 @@ export class ProjectService {
       complianceAuditSummary: project.context?.complianceAuditSummary ?? null,
       agentGovernancePolicy: project.context?.agentGovernancePolicy ?? null,
       sandboxDecision: project.context?.sandboxDecision ?? null,
+      agentLimitDecision: project.context?.agentLimitDecision ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {

@@ -69,6 +69,7 @@ import { createExecutionPolicyEvaluator } from "./execution-policy-evaluator.js"
 import { definePolicySchema } from "./policy-schema.js";
 import { defineAgentGovernancePolicySchema } from "./agent-governance-policy-schema.js";
 import { createAgentSandboxPolicyResolver } from "./agent-sandbox-policy-resolver.js";
+import { createAgentActionLimitGuard } from "./agent-action-limit-guard.js";
 import { defineProjectDraftSchema } from "./project-draft-schema.js";
 import { defineDiffPreviewSchema } from "./diff-preview-schema.js";
 import { createCodeDiffCollector } from "./code-diff-collector.js";
@@ -3380,6 +3381,29 @@ export function buildProjectContext(
     localDevelopmentBridge,
     remoteMacRunner,
   });
+  const { agentLimitDecision } = createAgentActionLimitGuard({
+    sandboxDecision,
+    budgetDecision:
+      project.manualContext?.budgetDecision
+      ?? project.context?.budgetDecision
+      ?? null,
+    taskContext: {
+      taskType: project.manualContext?.requestContext?.taskType ?? domainCapabilities.taskTypes?.[0] ?? "generic",
+      plannedActions: project.manualContext?.requestContext?.plannedActions ?? bootstrapTasks.length,
+      concurrentActions: project.manualContext?.requestContext?.concurrentActions ?? bootstrapAssignments.length,
+      writeTargets: project.manualContext?.requestContext?.writeTargets ?? codeDiff.files.map((file) => file.path),
+      providerOperations:
+        project.manualContext?.requestContext?.providerOperations
+        ?? providerOperations.map((operation) => operation.operationType),
+      estimatedCost: project.manualContext?.requestContext?.estimatedCost ?? null,
+      scopeType: project.manualContext?.requestContext?.scopeType ?? "project",
+      scopeId: project.manualContext?.requestContext?.scopeId ?? project.id,
+    },
+    agentGovernancePolicy,
+    killSwitchDecision,
+    circuitBreakerDecision,
+    providerOperations,
+  });
   const { fallbackStrategy } = createFallbackStrategyResolver({
     failureRecoveryModel,
     executionModeDecision,
@@ -3643,6 +3667,7 @@ export function buildProjectContext(
   context.remoteMacRunner = remoteMacRunner;
   context.executionModeDecision = executionModeDecision;
   context.sandboxDecision = sandboxDecision;
+  context.agentLimitDecision = agentLimitDecision;
   context.bootstrapPlan = bootstrapPlan;
   context.bootstrapTasks = bootstrapTasks;
   context.bootstrapAssignments = bootstrapAssignments;

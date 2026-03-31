@@ -477,6 +477,11 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.sandboxDecision?.sandboxDecisionId, "string");
   assert.equal(typeof project.state.sandboxDecision?.decision, "string");
   assert.equal(Array.isArray(project.state.sandboxDecision?.alternatives), true);
+  assert.equal(typeof project.state.agentLimitDecision?.agentLimitDecisionId, "string");
+  assert.equal(typeof project.state.agentLimitDecision?.decision, "string");
+  assert.equal(Array.isArray(project.state.agentLimitDecision?.limitChecks), true);
+  assert.equal(Array.isArray(project.state.agentLimitDecision?.costChecks), true);
+  assert.equal(Array.isArray(project.state.agentLimitDecision?.providerSideEffectChecks), true);
   assert.equal(typeof project.state.cloudWorkspaceModel?.workspaceId, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.surface?.topologyType, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.summary?.isWritable, "boolean");

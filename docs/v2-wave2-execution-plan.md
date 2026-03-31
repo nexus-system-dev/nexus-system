@@ -3023,7 +3023,7 @@
 - הערת מצב: ה־resolver בוחר execution boundary policy-first בלבד; הוא לא מבצע enforcement runtime ולא מחליף את `executionModeDecision`, כדי ש־Tasks 44–45 יוכלו לצרוך decision יציב downstream.
 
 
-3. `Create agent action limit guard`  | סטטוס: 🔴 לא בוצע
+3. `Create agent action limit guard`  | סטטוס: 🟢 בוצע
 - execution_order: `44`
 - description: לבנות guard שמגביל actions מסוכנים, כמות פעולות, cost spikes ו־provider side effects לפי agent policy
 - input:
@@ -3036,6 +3036,29 @@
   - `Create agent sandbox policy resolver`  | סטטוס: 🟢 בוצע
   - `Platform Cost & Usage Control`
 - connects_to: `Execution Surface`
+- completion_type: `internal_logic`
+- coverage_check:
+  - description: `full` — המודול ב־`src/core/agent-action-limit-guard.js` מחבר `sandboxDecision`, `budgetDecision`, `taskContext`, provider side effects, kill switch ו־circuit breaker ל־`agentLimitDecision` קנוני עם breakdown מלא.
+  - input: `full` — `sandboxDecision` נצרך מ־Task 43; `taskContext` מנורמל דרך `src/core/agent-task-context-normalizer.js`; `budgetDecision` מנורמל ב־`src/core/agent-budget-threshold-checker.js` עם fallback הגנתי מתוך `agentGovernancePolicy.spendThresholds` רק כש־upstream חסר; provider side effects מסווגים ב־`src/core/provider-side-effect-classifier.js`.
+  - output: `full` — מוחזר `agentLimitDecision` עם `decision`, `blockedActions`, `allowedActions`, `limitChecks`, `costChecks`, `providerSideEffectChecks`, `escalationHint`, `alternatives`, `reason` ו־`summary`, ונכתב ל־`context`, ל־`state` ול־project payload.
+  - dependencies: `full` — נשען על `Create agent sandbox policy resolver`, על `killSwitchDecision`, על `circuitBreakerDecision`, ועל foundations קיימים של provider operations ועלות בלי להעמיד פנים ש־`Platform Cost & Usage Control` המלא כבר נבנה.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - יש `agentLimitDecision` קנוני
+  - precedence מיושם: kill switch / hard block -> sandboxDecision -> budgetDecision -> provider side effects -> quantitative limits
+  - קיימים `limitChecks`, `costChecks`, `providerSideEffectChecks`
+  - `escalationHint` מוחזר כשצריך
+  - `alternatives` מוחזרות רק כשיש להן ערך אופרטיבי
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: כשה־upstream של `budgetDecision` עדיין חסר, ה־guard משתמש ב־fallback דפנסיבי מתוך `agentGovernancePolicy.spendThresholds`; זה wiring זמני אך מפורש, ולא מחליף את contract המלא של `Platform Cost & Usage Control` downstream.
 
 
 4. `Create agent governance audit trail`  | סטטוס: 🔴 לא בוצע
@@ -3047,7 +3070,7 @@
 - output:
   - `agentGovernanceTrace`
 - dependencies:
-  - `Create agent action limit guard`  | סטטוס: 🔴 לא בוצע
+  - `Create agent action limit guard`  | סטטוס: 🟢 בוצע
   - `Project Audit Trail`
 - connects_to: `Project State`
 
