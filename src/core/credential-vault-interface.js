@@ -11,14 +11,18 @@ function sanitizeSegment(value, fallback = "secret") {
 export function createCredentialVaultInterface({
   credentialKey,
   credentialValue,
+  credentialReference = null,
+  encryptedCredential: encryptedCredentialInput = null,
 } = {}) {
   const normalizedKey = sanitizeSegment(credentialKey, "secret");
   const hasValue =
     typeof credentialValue === "string" ? credentialValue.length > 0 : credentialValue !== null && credentialValue !== undefined;
-  const referenceId = `credref_${normalizedKey}`;
-  const { encryptedCredential } = createCredentialEncryptionModule({
+  const referenceId = typeof credentialReference === "string" && credentialReference.trim()
+    ? credentialReference.trim()
+    : `credref_${normalizedKey}`;
+  const encryptedCredential = encryptedCredentialInput ?? createCredentialEncryptionModule({
     plainCredential: credentialValue,
-  });
+  }).encryptedCredential;
 
   return {
     credentialReference: referenceId,

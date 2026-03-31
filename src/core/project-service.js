@@ -25,6 +25,7 @@ import { createProviderCapabilityDescriptor } from "./provider-capability-descri
 import { createProviderOperationContract } from "./provider-operation-contract.js";
 import { createAccountVerificationModule } from "./account-verification-module.js";
 import { createCredentialVaultInterface } from "./credential-vault-interface.js";
+import { createSecretRotationWorkflow } from "./secret-rotation-workflow.js";
 import { createApprovalRecordStore } from "./approval-record-store.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
@@ -2340,6 +2341,7 @@ export class ProjectService {
       encryptedCredential: project.context?.encryptedCredential ?? null,
       credentialVaultRecord: project.context?.credentialVaultRecord ?? null,
       credentialPolicyDecision: project.context?.credentialPolicyDecision ?? null,
+      rotationResult: project.context?.rotationResult ?? project.rotationResult ?? null,
       providerConnectorSchema: project.context?.providerConnectorSchema ?? null,
       providerCapabilities: project.context?.providerCapabilities ?? null,
       providerOperations: project.context?.providerOperations ?? [],
@@ -2782,6 +2784,34 @@ export class ProjectService {
     };
   }
 
+  rotateCredential(projectId, {
+    credentialReference,
+    rotationRequest,
+  } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const { rotationResult, linkedAccounts } = createSecretRotationWorkflow({
+      credentialReference,
+      rotationRequest,
+      project,
+    });
+
+    if (Array.isArray(linkedAccounts)) {
+      project.linkedAccounts = linkedAccounts;
+    }
+    project.rotationResult = rotationResult;
+    this.rebuildContext(projectId);
+
+    return {
+      rotationResult: project.rotationResult,
+      linkedAccounts: project.linkedAccounts ?? [],
+      project: this.serializeProject(project),
+    };
+  }
+
   getReleaseTracking(projectId, releaseRunId) {
     const project = this.projects.get(projectId);
     if (!project) {
@@ -3147,6 +3177,7 @@ export class ProjectService {
       taskResults: project.taskResults,
       runtimeResults: project.runtimeResults,
       linkedAccounts: project.linkedAccounts ?? [],
+      rotationResult: project.rotationResult ?? null,
       approvalRecords: project.approvalRecords ?? [],
       events,
     };

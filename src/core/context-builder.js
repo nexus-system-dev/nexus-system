@@ -1459,6 +1459,8 @@ export function buildProjectContext(
     projectState: {
       approvalStatus,
       policyDecision,
+      credentialVaultRecord,
+      linkedAccounts: project.linkedAccounts ?? [],
     },
   });
   const { providerSession } = createProviderSessionFactory({
@@ -3452,6 +3454,7 @@ export function buildProjectContext(
   context.encryptedCredential = encryptedCredential;
   context.credentialVaultRecord = credentialVaultRecord;
   context.credentialPolicyDecision = credentialPolicyDecision;
+  context.rotationResult = project.rotationResult ?? null;
   context.providerConnectorSchema = providerConnectorSchema;
   context.providerCapabilities = providerCapabilities;
   context.providerOperations = providerOperations;

@@ -1479,6 +1479,38 @@ test("project service links verifies lists and unlinks external accounts", () =>
   assert.equal(removed.removed, true);
 });
 
+test("project service rotates credential references and updates dependent connectors", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const linked = service.linkExternalAccount("giftwallet", {
+    providerType: "hosting",
+    userInput: {
+      accountId: "vercel-team-1",
+      authMode: "api-key",
+      credentialValue: "super-secret-key",
+      capabilities: ["deploy"],
+    },
+  });
+  const oldReference = linked.linkedAccountPayload.credentialReference;
+
+  const rotation = service.rotateCredential("giftwallet", {
+    credentialReference: oldReference,
+    rotationRequest: {
+      newValue: "super-secret-key-v2",
+      requestedBy: "owner-1",
+      reason: "routine-rotation",
+    },
+  });
+
+  assert.equal(rotation.rotationResult.status, "completed");
+  assert.equal(rotation.rotationResult.oldReference.secretReferenceLifecycle.revoked, true);
+  assert.notEqual(rotation.rotationResult.newReference.credentialReference, oldReference);
+  assert.equal(rotation.linkedAccounts[0].credentialReference, rotation.rotationResult.newReference.credentialReference);
+  assert.equal(rotation.linkedAccounts[0].revokedCredentialVaultRecord.credentialReference, oldReference);
+  assert.equal(rotation.project.state.rotationResult.rotationId, rotation.rotationResult.rotationId);
+});
+
 test("project service returns release tracking payload", () => {
   const service = createProjectService();
   service.seedDemoProject();

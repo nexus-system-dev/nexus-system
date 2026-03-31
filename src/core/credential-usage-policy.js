@@ -10,6 +10,27 @@ function normalizeProjectState(projectState) {
   return projectState && typeof projectState === "object" ? projectState : {};
 }
 
+function resolveCredentialLifecycle(credentialReference, projectState) {
+  const directRecord = projectState.credentialVaultRecord ?? null;
+  if (directRecord && directRecord.credentialReference === credentialReference) {
+    return directRecord.secretReferenceLifecycle ?? null;
+  }
+
+  const linkedAccounts = Array.isArray(projectState.linkedAccounts) ? projectState.linkedAccounts : [];
+  for (const account of linkedAccounts) {
+    const activeRecord = account?.credentialVaultRecord ?? null;
+    if (activeRecord && activeRecord.credentialReference === credentialReference) {
+      return activeRecord.secretReferenceLifecycle ?? null;
+    }
+    const revokedRecord = account?.revokedCredentialVaultRecord ?? null;
+    if (revokedRecord && revokedRecord.credentialReference === credentialReference) {
+      return revokedRecord.secretReferenceLifecycle ?? null;
+    }
+  }
+
+  return null;
+}
+
 export function createCredentialUsagePolicy({
   credentialReference,
   actorType,
@@ -23,6 +44,7 @@ export function createCredentialUsagePolicy({
   const policyDecision = normalizedProjectState.policyDecision ?? null;
   const hasCredential = typeof credentialReference === "string" && credentialReference.trim().length > 0;
   const sensitiveFlow = ["deploy", "build", "release", "execution"].includes(normalizedFlowType);
+  const credentialLifecycle = resolveCredentialLifecycle(credentialReference, normalizedProjectState);
 
   if (!hasCredential) {
     return {
@@ -35,6 +57,21 @@ export function createCredentialUsagePolicy({
         requiresApproval: false,
         isBlocked: true,
         reason: "Credential reference is missing",
+      },
+    };
+  }
+
+  if (credentialLifecycle?.revoked === true) {
+    return {
+      credentialPolicyDecision: {
+        credentialReference,
+        actorType: normalizedActorType,
+        flowType: normalizedFlowType,
+        decision: "blocked",
+        isAllowed: false,
+        requiresApproval: false,
+        isBlocked: true,
+        reason: "Credential reference was revoked and must be rotated before use",
       },
     };
   }

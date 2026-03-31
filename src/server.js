@@ -1009,6 +1009,21 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.endsWith("/accounts/rotate")) {
+      const [, , , projectId] = url.pathname.split("/");
+      const body = await parseBody(request).catch(() => ({}));
+      const result = projectService.rotateCredential(projectId, {
+        credentialReference: body.credentialReference,
+        rotationRequest: body.rotationRequest,
+      });
+      if (!result) {
+        sendJson(response, 404, { error: "Project not found" });
+        return;
+      }
+      sendJson(response, result.rotationResult?.status === "failed" ? 422 : 200, result);
+      return;
+    }
+
     if (request.method === "DELETE" && url.pathname.includes("/accounts/")) {
       const [, , , projectId, , accountId] = url.pathname.split("/");
       const result = projectService.unlinkExternalAccount(projectId, accountId);

@@ -185,6 +185,48 @@ test("server exposes dedicated security audit logs endpoint", async () => {
   assert.equal(response.body.securityAuditLogs[0].securityAuditId, "security-audit-1");
 });
 
+test("server exposes credential rotation endpoint", async () => {
+  const server = createServer({
+    rotateCredential: (projectId, { credentialReference, rotationRequest }) => ({
+      rotationResult: {
+        rotationId: "credential-rotation:1",
+        status: "completed",
+        oldReference: {
+          credentialReference,
+          secretReferenceLifecycle: {
+            revoked: true,
+          },
+        },
+        newReference: {
+          credentialReference: `${credentialReference}:rotated`,
+        },
+        requestedBy: rotationRequest.requestedBy,
+      },
+      linkedAccounts: [],
+      project: {
+        id: projectId,
+      },
+    }),
+  });
+
+  const response = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects/giftwallet/accounts/rotate",
+    {
+      credentialReference: "credref_hosting-primary",
+      rotationRequest: {
+        newValue: "next-secret",
+        requestedBy: "owner-1",
+      },
+    },
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.rotationResult.status, "completed");
+  assert.equal(response.body.rotationResult.oldReference.secretReferenceLifecycle.revoked, true);
+});
+
 test("server exposes project snapshots endpoint", async () => {
   const server = createServer({
     getProjectSnapshots: ({ projectId }) => projectId === "giftwallet"

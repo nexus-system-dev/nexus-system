@@ -51,3 +51,27 @@ test("credential usage policy blocks missing credential reference", () => {
   assert.equal(credentialPolicyDecision.decision, "blocked");
   assert.equal(credentialPolicyDecision.isBlocked, true);
 });
+
+test("credential usage policy blocks revoked credential references", () => {
+  const { credentialPolicyDecision } = createCredentialUsagePolicy({
+    credentialReference: "credref_hosting-primary",
+    actorType: "user",
+    flowType: "deploy",
+    projectState: {
+      linkedAccounts: [
+        {
+          revokedCredentialVaultRecord: {
+            credentialReference: "credref_hosting-primary",
+            secretReferenceLifecycle: {
+              revoked: true,
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  assert.equal(credentialPolicyDecision.decision, "blocked");
+  assert.equal(credentialPolicyDecision.isBlocked, true);
+  assert.match(credentialPolicyDecision.reason, /revoked/i);
+});

@@ -9197,7 +9197,7 @@ Refinements מאושרים:
   - `none`
 - הערת מצב: שכבת ה־logger הושלמה במלואה; החיבור האוטומטי מ־`session security controls` ליצירת `securityEvent` עדיין לא נבנה כ־pipeline מלא, אבל אינו חוסם את השלמת המשימה הזאת כל עוד ה־logger מקבל `securityEvent` תקף.
 
-4. `Create secret rotation workflow`  | סטטוס: 🔴 לא בוצע
+4. `Create secret rotation workflow`  | סטטוס: 🟢 בוצע
 - description: לבנות workflow לרוטציה של credentials, invalidation של references ועדכון dependent connectors
 - input:
   - `credentialReference`
@@ -9208,6 +9208,27 @@ Refinements מאושרים:
   - `Credentials Management`
   - `External Accounts Connector`
 - connects_to: `Execution Surface`
+- completion_type: `api_ready`
+- coverage_check:
+  - `description` → `full` | ממומש ב־`src/core/secret-rotation-workflow.js`, `src/core/rotation-request-schema.js`, `src/core/dependent-connector-resolver.js` וב־`src/core/project-service.js`
+  - `input` → `full` | `credentialReference` ו־`rotationRequest` מנורמלים ונבדקים ב־`src/core/rotation-request-schema.js` וב־`src/core/secret-rotation-workflow.js`
+  - `output` → `full` | `rotationResult` מלא מוחזר דרך ה־workflow, נשמר ב־project/service, ונחשף דרך `POST /api/projects/:id/accounts/rotate`
+  - `dependencies` → `full` | משתמש ב־`credential-vault-interface.js`, `credential-encryption-module.js`, `external-account-registry.js`, `provider-operation-contract.js`, ו־`credential-usage-policy.js` בלי לבנות vault/persistence חדש
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `POST /api/projects/:id/accounts/rotate`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - ה־reference הישן מסומן `revoked: true` ולא נמחק
+  - נוצר `credentialReference` חדש עם אותו `credentialKey`
+  - כל ה־dependent connectors מתעדכנים או מסומנים כ־`partial/failed` אמתיים
+  - `credential-usage-policy` חוסם שימוש ב־revoked references
+  - `rotationResult` מלא מוחזר דרך service/API
+  - טסטים עוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־workflow עובד דרך service/API ולא דרך UI ייעודי; לא נבנה מסך credentials חדש, בהתאם להגדרת המשימה.
 
 #### `Feature Flags & Kill Switch Control`
 
