@@ -254,6 +254,68 @@ test("server exposes credential rotation endpoint", async () => {
   assert.equal(response.body.rotationResult.oldReference.secretReferenceLifecycle.revoked, true);
 });
 
+test("server exposes privacy rights execution endpoint", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-privacy-rights-server-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  service.seedDemoProject();
+  const project = service.projects.get("giftwallet");
+  project.userId = "demo-user";
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    userProfile: {
+      userId: "demo-user",
+      email: "demo@example.com",
+      displayName: "Demo User",
+    },
+    consentEntries: [
+      {
+        entryId: "consent-learning-demo",
+        userId: "demo-user",
+        processingScope: "learning",
+        scopeType: "project",
+        scopeId: "giftwallet",
+        status: "granted",
+        legalBasis: "consent",
+      },
+    ],
+    learningEvent: {
+      learningEventId: "learning-event-demo",
+    },
+  };
+  project.context = {
+    ...(project.context ?? {}),
+    learningInsights: {
+      items: [{ insightId: "insight-1" }],
+    },
+  };
+  const server = createServer(service);
+
+  const response = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects/giftwallet/privacy-rights-requests",
+    {
+      privacyRequest: {
+        requestType: "learning-opt-out",
+        subjectType: "user",
+        subjectId: "demo-user",
+        scopeType: "project",
+        scopeId: "giftwallet",
+        requestedBy: {
+          actorId: "demo-user",
+          actorType: "user",
+        },
+      },
+    },
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(typeof response.body.state?.privacyRightsResult?.privacyRequestId, "string");
+  assert.equal(["completed", "partial"].includes(response.body.state.privacyRightsResult.status), true);
+});
+
 test("server returns 403 for routes blocked by feature flag decision", async () => {
   const server = createServer({
     getProject: () => ({

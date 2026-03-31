@@ -3523,6 +3523,7 @@ export function buildProjectContext(
   context.storageRecord = storageRecord;
   context.dataPrivacyClassification = dataPrivacyClassification;
   context.privacyPolicyDecision = privacyPolicyDecision;
+  context.privacyRightsResult = project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null;
   context.backupStrategy = backupStrategy;
   context.restorePlan = restorePlan;
   context.reliabilitySlaModel = reliabilitySlaModel;

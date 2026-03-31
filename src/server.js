@@ -748,6 +748,19 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/privacy-rights-requests")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.executePrivacyRightsRequest === "function"
+        ? projectService.executePrivacyRightsRequest({
+            projectId,
+            privacyRequest: body.privacyRequest,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "GET" && url.pathname === "/api/projects") {
       sendJson(response, 200, { projects: projectService.listProjects() });
       return;

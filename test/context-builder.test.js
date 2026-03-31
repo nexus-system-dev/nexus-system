@@ -913,3 +913,24 @@ test("context builder derives compliance consent state with baseline scopes and 
     true,
   );
 });
+
+test("context builder carries privacy rights execution result into canonical context", () => {
+  const context = buildProjectContext({
+    id: "giftwallet",
+    name: "GiftWallet",
+    goal: "Honor privacy requests",
+    state: {},
+    context: {
+      privacyRightsResult: {
+        privacyRequestId: "privacy-request:giftwallet:export:user-1",
+        status: "completed",
+        executedActions: [],
+        affectedScopes: [],
+        summary: "Export completed.",
+      },
+    },
+  });
+
+  assert.equal(typeof context.privacyRightsResult?.privacyRequestId, "string");
+  assert.equal(context.privacyRightsResult.status, "completed");
+});

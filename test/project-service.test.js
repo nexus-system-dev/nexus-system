@@ -846,6 +846,74 @@ test("project service syncs casino diagnostics into nexus state", async () => {
   assert.equal(project.state.product.hasAuth, true);
 });
 
+test("project service executes privacy rights requests and writes the result through context state and payload", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.projects.get("giftwallet");
+  project.userId = "demo-user";
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    userProfile: {
+      userId: "demo-user",
+      email: "demo@example.com",
+      displayName: "Demo User",
+    },
+    notificationPreferences: {
+      userId: "demo-user",
+      channels: ["in-app", "email"],
+      eventTypes: ["learning"],
+      digestEnabled: true,
+      emailEnabled: true,
+      inAppEnabled: true,
+    },
+    consentEntries: [
+      {
+        entryId: "consent-learning-demo",
+        userId: "demo-user",
+        processingScope: "learning",
+        scopeType: "project",
+        scopeId: "giftwallet",
+        status: "granted",
+        legalBasis: "consent",
+      },
+    ],
+    learningEvent: {
+      learningEventId: "learning-event-demo",
+    },
+  };
+  project.context = {
+    ...(project.context ?? {}),
+    learningInsights: {
+      items: [{ insightId: "insight-1" }],
+    },
+  };
+
+  const updatedProject = service.executePrivacyRightsRequest({
+    projectId: "giftwallet",
+    privacyRequest: {
+      requestType: "learning-opt-out",
+      subjectType: "user",
+      subjectId: "demo-user",
+      scopeType: "project",
+      scopeId: "giftwallet",
+      requestedBy: {
+        actorId: "demo-user",
+        actorType: "user",
+      },
+    },
+  });
+
+  assert.equal(typeof updatedProject.context?.privacyRightsResult?.privacyRequestId, "string");
+  assert.equal(typeof updatedProject.state?.privacyRightsResult?.privacyRequestId, "string");
+  assert.equal(updatedProject.context.privacyRightsResult.status, updatedProject.state.privacyRightsResult.status);
+  assert.equal(
+    updatedProject.state.complianceConsentState.activeRestrictions.some((entry) => entry.processingScope === "learning"),
+    true,
+  );
+  assert.equal(updatedProject.context.learningInsightViewModel.summary.totalInsights, 0);
+});
+
 test("project service connects a project to git hosting and stores repo snapshot", async () => {
   const service = createProjectService();
   service.gitConnector = {

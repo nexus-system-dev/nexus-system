@@ -54,6 +54,7 @@ import { createProjectRollbackExecutionModule } from "./project-rollback-executi
 import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
 import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
 import { createSnapshotBackupWorkerJob } from "./snapshot-backup-worker-job.js";
+import { createPrivacyRightsExecutionModule } from "./privacy-rights-execution-module.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
 import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
@@ -354,6 +355,7 @@ export class ProjectService {
       continuityPlan: null,
       disasterRecoveryChecklist: null,
       businessContinuityState: null,
+      privacyRightsResult: null,
     };
 
     this.projects.set(id, project);
@@ -1878,6 +1880,43 @@ export class ProjectService {
     return this.serializeProject(project);
   }
 
+  executePrivacyRightsRequest({ projectId, privacyRequest } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    this.rebuildContext(projectId);
+    const currentProject = this.projects.get(projectId);
+    const { privacyRightsResult } = createPrivacyRightsExecutionModule({
+      privacyRequest,
+      project: currentProject,
+      context: currentProject?.context ?? null,
+    });
+
+    currentProject.context = {
+      ...(currentProject.context ?? {}),
+      privacyRequest,
+      privacyRightsResult,
+    };
+    currentProject.privacyRightsResult = privacyRightsResult;
+    this.rebuildContext(projectId);
+
+    const refreshedProject = this.projects.get(projectId);
+    refreshedProject.context = {
+      ...(refreshedProject.context ?? {}),
+      privacyRequest,
+      privacyRightsResult,
+    };
+    refreshedProject.state = {
+      ...(refreshedProject.state ?? {}),
+      privacyRightsResult,
+    };
+    refreshedProject.privacyRightsResult = privacyRightsResult;
+
+    return this.serializeProject(refreshedProject);
+  }
+
   getProjectEvents(projectId) {
     return this.eventBus
       .getEvents()
@@ -2183,6 +2222,7 @@ export class ProjectService {
       storageRecord: project.context?.storageRecord ?? null,
       dataPrivacyClassification: project.context?.dataPrivacyClassification ?? null,
       privacyPolicyDecision: project.context?.privacyPolicyDecision ?? null,
+      privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       backupStrategy: project.context?.backupStrategy ?? null,
       restorePlan: project.context?.restorePlan ?? null,
       userJourneys: project.context?.userJourneys ?? null,
@@ -2318,6 +2358,7 @@ export class ProjectService {
       notificationCenterState: project.context?.notificationCenterState ?? null,
       notificationPreferences: project.context?.notificationPreferences ?? null,
       complianceConsentState: project.context?.complianceConsentState ?? null,
+      privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       emailDeliveryResult: project.context?.emailDeliveryResult ?? null,
       externalDeliveryResult: project.context?.externalDeliveryResult ?? null,
       releasePlan: project.context?.releasePlan ?? null,
@@ -3155,6 +3196,7 @@ export class ProjectService {
       disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
       businessContinuityState: project.context?.businessContinuityState ?? null,
       securityAuditRecord: project.context?.securityAuditRecord ?? null,
+      privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {
         bottleneck: blockedTasks[0] ?? "אין כרגע חסם מרכזי",
@@ -3191,6 +3233,7 @@ export class ProjectService {
       runtimeResults: project.runtimeResults,
       linkedAccounts: project.linkedAccounts ?? [],
       rotationResult: project.rotationResult ?? null,
+      privacyRightsResult: project.privacyRightsResult ?? project.context?.privacyRightsResult ?? null,
       approvalRecords: project.approvalRecords ?? [],
       events,
     };

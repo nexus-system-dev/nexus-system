@@ -2876,7 +2876,7 @@
 - הערת מצב: ה־registry משתמש ב־`userIdentity` כ־identity anchor, ב־`consentRecord` הישן רק כסיגנל project-scoped תומך, וב־`notificationPreferences` כסיגנל עזר בלבד; approval state נשאר audit support ולא הופך ל־consent source of truth.
 
 
-4. `Create privacy rights execution module`  | סטטוס: 🔴 לא בוצע
+4. `Create privacy rights execution module`  | סטטוס: 🟢 בוצע
 - execution_order: `40`
 - description: לבנות מודול לבקשות export, delete, forget me ו־learning opt-out ברמת user/workspace
 - input:
@@ -2885,9 +2885,30 @@
 - output:
   - `privacyRightsResult`
 - dependencies:
-  - `Create privacy retention and deletion policy resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create privacy retention and deletion policy resolver`  | סטטוס: 🟢 בוצע
   - `Nexus Persistence Layer`
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - description: `full` — המודול ב־`src/core/privacy-rights-execution-module.js` מבצע בפועל `export / delete / forget-me / learning-opt-out`, כולל side effects אמיתיים על stores נתמכים וחישוב `completed / partial / blocked / failed`.
+  - input: `full` — `privacyRequest` נצרך כקלט ישיר, ו־`privacyPolicyDecision` נצרך מתוך ה־context ב־`ProjectService.executePrivacyRightsRequest(...)` בלי לחשב מחדש את שרשרת privacy.
+  - output: `full` — מוחזר `privacyRightsResult` קנוני עם `executedActions`, `affectedScopes`, `status` ו־`summary`, ונכתב ל־`context` ול־`state`.
+  - dependencies: `partial` — ה־resolver נשען על chain privacy הקיים (`dataPrivacyClassification`, `privacyPolicyDecision`, `complianceConsentState`) במלואו, אבל `Nexus Persistence Layer` עדיין נתמך רק דרך stores אמיתיים שקיימים כרגע ב־`project/manualContext/projectIntake/context`, לא דרך מחיקה מתוך snapshot/audit append-only stores.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `POST /api/projects/:id/privacy-rights-requests` ו־`GET /api/projects/:id`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - מודול execution אמיתי קיים
+  - יש side effects בפועל על stores נתמכים
+  - `privacyRightsResult` נכתב ל־`context` ול־`state`
+  - הערך מופיע ב־serialized project payload
+  - `completed / partial / blocked / failed` מחושבים לפי הכיסוי בפועל
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: המימוש לא מזייף מחיקה מתוך stores שאין להם hook אמיתי כרגע; בקשות שנוגעות ל־append-only audit stores או לשכבות persistence לא נתמכות מוחזרות ביושר כ־`partial` במקום `completed`.
 
 
 5. `Create compliance audit summary`  | סטטוס: 🔴 לא בוצע
