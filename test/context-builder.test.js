@@ -180,6 +180,9 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.agentGovernanceTrace?.finalDecision, "string");
   assert.equal(Array.isArray(context.agentGovernanceTrace?.allChecks), true);
   assert.equal(typeof context.agentGovernanceTrace?.summary?.totalChecks, "number");
+  assert.equal(typeof context.platformCostMetric?.platformCostMetricId, "string");
+  assert.equal(typeof context.platformCostMetric?.usageType, "string");
+  assert.equal(typeof context.platformCostMetric?.currency, "string");
   assert.equal(typeof context.actionPolicy?.id, "string");
   assert.equal(typeof context.actionPolicy?.kind, "string");
   assert.equal(typeof context.policyDecision?.decision, "string");

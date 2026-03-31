@@ -9675,7 +9675,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Define platform usage cost schema`  | סטטוס: 🔴 לא בוצע
+1. `Define platform usage cost schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד לעלויות usage של מודלים, workspaces, storage, builds ו־provider operations
 - input:
   - `usageEvent`
@@ -9685,6 +9685,30 @@ Refinements מאושרים:
 - dependencies:
   - `Canonical Schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `schema_only`
+- coverage_check:
+  - description: `full` — המודול ב־[src/core/platform-usage-cost-schema.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/platform-usage-cost-schema.js) מגדיר metric אחיד ברמת usage event יחיד בלבד, בלי aggregation ובלי reuse של `costPerRun` או `spendThresholds`.
+  - input: `full` — `usageEvent` ו־`pricingMetadata` נצרכים דרך `definePlatformUsageCostSchema({ usageEvent, pricingMetadata })`; ב־context wiring הערכים מוזנים מ־`project.manualContext?.usageEvent` ו־`project.manualContext?.pricingMetadata`.
+  - output: `full` — מוחזר `platformCostMetric` קנוני עם `usageType`, `unit`, `pricingModel`, `totalCost`, `currency`, `recordedAt` ו־`summary`; נכתב ל־`context`, ל־`state`, ונחשף ב־payload דרך [src/core/project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js).
+  - dependencies: `full` — נשען על `Canonical Schema` ברמת normalization דטרמיניסטי, בלי תלות ב־billing engine או ב־usage tracker downstream.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - יש `platformCostMetric` קנוני
+  - `usageType` מנורמל לסט הקנוני עם fallback ברור
+  - `unit` מנורמל לפי `usageType`
+  - `pricingModel` מנורמל
+  - `totalCost` מחושב נכון ורק כשיש מספיק מידע
+  - `currency` תמיד מוגדר
+  - `recordedAt` תמיד מוגדר
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 2. `Create AI usage meter`  | סטטוס: 🔴 לא בוצע
 - description: לבנות meter שסופר צריכת מודלים, tool runs ו־token usage לכל פרויקט, משתמש וזרימת עבודה
@@ -9694,7 +9718,7 @@ Refinements מאושרים:
 - output:
   - `aiUsageMetric`
 - dependencies:
-  - `Define platform usage cost schema`  | סטטוס: 🔴 לא בוצע
+  - `Define platform usage cost schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 3. `Create workspace compute usage tracker`  | סטטוס: 🔴 לא בוצע
@@ -9706,7 +9730,7 @@ Refinements מאושרים:
   - `workspaceComputeMetric`
 - dependencies:
   - `Create cloud execution workspace model`  | סטטוס: 🟢 בוצע
-  - `Define platform usage cost schema`  | סטטוס: 🔴 לא בוצע
+  - `Define platform usage cost schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 
 4. `Create storage and artifact cost tracker`  | סטטוס: 🔴 לא בוצע

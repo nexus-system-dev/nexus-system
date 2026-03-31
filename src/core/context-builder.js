@@ -105,6 +105,7 @@ import { defineFeatureFlagSchema } from "./feature-flag-schema.js";
 import { createFeatureFlagResolver } from "./feature-flag-resolver.js";
 import { createEmergencyKillSwitchGuard } from "./emergency-kill-switch-guard.js";
 import { defineDataPrivacyClassificationSchema } from "./data-privacy-classification-schema.js";
+import { definePlatformUsageCostSchema } from "./platform-usage-cost-schema.js";
 import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-retention-and-deletion-policy-resolver.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
@@ -2689,6 +2690,10 @@ export function buildProjectContext(
       storageRecord,
     }),
   });
+  const { platformCostMetric } = definePlatformUsageCostSchema({
+    usageEvent: project.manualContext?.usageEvent ?? null,
+    pricingMetadata: project.manualContext?.pricingMetadata ?? null,
+  });
   const { privacyPolicyDecision } = createPrivacyRetentionAndDeletionPolicyResolver({
     dataPrivacyClassification,
     retentionPolicy: derivePrivacyRetentionPolicy({
@@ -3608,6 +3613,7 @@ export function buildProjectContext(
   context.entityRepository = entityRepository;
   context.storageRecord = storageRecord;
   context.dataPrivacyClassification = dataPrivacyClassification;
+  context.platformCostMetric = platformCostMetric;
   context.privacyPolicyDecision = privacyPolicyDecision;
   context.privacyRightsResult = project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null;
   context.backupStrategy = backupStrategy;

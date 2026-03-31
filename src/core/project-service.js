@@ -2222,6 +2222,7 @@ export class ProjectService {
       entityRepository: project.context?.entityRepository ?? [],
       storageRecord: project.context?.storageRecord ?? null,
       dataPrivacyClassification: project.context?.dataPrivacyClassification ?? null,
+      platformCostMetric: project.context?.platformCostMetric ?? null,
       privacyPolicyDecision: project.context?.privacyPolicyDecision ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       backupStrategy: project.context?.backupStrategy ?? null,
@@ -3206,6 +3207,7 @@ export class ProjectService {
       sandboxDecision: project.context?.sandboxDecision ?? null,
       agentLimitDecision: project.context?.agentLimitDecision ?? null,
       agentGovernanceTrace: project.context?.agentGovernanceTrace ?? null,
+      platformCostMetric: project.context?.platformCostMetric ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {

@@ -216,6 +216,9 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.state?.agentGovernanceTrace?.agentGovernanceTraceId, "string");
   assert.equal(typeof response.body.state?.agentGovernanceTrace?.finalDecision, "string");
   assert.equal(Array.isArray(response.body.state?.agentGovernanceTrace?.allChecks), true);
+  assert.equal(typeof response.body.context?.platformCostMetric?.platformCostMetricId, "string");
+  assert.equal(typeof response.body.state?.platformCostMetric?.platformCostMetricId, "string");
+  assert.equal(typeof response.body.state?.platformCostMetric?.currency, "string");
   assert.equal(response.body.state?.projectAuditEvent?.actionType, "project.agent-governance.decision");
   assert.equal(response.body.state.dataPrivacyClassification.exposureLevel, response.body.context.dataPrivacyClassification.exposureLevel);
   assert.equal(response.body.state.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");

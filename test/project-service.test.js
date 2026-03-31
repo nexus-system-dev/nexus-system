@@ -486,6 +486,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.agentGovernanceTrace?.finalDecision, "string");
   assert.equal(Array.isArray(project.state.agentGovernanceTrace?.allChecks), true);
   assert.equal(typeof project.state.agentGovernanceTrace?.summary?.totalChecks, "number");
+  assert.equal(typeof project.state.platformCostMetric?.platformCostMetricId, "string");
+  assert.equal(typeof project.state.platformCostMetric?.usageType, "string");
+  assert.equal(typeof project.state.platformCostMetric?.currency, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.workspaceId, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.surface?.topologyType, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.summary?.isWritable, "boolean");
