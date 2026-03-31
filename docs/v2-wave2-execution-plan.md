@@ -2392,7 +2392,42 @@
   - `none`
 - הערת מצב: ה־checklist מחובר end-to-end ל־backup/restore/snapshot state ול־Platform Observability עצמו, כולל evidence ישיר של traces/logs/readiness דרך API ו־Versioning UI.
 
-6. `Create failover and continuity planner`  | סטטוס: 🟡 חלקי
+5. `Define reliability and SLA schema`  | סטטוס: 🟢 בוצע
+- execution_order: `29.5`
+- description: לבנות schema אחיד ל־uptime targets, recovery objectives, failure classes ו־service guarantees של Nexus
+- input:
+  - `serviceTierDefinitions`
+  - `runtimeCapabilities`
+- output:
+  - `reliabilitySlaModel`
+- dependencies:
+  - `Platform Observability`
+  - `Backup & Recovery`
+- connects_to: `Project State`
+- completion_type: `service_only`
+- coverage_check:
+  - `description: canonical SLA model includes uptime targets, recovery objectives, failure classes, and service guarantees` → `full` | `src/core/reliability-sla-model.js`, `test/reliability-sla-model.test.js`
+  - `input.serviceTierDefinitions` → `full` | `src/core/reliability-sla-model.js`, `src/core/context-builder.js`
+  - `input.runtimeCapabilities` → `full` | `src/core/reliability-sla-model.js`, `src/core/context-builder.js`
+  - `output.reliabilitySlaModel` → `full` | `src/core/reliability-sla-model.js`, `src/core/context-builder.js`, `test/reliability-sla-model.test.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `dependencies.Platform Observability` → `full` | `src/core/context-builder.js` derives runtime-facing reliability inputs from observability-driven continuity/recovery state instead of inventing an external data source.
+  - `dependencies.Backup & Recovery` → `full` | `src/core/context-builder.js` derives snapshot restore + automatic recovery capabilities from `backupStrategy`, `restorePlan`, and `disasterRecoveryChecklist`.
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `canonical model is created with reliabilityModelId`
+  - `starter/standard/enterprise defaults are defined inside the module`
+  - `context-builder stores reliabilitySlaModel and passes it to continuity planning`
+  - `planner stops using fallback reliability defaults in the active project flow`
+  - `tests prove canonical model creation and planningStatus=ready`
+- missing_for_green:
+  - `none`
+- הערת מצב: המודל חדש ב־`src/core/reliability-sla-model.js`, נטען אוטומטית ב־`context-builder` כשאין model קיים, ומספק ל־planner `reliabilityModelId` קנוני בלי להוסיף persistence או לשנות את planner/lifecycle manager.
+
+6. `Create failover and continuity planner`  | סטטוס: 🟢 בוצע
 - execution_order: `28.5`
 - description: לבנות planner שמחליט איך ממשיכים כששכבת runtime, queue, provider או workspace cluster נופלים
 - input:
@@ -2401,17 +2436,17 @@
 - output:
   - `continuityPlan`
 - dependencies:
-  - `Define reliability and SLA schema`  | סטטוס: 🔴 לא בוצע
+  - `Define reliability and SLA schema`  | סטטוס: 🟢 בוצע
   - `Platform Observability`
 - connects_to: `Execution Surface`
 - completion_type: `ui_ready`
 - coverage_check:
   - `description: planner decides runtime/queue/provider/workspace-cluster continuation path with fallback, degraded mode, recovery direction, and failover route` → `full` | `src/core/failover-continuity-planner.js`, `test/failover-continuity-planner.test.js`
-  - `input: reliabilitySlaModel is consumed when present but still falls back to internal defaults because Define reliability and SLA schema is not implemented yet` → `partial` | `src/core/failover-continuity-planner.js`, `src/core/context-builder.js`, `test/failover-continuity-planner.test.js`, `test/project-service.test.js`
+  - `input: reliabilitySlaModel is consumed as a canonical model and no longer falls back to internal defaults in the active project flow` → `full` | `src/core/reliability-sla-model.js`, `src/core/context-builder.js`, `src/core/failover-continuity-planner.js`, `test/reliability-sla-model.test.js`, `test/project-service.test.js`
   - `input: incidentAlert drives incident type, severity, and planning mode selection` → `full` | `src/core/failover-continuity-planner.js`, `src/core/context-builder.js`, `test/failover-continuity-planner.test.js`
   - `output: continuityPlan is generated and wired into project context/state, API payloads, and the Versioning surface` → `full` | `src/core/failover-continuity-planner.js`, `src/core/project-service.js`, `src/server.js`, `web/app.js`, `test/project-service.test.js`, `test/server-health-endpoints.test.js`
-  - `dependencies: Define reliability and SLA schema remains missing, so planner uses a documented fallback reliability model` → `partial` | `src/core/failover-continuity-planner.js`
-  - `dependencies: Platform Observability is used through observability-derived incidentAlert rather than direct trace/log inputs` → `partial` | `src/core/context-builder.js`, `src/core/failover-continuity-planner.js`
+  - `dependencies: Define reliability and SLA schema provides reliabilityModelId/service tier/runtime capability inputs to the planner` → `full` | `src/core/reliability-sla-model.js`, `src/core/context-builder.js`, `test/reliability-sla-model.test.js`, `test/project-service.test.js`
+  - `dependencies: Platform Observability is consumed through the canonical incidentAlert contract produced in context-builder` → `full` | `src/core/context-builder.js`, `src/core/failover-continuity-planner.js`, `test/project-service.test.js`
 - user_facing_path:
   - exists: `yes`
   - entry_point: `Release workspace → Versioning And Restore → Apply continuity action / Refresh continuity`
@@ -2425,12 +2460,11 @@
   - `planner no longer depends on fallback reliability defaults`
   - `planner consumes Platform Observability directly or through a canonical reliability/SLA contract`
 - missing_for_green:
-  - `Define reliability and SLA schema is not implemented yet, so reliabilitySlaModel coverage is still partial and planner falls back to internal defaults`
-  - `Platform Observability is connected indirectly through incidentAlert rather than direct observability inputs inside the planner`
-- הערת מצב: משימה זו הוכנסה למסלול הפעיל של Wave 2 כ־bridge dependency חוסמת לפני `Create business continuity lifecycle manager`, בלי לבצע renumber רחב. ה־planner עצמו ממומש ומחובר ל־context/service/API/UI, אבל נשאר 🟡 בגלל reliance על fallback SLA model וחיבור observability עקיף.
+  - `none`
+- הערת מצב: ה־planner כבר לא נשען על fallback SLA model בזרימה הפעילה; `context-builder` מייצר `reliabilitySlaModel` קנוני עם `reliabilityModelId`, וה־planningStatus עובר ל־`ready` דרך אותו input בלי שינוי בלוגיקת ה־planner עצמו.
 
 
-7. `Create business continuity lifecycle manager`  | סטטוס: 🟡 חלקי
+7. `Create business continuity lifecycle manager`  | סטטוס: 🟢 בוצע
 - execution_order: `29`
 - description: לבנות manager שמחבר backup, failover, incident recovery, retention policies ו־owner continuity decisions למסלול continuity אחד לאורך חיי המוצר
 - input:
@@ -2441,13 +2475,13 @@
   - `businessContinuityState`
 - dependencies:
   - `Create disaster recovery checklist`  | סטטוס: 🟢 בוצע
-  - `Create failover and continuity planner`  | סטטוס: 🟡 חלקי
+  - `Create failover and continuity planner`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
 - completion_type: `ui_ready`
 - coverage_check:
   - `continuity lifecycle manager module with normal/degraded/incident/recovery/failover states` → `full` | `src/core/business-continuity-lifecycle-manager.js`, `test/business-continuity-lifecycle-manager.test.js`
   - `orchestration across backup + retention + disaster recovery checklist + owner decisions` → `full` | `src/core/business-continuity-lifecycle-manager.js`, `src/core/context-builder.js`, `test/project-service.test.js`
-  - `failover integration consumes planner output and exposes connected planning state` → `partial` | `src/core/business-continuity-lifecycle-manager.js`, `src/core/context-builder.js`, `src/core/project-service.js`, `test/project-service.test.js`
+  - `failover integration consumes planner output and exposes connected planning state` → `full` | `src/core/business-continuity-lifecycle-manager.js`, `src/core/context-builder.js`, `src/core/project-service.js`, `test/project-service.test.js`
   - `API exposure and continuity actions` → `full` | `src/core/project-service.js`, `src/server.js`, `test/server-health-endpoints.test.js`
   - `Versioning UI visibility and trigger path` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
 - user_facing_path:
@@ -2462,8 +2496,8 @@
   - `tests cover lifecycle transitions and integration paths`
   - `failover planner dependency is fully implemented and connected`
 - missing_for_green:
-  - `Create failover and continuity planner is now connected, but it is still partial because Define reliability and SLA schema is missing and observability is still indirect`
-- הערת מצב: ה־manager כבר לא תלוי בחור תיעודי; הוא צורך continuityPlan אמיתי מה־planner החדש ומציג failover integration מחובר, אבל נשאר 🟡 עד שה־planner עצמו יגיע ל־🟢 מלא.
+  - `none`
+- הערת מצב: עם כניסת `reliabilitySlaModel` הקנוני, ה־manager צורך continuityPlan בסטטוס `ready` ומציג orchestration מחובר מלא של backup/failover/recovery/retention/owner decisions בלי placeholder חוסם בזרימה הפעילה.
 
 ---
 

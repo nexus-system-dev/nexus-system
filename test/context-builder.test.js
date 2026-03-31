@@ -115,6 +115,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(context.businessContext.targetAudience, "casino players");
   assert.equal(context.businessContext.gtmStage, "build");
   assert.equal(Array.isArray(context.businessContext.kpis), true);
+  assert.equal(Boolean(context.reliabilitySlaModel?.reliabilityModelId), true);
+  assert.equal(context.reliabilitySlaModel?.schemaStatus, "canonical");
+  assert.equal(Number.isFinite(context.reliabilitySlaModel?.recoveryObjectives?.rtoMinutes), true);
+  assert.equal(Array.isArray(context.reliabilitySlaModel?.failureClasses), true);
   assert.equal(typeof context.projectDraft?.id, "string");
   assert.equal(typeof context.projectDraft?.owner?.displayName, "string");
   assert.equal(typeof context.projectDraft?.onboardingReadiness?.canStartOnboarding, "boolean");
@@ -775,4 +779,6 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(Array.isArray(context.statusEvents), true);
   assert.equal(typeof context.pollingDecision?.isTerminal, "boolean");
   assert.equal(typeof context.pollingMetadata?.attempt, "number");
+  assert.equal(context.continuityPlan?.planningStatus, "ready");
+  assert.equal(context.continuityPlan?.decisionTrace?.reliabilityInputStatus, "canonical");
 });

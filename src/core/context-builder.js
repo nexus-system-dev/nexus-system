@@ -95,6 +95,7 @@ import { createPrivilegedActionAuthorityResolver } from "./privileged-action-aut
 import { defineTenantIsolationSchema } from "./tenant-isolation-schema.js";
 import { createWorkspaceIsolationGuard } from "./workspace-isolation-guard.js";
 import { createCrossTenantLeakDetector } from "./cross-tenant-leak-detector.js";
+import { defineReliabilityAndSlaSchema } from "./reliability-sla-model.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -2765,8 +2766,38 @@ export function buildProjectContext(
     restoreDecision,
     rollbackExecutionResult,
   });
+  const existingReliabilitySlaModel = project.context?.reliabilitySlaModel ?? project.manualContext?.reliabilitySlaModel ?? null;
+  const { reliabilitySlaModel } = existingReliabilitySlaModel?.reliabilityModelId
+    ? {
+        reliabilitySlaModel: existingReliabilitySlaModel,
+      }
+    : defineReliabilityAndSlaSchema({
+        serviceTierDefinitions: {
+          serviceTier:
+            project.manualContext?.serviceTier
+            ?? project.context?.serviceTier
+            ?? workspaceModel?.serviceTier
+            ?? null,
+          ownerEscalationPolicy: {
+            requiresOwnerApprovalForFailover: true,
+            notifyRoles: membershipRecord?.role === "owner" ? ["owner"] : ["owner", "operator"],
+          },
+        },
+        runtimeCapabilities: {
+          snapshotRestore: Boolean(restorePlan?.restorePlanId),
+          automaticRecovery: Boolean(disasterRecoveryChecklist?.summary?.canExecuteRecovery),
+          supportsRuntimeFailover: Boolean(project.manualContext?.supportsRuntimeFailover),
+          supportsQueueDrain: true,
+          supportsProviderFallback: Boolean(project.manualContext?.supportsProviderFallback ?? providerRecoveryProbe?.probeStatus),
+          supportsWorkspaceFailover:
+            Boolean(project.manualContext?.supportsWorkspaceFailover)
+            || workspaceModel?.visibility === "organization",
+          operatorRunbooks: true,
+        },
+        projectId: project.id,
+      });
   const { continuityPlan: plannedContinuityPlan } = createFailoverAndContinuityPlanner({
-    reliabilitySlaModel: project.context?.reliabilitySlaModel ?? project.manualContext?.reliabilitySlaModel ?? null,
+    reliabilitySlaModel,
     incidentAlert: {
       ...incidentAlert,
       projectId: project.id,
@@ -3221,6 +3252,7 @@ export function buildProjectContext(
   context.storageRecord = storageRecord;
   context.backupStrategy = backupStrategy;
   context.restorePlan = restorePlan;
+  context.reliabilitySlaModel = reliabilitySlaModel;
   context.continuityPlan = continuityPlan;
   context.disasterRecoveryChecklist = disasterRecoveryChecklist;
   context.businessContinuityState = businessContinuityState;

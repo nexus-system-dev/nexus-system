@@ -1980,7 +1980,7 @@ test("project service evaluates and mutates business continuity lifecycle state"
   });
 
   assert.equal(Boolean(continuityPayload?.continuityPlan?.continuityPlanId), true);
-  assert.equal(continuityPayload.continuityPlan.summary.planStatus, "partial");
+  assert.equal(continuityPayload.continuityPlan.summary.planStatus, "ready");
   assert.equal(Boolean(continuityPayload?.businessContinuityState?.continuityStateId), true);
   assert.equal(Array.isArray(continuityPayload.businessContinuityState.availableActions), true);
   assert.equal(Boolean(continuityPayload.project.businessContinuityState), true);
@@ -1995,7 +1995,7 @@ test("project service evaluates and mutates business continuity lifecycle state"
   });
 
   assert.equal(forcedFailover.businessContinuityState.lifecycleState, "failover");
-  assert.equal(forcedFailover.businessContinuityState.orchestration.failover.integrationStatus, "connected-partial");
+  assert.equal(forcedFailover.businessContinuityState.orchestration.failover.integrationStatus, "connected");
   assert.equal(forcedFailover.businessContinuityState.orchestration.failover.requested, true);
 
   const continuityPlanPayload = service.getContinuityPlan({
@@ -2003,7 +2003,8 @@ test("project service evaluates and mutates business continuity lifecycle state"
     refresh: true,
   });
   assert.equal(continuityPlanPayload.continuityPlan.failover.hasPlanner, true);
-  assert.equal(continuityPlanPayload.continuityPlan.decisionTrace.reliabilityInputStatus, "fallback");
+  assert.equal(continuityPlanPayload.continuityPlan.decisionTrace.reliabilityInputStatus, "canonical");
+  assert.equal(Boolean(continuityPlanPayload.project.reliabilitySlaModel?.reliabilityModelId), true);
 
   service.configureSnapshotBackupSchedule({
     projectId: "giftwallet",
