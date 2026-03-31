@@ -580,6 +580,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.entityRepository?.[0]?.repositoryId, "string");
   assert.equal(typeof project.state.storageRecord?.storageRecordId, "string");
   assert.equal(typeof project.state.storageRecord?.summary?.totalStoredItems, "number");
+  assert.equal(typeof project.state.dataPrivacyClassification?.metadata?.classificationId, "string");
+  assert.equal(typeof project.state.dataPrivacyClassification?.axes?.exposureLevel, "string");
+  assert.equal(typeof project.state.dataPrivacyClassification?.axes?.storageBinding?.storageDriver, "string");
   assert.equal(typeof project.state.backupStrategy?.backupStrategyId, "string");
   assert.equal(typeof project.state.backupStrategy?.summary?.totalDatasets, "number");
   assert.equal(typeof project.state.restorePlan?.restorePlanId, "string");
@@ -2080,4 +2083,16 @@ test("project service stores and queries dedicated security audit records", () =
   assert.equal(rebuilt.securityAuditRecord.eventType, "privilege_change");
   assert.equal(stored.length >= 1, true);
   assert.equal(stored.at(-1).requiresAlert, true);
+});
+
+test("project service serializes data privacy classification into state and context", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.getProject("giftwallet");
+
+  assert.equal(typeof project.context?.dataPrivacyClassification?.metadata?.classificationId, "string");
+  assert.equal(typeof project.state?.dataPrivacyClassification?.metadata?.classificationId, "string");
+  assert.equal(project.state.dataPrivacyClassification.axes.exposureLevel, project.context.dataPrivacyClassification.axes.exposureLevel);
+  assert.equal(project.state.dataPrivacyClassification.axes.learningSafety, project.context.dataPrivacyClassification.axes.learningSafety);
 });

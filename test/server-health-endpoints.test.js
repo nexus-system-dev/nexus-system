@@ -1,8 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 import { createServer } from "../src/server.js";
+import { ProjectService } from "../src/core/project-service.js";
 
 function requestJson(server, pathname, options = {}) {
   return new Promise((resolve, reject) => {
@@ -183,6 +187,23 @@ test("server exposes dedicated security audit logs endpoint", async () => {
   assert.equal(response.statusCode, 200);
   assert.equal(Array.isArray(response.body.securityAuditLogs), true);
   assert.equal(response.body.securityAuditLogs[0].securityAuditId, "security-audit-1");
+});
+
+test("server exposes project data privacy classification via GET project", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-privacy-server-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  service.seedDemoProject();
+  const server = createServer(service);
+
+  const response = await requestJson(server, "/api/projects/giftwallet");
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(typeof response.body.context?.dataPrivacyClassification?.metadata?.classificationId, "string");
+  assert.equal(typeof response.body.state?.dataPrivacyClassification?.metadata?.classificationId, "string");
+  assert.equal(response.body.state.dataPrivacyClassification.axes.exposureLevel, response.body.context.dataPrivacyClassification.axes.exposureLevel);
+  assert.equal(response.body.state.dataPrivacyClassification.axes.storageBinding.retentionPolicy, "project-lifecycle");
 });
 
 test("server exposes credential rotation endpoint", async () => {

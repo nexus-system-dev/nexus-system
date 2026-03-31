@@ -2757,7 +2757,7 @@
 
 #### `Data Privacy & Compliance`
 
-1. `Define data privacy classification schema`  | סטטוס: 🔴 לא בוצע
+1. `Define data privacy classification schema`  | סטטוס: 🟢 בוצע
 - execution_order: `37`
 - description: לבנות schema אחיד לסיווג נתונים כמו public, internal, confidential, secret, personal data ו־learning-safe data
 - input:
@@ -2768,6 +2768,30 @@
 - dependencies:
   - `Security Hardening`
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `description: canonical multi-axis classification schema with exposure/personal/learning/storage axes` → `full` | `src/core/data-privacy-classification-schema.js`
+  - `description: derivation logic uses asset signals storage retention scope and tenant sensitivity` → `full` | `src/core/data-privacy-classification-schema.js`, `src/core/context-builder.js`
+  - `input: dataAsset` → `full` | `src/core/context-builder.js`
+  - `input: storageContext` → `full` | `src/core/context-builder.js`
+  - `output: dataPrivacyClassification` → `full` | `src/core/data-privacy-classification-schema.js`, `src/core/context-builder.js`, `src/core/project-service.js`
+  - `dependencies: connected to existing security/storage/persistence context instead of standalone schema` → `full` | `src/core/context-builder.js`
+  - `api exposure via GET /api/projects/:id` → `full` | `src/core/project-service.js`, `src/server.js`
+  - `tests verify unit and integration behavior` → `full` | `test/data-privacy-classification-schema.test.js`, `test/context-builder.test.js`, `test/project-service.test.js`, `test/server-health-endpoints.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `multi-axis classification schema exists with deterministic reasoning`
+  - `context-builder always derives and returns dataPrivacyClassification`
+  - `project state serializes dataPrivacyClassification`
+  - `GET /api/projects/:id exposes both context and state values`
+  - `unit and integration tests pass`
+- missing_for_green:
+  - `none`
+- הערת מצב: המודול הקנוני מחובר בפועל ל־`tenantIsolationSchema`, `nexusPersistenceSchema`, `storageRecord`, `learningEvent` ו־credential context; הוא מחזיר classification גם כשאין מספיק signals, אבל בלי לדלג על לוגיקת הסיווג.
 
 
 2. `Create privacy retention and deletion policy resolver`  | סטטוס: 🔴 לא בוצע

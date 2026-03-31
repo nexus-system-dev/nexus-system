@@ -100,6 +100,7 @@ import { defineReliabilityAndSlaSchema } from "./reliability-sla-model.js";
 import { defineFeatureFlagSchema } from "./feature-flag-schema.js";
 import { createFeatureFlagResolver } from "./feature-flag-resolver.js";
 import { createEmergencyKillSwitchGuard } from "./emergency-kill-switch-guard.js";
+import { defineDataPrivacyClassificationSchema } from "./data-privacy-classification-schema.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -913,6 +914,109 @@ function buildRisks(project, context) {
   }
 
   return risks;
+}
+
+function deriveDataAssetForPrivacy({
+  project,
+  tenantIsolationSchema,
+  storageRecord,
+  learningEvent,
+  credentialReference,
+  credentialVaultRecord,
+}) {
+  const isolatedResources = Array.isArray(tenantIsolationSchema?.isolatedResources)
+    ? tenantIsolationSchema.isolatedResources
+    : [];
+  const highestTenantSensitivity = isolatedResources.some((resource) => resource?.sensitivity === "critical")
+    ? "critical"
+    : isolatedResources.some((resource) => resource?.sensitivity === "high")
+      ? "high"
+      : isolatedResources.some((resource) => resource?.sensitivity === "low")
+        ? "low"
+        : "medium";
+  const attachments = Array.isArray(storageRecord?.attachments) ? storageRecord.attachments : [];
+  const artifacts = Array.isArray(storageRecord?.artifacts) ? storageRecord.artifacts : [];
+  const hasCredentialMaterial =
+    typeof credentialReference === "string"
+    || Boolean(credentialVaultRecord?.encryptedCredential)
+    || isolatedResources.some((resource) => resource?.resourceType === "linked-accounts");
+  const hasUserContent =
+    attachments.length > 0
+    || Boolean(project.projectIntake?.summary)
+    || project.manualContext?.containsUserContent === true
+    || project.manualContext?.workspaceAction?.actionType === "comment-added";
+  const hasIdentifiers =
+    Boolean(project.userId)
+    || Boolean(project.manualContext?.userProfile?.email)
+    || Boolean(project.manualContext?.userProfile?.displayName)
+    || Boolean(learningEvent?.sourceWorkspaceId)
+    || attachments.some((attachment) => typeof attachment?.attachmentId === "string");
+
+  return {
+    assetType:
+      project.manualContext?.dataAsset?.assetType
+      ?? (hasCredentialMaterial
+        ? "credential-bound-project-state"
+        : attachments.length > 0
+          ? "uploaded-project-artifacts"
+          : artifacts.length > 0
+            ? "project-artifacts"
+            : "project-state"),
+    origin:
+      project.manualContext?.dataAsset?.origin
+      ?? (attachments.length > 0
+        ? "user-upload"
+        : project.manualContext
+          ? "manual"
+          : "system"),
+    intendedUse:
+      project.manualContext?.dataAsset?.intendedUse
+      ?? (hasCredentialMaterial
+        ? "runtime-security"
+        : learningEvent?.crossTenantSource === true || learningEvent?.providerBoundaryBreach === true
+          ? "learning-analysis"
+          : "runtime"),
+    containsCredentials:
+      project.manualContext?.dataAsset?.containsCredentials
+      ?? hasCredentialMaterial,
+    containsUserContent:
+      project.manualContext?.dataAsset?.containsUserContent
+      ?? hasUserContent,
+    containsIdentifiers:
+      project.manualContext?.dataAsset?.containsIdentifiers
+      ?? hasIdentifiers,
+    tenantSensitivity:
+      project.manualContext?.dataAsset?.tenantSensitivity
+      ?? highestTenantSensitivity,
+  };
+}
+
+function deriveStorageContextForPrivacy({
+  project,
+  workspaceModel,
+  tenantIsolationSchema,
+  nexusPersistenceSchema,
+  storageRecord,
+}) {
+  return {
+    projectId: project.id ?? "unknown-project",
+    workspaceId: workspaceModel?.workspaceId ?? null,
+    storageScope: storageRecord?.storageScope ?? "project",
+    storageDriver: storageRecord?.storageDriver ?? "filesystem",
+    retentionPolicy:
+      storageRecord?.retentionPolicy
+      ?? nexusPersistenceSchema?.entities?.projects?.retentionPolicy
+      ?? "project-lifecycle",
+    tenantBoundary:
+      tenantIsolationSchema?.isolatedResources?.find((resource) => resource?.resourceType === "project-state")?.tenantBoundary
+      ?? tenantIsolationSchema?.isolationBoundary
+      ?? "workspace",
+    workspaceVisibility: tenantIsolationSchema?.workspaceVisibility ?? workspaceModel?.visibility ?? "private",
+    tenantSensitivity:
+      tenantIsolationSchema?.isolatedResources?.find((resource) => resource?.resourceType === "linked-accounts")?.sensitivity
+      ?? tenantIsolationSchema?.isolatedResources?.find((resource) => resource?.resourceType === "project-state")?.sensitivity
+      ?? "medium",
+  };
 }
 
 export function buildProjectContext(
@@ -2389,17 +2493,18 @@ export function buildProjectContext(
       actionType: project.manualContext?.projectAction ?? "view",
     },
   });
+  const learningEvent = project.manualContext?.learningEvent ?? {
+    sourceWorkspaceId: project.context?.learningInsights?.sourceWorkspaceId
+      ?? project.context?.learningTrace?.sourceWorkspaceId
+      ?? workspaceModel?.workspaceId
+      ?? null,
+    crossTenantSource: project.manualContext?.learningTrace?.crossTenantSource === true,
+    providerBoundaryBreach: project.manualContext?.providerBoundaryBreach === true,
+    mixedResources: project.manualContext?.mixedResources ?? [],
+  };
   const { leakageAlert } = createCrossTenantLeakDetector({
     workspaceIsolationDecision,
-    learningEvent: project.manualContext?.learningEvent ?? {
-      sourceWorkspaceId: project.context?.learningInsights?.sourceWorkspaceId
-        ?? project.context?.learningTrace?.sourceWorkspaceId
-        ?? workspaceModel?.workspaceId
-        ?? null,
-      crossTenantSource: project.manualContext?.learningTrace?.crossTenantSource === true,
-      providerBoundaryBreach: project.manualContext?.providerBoundaryBreach === true,
-      mixedResources: project.manualContext?.mixedResources ?? [],
-    },
+    learningEvent,
   });
   const { collaborationEvent } = defineCollaborationEventSchema({
     workspaceAction: {
@@ -2460,6 +2565,23 @@ export function buildProjectContext(
   const { backupStrategy, restorePlan } = createBackupAndRestoreStrategy({
     nexusPersistenceSchema,
     storageRecords: storageRecord,
+  });
+  const { dataPrivacyClassification } = defineDataPrivacyClassificationSchema({
+    dataAsset: deriveDataAssetForPrivacy({
+      project,
+      tenantIsolationSchema,
+      storageRecord,
+      learningEvent,
+      credentialReference,
+      credentialVaultRecord,
+    }),
+    storageContext: deriveStorageContextForPrivacy({
+      project,
+      workspaceModel,
+      tenantIsolationSchema,
+      nexusPersistenceSchema,
+      storageRecord,
+    }),
   });
   const currentSnapshotSchedule = project.snapshotSchedule ?? project.context?.snapshotSchedule ?? null;
   const currentSnapshotWorker = project.snapshotBackupWorker ?? project.context?.snapshotBackupWorker ?? null;
@@ -3319,6 +3441,7 @@ export function buildProjectContext(
   context.migrationArtifacts = migrationArtifacts;
   context.entityRepository = entityRepository;
   context.storageRecord = storageRecord;
+  context.dataPrivacyClassification = dataPrivacyClassification;
   context.backupStrategy = backupStrategy;
   context.restorePlan = restorePlan;
   context.reliabilitySlaModel = reliabilitySlaModel;

@@ -671,6 +671,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.entityRepository?.[0]?.repositoryId, "string");
   assert.equal(typeof context.storageRecord?.storageRecordId, "string");
   assert.equal(typeof context.storageRecord?.summary?.artifactCount, "number");
+  assert.equal(typeof context.dataPrivacyClassification?.metadata?.classificationId, "string");
+  assert.equal(typeof context.dataPrivacyClassification?.axes?.exposureLevel, "string");
+  assert.equal(typeof context.dataPrivacyClassification?.axes?.storageBinding?.retentionPolicy, "string");
+  assert.equal(Array.isArray(context.dataPrivacyClassification?.metadata?.reasoning), true);
   assert.equal(typeof context.backupStrategy?.backupStrategyId, "string");
   assert.equal(typeof context.backupStrategy?.summary?.totalDatasets, "number");
   assert.equal(typeof context.restorePlan?.restorePlanId, "string");
@@ -842,4 +846,33 @@ test("context builder records security audit record without replacing system aud
     ),
     true,
   );
+});
+
+test("context builder derives data privacy classification from storage, tenant, learning, and credential signals", () => {
+  const context = buildProjectContext({
+    id: "giftwallet",
+    name: "GiftWallet",
+    goal: "Protect customer data",
+    state: {},
+    manualContext: {
+      attachments: [
+        {
+          id: "attachment-1",
+          name: "customer-export.csv",
+          type: "text/csv",
+        },
+      ],
+      userProfile: {
+        email: "owner@giftwallet.app",
+        displayName: "Owner",
+      },
+      providerBoundaryBreach: true,
+    },
+  });
+
+  assert.equal(typeof context.dataPrivacyClassification?.metadata?.classificationId, "string");
+  assert.equal(context.dataPrivacyClassification.axes.exposureLevel, "secret");
+  assert.equal(context.dataPrivacyClassification.axes.personalData, "sensitive-personal");
+  assert.equal(context.dataPrivacyClassification.axes.learningSafety, "prohibited");
+  assert.equal(context.dataPrivacyClassification.axes.storageBinding.retentionPolicy, "project-lifecycle");
 });
