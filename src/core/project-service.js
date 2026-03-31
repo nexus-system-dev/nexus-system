@@ -81,6 +81,13 @@ export class ProjectService {
     this.runtime = new AgentRuntime({
       eventBus: this.eventBus,
       workers: [new DevAgentWorker(), new MarketingAgentWorker(), new QaAgentWorker()],
+      killSwitchDecisionResolver: ({ projectId } = {}) => {
+        if (!projectId) {
+          return null;
+        }
+        const project = this.projects.get(projectId);
+        return project?.context?.killSwitchDecision ?? project?.state?.killSwitchDecision ?? null;
+      },
     });
     this.analyst = new AiProjectAnalyst();
     this.casinoConnector = new CasinoDiagnosticsConnector();
@@ -2123,6 +2130,7 @@ export class ProjectService {
       authenticationRouteDecision: project.context?.authenticationRouteDecision ?? null,
       featureFlagSchema: project.context?.featureFlagSchema ?? null,
       featureFlagDecision: project.context?.featureFlagDecision ?? null,
+      killSwitchDecision: project.context?.killSwitchDecision ?? null,
       tokenBundle: project.context?.tokenBundle ?? null,
       verificationFlowState: project.context?.verificationFlowState ?? null,
       authenticationViewState: project.context?.authenticationViewState ?? null,

@@ -54,7 +54,7 @@ function evaluateFlag(flag, requestContext, registryEntry) {
     routes: registryEntry?.routes ?? [],
     capabilities: registryEntry?.capabilities ?? [],
   };
-  if (flag.isKillSwitch === true) {
+  if (flag.isKillSwitch === true && flag.requestedEnabled === true) {
     return {
       flagId: flag.flagId,
       enabled: false,

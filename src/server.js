@@ -9,6 +9,7 @@ import {
   createRateLimitingAndAbuseProtection,
 } from "./core/rate-limiting-abuse-protection.js";
 import { createFeatureFlagResolver } from "./core/feature-flag-resolver.js";
+import { createEmergencyKillSwitchGuard } from "./core/emergency-kill-switch-guard.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -131,6 +132,18 @@ function routeMatchesPattern(pathname, pattern) {
     .map((segment) => segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
     .join("[^/]+");
   return new RegExp(`^${escaped}$`).test(normalizedPath);
+}
+
+function resolveKilledExecutionPath(pathname, routeDefinition) {
+  const path = typeof pathname === "string" ? pathname : "/";
+  const kind = routeDefinition?.kind ?? null;
+  if (path.includes("/accounts/") || path.includes("/rollback")) {
+    return "provider-execution";
+  }
+  if (kind === "project-api") {
+    return "risky-capabilities";
+  }
+  return null;
 }
 
 function resolveRouteDefinition(method, pathname) {
@@ -324,6 +337,7 @@ export function createServer(projectService, runtimeStatus = {}) {
       ? projectService.getProject(workspaceId)
       : null;
     const featureFlagSchema = routedProject?.state?.featureFlagSchema ?? routedProject?.context?.featureFlagSchema ?? null;
+    const incidentAlert = routedProject?.state?.incidentAlert ?? routedProject?.context?.incidentAlert ?? null;
     const { featureFlagDecision } = createFeatureFlagResolver({
       featureFlagSchema,
       requestContext: {
@@ -334,6 +348,10 @@ export function createServer(projectService, runtimeStatus = {}) {
         riskLevel: resolveRequestRiskLevel(request),
         riskFlags: resolveRequestRiskFlags(request),
       },
+    });
+    const { killSwitchDecision } = createEmergencyKillSwitchGuard({
+      featureFlagDecision,
+      incidentAlert,
     });
     const blockedRouteEntry = (featureFlagDecision?.blockedRoutes ?? []).find((entry) => routeMatchesPattern(url.pathname, entry.route));
     if (blockedRouteEntry) {
@@ -349,6 +367,24 @@ export function createServer(projectService, runtimeStatus = {}) {
         reason: "feature-disabled",
         flagId: blockedRouteEntry.flagId,
         featureFlagDecision,
+      });
+      return;
+    }
+    const executionPath = resolveKilledExecutionPath(url.pathname, routeDefinition);
+    if (killSwitchDecision?.isActive === true && executionPath && killSwitchDecision.killedPaths?.includes(executionPath)) {
+      observabilityTransport?.finishHttpRequest({
+        traceId: requestTrace?.traceId ?? requestId,
+        route: url.pathname,
+        method: request.method,
+        statusCode: 503,
+        durationMs: Date.now() - requestStartedAt,
+        service: runtimeStatus.runtimeId ?? "http-server",
+      });
+      sendJson(response, 503, {
+        reason: "kill-switch-active",
+        killedPaths: killSwitchDecision.killedPaths,
+        triggeredBy: killSwitchDecision.triggeredBy,
+        killSwitchDecision,
       });
       return;
     }

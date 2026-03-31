@@ -8,12 +8,28 @@ function createHandledAssignmentSet(events) {
 }
 
 export class AgentRuntime {
-  constructor({ eventBus, workers = [] }) {
+  constructor({ eventBus, workers = [], killSwitchDecisionResolver = null }) {
     this.eventBus = eventBus;
     this.workers = workers;
+    this.killSwitchDecisionResolver = typeof killSwitchDecisionResolver === "function" ? killSwitchDecisionResolver : null;
   }
 
   processPendingAssignments({ projectId } = {}) {
+    const killSwitchDecision = this.killSwitchDecisionResolver?.({ projectId }) ?? null;
+    if (killSwitchDecision?.isActive === true && Array.isArray(killSwitchDecision.killedPaths) && killSwitchDecision.killedPaths.includes("agent-runtime")) {
+      return [
+        this.eventBus.emit("task.failed", {
+          assignmentEventId: null,
+          projectId: projectId ?? null,
+          taskId: null,
+          agentId: null,
+          reason: "kill-switch-active",
+          killedPaths: killSwitchDecision.killedPaths,
+          triggeredBy: killSwitchDecision.triggeredBy,
+        }),
+      ];
+    }
+
     const events = this.eventBus.getEvents();
     const handledAssignments = createHandledAssignmentSet(events);
     const assignmentEvents = events.filter(

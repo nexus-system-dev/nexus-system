@@ -9301,7 +9301,7 @@ Refinements מאושרים:
   - `none`
 - הערת מצב: ה־resolver בנוי רק לשכבת decision/runtime routing. הוא לא מוסיף admin UI, dynamic management או kill-switch guard מתקדם, וזה נשאר למשימה 36.
 
-3. `Create emergency kill switch guard`  | סטטוס: 🔴 לא בוצע
+3. `Create emergency kill switch guard`  | סטטוס: 🟢 בוצע
 - description: לבנות guard שמאפשר לכבות במהירות execution paths, providers או risky capabilities במקרה incident או security event
 - input:
   - `featureFlagDecision`
@@ -9310,8 +9310,31 @@ Refinements מאושרים:
   - `killSwitchDecision`
 - dependencies:
   - `Create feature flag resolver`  | סטטוס: 🟢 בוצע
-  - `Create alerting and incident hooks`  | סטטוס: 🟢 בוצע
+  - `Platform Observability`
+  - `Execution Surface`
 - connects_to: `Execution Surface`
+- completion_type: `api_ready`
+- coverage_check:
+  - `description` → `full` | ממומש ב־`src/core/emergency-kill-switch-guard.js`, `src/core/kill-switch-path-registry.js`, ובחיבור ל־`src/core/context-builder.js`, `src/server.js`, `src/core/agent-runtime.js`
+  - `input` → `full` | `featureFlagDecision` ו־`incidentAlert` נצרכים יחד וממופים ל־incident/flag triggers
+  - `output` → `full` | `killSwitchDecision` כולל `isActive`, `globalKill`, `killedPaths`, `triggeredBy`, `triggerSources`, `cooldownMs`, `activatedAt`, `reason`, `summary`
+  - `dependencies` → `full` | נשען על `Create feature flag resolver`, על observability-derived `incidentAlert`, ועל execution surfaces דרך `server.js` ו־`AgentRuntime`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `execution attempts`, `execution API routes`, ותגובות runtime חסומות
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - guard קיים
+  - incident trigger עובד
+  - flag trigger עובד
+  - `context.killSwitchDecision` מוחזר
+  - `server.js` מחזיר `503` ל־routes חסומים
+  - `agent-runtime.js` עוצר execution כשצריך
+  - טסטים עוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־guard הוא final gate בלבד. הוא לא מחליף circuit breaker ולא יוצר incident system חדש; הוא רק מחבר `incidentAlert` ו־`featureFlagDecision` להחלטת חסימה אופרטיבית.
 
 #### `Data Privacy & Compliance`
 

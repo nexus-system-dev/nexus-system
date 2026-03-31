@@ -77,11 +77,13 @@ export function defineFeatureFlagSchema({
 
   const flags = featureDefinitionsRegistry.map((definition) => {
     const isKillSwitch = definition.isKillSwitch === true;
-    const enabled = isKillSwitch ? false : definition.enabled === true;
+    const requestedEnabled = definition.enabled === true;
+    const enabled = isKillSwitch ? false : requestedEnabled;
     return {
       flagId: definition.flagId,
       description: definition.description ?? "Feature flag",
       enabled,
+      requestedEnabled,
       rolloutScope: normalizeRolloutScope(definition.rolloutScope),
       rolloutPercentage: normalizePercentage(definition.rolloutPercentage),
       environmentTargets: normalizeEnvironmentTargets(definition.environmentTargets),

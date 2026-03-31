@@ -187,6 +187,43 @@ test("agent runtime consumes assignments and emits completions", () => {
   );
 });
 
+test("agent runtime stops execution when kill switch blocks agent runtime", () => {
+  const eventBus = createTestEventBus();
+  const orchestrator = new NexusOrchestrator({ eventBus });
+  const runtime = new AgentRuntime({
+    eventBus,
+    workers: [new DevAgentWorker(), new MarketingAgentWorker()],
+    killSwitchDecisionResolver: () => ({
+      isActive: true,
+      killedPaths: ["agent-runtime"],
+      triggeredBy: "incident",
+    }),
+  });
+
+  orchestrator.runCycle({
+    projectId: "project-runtime",
+    projectState: {
+      businessGoal: "Grow paid users",
+      product: {
+        hasAuth: false,
+        hasStagingEnvironment: false,
+        hasLandingPage: true,
+        hasPaymentIntegration: true,
+      },
+      analytics: {
+        hasBaselineCampaign: false,
+      },
+    },
+    agents: [{ id: "dev-agent", capabilities: ["devops", "backend", "security", "payments"] }],
+  });
+
+  const results = runtime.processPendingAssignments({ projectId: "project-runtime" });
+
+  assert.equal(results.length, 1);
+  assert.equal(eventBus.getEvents().at(-1).type, "task.failed");
+  assert.equal(eventBus.getEvents().at(-1).payload.reason, "kill-switch-active");
+});
+
 test("event log persists events across bus instances", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-persist-"));
   const filePath = path.join(directory, "events.ndjson");

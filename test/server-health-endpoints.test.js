@@ -282,6 +282,70 @@ test("server returns 403 for routes blocked by feature flag decision", async () 
   assert.equal(response.body.flagId, "provider-runtime-execution");
 });
 
+test("server returns 503 for routes blocked by kill switch decision", async () => {
+  const server = createServer({
+    getProject: () => ({
+      state: {
+        featureFlagSchema: {
+          featureFlagSchemaId: "feature-flag-schema:giftwallet",
+          environmentConfig: {
+            environment: "production",
+          },
+          flags: [
+            {
+              flagId: "provider-runtime-execution",
+              description: "Provider mutations",
+              enabled: true,
+              rolloutScope: "global",
+              rolloutPercentage: 100,
+              environmentTargets: ["production"],
+              workspaceTargets: [],
+              userTargets: [],
+              riskSensitive: false,
+              isKillSwitch: false,
+              defaultFallback: "queue-and-review",
+            },
+          ],
+        },
+        incidentAlert: {
+          status: "active",
+          severity: "critical",
+          incidentType: "connector-outage",
+          affectedComponents: ["connector-service"],
+        },
+      },
+    }),
+    rotateCredential: () => ({
+      rotationResult: {
+        status: "completed",
+      },
+    }),
+  });
+
+  const response = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects/giftwallet/accounts/rotate",
+    {
+      credentialReference: "credref_hosting-primary",
+      rotationRequest: {
+        newValue: "next-secret",
+        requestedBy: "owner-1",
+      },
+    },
+    {
+      headers: {
+        "x-user-id": "user-1",
+      },
+    },
+  );
+
+  assert.equal(response.statusCode, 503);
+  assert.equal(response.body.reason, "kill-switch-active");
+  assert.equal(Array.isArray(response.body.killedPaths), true);
+  assert.equal(response.body.killedPaths.includes("provider-execution"), true);
+});
+
 test("server exposes project snapshots endpoint", async () => {
   const server = createServer({
     getProjectSnapshots: ({ projectId }) => projectId === "giftwallet"

@@ -99,6 +99,7 @@ import { createCrossTenantLeakDetector } from "./cross-tenant-leak-detector.js";
 import { defineReliabilityAndSlaSchema } from "./reliability-sla-model.js";
 import { defineFeatureFlagSchema } from "./feature-flag-schema.js";
 import { createFeatureFlagResolver } from "./feature-flag-resolver.js";
+import { createEmergencyKillSwitchGuard } from "./emergency-kill-switch-guard.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -3077,6 +3078,10 @@ export function buildProjectContext(
       riskFlags,
     },
   });
+  const { killSwitchDecision } = createEmergencyKillSwitchGuard({
+    featureFlagDecision,
+    incidentAlert,
+  });
   const { executionTopology } = defineExecutionTopologySchema({
     executionSurfaces: bootstrapResolvedSurfaces,
     environmentConfig,
@@ -3263,6 +3268,7 @@ export function buildProjectContext(
   context.authenticationRouteDecision = authenticationRouteDecision;
   context.featureFlagSchema = featureFlagSchema;
   context.featureFlagDecision = featureFlagDecision;
+  context.killSwitchDecision = killSwitchDecision;
   context.tokenBundle = tokenBundle;
   context.verificationFlowState = verificationFlowState;
   context.authenticationViewState = authenticationViewState;

@@ -41,7 +41,7 @@ const DEFAULT_FEATURE_DEFINITIONS = [
   {
     flagId: "emergency-execution-stop",
     description: "Global kill switch for risky execution and provider mutations",
-    enabled: true,
+    enabled: false,
     rolloutScope: "global",
     rolloutPercentage: 100,
     environmentTargets: ["production", "staging", "development"],

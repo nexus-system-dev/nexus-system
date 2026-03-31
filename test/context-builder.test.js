@@ -131,6 +131,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.featureFlagDecision?.resolvedAt, "string");
   assert.equal(Array.isArray(context.featureFlagDecision?.flagResults), true);
   assert.equal(Array.isArray(context.featureFlagDecision?.blockedRoutes), true);
+  assert.equal(typeof context.killSwitchDecision?.killSwitchDecisionId, "string");
+  assert.equal(typeof context.killSwitchDecision?.isActive, "boolean");
   assert.equal(typeof context.projectDraft?.id, "string");
   assert.equal(typeof context.projectDraft?.owner?.displayName, "string");
   assert.equal(typeof context.projectDraft?.onboardingReadiness?.canStartOnboarding, "boolean");

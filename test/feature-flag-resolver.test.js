@@ -24,6 +24,14 @@ function buildDecision({
 
 test("feature flag resolver enforces kill switch override", () => {
   const decision = buildDecision({
+    featureDefinitions: [
+      {
+        flagId: "emergency-execution-stop",
+        enabled: true,
+        isKillSwitch: true,
+        environmentTargets: ["production"],
+      },
+    ],
     requestContext: {
       workspaceId: "giftwallet",
       userId: "user-1",
