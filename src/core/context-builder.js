@@ -97,6 +97,7 @@ import { defineTenantIsolationSchema } from "./tenant-isolation-schema.js";
 import { createWorkspaceIsolationGuard } from "./workspace-isolation-guard.js";
 import { createCrossTenantLeakDetector } from "./cross-tenant-leak-detector.js";
 import { defineReliabilityAndSlaSchema } from "./reliability-sla-model.js";
+import { defineFeatureFlagSchema } from "./feature-flag-schema.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -3046,16 +3047,27 @@ export function buildProjectContext(
     storageRecord,
     projectExplanation,
   });
+  const environmentConfig = {
+    projectId: project.id,
+    executionModes,
+    defaultMode: recommendedDefaults?.execution?.mode ?? executionModes[0] ?? null,
+    provider: recommendedDefaults?.hosting?.provider ?? null,
+    target: recommendedDefaults?.hosting?.target ?? null,
+    runtimeSource: project.runtimeSource?.baseUrl ?? null,
+    environment:
+      recommendedDefaults?.hosting?.target === "production"
+      || providerAdapter?.requestMetadata?.environment === "production"
+        ? "production"
+        : providerAdapter?.requestMetadata?.environment
+          ?? (recommendedDefaults?.hosting?.target ? "staging" : "development"),
+  };
+  const { featureFlagSchema } = defineFeatureFlagSchema({
+    featureDefinitions: project.manualContext?.featureDefinitions ?? null,
+    environmentConfig,
+  });
   const { executionTopology } = defineExecutionTopologySchema({
     executionSurfaces: bootstrapResolvedSurfaces,
-    environmentConfig: {
-      projectId: project.id,
-      executionModes,
-      defaultMode: recommendedDefaults?.execution?.mode ?? executionModes[0] ?? null,
-      provider: recommendedDefaults?.hosting?.provider ?? null,
-      target: recommendedDefaults?.hosting?.target ?? null,
-      runtimeSource: project.runtimeSource?.baseUrl ?? null,
-    },
+    environmentConfig,
   });
   const { cloudWorkspaceModel } = createCloudExecutionWorkspaceModel({
     executionTopology,
@@ -3237,6 +3249,7 @@ export function buildProjectContext(
   context.securitySignals = securitySignals;
   context.sessionSecurityDecision = sessionSecurityDecision;
   context.authenticationRouteDecision = authenticationRouteDecision;
+  context.featureFlagSchema = featureFlagSchema;
   context.tokenBundle = tokenBundle;
   context.verificationFlowState = verificationFlowState;
   context.authenticationViewState = authenticationViewState;

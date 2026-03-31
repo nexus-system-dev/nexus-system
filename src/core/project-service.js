@@ -2121,6 +2121,7 @@ export class ProjectService {
       securitySignals: project.context?.securitySignals ?? null,
       sessionSecurityDecision: project.context?.sessionSecurityDecision ?? null,
       authenticationRouteDecision: project.context?.authenticationRouteDecision ?? null,
+      featureFlagSchema: project.context?.featureFlagSchema ?? null,
       tokenBundle: project.context?.tokenBundle ?? null,
       verificationFlowState: project.context?.verificationFlowState ?? null,
       authenticationViewState: project.context?.authenticationViewState ?? null,

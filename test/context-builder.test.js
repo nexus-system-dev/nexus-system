@@ -124,6 +124,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(context.reliabilitySlaModel?.schemaStatus, "canonical");
   assert.equal(Number.isFinite(context.reliabilitySlaModel?.recoveryObjectives?.rtoMinutes), true);
   assert.equal(Array.isArray(context.reliabilitySlaModel?.failureClasses), true);
+  assert.equal(typeof context.featureFlagSchema?.featureFlagSchemaId, "string");
+  assert.equal(Array.isArray(context.featureFlagSchema?.flags), true);
+  assert.equal(context.featureFlagSchema?.summary?.totalFlags >= 1, true);
+  assert.equal(Array.isArray(context.featureFlagSchema?.summary?.environmentsTargeted), true);
   assert.equal(typeof context.projectDraft?.id, "string");
   assert.equal(typeof context.projectDraft?.owner?.displayName, "string");
   assert.equal(typeof context.projectDraft?.onboardingReadiness?.canStartOnboarding, "boolean");

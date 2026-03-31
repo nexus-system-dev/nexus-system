@@ -2647,7 +2647,7 @@
 
 #### `Feature Flags & Kill Switch Control`
 
-1. `Define feature flag schema`  | סטטוס: 🔴 לא בוצע
+1. `Define feature flag schema`  | סטטוס: 🟢 בוצע
 - execution_order: `34`
 - description: לבנות schema אחיד ל־feature flags, rollout scopes, kill switches, environment targeting ו־default fallbacks
 - input:
@@ -2656,9 +2656,30 @@
 - output:
   - `featureFlagSchema`
 - dependencies:
-  - `Security Hardening`
   - `Application Runtime Layer`
 - connects_to: `Project State`
+- completion_type: `schema_only`
+- coverage_check:
+  - `description` → `full` | ממומש ב־`src/core/feature-definitions-registry.js`, `src/core/feature-flag-schema.js`, ובחיבור ל־`src/core/context-builder.js`
+  - `input` → `full` | `featureDefinitions` נצרכים דרך registry+merge, ו־`environmentConfig` מנורמל ב־`src/core/feature-flag-schema.js`
+  - `output` → `full` | `featureFlagSchema` מוחזר קנונית ונחשף דרך `context.featureFlagSchema` ו־`project.state.featureFlagSchema`
+  - `dependencies` → `full` | נשען על `Application Runtime Layer` דרך `environmentConfig` הקיים ב־`context-builder`; לא נוספה תלות runtime חדשה
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `indirect via future feature flag resolver`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - registry קיים כ־source of truth ל־defaults
+  - schema builder קיים
+  - feature flags, rollout scopes, kill switches, environment targeting ו־default fallbacks מכוסים
+  - kill switch override מכבה flag גם אם הוא מסומן enabled
+  - environment targeting מנורמל ל־`production/staging/development/unknown`
+  - `context.featureFlagSchema` ו־`project.state.featureFlagSchema` מוחזרים
+  - טסטים עוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: זו שכבת foundation בלבד; אין כאן runtime resolution, hashing, route gating או UI switching. המשימה הבאה (`Create feature flag resolver`) עכשיו unblocked.
 
 
 2. `Create feature flag resolver`  | סטטוס: 🔴 לא בוצע
@@ -2670,7 +2691,7 @@
 - output:
   - `featureFlagDecision`
 - dependencies:
-  - `Define feature flag schema`  | סטטוס: 🔴 לא בוצע
+  - `Define feature flag schema`  | סטטוס: 🟢 בוצע
   - `Workspace & Access Control`
 - connects_to: `Execution Surface`
 
