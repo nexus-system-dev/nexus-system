@@ -599,6 +599,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.notificationPreferences?.channels), true);
   assert.equal(typeof project.state.complianceConsentState?.complianceConsentStateId, "string");
   assert.equal(Array.isArray(project.state.complianceConsentState?.consentEntries), true);
+  assert.equal(typeof project.state.complianceAuditSummary?.complianceAuditSummaryId, "string");
+  assert.equal(typeof project.state.complianceAuditSummary?.summaryStatus, "string");
+  assert.equal(Array.isArray(project.state.complianceAuditSummary?.auditReferences), true);
   assert.equal(typeof project.state.emailDeliveryResult?.deliveryStatus, "string");
   assert.equal(project.state.emailDeliveryResult?.deliveryChannel, "email");
   assert.equal(typeof project.state.externalDeliveryResult?.deliveryStatus, "string");

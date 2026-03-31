@@ -2911,7 +2911,7 @@
 - הערת מצב: המימוש לא מזייף מחיקה מתוך stores שאין להם hook אמיתי כרגע; בקשות שנוגעות ל־append-only audit stores או לשכבות persistence לא נתמכות מוחזרות ביושר כ־`partial` במקום `completed`.
 
 
-5. `Create compliance audit summary`  | סטטוס: 🔴 לא בוצע
+5. `Create compliance audit summary`  | סטטוס: 🟢 בוצע
 - execution_order: `41`
 - description: לבנות summary שמרכז privacy classifications, consents, deletions ו־learning restrictions לצרכי audit ותאימות
 - input:
@@ -2920,9 +2920,31 @@
 - output:
   - `complianceAuditSummary`
 - dependencies:
-  - `Create privacy rights execution module`  | סטטוס: 🔴 לא בוצע
+  - `Create privacy rights execution module`  | סטטוס: 🟢 בוצע
   - `Project Audit Trail`
 - connects_to: `Project State`
+- completion_type: `service_only`
+- coverage_check:
+  - description: `full` — המודול ב־`src/core/compliance-audit-summary.js` מייצר current posture summary evidence-backed ל־privacy/compliance, ולא raw dump או timeline.
+  - input: `full` — צורך `privacyRightsResult`, `complianceConsentState`, ובפועל גם `dataPrivacyClassification`, `privacyPolicyDecision`, `projectAuditRecord`, `projectAuditPayload` בלי לחשב אותם מחדש.
+  - output: `full` — מחזיר `complianceAuditSummary` קנוני עם `summaryStatus`, overview sections, `auditReferences`, `activeRestrictions`, `openRisks` ו־`summary`.
+  - dependencies: `full` — נשען על `Create privacy rights execution module` ועל `Project Audit Trail` דרך `projectAuditRecord/projectAuditPayload`, ומחובר ל־`context-builder` ול־`project-service`.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - assembler קנוני קיים
+  - `summaryStatus` מיושם לפי החוזה `complete/partial/at-risk/missing-inputs`
+  - `activeRestrictions` ו־`openRisks` מופרדים נכון
+  - `auditReferences` הם evidence pointers ולא raw audit dump
+  - הערך נכתב ל־`context` ול־`state`
+  - מופיע ב־serialized project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־summary משתמש ב־latest posture signals וב־evidence pointers בלבד; הוא לא מחליף audit viewer קיים ולא בונה timeline/history browser חדש.
 
 
 #### `Agent Governance & Sandboxing`

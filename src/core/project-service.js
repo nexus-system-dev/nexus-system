@@ -2358,6 +2358,7 @@ export class ProjectService {
       notificationCenterState: project.context?.notificationCenterState ?? null,
       notificationPreferences: project.context?.notificationPreferences ?? null,
       complianceConsentState: project.context?.complianceConsentState ?? null,
+      complianceAuditSummary: project.context?.complianceAuditSummary ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       emailDeliveryResult: project.context?.emailDeliveryResult ?? null,
       externalDeliveryResult: project.context?.externalDeliveryResult ?? null,
@@ -3196,6 +3197,7 @@ export class ProjectService {
       disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
       businessContinuityState: project.context?.businessContinuityState ?? null,
       securityAuditRecord: project.context?.securityAuditRecord ?? null,
+      complianceAuditSummary: project.context?.complianceAuditSummary ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {

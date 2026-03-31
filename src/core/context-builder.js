@@ -103,6 +103,7 @@ import { createEmergencyKillSwitchGuard } from "./emergency-kill-switch-guard.js
 import { defineDataPrivacyClassificationSchema } from "./data-privacy-classification-schema.js";
 import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-retention-and-deletion-policy-resolver.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
+import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -3096,6 +3097,14 @@ export function buildProjectContext(
     actorActionTrace,
     filters: null,
   });
+  const { complianceAuditSummary } = createComplianceAuditSummary({
+    dataPrivacyClassification,
+    privacyPolicyDecision,
+    complianceConsentState,
+    privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
+    projectAuditRecord,
+    projectAuditPayload,
+  });
   const { reactiveWorkspaceState } = createReactiveWorkspaceRefreshModel({
     liveUpdateChannel,
     developerWorkspace,
@@ -3656,6 +3665,7 @@ export function buildProjectContext(
   context.notificationCenterState = notificationCenterState;
   context.notificationPreferences = notificationPreferences;
   context.complianceConsentState = complianceConsentState;
+  context.complianceAuditSummary = complianceAuditSummary;
   context.emailDeliveryResult = emailDeliveryResult;
   context.externalDeliveryResult = externalDeliveryResult;
   context.releasePlan = releasePlan;

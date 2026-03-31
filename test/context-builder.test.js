@@ -912,6 +912,9 @@ test("context builder derives compliance consent state with baseline scopes and 
     context.complianceConsentState.activeRestrictions.some((entry) => entry.processingScope === "learning" && entry.restrictionType === "learning-restricted"),
     true,
   );
+  assert.equal(typeof context.complianceAuditSummary?.complianceAuditSummaryId, "string");
+  assert.equal(typeof context.complianceAuditSummary?.summaryStatus, "string");
+  assert.equal(Array.isArray(context.complianceAuditSummary?.auditReferences), true);
 });
 
 test("context builder carries privacy rights execution result into canonical context", () => {
