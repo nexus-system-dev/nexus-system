@@ -951,8 +951,24 @@ function deriveDataAssetForPrivacy({
     || Boolean(project.manualContext?.userProfile?.displayName)
     || Boolean(learningEvent?.sourceWorkspaceId)
     || attachments.some((attachment) => typeof attachment?.attachmentId === "string");
+  const hasLearningMaterial =
+    project.manualContext?.dataAsset?.containsLearningMaterial === true
+    || Boolean(project.context?.learningInsights)
+    || Boolean(project.context?.learningTrace)
+    || learningEvent?.crossTenantSource === true
+    || learningEvent?.providerBoundaryBreach === true;
+  const scope =
+    project.manualContext?.dataAsset?.scope
+    ?? (project.manualContext?.userProfile
+      ? "user"
+      : storageRecord?.storageScope === "workspace"
+        ? "workspace"
+        : "project");
 
   return {
+    assetId:
+      project.manualContext?.dataAsset?.assetId
+      ?? `data-asset:${project.id ?? "unknown-project"}:${storageRecord?.storageRecordId ?? "project-state"}`,
     assetType:
       project.manualContext?.dataAsset?.assetType
       ?? (hasCredentialMaterial
@@ -962,29 +978,19 @@ function deriveDataAssetForPrivacy({
           : artifacts.length > 0
             ? "project-artifacts"
             : "project-state"),
-    origin:
-      project.manualContext?.dataAsset?.origin
-      ?? (attachments.length > 0
-        ? "user-upload"
-        : project.manualContext
-          ? "manual"
-          : "system"),
-    intendedUse:
-      project.manualContext?.dataAsset?.intendedUse
-      ?? (hasCredentialMaterial
-        ? "runtime-security"
-        : learningEvent?.crossTenantSource === true || learningEvent?.providerBoundaryBreach === true
-          ? "learning-analysis"
-          : "runtime"),
-    containsCredentials:
-      project.manualContext?.dataAsset?.containsCredentials
-      ?? hasCredentialMaterial,
-    containsUserContent:
-      project.manualContext?.dataAsset?.containsUserContent
-      ?? hasUserContent,
-    containsIdentifiers:
-      project.manualContext?.dataAsset?.containsIdentifiers
-      ?? hasIdentifiers,
+    scope,
+    containsPersonalData:
+      project.manualContext?.dataAsset?.containsPersonalData
+      ?? hasIdentifiers
+      ?? false,
+    containsSecrets:
+      project.manualContext?.dataAsset?.containsSecrets
+      ?? hasCredentialMaterial
+      ?? false,
+    containsLearningMaterial: hasLearningMaterial,
+    source:
+      project.manualContext?.dataAsset?.source
+      ?? (attachments.length > 0 || project.manualContext ? "derived" : "system"),
     tenantSensitivity:
       project.manualContext?.dataAsset?.tenantSensitivity
       ?? highestTenantSensitivity,
@@ -1003,10 +1009,14 @@ function deriveStorageContextForPrivacy({
     workspaceId: workspaceModel?.workspaceId ?? null,
     storageScope: storageRecord?.storageScope ?? "project",
     storageDriver: storageRecord?.storageDriver ?? "filesystem",
-    retentionPolicy:
-      storageRecord?.retentionPolicy
-      ?? nexusPersistenceSchema?.entities?.projects?.retentionPolicy
-      ?? "project-lifecycle",
+    retentionPolicy: {
+      policyId:
+        storageRecord?.retentionPolicy
+        ?? nexusPersistenceSchema?.entities?.projects?.retentionPolicy
+        ?? "project-lifecycle",
+      source: storageRecord?.retentionPolicy ? "storage-record" : "nexus-persistence-schema",
+      workspaceId: workspaceModel?.workspaceId ?? null,
+    },
     tenantBoundary:
       tenantIsolationSchema?.isolatedResources?.find((resource) => resource?.resourceType === "project-state")?.tenantBoundary
       ?? tenantIsolationSchema?.isolationBoundary

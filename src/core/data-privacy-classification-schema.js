@@ -2,7 +2,7 @@ function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
 
-function normalizeString(value, fallback) {
+function normalizeString(value, fallback = null) {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
 }
 
@@ -10,25 +10,77 @@ function normalizeBoolean(value) {
   return value === true;
 }
 
-function normalizeSensitivity(value) {
-  const normalized = normalizeString(value, "medium").toLowerCase();
-  if (["critical", "high", "medium", "low"].includes(normalized)) {
+function normalizeSource(value) {
+  const normalized = normalizeString(value, null)?.toLowerCase() ?? null;
+  if (normalized === null) {
+    return "system";
+  }
+  if (["manual", "user-upload", "derived", "learning", "analysis"].includes(normalized)) {
+    return "derived";
+  }
+  return "system";
+}
+
+function normalizeScope(value) {
+  const normalized = normalizeString(value, null)?.toLowerCase() ?? null;
+  if (["public", "project", "workspace", "user"].includes(normalized)) {
     return normalized;
   }
-  return "medium";
+  return "project";
+}
+
+function normalizeRetentionPolicy(retentionPolicy) {
+  if (!retentionPolicy) {
+    return null;
+  }
+
+  if (typeof retentionPolicy === "string" && retentionPolicy.trim().length > 0) {
+    return {
+      policyId: retentionPolicy.trim(),
+      source: "storage-context",
+    };
+  }
+
+  if (retentionPolicy && typeof retentionPolicy === "object" && !Array.isArray(retentionPolicy)) {
+    return {
+      policyId: normalizeString(retentionPolicy.policyId ?? retentionPolicy.id, "custom-retention-policy"),
+      source: normalizeString(retentionPolicy.source, "storage-context"),
+      ttlDays: typeof retentionPolicy.ttlDays === "number" ? retentionPolicy.ttlDays : null,
+      reviewCadence: normalizeString(retentionPolicy.reviewCadence, null),
+    };
+  }
+
+  return null;
 }
 
 function normalizeDataAsset(dataAsset = null) {
   const normalized = normalizeObject(dataAsset);
-  return {
+  const canonicalAsset = {
+    assetId: normalizeString(
+      normalized.assetId,
+      normalizeString(normalized.projectId, "project-state:unknown"),
+    ),
     assetType: normalizeString(normalized.assetType, "project-state"),
-    origin: normalizeString(normalized.origin, "system"),
-    intendedUse: normalizeString(normalized.intendedUse, "runtime"),
-    containsCredentials: normalizeBoolean(normalized.containsCredentials),
-    containsUserContent: normalizeBoolean(normalized.containsUserContent),
-    containsIdentifiers: normalizeBoolean(normalized.containsIdentifiers),
-    tenantSensitivity: normalizeSensitivity(normalized.tenantSensitivity),
+    scope: normalizeScope(normalized.scope),
+    containsPersonalData: normalizeBoolean(
+      normalized.containsPersonalData
+        ?? normalized.containsIdentifiers
+        ?? normalized.containsUserContent,
+    ),
+    containsSecrets: normalizeBoolean(
+      normalized.containsSecrets
+        ?? normalized.containsCredentials,
+    ),
+    containsLearningMaterial: normalizeBoolean(
+      normalized.containsLearningMaterial
+        ?? normalized.intendedUse === "learning-analysis"
+        ?? normalized.intendedUse === "learning"
+        ?? false,
+    ),
+    source: normalizeSource(normalized.source ?? normalized.origin),
   };
+
+  return canonicalAsset;
 }
 
 function normalizeStorageContext(storageContext = null) {
@@ -38,138 +90,116 @@ function normalizeStorageContext(storageContext = null) {
     workspaceId: normalizeString(normalized.workspaceId, null),
     storageScope: normalizeString(normalized.storageScope, "project"),
     storageDriver: normalizeString(normalized.storageDriver, "filesystem"),
-    retentionPolicy: normalizeString(normalized.retentionPolicy, "project-lifecycle"),
+    retentionPolicy: normalizeRetentionPolicy(normalized.retentionPolicy),
     tenantBoundary: normalizeString(normalized.tenantBoundary, "workspace"),
     workspaceVisibility: normalizeString(normalized.workspaceVisibility, "private"),
-    tenantSensitivity: normalizeSensitivity(normalized.tenantSensitivity),
+    tenantSensitivity: normalizeString(normalized.tenantSensitivity, "medium"),
   };
 }
 
-function deriveStorageBinding(storage) {
-  return {
-    storageScope: storage.storageScope,
-    storageDriver: storage.storageDriver,
-    retentionPolicy: storage.retentionPolicy,
-    tenantBoundary: storage.tenantBoundary,
-    workspaceVisibility: storage.workspaceVisibility,
-    tenantSensitivity: storage.tenantSensitivity,
-  };
+function isSensitivePersonalAsset(asset) {
+  return asset.containsPersonalData
+    && /(identity|payment|financial|biometric|credential|auth|secret)/i.test(asset.assetType);
+}
+
+function hasExplicitSignals(asset, storage) {
+  return Boolean(
+    asset.containsSecrets
+    || asset.containsPersonalData
+    || asset.containsLearningMaterial
+    || asset.scope === "public"
+    || asset.assetType !== "project-state"
+    || storage.retentionPolicy !== null,
+  );
+}
+
+function deriveExposureLevel(asset, storage) {
+  if (asset.containsSecrets) {
+    return "secret";
+  }
+
+  if (asset.containsPersonalData) {
+    return "confidential";
+  }
+
+  if (asset.scope === "public" && asset.source === "system" && !asset.containsSecrets && !asset.containsPersonalData) {
+    return "public";
+  }
+
+  return "internal";
 }
 
 function derivePersonalData(asset) {
-  if (asset.containsIdentifiers && (asset.containsUserContent || asset.assetType.includes("user") || asset.intendedUse.includes("learning"))) {
+  if (isSensitivePersonalAsset(asset)) {
     return "sensitive-personal";
   }
 
-  if (asset.containsIdentifiers || asset.containsUserContent) {
+  if (asset.containsPersonalData) {
     return "personal";
   }
 
   return "none";
 }
 
-function deriveExposureLevel(asset, storage) {
-  if (
-    asset.containsCredentials
-    || asset.assetType.includes("credential")
-    || asset.assetType.includes("secret")
-    || asset.tenantSensitivity === "critical"
-    || storage.tenantSensitivity === "critical"
-  ) {
-    return "secret";
-  }
-
-  if (
-    derivePersonalData(asset) === "sensitive-personal"
-    || ["compliance-audit", "account-lifecycle"].includes(storage.retentionPolicy)
-    || asset.tenantSensitivity === "high"
-    || storage.tenantSensitivity === "high"
-  ) {
-    return "confidential";
-  }
-
-  if (
-    asset.containsUserContent
-    || asset.origin === "manual"
-    || asset.origin === "user-upload"
-    || ["project", "workspace"].includes(storage.storageScope)
-  ) {
-    return "internal";
-  }
-
-  return "public";
-}
-
-function deriveLearningSafety(asset, storage, personalData, exposureLevel) {
-  if (
-    asset.containsCredentials
-    || exposureLevel === "secret"
-    || asset.intendedUse.includes("credential")
-    || asset.intendedUse.includes("security")
-  ) {
-    return "prohibited";
-  }
-
-  if (
-    personalData !== "none"
-    || ["compliance-audit", "account-lifecycle", "learning-governance"].includes(storage.retentionPolicy)
-    || ["critical", "high"].includes(asset.tenantSensitivity)
-    || ["critical", "high"].includes(storage.tenantSensitivity)
-  ) {
+function deriveLearningSafety(asset, hasSignals) {
+  if (!hasSignals) {
     return "restricted";
   }
 
-  return "learning-safe";
+  if (asset.containsSecrets) {
+    return "prohibited";
+  }
+
+  if (asset.containsPersonalData) {
+    return "restricted";
+  }
+
+  if (asset.containsLearningMaterial || asset.scope === "public") {
+    return "learning-safe";
+  }
+
+  return "restricted";
 }
 
-function buildReasoning(asset, storage, axes) {
-  const reasons = [];
-
-  if (asset.containsCredentials) {
-    reasons.push("Asset contains credential material, which elevates exposure and learning restrictions.");
-  }
-  if (asset.containsIdentifiers) {
-    reasons.push("Asset contains identifiers, so personal-data handling must stay explicit.");
-  }
-  if (asset.containsUserContent) {
-    reasons.push("Asset includes user-provided content, which raises internal/privacy expectations.");
-  }
-  if (["compliance-audit", "account-lifecycle", "learning-governance"].includes(storage.retentionPolicy)) {
-    reasons.push(`Retention policy ${storage.retentionPolicy} requires tighter privacy handling.`);
-  }
-  if (["critical", "high"].includes(asset.tenantSensitivity) || ["critical", "high"].includes(storage.tenantSensitivity)) {
-    reasons.push("Tenant sensitivity is elevated, so classification must stay conservative.");
-  }
-  if (reasons.length === 0) {
-    reasons.push("Classification used deterministic defaults because the asset carried limited privacy signals.");
+function deriveConfidence(asset, storage, fallbackApplied) {
+  if (fallbackApplied) {
+    return 0.28;
   }
 
-  reasons.push(`Exposure resolved to ${axes.exposureLevel}, personal data to ${axes.personalData}, and learning safety to ${axes.learningSafety}.`);
-  return reasons;
-}
-
-function deriveSource(asset) {
-  if (asset.origin === "manual" || asset.origin === "user-upload") {
-    return "manual";
-  }
-
-  if (asset.containsCredentials || asset.containsIdentifiers || asset.containsUserContent) {
-    return "derived";
-  }
-
-  return "system";
-}
-
-function deriveConfidence(asset, storage) {
   const signalCount = [
-    asset.containsCredentials,
-    asset.containsIdentifiers,
-    asset.containsUserContent,
-    storage.retentionPolicy !== "project-lifecycle",
-    ["critical", "high"].includes(asset.tenantSensitivity) || ["critical", "high"].includes(storage.tenantSensitivity),
+    asset.containsSecrets,
+    asset.containsPersonalData,
+    asset.containsLearningMaterial,
+    asset.scope === "public",
+    storage.retentionPolicy !== null,
   ].filter(Boolean).length;
 
-  return Math.min(0.95, 0.55 + (signalCount * 0.08));
+  return Math.min(0.95, 0.58 + (signalCount * 0.08));
+}
+
+function buildReasoning(asset, storage, { exposureLevel, personalData, learningSafety }, fallbackApplied) {
+  const reasoning = [];
+
+  if (fallbackApplied) {
+    reasoning.push("Classification used deterministic fallback because the asset carried insufficient privacy signals.");
+  }
+
+  if (asset.containsSecrets) {
+    reasoning.push("Asset contains secrets, so exposure is elevated to secret and learning is prohibited.");
+  }
+  if (asset.containsPersonalData) {
+    reasoning.push("Asset contains personal data, so the personal-data axis is elevated independently of exposure.");
+  }
+  if (asset.containsLearningMaterial) {
+    reasoning.push("Asset explicitly contains learning material, which keeps the learning axis explicit instead of inferred from storage.");
+  }
+  if (storage.retentionPolicy?.policyId) {
+    reasoning.push(`Storage retention policy ${storage.retentionPolicy.policyId} was bound into storage metadata and confidence only.`);
+  }
+  reasoning.push(`Storage binding resolved to ${storage.storageScope}/${storage.storageDriver}.`);
+  reasoning.push(`Classification resolved as ${exposureLevel}/${personalData}/${learningSafety}.`);
+
+  return reasoning;
 }
 
 export function defineDataPrivacyClassificationSchema({
@@ -178,30 +208,32 @@ export function defineDataPrivacyClassificationSchema({
 } = {}) {
   const normalizedAsset = normalizeDataAsset(dataAsset);
   const normalizedStorage = normalizeStorageContext(storageContext);
-  const personalData = derivePersonalData(normalizedAsset);
-  const exposureLevel = deriveExposureLevel(normalizedAsset, normalizedStorage);
-  const learningSafety = deriveLearningSafety(normalizedAsset, normalizedStorage, personalData, exposureLevel);
-  const reasoning = buildReasoning(normalizedAsset, normalizedStorage, {
-    exposureLevel,
-    personalData,
-    learningSafety,
-  });
+  const fallbackApplied = !hasExplicitSignals(normalizedAsset, normalizedStorage);
+  const exposureLevel = fallbackApplied ? "internal" : deriveExposureLevel(normalizedAsset, normalizedStorage);
+  const personalData = fallbackApplied ? "none" : derivePersonalData(normalizedAsset);
+  const learningSafety = deriveLearningSafety(normalizedAsset, !fallbackApplied);
+  const reasoning = buildReasoning(
+    normalizedAsset,
+    normalizedStorage,
+    { exposureLevel, personalData, learningSafety },
+    fallbackApplied,
+  );
 
   return {
     dataPrivacyClassification: {
-      axes: {
-        exposureLevel,
-        personalData,
-        learningSafety,
-        storageBinding: deriveStorageBinding(normalizedStorage),
+      classificationId: `data-privacy:${normalizedStorage.projectId}:${normalizedAsset.assetId}`,
+      exposureLevel,
+      personalData,
+      learningSafety,
+      storageBinding: {
+        storageScope: normalizedStorage.storageScope ?? null,
+        storageDriver: normalizedStorage.storageDriver ?? null,
+        retentionPolicy: normalizedStorage.retentionPolicy,
       },
-      metadata: {
-        classificationId: `data-privacy:${normalizedStorage.projectId}:${normalizedAsset.assetType}`,
-        source: deriveSource(normalizedAsset),
-        confidence: deriveConfidence(normalizedAsset, normalizedStorage),
-        reasoning,
-        summary: `Data privacy classification for ${normalizedAsset.assetType} resolved as ${exposureLevel}/${personalData}/${learningSafety}.`,
-      },
+      source: normalizedAsset.source,
+      confidence: deriveConfidence(normalizedAsset, normalizedStorage, fallbackApplied),
+      reasoning,
+      summary: `Data privacy classification for ${normalizedAsset.assetType} resolved as ${exposureLevel}/${personalData}/${learningSafety}.`,
     },
   };
 }

@@ -671,10 +671,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.entityRepository?.[0]?.repositoryId, "string");
   assert.equal(typeof context.storageRecord?.storageRecordId, "string");
   assert.equal(typeof context.storageRecord?.summary?.artifactCount, "number");
-  assert.equal(typeof context.dataPrivacyClassification?.metadata?.classificationId, "string");
-  assert.equal(typeof context.dataPrivacyClassification?.axes?.exposureLevel, "string");
-  assert.equal(typeof context.dataPrivacyClassification?.axes?.storageBinding?.retentionPolicy, "string");
-  assert.equal(Array.isArray(context.dataPrivacyClassification?.metadata?.reasoning), true);
+  assert.equal(typeof context.dataPrivacyClassification?.classificationId, "string");
+  assert.equal(typeof context.dataPrivacyClassification?.exposureLevel, "string");
+  assert.equal(typeof context.dataPrivacyClassification?.storageBinding?.retentionPolicy, "object");
+  assert.equal(Array.isArray(context.dataPrivacyClassification?.reasoning), true);
   assert.equal(typeof context.backupStrategy?.backupStrategyId, "string");
   assert.equal(typeof context.backupStrategy?.summary?.totalDatasets, "number");
   assert.equal(typeof context.restorePlan?.restorePlanId, "string");
@@ -870,9 +870,9 @@ test("context builder derives data privacy classification from storage, tenant, 
     },
   });
 
-  assert.equal(typeof context.dataPrivacyClassification?.metadata?.classificationId, "string");
-  assert.equal(context.dataPrivacyClassification.axes.exposureLevel, "secret");
-  assert.equal(context.dataPrivacyClassification.axes.personalData, "sensitive-personal");
-  assert.equal(context.dataPrivacyClassification.axes.learningSafety, "prohibited");
-  assert.equal(context.dataPrivacyClassification.axes.storageBinding.retentionPolicy, "project-lifecycle");
+  assert.equal(typeof context.dataPrivacyClassification?.classificationId, "string");
+  assert.equal(context.dataPrivacyClassification.exposureLevel, "secret");
+  assert.equal(context.dataPrivacyClassification.personalData, "sensitive-personal");
+  assert.equal(context.dataPrivacyClassification.learningSafety, "prohibited");
+  assert.equal(context.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");
 });

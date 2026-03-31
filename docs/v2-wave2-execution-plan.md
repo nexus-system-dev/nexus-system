@@ -2770,8 +2770,8 @@
 - connects_to: `Project State`
 - completion_type: `end_to_end`
 - coverage_check:
-  - `description: canonical multi-axis classification schema with exposure/personal/learning/storage axes` → `full` | `src/core/data-privacy-classification-schema.js`
-  - `description: derivation logic uses asset signals storage retention scope and tenant sensitivity` → `full` | `src/core/data-privacy-classification-schema.js`, `src/core/context-builder.js`
+  - `description: canonical multi-axis classification schema with flat top-level contract` → `full` | `src/core/data-privacy-classification-schema.js`
+  - `description: derivation logic uses canonical single-asset input and storage binding without leaking into policy decisions` → `full` | `src/core/data-privacy-classification-schema.js`, `src/core/context-builder.js`
   - `input: dataAsset` → `full` | `src/core/context-builder.js`
   - `input: storageContext` → `full` | `src/core/context-builder.js`
   - `output: dataPrivacyClassification` → `full` | `src/core/data-privacy-classification-schema.js`, `src/core/context-builder.js`, `src/core/project-service.js`
@@ -2791,7 +2791,7 @@
   - `unit and integration tests pass`
 - missing_for_green:
   - `none`
-- הערת מצב: המודול הקנוני מחובר בפועל ל־`tenantIsolationSchema`, `nexusPersistenceSchema`, `storageRecord`, `learningEvent` ו־credential context; הוא מחזיר classification גם כשאין מספיק signals, אבל בלי לדלג על לוגיקת הסיווג.
+- הערת מצב: המודול הקנוני מנרמל asset יחיד לחוזה `dataAsset` החדש, מחזיר `dataPrivacyClassification` שטוח ברמה העליונה, ושומר את `storageContext` רק ב־`storageBinding`/`reasoning`/`confidence`; הוא נשאר consumable ל־task 38 בלי שדות ביניים נוספים.
 
 
 2. `Create privacy retention and deletion policy resolver`  | סטטוס: 🔴 לא בוצע

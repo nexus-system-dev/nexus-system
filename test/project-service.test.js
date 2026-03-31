@@ -580,9 +580,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.entityRepository?.[0]?.repositoryId, "string");
   assert.equal(typeof project.state.storageRecord?.storageRecordId, "string");
   assert.equal(typeof project.state.storageRecord?.summary?.totalStoredItems, "number");
-  assert.equal(typeof project.state.dataPrivacyClassification?.metadata?.classificationId, "string");
-  assert.equal(typeof project.state.dataPrivacyClassification?.axes?.exposureLevel, "string");
-  assert.equal(typeof project.state.dataPrivacyClassification?.axes?.storageBinding?.storageDriver, "string");
+  assert.equal(typeof project.state.dataPrivacyClassification?.classificationId, "string");
+  assert.equal(typeof project.state.dataPrivacyClassification?.exposureLevel, "string");
+  assert.equal(typeof project.state.dataPrivacyClassification?.storageBinding?.storageDriver, "string");
   assert.equal(typeof project.state.backupStrategy?.backupStrategyId, "string");
   assert.equal(typeof project.state.backupStrategy?.summary?.totalDatasets, "number");
   assert.equal(typeof project.state.restorePlan?.restorePlanId, "string");
@@ -2091,8 +2091,8 @@ test("project service serializes data privacy classification into state and cont
 
   const project = service.getProject("giftwallet");
 
-  assert.equal(typeof project.context?.dataPrivacyClassification?.metadata?.classificationId, "string");
-  assert.equal(typeof project.state?.dataPrivacyClassification?.metadata?.classificationId, "string");
-  assert.equal(project.state.dataPrivacyClassification.axes.exposureLevel, project.context.dataPrivacyClassification.axes.exposureLevel);
-  assert.equal(project.state.dataPrivacyClassification.axes.learningSafety, project.context.dataPrivacyClassification.axes.learningSafety);
+  assert.equal(typeof project.context?.dataPrivacyClassification?.classificationId, "string");
+  assert.equal(typeof project.state?.dataPrivacyClassification?.classificationId, "string");
+  assert.equal(project.state.dataPrivacyClassification.exposureLevel, project.context.dataPrivacyClassification.exposureLevel);
+  assert.equal(project.state.dataPrivacyClassification.learningSafety, project.context.dataPrivacyClassification.learningSafety);
 });

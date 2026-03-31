@@ -200,10 +200,10 @@ test("server exposes project data privacy classification via GET project", async
   const response = await requestJson(server, "/api/projects/giftwallet");
 
   assert.equal(response.statusCode, 200);
-  assert.equal(typeof response.body.context?.dataPrivacyClassification?.metadata?.classificationId, "string");
-  assert.equal(typeof response.body.state?.dataPrivacyClassification?.metadata?.classificationId, "string");
-  assert.equal(response.body.state.dataPrivacyClassification.axes.exposureLevel, response.body.context.dataPrivacyClassification.axes.exposureLevel);
-  assert.equal(response.body.state.dataPrivacyClassification.axes.storageBinding.retentionPolicy, "project-lifecycle");
+  assert.equal(typeof response.body.context?.dataPrivacyClassification?.classificationId, "string");
+  assert.equal(typeof response.body.state?.dataPrivacyClassification?.classificationId, "string");
+  assert.equal(response.body.state.dataPrivacyClassification.exposureLevel, response.body.context.dataPrivacyClassification.exposureLevel);
+  assert.equal(response.body.state.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");
 });
 
 test("server exposes credential rotation endpoint", async () => {
