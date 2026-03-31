@@ -474,6 +474,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.executionTopology?.topologyId, "string");
   assert.equal(Array.isArray(project.state.executionTopology?.topologies), true);
   assert.equal(typeof project.state.executionTopology?.summary?.includesBranch, "boolean");
+  assert.equal(typeof project.state.sandboxDecision?.sandboxDecisionId, "string");
+  assert.equal(typeof project.state.sandboxDecision?.decision, "string");
+  assert.equal(Array.isArray(project.state.sandboxDecision?.alternatives), true);
   assert.equal(typeof project.state.cloudWorkspaceModel?.workspaceId, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.surface?.topologyType, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.summary?.isWritable, "boolean");

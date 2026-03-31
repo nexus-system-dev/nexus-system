@@ -68,6 +68,7 @@ import { createPolicyTraceBuilder } from "./policy-trace-builder.js";
 import { createExecutionPolicyEvaluator } from "./execution-policy-evaluator.js";
 import { definePolicySchema } from "./policy-schema.js";
 import { defineAgentGovernancePolicySchema } from "./agent-governance-policy-schema.js";
+import { createAgentSandboxPolicyResolver } from "./agent-sandbox-policy-resolver.js";
 import { defineProjectDraftSchema } from "./project-draft-schema.js";
 import { defineDiffPreviewSchema } from "./diff-preview-schema.js";
 import { createCodeDiffCollector } from "./code-diff-collector.js";
@@ -3371,6 +3372,14 @@ export function buildProjectContext(
     localDevelopmentBridge,
     remoteMacRunner,
   });
+  const { sandboxDecision } = createAgentSandboxPolicyResolver({
+    agentGovernancePolicy,
+    taskType: project.manualContext?.requestContext?.taskType ?? domainCapabilities.taskTypes?.[0] ?? "generic",
+    executionTopology,
+    cloudWorkspaceModel,
+    localDevelopmentBridge,
+    remoteMacRunner,
+  });
   const { fallbackStrategy } = createFallbackStrategyResolver({
     failureRecoveryModel,
     executionModeDecision,
@@ -3633,6 +3642,7 @@ export function buildProjectContext(
   context.localDevelopmentBridge = localDevelopmentBridge;
   context.remoteMacRunner = remoteMacRunner;
   context.executionModeDecision = executionModeDecision;
+  context.sandboxDecision = sandboxDecision;
   context.bootstrapPlan = bootstrapPlan;
   context.bootstrapTasks = bootstrapTasks;
   context.bootstrapAssignments = bootstrapAssignments;

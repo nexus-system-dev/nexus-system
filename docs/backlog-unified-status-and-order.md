@@ -9560,7 +9560,7 @@ Refinements מאושרים:
   - `none`
 - הערת מצב: ה־schema מגדיר policy ל־agent יחיד בלבד; הוא לא בונה registry של כל agents ולא מבצע enforcement runtime, כדי ש־Task 43 תוכל לצרוך חוזה יציב downstream.
 
-2. `Create agent sandbox policy resolver`  | סטטוס: 🔴 לא בוצע
+2. `Create agent sandbox policy resolver`  | סטטוס: 🟢 בוצע
 - description: לבנות resolver שקובע באיזה sandbox או execution boundary agent מסוים רשאי לפעול
 - input:
   - `agentGovernancePolicy`
@@ -9571,6 +9571,28 @@ Refinements מאושרים:
   - `Define agent governance schema`  | סטטוס: 🟢 בוצע
   - `Execution Surface Layer`
 - connects_to: `Execution Surface`
+- completion_type: `internal_logic`
+- coverage_check:
+  - description: `full` — המודול ב־`src/core/agent-sandbox-policy-resolver.js` מחזיר `sandboxDecision` קנוני מלא, עם `selectedSurface`, `decision`, `selectedBoundary`, `alternatives`, `reason` ו־`summary`, לפי precedence של policy -> taskType -> availability.
+  - input: `full` — `agentGovernancePolicy` נצרך ישירות מ־Task 42; `taskType` מנורמל דרך `src/core/task-boundary-requirements.js`; availability מגיעה מ־`executionTopology` ומה־surface models הקיימים (`cloudWorkspaceModel`, `localDevelopmentBridge`, `remoteMacRunner`) בלי להמציא שכבה חדשה.
+  - output: `full` — `sandboxDecision` נכתב ל־`context`, ל־`state`, ומופיע ב־serialized project payload.
+  - dependencies: `full` — נשען על `Define agent governance schema` ועל `Execution Surface Layer` דרך `executionTopology` וה־execution surface contracts שכבר קיימים במערכת.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - יש `sandboxDecision` קנוני
+  - decision נגזר מ־policy + taskType + availability בסדר precedence נכון
+  - mapping של `sandboxLevel` מיושם בלי silent downgrade או privilege widening
+  - `alternatives` כוללות רק חלופות רלוונטיות
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־resolver בוחר execution boundary policy-first בלבד; הוא לא מבצע enforcement runtime ולא מחליף את `executionModeDecision`, כדי ש־Tasks 44–45 יוכלו לצרוך decision יציב downstream.
 
 3. `Create agent action limit guard`  | סטטוס: 🔴 לא בוצע
 - description: לבנות guard שמגביל actions מסוכנים, כמות פעולות, cost spikes ו־provider side effects לפי agent policy
@@ -9581,7 +9603,7 @@ Refinements מאושרים:
 - output:
   - `agentLimitDecision`
 - dependencies:
-  - `Create agent sandbox policy resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create agent sandbox policy resolver`  | סטטוס: 🟢 בוצע
   - `Platform Cost & Usage Control`
 - connects_to: `Execution Surface`
 
