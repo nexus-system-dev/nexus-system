@@ -2133,6 +2133,7 @@ export class ProjectService {
       gatingDecision: project.context?.gatingDecision ?? null,
       approvalAuditTrail: project.context?.approvalAuditTrail ?? null,
       policySchema: project.context?.policySchema ?? null,
+      agentGovernancePolicy: project.context?.agentGovernancePolicy ?? null,
       actionPolicy: project.context?.actionPolicy ?? null,
       policyDecision: project.context?.policyDecision ?? null,
       policyViolations: project.context?.policyViolations ?? [],
@@ -3198,6 +3199,7 @@ export class ProjectService {
       businessContinuityState: project.context?.businessContinuityState ?? null,
       securityAuditRecord: project.context?.securityAuditRecord ?? null,
       complianceAuditSummary: project.context?.complianceAuditSummary ?? null,
+      agentGovernancePolicy: project.context?.agentGovernancePolicy ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {

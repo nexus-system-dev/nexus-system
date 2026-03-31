@@ -2949,7 +2949,7 @@
 
 #### `Agent Governance & Sandboxing`
 
-1. `Define agent governance schema`  | סטטוס: 🔴 לא בוצע
+1. `Define agent governance schema`  | סטטוס: 🟢 בוצע
 - execution_order: `42`
 - description: לבנות schema אחיד ל־agent limits, allowed tools, sandbox levels, spend thresholds ו־escalation rules
 - input:
@@ -2961,6 +2961,30 @@
   - `Policy Layer`  | סטטוס: 🟢 בוצע
   - `Security Hardening`
 - connects_to: `Project State`
+- completion_type: `schema_only`
+- coverage_check:
+  - description: `full` — המודול ב־`src/core/agent-governance-policy-schema.js` מייצר policy קנוני עבור agent type יחיד, כולל `allowedTools`, `sandboxLevel`, `spendThresholds`, `agentLimits` ו־`escalationRules`.
+  - input: `full` — `agentType` עובר normalization קשיח ל־`dev-agent / qa-agent / marketing-agent / generic-agent / unknown-agent`, ו־`policySchema` משמש כ־supporting input להוספת tools קנוניים בלי להחליף את החוזה.
+  - output: `full` — מוחזר `agentGovernancePolicy` קנוני ונכתב ל־`context` ול־`state`, עם חשיפה ב־project payload.
+  - dependencies: `full` — נשען על `Policy Layer` הקיים דרך `policySchema`; `Security Hardening` מיוצג כאן כ־schema-safe fallback ו־escalation defaults, בלי להניח enforcement שעדיין לא נבנה.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `agentType` מנורמל
+  - `allowedTools` הם canonical string ids
+  - `sandboxLevel` מתוך enum קנוני בלבד
+  - `spendThresholds` מלאים
+  - `agentLimits` מלאים
+  - `escalationRules` קנוניים ולא free-form
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־serialized project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־schema מגדיר policy ל־agent יחיד בלבד; הוא לא בונה registry של כל agents ולא מבצע enforcement runtime, כדי ש־Task 43 תוכל לצרוך חוזה יציב downstream.
 
 
 2. `Create agent sandbox policy resolver`  | סטטוס: 🔴 לא בוצע
@@ -2972,7 +2996,7 @@
 - output:
   - `sandboxDecision`
 - dependencies:
-  - `Define agent governance schema`  | סטטוס: 🔴 לא בוצע
+  - `Define agent governance schema`  | סטטוס: 🟢 בוצע
   - `Execution Surface Layer`
 - connects_to: `Execution Surface`
 

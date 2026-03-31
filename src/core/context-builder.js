@@ -67,6 +67,7 @@ import { createPolicyEnforcementGuard } from "./policy-enforcement-guard.js";
 import { createPolicyTraceBuilder } from "./policy-trace-builder.js";
 import { createExecutionPolicyEvaluator } from "./execution-policy-evaluator.js";
 import { definePolicySchema } from "./policy-schema.js";
+import { defineAgentGovernancePolicySchema } from "./agent-governance-policy-schema.js";
 import { defineProjectDraftSchema } from "./project-draft-schema.js";
 import { defineDiffPreviewSchema } from "./diff-preview-schema.js";
 import { createCodeDiffCollector } from "./code-diff-collector.js";
@@ -1263,6 +1264,14 @@ export function buildProjectContext(
   });
   const { actionPolicy } = createActionPolicyRegistry({
     actionType: approvalRequestWithStatus.actionType,
+    policySchema,
+  });
+  const { agentGovernancePolicy } = defineAgentGovernancePolicySchema({
+    agentType:
+      project.manualContext?.agentType
+      ?? project.cycle?.assignments?.[0]?.agentId
+      ?? project.agents?.[0]?.id
+      ?? null,
     policySchema,
   });
   const { policyDecision } = createExecutionPolicyEvaluator({
@@ -3444,6 +3453,7 @@ export function buildProjectContext(
   context.gatingDecision = gatingDecision;
   context.approvalAuditTrail = approvalAuditTrail;
   context.policySchema = policySchema;
+  context.agentGovernancePolicy = agentGovernancePolicy;
   context.actionPolicy = actionPolicy;
   context.policyDecision = policyDecision;
   context.policyViolations = policyViolations;
