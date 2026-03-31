@@ -4,11 +4,15 @@ import { EventEmitter } from "node:events";
 
 import { createServer } from "../src/server.js";
 
-function requestJson(server, pathname) {
+function requestJson(server, pathname, options = {}) {
   return new Promise((resolve, reject) => {
     const request = new EventEmitter();
-    request.method = "GET";
+    request.method = options.method ?? "GET";
     request.url = pathname;
+    request.headers = options.headers ?? {};
+    request.socket = {
+      remoteAddress: options.ipAddress ?? "127.0.0.1",
+    };
 
     const response = {
       statusCode: 200,
@@ -22,6 +26,7 @@ function requestJson(server, pathname) {
           resolve({
             statusCode: this.statusCode,
             body: JSON.parse(body),
+            headers: this.headers,
           });
         } catch (error) {
           reject(error);
@@ -33,12 +38,18 @@ function requestJson(server, pathname) {
   });
 }
 
-function requestJsonWithBody(server, method, pathname, payload) {
+function requestJsonWithBody(server, method, pathname, payload, options = {}) {
   return new Promise((resolve, reject) => {
     const request = new EventEmitter();
     request.method = method;
     request.url = pathname;
-    request.headers = { "content-type": "application/json" };
+    request.headers = {
+      "content-type": "application/json",
+      ...(options.headers ?? {}),
+    };
+    request.socket = {
+      remoteAddress: options.ipAddress ?? "127.0.0.1",
+    };
 
     const response = {
       statusCode: 200,
@@ -52,6 +63,7 @@ function requestJsonWithBody(server, method, pathname, payload) {
           resolve({
             statusCode: this.statusCode,
             body: JSON.parse(body),
+            headers: this.headers,
           });
         } catch (error) {
           reject(error);
@@ -713,4 +725,67 @@ test("server exposes shared approval state in approval endpoints", async () => {
   assert.equal(typeof listed.body.approvalPayload.sharedApprovalState.sharedApprovalStateId, "string");
   assert.equal(approved.statusCode, 200);
   assert.equal(approved.body.approvalPayload.sharedApprovalState.participantDecisions[0].participantRole, "owner");
+});
+
+test("server rate limits critical routes by ip and returns retry-after header", async () => {
+  const server = createServer({
+    createProjectDraft: () => ({
+      projectDraftId: "draft-1",
+      projectCreationRedirect: {
+        target: "onboarding",
+      },
+    }),
+  });
+
+  for (let index = 0; index < 5; index += 1) {
+    const response = await requestJsonWithBody(server, "POST", "/api/project-drafts", {
+      userInput: {
+        email: "nobody@example.com",
+      },
+      projectCreationInput: {
+        projectName: "Draft Project",
+      },
+    }, {
+      ipAddress: "10.0.0.21",
+    });
+
+    assert.equal(response.statusCode, 201);
+  }
+
+  const blocked = await requestJsonWithBody(server, "POST", "/api/project-drafts", {
+    userInput: {
+      email: "nobody@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Draft Project",
+    },
+  }, {
+    ipAddress: "10.0.0.21",
+  });
+
+  assert.equal(blocked.statusCode, 429);
+  assert.equal(blocked.body.rateLimitDecision.decision, "rate-limited");
+  assert.equal(Number(blocked.headers["Retry-After"]) >= 1, true);
+});
+
+test("server blocks route scanning abuse across unknown api routes", async () => {
+  const server = createServer({
+    listProjects: () => [],
+  });
+
+  for (let index = 0; index < 5; index += 1) {
+    const response = await requestJson(server, `/api/unknown-${index}`, {
+      ipAddress: "10.0.0.33",
+    });
+
+    assert.equal(response.statusCode, 404);
+  }
+
+  const blocked = await requestJson(server, "/api/unknown-next", {
+    ipAddress: "10.0.0.33",
+  });
+
+  assert.equal(blocked.statusCode, 429);
+  assert.equal(blocked.body.rateLimitDecision.decision, "abuse-blocked");
+  assert.equal(blocked.body.rateLimitDecision.abuseSignals.routeScanning, 5);
 });

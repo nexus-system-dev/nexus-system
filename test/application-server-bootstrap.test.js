@@ -40,6 +40,8 @@ test("application server bootstrap returns canonical runtime without seeded demo
   assert.equal(applicationRuntime.readinessStatus.isReady, true);
   assert.equal(applicationRuntime.platformObservabilityTransport.getSnapshot().summary.totalTraces >= 1, true);
   assert.equal(applicationRuntime.platformObservabilityTransport.getSnapshot().summary.totalLogs >= 1, true);
+  assert.equal(applicationRuntime.rateLimitStore.requestBuckets instanceof Map, true);
+  assert.equal(applicationRuntime.rateLimitStore.clientSignals instanceof Map, true);
   assert.equal(applicationRuntime.snapshotLogPath.endsWith("project-snapshots.ndjson"), true);
   assert.equal(applicationRuntime.startupSteps.some((step) => step.step === "seed-demo-projects"), false);
   assert.equal(applicationRuntime.projectService.getProject("giftwallet"), null);

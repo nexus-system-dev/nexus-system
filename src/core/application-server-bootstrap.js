@@ -9,6 +9,7 @@ import { createBackgroundWorkerRuntime } from "./background-worker-runtime.js";
 import { createHealthCheckAndReadinessEndpoints } from "./health-check-readiness-endpoints.js";
 import { createPlatformObservabilityTransport } from "./platform-observability-transport.js";
 import { ProjectService } from "./project-service.js";
+import { createInMemoryRateLimitStore } from "./rate-limiting-abuse-protection.js";
 
 function resolveConfig(runtimeConfig = {}) {
   const rootDir = runtimeConfig.rootDir ?? path.resolve(path.dirname(new URL(import.meta.url).pathname), "../..");
@@ -35,6 +36,7 @@ export function createApplicationServerBootstrap({
   const config = resolveConfig(runtimeConfig);
   fs.mkdirSync(config.dataDir, { recursive: true });
   const platformObservabilityTransport = createPlatformObservabilityTransport();
+  const rateLimitStore = createInMemoryRateLimitStore();
 
   const projectService = serviceFactory
     ? serviceFactory({
@@ -188,6 +190,7 @@ export function createApplicationServerBootstrap({
         runtimeId,
         healthStatus,
         readinessStatus,
+        rateLimitStore,
       })
     : null;
   startupSteps.push({
@@ -244,6 +247,7 @@ export function createApplicationServerBootstrap({
       healthStatus,
       readinessStatus,
       platformObservabilityTransport,
+      rateLimitStore,
     },
   };
 }

@@ -4,13 +4,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createApplicationServerBootstrap } from "./core/application-server-bootstrap.js";
+import {
+  createInMemoryRateLimitStore,
+  createRateLimitingAndAbuseProtection,
+} from "./core/rate-limiting-abuse-protection.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.resolve(__dirname, "../web");
 
-function sendJson(response, statusCode, payload) {
-  response.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
+function sendJson(response, statusCode, payload, headers = {}) {
+  response.writeHead(statusCode, {
+    "Content-Type": "application/json; charset=utf-8",
+    ...headers,
+  });
   response.end(JSON.stringify(payload, null, 2));
 }
 
@@ -74,6 +81,127 @@ function resolveWorkspaceId(urlPathname) {
   return segments[1] === "api" && segments[2] === "projects" ? segments[3] ?? null : null;
 }
 
+function resolveIpAddress(request) {
+  const forwarded = request.headers?.["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.trim().length > 0) {
+    return forwarded.split(",")[0].trim();
+  }
+
+  return request.socket?.remoteAddress ?? request.connection?.remoteAddress ?? "127.0.0.1";
+}
+
+function resolveRequestUserId(request) {
+  const headerValue = request.headers?.["x-user-id"];
+  return typeof headerValue === "string" && headerValue.trim().length > 0 ? headerValue.trim() : null;
+}
+
+function resolveRouteDefinition(method, pathname) {
+  const route = typeof pathname === "string" ? pathname : "/";
+  const verb = typeof method === "string" ? method : "GET";
+
+  const openExactRoutes = new Set([
+    "GET /api/health",
+    "GET /api/readiness",
+  ]);
+  if (openExactRoutes.has(`${verb} ${route}`)) {
+    return {
+      method: verb,
+      path: route,
+      tier: "open",
+      kind: "open-api",
+      bucketKey: route,
+      isKnownRoute: true,
+    };
+  }
+
+  if (verb === "GET" && route === "/api/observability") {
+    return {
+      method: verb,
+      path: route,
+      tier: "standard",
+      kind: "observability",
+      bucketKey: route,
+      isKnownRoute: true,
+    };
+  }
+
+  if (route.startsWith("/api/auth/")) {
+    return {
+      method: verb,
+      path: route,
+      tier: "critical",
+      kind: "auth",
+      bucketKey: "/api/auth/*",
+      isKnownRoute: true,
+    };
+  }
+
+  if (verb === "POST" && route === "/api/project-drafts") {
+    return {
+      method: verb,
+      path: route,
+      tier: "critical",
+      kind: "project-creation",
+      bucketKey: route,
+      isKnownRoute: true,
+    };
+  }
+
+  if (route.startsWith("/api/onboarding/")) {
+    return {
+      method: verb,
+      path: route,
+      tier: "standard",
+      kind: "onboarding",
+      bucketKey: "/api/onboarding/*",
+      isKnownRoute: true,
+    };
+  }
+
+  if (route.startsWith("/api/projects/")) {
+    const suffix = route.split("/").slice(4).join("/");
+    return {
+      method: verb,
+      path: route,
+      tier: "standard",
+      kind: "project-api",
+      bucketKey: suffix ? `/api/projects/*/${suffix}` : "/api/projects/*",
+      isKnownRoute: true,
+    };
+  }
+
+  if (route === "/api/audit-logs" || route === "/api/project-snapshots") {
+    return {
+      method: verb,
+      path: route,
+      tier: "standard",
+      kind: "system-api",
+      bucketKey: route,
+      isKnownRoute: true,
+    };
+  }
+
+  if (route.startsWith("/api/")) {
+    return {
+      method: verb,
+      path: route,
+      tier: "critical",
+      kind: "unknown-api",
+      bucketKey: "/api/unknown",
+      isKnownRoute: false,
+    };
+  }
+
+  return {
+    method: verb,
+    path: route,
+    tier: "open",
+    kind: "static",
+    bucketKey: route,
+    isKnownRoute: true,
+  };
+}
+
 function getProjectLiveState(projectService, projectId) {
   const project = projectService.getProject(projectId);
   if (!project) {
@@ -105,12 +233,28 @@ function writeSseEvent(response, eventName, payload) {
 }
 
 export function createServer(projectService, runtimeStatus = {}) {
+  const rateLimitStore = runtimeStatus.rateLimitStore ?? createInMemoryRateLimitStore();
   return http.createServer(async (request, response) => {
     const url = new URL(request.url, "http://localhost");
     const segments = url.pathname.split("/");
     const observabilityTransport = getObservabilityTransport(projectService);
+    const routeDefinition = resolveRouteDefinition(request.method, url.pathname);
     const requestId = request.headers?.["x-request-id"] ?? `${request.method ?? "GET"}:${url.pathname}:${Date.now()}`;
     const requestStartedAt = Date.now();
+    const requestTimestamp = Date.now();
+    const baseRequestContext = {
+      requestId,
+      pathName: url.pathname,
+      method: request.method ?? "GET",
+      ipAddress: resolveIpAddress(request),
+      timestamp: requestTimestamp,
+      userId: resolveRequestUserId(request),
+    };
+    const { rateLimitDecision } = createRateLimitingAndAbuseProtection({
+      requestContext: baseRequestContext,
+      routeDefinition,
+      rateLimitStore,
+    });
     const requestTrace = observabilityTransport?.startHttpRequest({
       requestId,
       route: url.pathname,
@@ -118,8 +262,35 @@ export function createServer(projectService, runtimeStatus = {}) {
       workspaceId: resolveWorkspaceId(url.pathname),
       service: runtimeStatus.runtimeId ?? "http-server",
     });
+    if (!rateLimitDecision.allowed) {
+      observabilityTransport?.finishHttpRequest({
+        traceId: requestTrace?.traceId ?? requestId,
+        route: url.pathname,
+        method: request.method,
+        statusCode: 429,
+        durationMs: Date.now() - requestStartedAt,
+        service: runtimeStatus.runtimeId ?? "http-server",
+      });
+      sendJson(response, 429, {
+        error: rateLimitDecision.decision,
+        rateLimitDecision,
+      }, {
+        "Retry-After": String(rateLimitDecision.retryAfterSeconds ?? 1),
+      });
+      return;
+    }
     const originalEnd = response.end.bind(response);
     response.end = (body) => {
+      createRateLimitingAndAbuseProtection({
+        requestContext: {
+          ...baseRequestContext,
+          phase: "response",
+          responseStatusCode: response.statusCode ?? 200,
+          timestamp: Date.now(),
+        },
+        routeDefinition,
+        rateLimitStore,
+      });
       observabilityTransport?.finishHttpRequest({
         traceId: requestTrace?.traceId ?? requestId,
         route: url.pathname,

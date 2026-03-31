@@ -9099,7 +9099,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Create rate limiting and abuse protection`  | סטטוס: 🔴 לא בוצע
+1. `Create rate limiting and abuse protection`  | סטטוס: 🟢 בוצע
 - description: לבנות מנגנון rate limiting, abuse detection ו־basic throttling ל־APIs קריטיים
 - input:
   - `requestContext`
@@ -9109,6 +9109,27 @@ Refinements מאושרים:
 - dependencies:
   - `Application Runtime Layer`
 - connects_to: `Execution Surface`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `description` → `full` | המנגנון מומש ב־`src/core/rate-limiting-abuse-protection.js` ומחובר בפועל ב־`src/server.js` ל־critical / standard / open routes עם `allowed`, `rate-limited`, `abuse-blocked`, burst detection, auth failure detection ו־route scanning.
+  - `input.requestContext` → `full` | השרת בונה `requestId`, `pathName`, `method`, `ipAddress`, `timestamp`, `userId` לפני כל route handler.
+  - `input.routeDefinition` → `full` | ב־`src/server.js` יש resolver פשוט מתוך `method + path` בלי ליצור routing system חדש.
+  - `output.rateLimitDecision` → `full` | ה־decision מוחזר מהמודול, נשלח ל־429 responses עם `Retry-After`, ונשמר ב־store בין בקשות.
+  - `dependencies.Application Runtime Layer` → `full` | ה־store נוצר ב־`src/core/application-server-bootstrap.js`, מוזרק ל־`createServer`, ונשמר ב־runtime הפעיל.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `כל קריאת API קריטית דרך server.js, למשל POST /api/project-drafts או POST /api/auth/login`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `core module מחזיר rateLimitDecision + updatedRateLimitStore`
+  - `server.js מחיל את המנגנון לפני route handlers ומחזיר 429 בפועל`
+  - `rateLimitStore נשמר בין requests דרך bootstrap/runtime`
+  - `tests מוכיחים rate limit, abuse detection, Retry-After ו-store persistence`
+  - `לא נוספה שכבת routing/middleware מתה מחוץ לארכיטקטורה הקיימת`
+- missing_for_green:
+  - `none`
+- הערת מצב: המימוש נשאר מכוון ל־`server.js` כנקודת שליטה יחידה, בלי להוסיף middleware layer לא בשימוש; ה־route resolver הוא resolver מקומי פשוט מתוך `method + path`, בהתאם למבנה הקיים של הפרויקט.
 
 2. `Create session security controls`  | סטטוס: 🔴 לא בוצע
 - description: לבנות controls ל־session expiry, rotation, suspicious activity detection ו־device/session invalidation
