@@ -3142,7 +3142,7 @@
   - `none`
 
 
-2. `Create AI usage meter`  | סטטוס: 🔴 לא בוצע
+2. `Create AI usage meter`  | סטטוס: 🟢 בוצע
 - execution_order: `47`
 - description: לבנות meter שסופר צריכת מודלים, tool runs ו־token usage לכל פרויקט, משתמש וזרימת עבודה
 - input:
@@ -3153,6 +3153,31 @@
 - dependencies:
   - `Define platform usage cost schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - description: `full` — המודול ב־[src/core/ai-usage-meter.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/ai-usage-meter.js) מנרמל invocation יחיד ל־`aiUsageMetric` יציב, בלי raw events, בלי cost calculation, ועם payload ישיר שמתאים ל־Task 46.
+  - input: `full` — `modelInvocation` ו־`toolInvocation` נצרכים ישירות; ב־context wiring יש קדימות ל־`project.manualContext`, ואז fallback מפורש ל־`project.analysis.modelUsed` (`ai-analyst`) ול־`providerOperations[0]` (`provider-operation-contract`).
+  - output: `full` — מוחזר `aiUsageMetric` עם `usageType`, `quantity`, `unit`, `project/user/workflow scopes`, `modelUsage`, `toolUsage`, `tokenUsage`, `source`, `recordedAt` ו־`summary`; נכתב ל־`context`, ל־`state`, ונחשף ב־payload דרך [src/core/project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js).
+  - dependencies: `full` — metric נשאר consumable ישירות ל־`Define platform usage cost schema` בלי wrapper נוסף ובלי translation layer.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - יש `aiUsageMetric` קנוני
+  - `modelInvocation` מנורמל נכון
+  - `toolInvocation` מנורמל נכון
+  - `usageType` top-level קיים
+  - `quantity` ו־`unit` top-level קיימים
+  - token fallback מיושם בלי להמציא counts
+  - `source` מנורמל לערכים הקנוניים
+  - קיימים scopes של project/user/workflow
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 
 3. `Create workspace compute usage tracker`  | סטטוס: 🔴 לא בוצע

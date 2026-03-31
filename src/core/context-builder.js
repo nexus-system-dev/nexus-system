@@ -106,6 +106,7 @@ import { createFeatureFlagResolver } from "./feature-flag-resolver.js";
 import { createEmergencyKillSwitchGuard } from "./emergency-kill-switch-guard.js";
 import { defineDataPrivacyClassificationSchema } from "./data-privacy-classification-schema.js";
 import { definePlatformUsageCostSchema } from "./platform-usage-cost-schema.js";
+import { createAiUsageMeter } from "./ai-usage-meter.js";
 import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-retention-and-deletion-policy-resolver.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
@@ -2694,6 +2695,33 @@ export function buildProjectContext(
     usageEvent: project.manualContext?.usageEvent ?? null,
     pricingMetadata: project.manualContext?.pricingMetadata ?? null,
   });
+  const { aiUsageMetric } = createAiUsageMeter({
+    modelInvocation:
+      project.manualContext?.modelInvocation
+      ?? (project.analysis?.modelUsed
+        ? {
+            modelName: project.analysis.modelUsed,
+            projectId: project.id,
+            userId: userIdentity?.userId ?? null,
+            workflowId: project.manualContext?.requestContext?.workflowId ?? null,
+            recordedAt: project.analysis?.pipeline?.endedAt ?? project.analysis?.pipeline?.startedAt ?? null,
+            source: "ai-analyst",
+          }
+        : null),
+    toolInvocation:
+      project.manualContext?.toolInvocation
+      ?? (Array.isArray(providerOperations) && providerOperations[0]
+        ? {
+            toolName: null,
+            providerOperation: providerOperations[0].operationType ?? null,
+            projectId: project.id,
+            userId: userIdentity?.userId ?? null,
+            workflowId: project.manualContext?.requestContext?.workflowId ?? null,
+            recordedAt: null,
+            source: "provider-operation-contract",
+          }
+        : null),
+  });
   const { privacyPolicyDecision } = createPrivacyRetentionAndDeletionPolicyResolver({
     dataPrivacyClassification,
     retentionPolicy: derivePrivacyRetentionPolicy({
@@ -3614,6 +3642,7 @@ export function buildProjectContext(
   context.storageRecord = storageRecord;
   context.dataPrivacyClassification = dataPrivacyClassification;
   context.platformCostMetric = platformCostMetric;
+  context.aiUsageMetric = aiUsageMetric;
   context.privacyPolicyDecision = privacyPolicyDecision;
   context.privacyRightsResult = project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null;
   context.backupStrategy = backupStrategy;

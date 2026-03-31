@@ -2223,6 +2223,7 @@ export class ProjectService {
       storageRecord: project.context?.storageRecord ?? null,
       dataPrivacyClassification: project.context?.dataPrivacyClassification ?? null,
       platformCostMetric: project.context?.platformCostMetric ?? null,
+      aiUsageMetric: project.context?.aiUsageMetric ?? null,
       privacyPolicyDecision: project.context?.privacyPolicyDecision ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       backupStrategy: project.context?.backupStrategy ?? null,
@@ -3208,6 +3209,7 @@ export class ProjectService {
       agentLimitDecision: project.context?.agentLimitDecision ?? null,
       agentGovernanceTrace: project.context?.agentGovernanceTrace ?? null,
       platformCostMetric: project.context?.platformCostMetric ?? null,
+      aiUsageMetric: project.context?.aiUsageMetric ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {
