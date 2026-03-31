@@ -43,6 +43,7 @@ import { createPlatformLoggingAndTracingLayer } from "./platform-logging-tracing
 import { createAlertingAndIncidentHooks } from "./alerting-incident-hooks.js";
 import { createSystemBottleneckDetector } from "./system-bottleneck-detector.js";
 import { createAuditLogForSystemActions } from "./system-audit-log.js";
+import { createSecurityAuditEventLogger } from "./security-audit-event-logger.js";
 import { defineProjectAuditEventSchema } from "./project-audit-event-schema.js";
 import { createProjectAuditEventCollector } from "./project-audit-event-collector.js";
 import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-model.js";
@@ -916,6 +917,7 @@ export function buildProjectContext(
   {
     observabilityTransport = null,
     auditLogStore = null,
+    securityAuditLogStore = null,
     snapshotStore = null,
     reviewThreadStore = null,
   } = {},
@@ -2495,6 +2497,23 @@ export function buildProjectContext(
     auditLogStore,
     observabilityTransport,
   });
+  const { securityAuditRecord } = createSecurityAuditEventLogger({
+    securityEvent: project.manualContext?.securityEvent ?? null,
+    actorContext: {
+      actorId: userIdentity?.userId ?? project.userId ?? null,
+      actorType: authenticationState?.isAuthenticated ? "user" : "system",
+      actorRole: membershipRecord?.roles?.[0] ?? null,
+      sessionId: sessionState?.sessionId ?? null,
+      ipAddress: project.manualContext?.requestContext?.ipAddress ?? null,
+      deviceId: project.manualContext?.requestContext?.deviceId ?? null,
+      workspaceId: workspaceModel?.workspaceId ?? project.id,
+      projectId: project.id,
+      source: "nexus-runtime",
+      traceId: platformTrace.traceId,
+    },
+    securityAuditLogStore,
+    observabilityTransport,
+  });
   const providerErrors = statusEvents
     .filter((event) => ["failed", "rejected"].includes(event.status))
     .map((event) => event.rawStatus ?? event.status);
@@ -3388,6 +3407,7 @@ export function buildProjectContext(
   context.incidentAlert = incidentAlert;
   context.systemBottleneckSummary = systemBottleneckSummary;
   context.auditLogRecord = auditLogRecord;
+  context.securityAuditRecord = securityAuditRecord;
   context.projectAuditEvent = projectAuditEvent;
   context.projectAuditRecord = projectAuditRecord;
   context.actorActionTrace = actorActionTrace;

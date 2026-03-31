@@ -170,7 +170,7 @@ function resolveRouteDefinition(method, pathname) {
     };
   }
 
-  if (route === "/api/audit-logs" || route === "/api/project-snapshots") {
+  if (route === "/api/audit-logs" || route === "/api/security-audit-logs" || route === "/api/project-snapshots") {
     return {
       method: verb,
       path: route,
@@ -327,6 +327,21 @@ export function createServer(projectService, runtimeStatus = {}) {
               projectId: url.searchParams.get("projectId") ?? null,
               workspaceId: url.searchParams.get("workspaceId") ?? null,
               category: url.searchParams.get("category") ?? null,
+              actorId: url.searchParams.get("actorId") ?? null,
+            })
+          : [],
+      });
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/security-audit-logs") {
+      sendJson(response, 200, {
+        securityAuditLogs: typeof projectService.getSecurityAuditLogs === "function"
+          ? projectService.getSecurityAuditLogs({
+              projectId: url.searchParams.get("projectId") ?? null,
+              workspaceId: url.searchParams.get("workspaceId") ?? null,
+              eventType: url.searchParams.get("eventType") ?? null,
+              severity: url.searchParams.get("severity") ?? null,
               actorId: url.searchParams.get("actorId") ?? null,
             })
           : [],

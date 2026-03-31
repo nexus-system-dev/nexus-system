@@ -171,6 +171,20 @@ test("server exposes audit logs endpoint", async () => {
   assert.equal(response.body.auditLogs[0].auditLogId, "audit-1");
 });
 
+test("server exposes dedicated security audit logs endpoint", async () => {
+  const server = createServer({
+    getSecurityAuditLogs: ({ eventType }) => eventType === "policy_violation"
+      ? [{ securityAuditId: "security-audit-1", eventType: "policy_violation" }]
+      : [],
+  });
+
+  const response = await requestJson(server, "/api/security-audit-logs?eventType=policy_violation");
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(Array.isArray(response.body.securityAuditLogs), true);
+  assert.equal(response.body.securityAuditLogs[0].securityAuditId, "security-audit-1");
+});
+
 test("server exposes project snapshots endpoint", async () => {
   const server = createServer({
     getProjectSnapshots: ({ projectId }) => projectId === "giftwallet"

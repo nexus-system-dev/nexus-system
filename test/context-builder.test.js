@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 import { buildProjectContext } from "../src/core/context-builder.js";
+import { createPlatformObservabilityTransport } from "../src/core/platform-observability-transport.js";
+import { createSecurityAuditLogStore } from "../src/core/security-audit-log-store.js";
 
 test("context builder merges scan and external diagnostics into canonical context", () => {
   const context = buildProjectContext({
@@ -785,4 +790,47 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.pollingMetadata?.attempt, "number");
   assert.equal(context.continuityPlan?.planningStatus, "ready");
   assert.equal(context.continuityPlan?.decisionTrace?.reliabilityInputStatus, "canonical");
+});
+
+test("context builder records security audit record without replacing system audit", () => {
+  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-security-context-"));
+  const observabilityTransport = createPlatformObservabilityTransport();
+  const securityAuditLogStore = createSecurityAuditLogStore({
+    filePath: path.join(rootDir, "security-audit.ndjson"),
+  });
+
+  const context = buildProjectContext({
+    id: "giftwallet",
+    name: "GiftWallet",
+    goal: "Protect auth",
+    state: {},
+    manualContext: {
+      securityEvent: {
+        eventType: "policy_violation",
+        summary: "Unauthorized policy bypass",
+        affectedResource: {
+          resourceId: "policy-layer",
+          resourceType: "policy",
+        },
+      },
+      requestContext: {
+        ipAddress: "127.0.0.1",
+        deviceId: "device-1",
+      },
+    },
+  }, {
+    observabilityTransport,
+    securityAuditLogStore,
+  });
+
+  assert.equal(typeof context.auditLogRecord?.auditLogId, "string");
+  assert.equal(typeof context.securityAuditRecord?.securityAuditId, "string");
+  assert.equal(context.securityAuditRecord.eventType, "policy_violation");
+  assert.equal(securityAuditLogStore.readAll().length, 1);
+  assert.equal(
+    observabilityTransport.getSnapshot().platformLogs.some((entry) =>
+      entry.source === "security-audit-log" && entry.level === "error"
+    ),
+    true,
+  );
 });

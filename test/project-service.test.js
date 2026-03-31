@@ -133,6 +133,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.securitySignals?.suspiciousActivity, "boolean");
   assert.equal(typeof project.state.sessionSecurityDecision?.decision, "string");
   assert.equal(typeof project.state.sessionSecurityDecision?.isBlocked, "boolean");
+  assert.equal(project.state.securityAuditRecord === null || typeof project.state.securityAuditRecord?.securityAuditId === "string", true);
   assert.equal(typeof project.state.authenticationRouteDecision?.decisionId, "string");
   assert.equal(typeof project.state.authenticationRouteDecision?.route, "string");
   assert.equal(typeof project.state.authenticationRouteDecision?.summary?.requiresAuthentication, "boolean");
@@ -2015,4 +2016,36 @@ test("project service evaluates and mutates business continuity lifecycle state"
       enabled: false,
     },
   });
+});
+
+test("project service stores and queries dedicated security audit records", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+  const project = service.projects.get("giftwallet");
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    securityEvent: {
+      eventType: "privilege_change",
+      summary: "Project role elevated",
+      projectId: "giftwallet",
+      affectedResource: {
+        resourceId: "role-binding",
+        resourceType: "authorization",
+      },
+    },
+    requestContext: {
+      ipAddress: "127.0.0.1",
+      deviceId: "device-42",
+    },
+  };
+
+  const rebuilt = service.rebuildContext("giftwallet");
+  const stored = service.getSecurityAuditLogs({
+    projectId: "giftwallet",
+  });
+
+  assert.equal(typeof rebuilt.securityAuditRecord?.securityAuditId, "string");
+  assert.equal(rebuilt.securityAuditRecord.eventType, "privilege_change");
+  assert.equal(stored.length >= 1, true);
+  assert.equal(stored.at(-1).requiresAlert, true);
 });

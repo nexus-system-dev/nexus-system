@@ -9163,7 +9163,7 @@ Refinements מאושרים:
   - `none`
 - הערת מצב: זהו מימוש ראשון ומכוון של שכבת session security; `device/session invalidation` ממומש בשלב הזה דרך `isRevoked -> invalidated + blocked` בתוך `sessionSecurityDecision` ובחסימת middleware, בלי לבנות infrastructure חדש מעבר ל־auth/session flow הקיים.
 
-3. `Create security audit event logger`  | סטטוס: 🔴 לא בוצע
+3. `Create security audit event logger`  | סטטוס: 🟢 בוצע
 - description: לבנות logger ייעודי לאירועי אבטחה כמו failed login, privilege changes, secret access ו־policy violations
 - input:
   - `securityEvent`
@@ -9174,6 +9174,28 @@ Refinements מאושרים:
   - `Platform Observability`
   - `Security Hardening`
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - `description` → `full` | ממומש ב־`src/core/security-audit-event-logger.js`, `src/core/security-event-schema.js`, `src/core/security-audit-log-store.js`
+  - `input` → `full` | `securityEvent` ו־`actorContext` מנורמלים ונצרכים ב־`src/core/security-event-schema.js` וב־`src/core/security-audit-event-logger.js`
+  - `output` → `full` | `securityAuditRecord` מוחזר, נשמר ל־`data/security-audit.ndjson`, ונחשף דרך `context.securityAuditRecord` ו־`GET /api/security-audit-logs`
+  - `dependencies` → `partial` | `Platform Observability` מחובר בפועל דרך `platform-observability-transport.js`; `Security Hardening` מחובר כרגע כ־producer ידני/עקיף של `securityEvent`, לא כ־pipeline אוטומטי מלא
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/security-audit-logs` וצריכת `context.securityAuditRecord` מתוך project state
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `logger` ייעודי קיים
+  - `store` ייעודי קיים
+  - כתיבה ל־`data/security-audit.ndjson` עובדת
+  - כל event types ממופים נכון כולל `unknown-security-event`
+  - observability integration פעיל עם severity נכונה
+  - `context.securityAuditRecord` מוחזר בלי להחליף את `systemAuditLog`
+  - טסטים עוברים
+- missing_for_green:
+  - `none`
+- הערת מצב: שכבת ה־logger הושלמה במלואה; החיבור האוטומטי מ־`session security controls` ליצירת `securityEvent` עדיין לא נבנה כ־pipeline מלא, אבל אינו חוסם את השלמת המשימה הזאת כל עוד ה־logger מקבל `securityEvent` תקף.
 
 4. `Create secret rotation workflow`  | סטטוס: 🔴 לא בוצע
 - description: לבנות workflow לרוטציה של credentials, invalidation של references ועדכון dependent connectors

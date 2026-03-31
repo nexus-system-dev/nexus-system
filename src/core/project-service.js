@@ -47,6 +47,7 @@ import { createPlatformObservabilityTransport } from "./platform-observability-t
 import { createPersistentProjectSnapshotStore, createProjectSnapshotStore } from "./project-snapshot-store.js";
 import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-model.js";
 import { createSystemAuditLogStore } from "./system-audit-log-store.js";
+import { createSecurityAuditLogStore } from "./security-audit-log-store.js";
 import { createProjectReviewThreadStore } from "./project-review-thread-store.js";
 import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
 import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
@@ -61,10 +62,12 @@ export class ProjectService {
   constructor({
     eventLogPath,
     auditLogPath = null,
+    securityAuditLogPath = null,
     snapshotLogPath = null,
     reviewThreadLogPath = null,
     platformObservabilityTransport = null,
     systemAuditLogStore = null,
+    securityAuditLogStore = null,
     projectSnapshotStore = null,
     projectReviewThreadStore = null,
   }) {
@@ -91,6 +94,7 @@ export class ProjectService {
     this.projectPresenceRegistry = new Map();
     this.platformObservabilityTransport = platformObservabilityTransport ?? createPlatformObservabilityTransport();
     this.systemAuditLogStore = systemAuditLogStore ?? createSystemAuditLogStore({ filePath: auditLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "system-audit.ndjson") });
+    this.securityAuditLogStore = securityAuditLogStore ?? createSecurityAuditLogStore({ filePath: securityAuditLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "security-audit.ndjson") });
     this.projectSnapshotStore = projectSnapshotStore
       ?? createPersistentProjectSnapshotStore({ filePath: snapshotLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "project-snapshots.ndjson") });
     this.projectReviewThreadStore = projectReviewThreadStore
@@ -2007,6 +2011,7 @@ export class ProjectService {
     const builtContext = buildProjectContext(project, {
       observabilityTransport: this.platformObservabilityTransport,
       auditLogStore: this.systemAuditLogStore,
+      securityAuditLogStore: this.securityAuditLogStore,
       snapshotStore: this.projectSnapshotStore,
       reviewThreadStore: this.projectReviewThreadStore,
     });
@@ -2077,6 +2082,7 @@ export class ProjectService {
       approvalRecords: project.context?.approvalRecords ?? [],
       approvalRecord: project.context?.approvalRecord ?? null,
       approvalStatus: project.context?.approvalStatus ?? null,
+      securityAuditRecord: project.context?.securityAuditRecord ?? null,
       gatingDecision: project.context?.gatingDecision ?? null,
       approvalAuditTrail: project.context?.approvalAuditTrail ?? null,
       policySchema: project.context?.policySchema ?? null,
@@ -2415,6 +2421,10 @@ export class ProjectService {
 
   getSystemAuditLogs(filters = {}) {
     return this.systemAuditLogStore.query(filters);
+  }
+
+  getSecurityAuditLogs(filters = {}) {
+    return this.securityAuditLogStore.query(filters);
   }
 
   getProjectSnapshots(filters = {}) {
@@ -3101,6 +3111,7 @@ export class ProjectService {
       continuityPlan: project.context?.continuityPlan ?? null,
       disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
       businessContinuityState: project.context?.businessContinuityState ?? null,
+      securityAuditRecord: project.context?.securityAuditRecord ?? null,
       agents: project.agents,
       overview: {
         bottleneck: blockedTasks[0] ?? "אין כרגע חסם מרכזי",
