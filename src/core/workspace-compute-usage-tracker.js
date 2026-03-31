@@ -23,14 +23,15 @@ function parseTimestamp(value) {
 function resolveRuntimeDurationMs(platformTrace) {
   const normalizedTrace = normalizeObject(platformTrace);
   const directDuration = normalizeFiniteNumber(normalizedTrace.durationMs);
-  if (directDuration !== null) {
+  if (directDuration !== null && directDuration >= 0) {
     return directDuration;
   }
 
   const startedAt = parseTimestamp(normalizedTrace.startedAt);
   const completedAt = parseTimestamp(normalizedTrace.completedAt);
   if (startedAt !== null && completedAt !== null) {
-    return completedAt - startedAt;
+    const computedDuration = completedAt - startedAt;
+    return computedDuration >= 0 ? computedDuration : null;
   }
 
   return null;
@@ -47,15 +48,10 @@ function resolveRecordedAt(platformTrace, cloudWorkspaceModel) {
 }
 
 function resolveSource(platformTrace, cloudWorkspaceModel) {
-  const normalizedTrace = normalizeObject(platformTrace);
   const normalizedWorkspace = normalizeObject(cloudWorkspaceModel);
-  const runtimeDurationMs = resolveRuntimeDurationMs(normalizedTrace);
+  const runtimeDurationMs = resolveRuntimeDurationMs(platformTrace);
 
-  if (
-    runtimeDurationMs !== null
-    || normalizeString(normalizedTrace.startedAt)
-    || normalizeString(normalizedTrace.completedAt)
-  ) {
+  if (runtimeDurationMs !== null) {
     return "platform-observability";
   }
 
