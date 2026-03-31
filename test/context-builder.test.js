@@ -210,6 +210,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.authenticationState?.status, "string");
   assert.equal(typeof context.authenticationState?.isAuthenticated, "boolean");
   assert.equal(typeof context.sessionState?.status, "string");
+  assert.equal(typeof context.securitySignals?.suspiciousActivity, "boolean");
+  assert.equal(typeof context.securitySignals?.authFailures, "number");
+  assert.equal(typeof context.sessionSecurityDecision?.decision, "string");
+  assert.equal(typeof context.sessionSecurityDecision?.isBlocked, "boolean");
   assert.equal(typeof context.authenticationRouteDecision?.decisionId, "string");
   assert.equal(typeof context.authenticationRouteDecision?.route, "string");
   assert.equal(typeof context.authenticationRouteDecision?.summary?.canEnterWorkspaceDirectly, "boolean");

@@ -92,6 +92,13 @@ export function createApplicationServerBootstrap({
       effectiveRole: "owner",
       allowedActions: ["view", "edit", "run", "approve", "deploy"],
     },
+    sessionSecurityDecision: {
+      decision: "valid",
+      isBlocked: false,
+      requiresRotation: false,
+      reason: "Bootstrap session is valid",
+      triggeredControls: [],
+    },
   });
   const { validatedRequest, errorEnvelope } = createRequestValidationAndErrorBoundaryLayer({
     requestPayload: {

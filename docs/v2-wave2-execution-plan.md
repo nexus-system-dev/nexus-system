@@ -2540,7 +2540,7 @@
 - הערת מצב: המימוש נשאר מכוון ל־`server.js` כנקודת שליטה יחידה, בלי להוסיף middleware layer לא בשימוש; ה־route resolver הוא resolver מקומי פשוט מתוך `method + path`, בהתאם למבנה הקיים של הפרויקט.
 
 
-2. `Create session security controls`  | סטטוס: 🔴 לא בוצע
+2. `Create session security controls`  | סטטוס: 🟢 בוצע
 - execution_order: `31`
 - description: לבנות controls ל־session expiry, rotation, suspicious activity detection ו־device/session invalidation
 - input:
@@ -2551,6 +2551,27 @@
 - dependencies:
   - `Identity & Auth`
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `description: controls cover session expiry, rotation, suspicious activity detection, and device/session invalidation` → `full` | `src/core/session-security-controls.js`, `src/core/security-signals-schema.js`, `test/session-security-controls.test.js`
+  - `input.sessionState` → `full` | `src/core/context-builder.js` creates `sessionState` from existing auth flow and passes it into `createSessionSecurityControls`
+  - `input.securitySignals` → `full` | `src/core/security-signals-schema.js` builds canonical safe-default signals and `src/core/context-builder.js` injects them into the controls
+  - `output.sessionSecurityDecision` → `full` | `src/core/session-security-controls.js`, `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `dependencies.Identity & Auth` → `full` | `src/core/auth-middleware.js` now blocks requests when `sessionSecurityDecision.isBlocked === true`, and bootstrap wiring passes the decision through the existing auth path
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `existing auth middleware path`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `revoked, expired, suspicious, and rotation-required decisions are implemented`
+  - `context returns securitySignals + sessionSecurityDecision`
+  - `auth middleware blocks when sessionSecurityDecision.isBlocked === true`
+  - `tests cover valid, revoked, expired, suspicious, and rotation-required paths`
+  - `no new session manager or persistence layer was introduced`
+- missing_for_green:
+  - `none`
+- הערת מצב: זהו מימוש ראשון ומכוון של שכבת session security; `device/session invalidation` ממומש בשלב הזה דרך `isRevoked -> invalidated + blocked` בתוך `sessionSecurityDecision` ובחסימת middleware, בלי לבנות infrastructure חדש מעבר ל־auth/session flow הקיים.
 
 
 3. `Create security audit event logger`  | סטטוס: 🔴 לא בוצע

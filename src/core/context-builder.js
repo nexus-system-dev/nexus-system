@@ -262,7 +262,9 @@ import { createFailoverAndContinuityPlanner } from "./failover-continuity-planne
 import { createBusinessContinuityLifecycleManager } from "./business-continuity-lifecycle-manager.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
 import { createAuthenticationRouteResolver } from "./authentication-route-resolver.js";
+import { createSecuritySignals } from "./security-signals-schema.js";
 import { createSessionAndTokenManagement } from "./session-and-token-management.js";
+import { createSessionSecurityControls } from "./session-security-controls.js";
 import { createPasswordResetAndEmailVerificationFlow } from "./password-reset-email-verification-flow.js";
 import { defineWorkspaceAndMembershipModel } from "./workspace-membership-model.js";
 import { createProjectAccessControlModule } from "./project-access-control-module.js";
@@ -2242,6 +2244,18 @@ export function buildProjectContext(
     userIdentity,
     authenticationState,
   });
+  const { securitySignals } = createSecuritySignals({
+    rateLimitSignals: project.manualContext?.rateLimitSignals ?? null,
+    authSignals: project.manualContext?.authSignals ?? null,
+    anomalySignals: project.manualContext?.anomalySignals ?? null,
+  });
+  const { sessionSecurityDecision } = createSessionSecurityControls({
+    sessionState: {
+      ...sessionState,
+      ...(project.manualContext?.sessionSecurityContext ?? {}),
+    },
+    securitySignals,
+  });
   const { authenticationRouteDecision } = createAuthenticationRouteResolver({
     authenticationState,
     sessionState,
@@ -3199,6 +3213,8 @@ export function buildProjectContext(
   context.userIdentity = userIdentity;
   context.authenticationState = authenticationState;
   context.sessionState = sessionState;
+  context.securitySignals = securitySignals;
+  context.sessionSecurityDecision = sessionSecurityDecision;
   context.authenticationRouteDecision = authenticationRouteDecision;
   context.tokenBundle = tokenBundle;
   context.verificationFlowState = verificationFlowState;

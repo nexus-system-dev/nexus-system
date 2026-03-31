@@ -14,18 +14,27 @@ function normalizeAccessDecision(accessDecision) {
   return accessDecision && typeof accessDecision === "object" ? accessDecision : {};
 }
 
+function normalizeSessionSecurityDecision(sessionSecurityDecision) {
+  return sessionSecurityDecision && typeof sessionSecurityDecision === "object" ? sessionSecurityDecision : {};
+}
+
 export function createAuthMiddleware({
   requestContext = null,
   sessionState = null,
   authenticationState = null,
   accessDecision = null,
+  sessionSecurityDecision = null,
 } = {}) {
   const normalizedRequestContext = normalizeRequestContext(requestContext);
   const normalizedSessionState = normalizeSessionState(sessionState);
   const normalizedAuthenticationState = normalizeAuthenticationState(authenticationState);
   const normalizedAccessDecision = normalizeAccessDecision(accessDecision);
+  const normalizedSessionSecurityDecision = normalizeSessionSecurityDecision(sessionSecurityDecision);
 
-  const hasValidSession = normalizedSessionState.status === "active" && normalizedSessionState.isRevoked !== true;
+  const hasValidSession =
+    normalizedSessionState.status === "active"
+    && normalizedSessionState.isRevoked !== true
+    && normalizedSessionSecurityDecision.isBlocked !== true;
   const isAuthenticated = normalizedAuthenticationState.isAuthenticated === true && hasValidSession;
   const workspaceAccess = normalizedAccessDecision.canView === true;
   const decision = !isAuthenticated
@@ -49,6 +58,8 @@ export function createAuthMiddleware({
         ? "Request is authenticated and has workspace access"
         : decision === "forbidden"
           ? normalizedAccessDecision.reason ?? "Workspace access denied"
+          : normalizedSessionSecurityDecision.isBlocked === true
+            ? normalizedSessionSecurityDecision.reason ?? "Session failed security controls"
           : "Session is missing or inactive",
     },
   };

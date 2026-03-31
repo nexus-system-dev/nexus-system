@@ -53,3 +53,34 @@ test("auth middleware returns forbidden request when workspace access is missing
   assert.equal(authenticatedRequest.authStatus, "forbidden");
   assert.equal(authenticatedRequest.hasWorkspaceAccess, false);
 });
+
+test("auth middleware rejects blocked sessions from session security controls", () => {
+  const { authenticatedRequest } = createAuthMiddleware({
+    requestContext: {
+      requestId: "request-3",
+    },
+    sessionState: {
+      sessionId: "session-3",
+      status: "active",
+      userId: "user-3",
+      isRevoked: false,
+    },
+    authenticationState: {
+      isAuthenticated: true,
+      userId: "user-3",
+    },
+    accessDecision: {
+      canView: true,
+      effectiveRole: "owner",
+    },
+    sessionSecurityDecision: {
+      decision: "suspicious",
+      isBlocked: true,
+      reason: "Suspicious session activity detected",
+    },
+  });
+
+  assert.equal(authenticatedRequest.authStatus, "unauthenticated");
+  assert.equal(authenticatedRequest.isAuthenticated, false);
+  assert.equal(authenticatedRequest.reason, "Suspicious session activity detected");
+});

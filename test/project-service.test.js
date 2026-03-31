@@ -130,6 +130,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.authenticationState?.status, "string");
   assert.equal(typeof project.state.authenticationState?.isAuthenticated, "boolean");
   assert.equal(typeof project.state.sessionState?.status, "string");
+  assert.equal(typeof project.state.securitySignals?.suspiciousActivity, "boolean");
+  assert.equal(typeof project.state.sessionSecurityDecision?.decision, "string");
+  assert.equal(typeof project.state.sessionSecurityDecision?.isBlocked, "boolean");
   assert.equal(typeof project.state.authenticationRouteDecision?.decisionId, "string");
   assert.equal(typeof project.state.authenticationRouteDecision?.route, "string");
   assert.equal(typeof project.state.authenticationRouteDecision?.summary?.requiresAuthentication, "boolean");
