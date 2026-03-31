@@ -2182,6 +2182,7 @@ export class ProjectService {
       entityRepository: project.context?.entityRepository ?? [],
       storageRecord: project.context?.storageRecord ?? null,
       dataPrivacyClassification: project.context?.dataPrivacyClassification ?? null,
+      privacyPolicyDecision: project.context?.privacyPolicyDecision ?? null,
       backupStrategy: project.context?.backupStrategy ?? null,
       restorePlan: project.context?.restorePlan ?? null,
       userJourneys: project.context?.userJourneys ?? null,

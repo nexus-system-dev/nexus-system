@@ -675,6 +675,9 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.dataPrivacyClassification?.exposureLevel, "string");
   assert.equal(typeof context.dataPrivacyClassification?.storageBinding?.retentionPolicy, "object");
   assert.equal(Array.isArray(context.dataPrivacyClassification?.reasoning), true);
+  assert.equal(typeof context.privacyPolicyDecision?.privacyPolicyDecisionId, "string");
+  assert.equal(typeof context.privacyPolicyDecision?.retentionAction, "string");
+  assert.equal(typeof context.privacyPolicyDecision?.learningAllowed, "boolean");
   assert.equal(typeof context.backupStrategy?.backupStrategyId, "string");
   assert.equal(typeof context.backupStrategy?.summary?.totalDatasets, "number");
   assert.equal(typeof context.restorePlan?.restorePlanId, "string");
@@ -875,4 +878,6 @@ test("context builder derives data privacy classification from storage, tenant, 
   assert.equal(context.dataPrivacyClassification.personalData, "sensitive-personal");
   assert.equal(context.dataPrivacyClassification.learningSafety, "prohibited");
   assert.equal(context.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");
+  assert.equal(context.privacyPolicyDecision.retentionAction, "delete-required");
+  assert.equal(context.privacyPolicyDecision.backupAllowed, false);
 });

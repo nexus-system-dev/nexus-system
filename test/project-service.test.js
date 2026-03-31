@@ -583,6 +583,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.dataPrivacyClassification?.classificationId, "string");
   assert.equal(typeof project.state.dataPrivacyClassification?.exposureLevel, "string");
   assert.equal(typeof project.state.dataPrivacyClassification?.storageBinding?.storageDriver, "string");
+  assert.equal(typeof project.state.privacyPolicyDecision?.privacyPolicyDecisionId, "string");
+  assert.equal(typeof project.state.privacyPolicyDecision?.retentionAction, "string");
+  assert.equal(typeof project.state.privacyPolicyDecision?.backupAllowed, "boolean");
   assert.equal(typeof project.state.backupStrategy?.backupStrategyId, "string");
   assert.equal(typeof project.state.backupStrategy?.summary?.totalDatasets, "number");
   assert.equal(typeof project.state.restorePlan?.restorePlanId, "string");
@@ -2095,4 +2098,7 @@ test("project service serializes data privacy classification into state and cont
   assert.equal(typeof project.state?.dataPrivacyClassification?.classificationId, "string");
   assert.equal(project.state.dataPrivacyClassification.exposureLevel, project.context.dataPrivacyClassification.exposureLevel);
   assert.equal(project.state.dataPrivacyClassification.learningSafety, project.context.dataPrivacyClassification.learningSafety);
+  assert.equal(typeof project.context?.privacyPolicyDecision?.privacyPolicyDecisionId, "string");
+  assert.equal(typeof project.state?.privacyPolicyDecision?.privacyPolicyDecisionId, "string");
+  assert.equal(project.state.privacyPolicyDecision.retentionAction, project.context.privacyPolicyDecision.retentionAction);
 });

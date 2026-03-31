@@ -2794,7 +2794,7 @@
 - הערת מצב: המודול הקנוני מנרמל asset יחיד לחוזה `dataAsset` החדש, מחזיר `dataPrivacyClassification` שטוח ברמה העליונה, ושומר את `storageContext` רק ב־`storageBinding`/`reasoning`/`confidence`; הוא נשאר consumable ל־task 38 בלי שדות ביניים נוספים.
 
 
-2. `Create privacy retention and deletion policy resolver`  | סטטוס: 🔴 לא בוצע
+2. `Create privacy retention and deletion policy resolver`  | סטטוס: 🟢 בוצע
 - execution_order: `38`
 - description: לבנות resolver שקובע מה נשמר, לכמה זמן, מה מותר ללמידה ומה חייב להימחק לפי סוג הנתון
 - input:
@@ -2806,6 +2806,31 @@
   - `Data Privacy & Compliance`
   - `Backup & Recovery`
 - connects_to: `Project State`
+- completion_type: `end_to_end`
+- coverage_check:
+  - `description: operational privacy decision covers retention deletion learning and backup facets` → `full` | `src/core/privacy-retention-and-deletion-policy-resolver.js`
+  - `input: dataPrivacyClassification` → `full` | `src/core/context-builder.js`, `src/core/privacy-retention-and-deletion-policy-resolver.js`
+  - `input: retentionPolicy derived from existing persistence/storage/backup inputs` → `full` | `src/core/context-builder.js`, `src/core/backup-restore-strategy.js`
+  - `output: privacyPolicyDecision is a decision object not policy echo` → `full` | `src/core/privacy-retention-and-deletion-policy-resolver.js`
+  - `dependencies: uses Backup & Recovery as input foundation without reusing snapshot retention semantics` → `full` | `src/core/context-builder.js`, `src/core/privacy-retention-and-deletion-policy-resolver.js`
+  - `context and state wiring` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`
+  - `serialized project payload exposure` → `full` | `src/core/project-service.js`, `src/server.js`
+  - `tests verify unit and integration behavior` → `full` | `test/privacy-retention-and-deletion-policy-resolver.test.js`, `test/context-builder.test.js`, `test/project-service.test.js`, `test/server-health-endpoints.test.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `resolver returns privacyPolicyDecision with retention deletion learning and backup facets`
+  - `fallback is deterministic and explained`
+  - `override precedence is explicit and stricter policies win`
+  - `decision is written to context and project state`
+  - `serialized project payload exposes the decision`
+  - `unit and integration tests pass`
+- missing_for_green:
+  - `none`
+- הערת מצב: ה־resolver צורך את `dataPrivacyClassification` הקנוני ואת policy inputs מ־`storageRecord`, `nexusPersistenceSchema` ו־`backupStrategy.storagePolicy`, אבל לא ממחזר snapshot retention ולא מחזיר config גולמי; הוא מחזיר החלטה אופרטיבית אחת ש־task 40 יכול לצרוך ישירות.
 
 
 3. `Create compliance consent and legal basis registry`  | סטטוס: 🔴 לא בוצע

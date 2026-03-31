@@ -101,6 +101,7 @@ import { defineFeatureFlagSchema } from "./feature-flag-schema.js";
 import { createFeatureFlagResolver } from "./feature-flag-resolver.js";
 import { createEmergencyKillSwitchGuard } from "./emergency-kill-switch-guard.js";
 import { defineDataPrivacyClassificationSchema } from "./data-privacy-classification-schema.js";
+import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-retention-and-deletion-policy-resolver.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
 import { defineCanonicalInitialProjectStateSchema } from "./initial-project-state-schema.js";
 import { createOnboardingToStateTransformationMapper } from "./onboarding-to-state-transformation-mapper.js";
@@ -1026,6 +1027,54 @@ function deriveStorageContextForPrivacy({
       tenantIsolationSchema?.isolatedResources?.find((resource) => resource?.resourceType === "linked-accounts")?.sensitivity
       ?? tenantIsolationSchema?.isolatedResources?.find((resource) => resource?.resourceType === "project-state")?.sensitivity
       ?? "medium",
+  };
+}
+
+function derivePrivacyRetentionPolicy({
+  dataPrivacyClassification,
+  nexusPersistenceSchema,
+  storageRecord,
+  backupStrategy,
+}) {
+  const classificationRetention = dataPrivacyClassification?.storageBinding?.retentionPolicy ?? null;
+  const storagePolicy = backupStrategy?.storagePolicy ?? null;
+
+  return {
+    policyId:
+      classificationRetention?.policyId
+      ?? storagePolicy?.retentionPolicy
+      ?? storageRecord?.retentionPolicy
+      ?? nexusPersistenceSchema?.entities?.projects?.retentionPolicy
+      ?? "privacy-fallback-policy",
+    source:
+      classificationRetention?.source
+      ?? (storagePolicy?.retentionPolicy ? "backup-strategy" : storageRecord?.retentionPolicy ? "storage-record" : "nexus-persistence-schema"),
+    window: {
+      archiveAfterDays:
+        classificationRetention?.policyId === "workspace-lifecycle"
+          ? 30
+          : classificationRetention?.policyId === "learning-governance"
+            ? 14
+            : null,
+      deleteAfterDays:
+        classificationRetention?.policyId === "account-lifecycle"
+          ? 30
+          : classificationRetention?.policyId === "compliance-audit"
+            ? 365
+            : classificationRetention?.policyId === "project-lifecycle"
+              ? 180
+              : null,
+      reviewAfterDays:
+        classificationRetention?.policyId === "learning-governance"
+          ? 7
+          : 30,
+    },
+    backupAllowed: backupStrategy?.backupMode === "state-and-artifacts",
+    backupConstraints: {
+      storageDriver: storagePolicy?.storageDriver ?? storageRecord?.storageDriver ?? "filesystem",
+      protectsArtifacts: backupStrategy?.summary?.protectsArtifacts ?? false,
+      storagePath: storagePolicy?.storagePath ?? storageRecord?.storagePath ?? null,
+    },
   };
 }
 
@@ -2593,6 +2642,15 @@ export function buildProjectContext(
       storageRecord,
     }),
   });
+  const { privacyPolicyDecision } = createPrivacyRetentionAndDeletionPolicyResolver({
+    dataPrivacyClassification,
+    retentionPolicy: derivePrivacyRetentionPolicy({
+      dataPrivacyClassification,
+      nexusPersistenceSchema,
+      storageRecord,
+      backupStrategy,
+    }),
+  });
   const currentSnapshotSchedule = project.snapshotSchedule ?? project.context?.snapshotSchedule ?? null;
   const currentSnapshotWorker = project.snapshotBackupWorker ?? project.context?.snapshotBackupWorker ?? null;
   const currentSnapshotRetentionPolicy = project.snapshotRetentionPolicy ?? project.context?.snapshotRetentionPolicy ?? null;
@@ -3452,6 +3510,7 @@ export function buildProjectContext(
   context.entityRepository = entityRepository;
   context.storageRecord = storageRecord;
   context.dataPrivacyClassification = dataPrivacyClassification;
+  context.privacyPolicyDecision = privacyPolicyDecision;
   context.backupStrategy = backupStrategy;
   context.restorePlan = restorePlan;
   context.reliabilitySlaModel = reliabilitySlaModel;
