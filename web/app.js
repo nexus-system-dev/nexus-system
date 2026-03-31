@@ -1313,6 +1313,7 @@ function renderVersioning(elements, project) {
   const snapshotJobState = normalizeObject(project.snapshotJobState ?? state.snapshotJobState);
   const retentionPolicy = normalizeObject(project.snapshotRetentionPolicy ?? state.snapshotRetentionPolicy);
   const retentionDecision = normalizeObject(project.snapshotRetentionDecision ?? state.snapshotRetentionDecision);
+  const continuityPlan = normalizeObject(project.continuityPlan ?? state.continuityPlan);
   const disasterRecoveryChecklist = normalizeObject(project.disasterRecoveryChecklist ?? state.disasterRecoveryChecklist);
   const businessContinuityState = normalizeObject(project.businessContinuityState ?? state.businessContinuityState);
   const restore = normalizeObject(project.restoreDecision ?? state.restoreDecision);
@@ -1325,6 +1326,7 @@ function renderVersioning(elements, project) {
   const checklistSteps = normalizeArray(disasterRecoveryChecklist.steps);
   const continuitySummary = normalizeObject(businessContinuityState.summary);
   const continuityOrchestration = normalizeObject(businessContinuityState.orchestration);
+  const continuityDecisionTrace = normalizeObject(continuityPlan.decisionTrace);
   const continuityActions = normalizeArray(businessContinuityState.availableActions).map((action) => ({
     title: action,
     body: `continuity action`,
@@ -1360,7 +1362,7 @@ function renderVersioning(elements, project) {
     },
     {
       title: `Continuity: ${businessContinuityState.lifecycleState ?? "unknown"}`,
-      body: `${businessContinuityState.continuityStatus ?? "unknown"} | failover ${continuitySummary.failoverReady ? "ready" : "placeholder"}`,
+      body: `${businessContinuityState.continuityStatus ?? "unknown"} | mode ${continuityPlan.recommendedMode ?? "n/a"} | failover ${continuitySummary.failoverReady ? "ready" : "partial"}`,
     },
   ];
   const prerequisiteItems = checklistPrerequisites.slice(0, 5).map((item) => ({
@@ -1384,6 +1386,10 @@ function renderVersioning(elements, project) {
       title: `Failover integration`,
       body: `${continuityOrchestration.failover?.integrationStatus ?? "placeholder"} | ${continuityOrchestration.failover?.note ?? "n/a"}`,
     },
+    {
+      title: `Continuity plan`,
+      body: `${continuityPlan.affectedLayer ?? "runtime"} | ${continuityPlan.summary?.planStatus ?? "missing"} | ${continuityDecisionTrace.reliabilitySource ?? "n/a"}`,
+    },
   ];
 
   elements.versioning.innerHTML = `
@@ -1400,6 +1406,7 @@ function renderVersioning(elements, project) {
       { label: "Recovery score", value: `${checklistSummary.readinessScore ?? 0}%` },
       { label: "Continuity state", value: businessContinuityState.lifecycleState ?? "unknown" },
       { label: "Continuity risk", value: businessContinuityState.continuityStatus ?? "unknown" },
+      { label: "Plan mode", value: continuityPlan.recommendedMode ?? "n/a" },
     ])}
     ${stackHtml("State control", details, "עדיין אין נתוני versioning זמינים.")}
     ${stackHtml("Recovery prerequisites", prerequisiteItems, "אין כרגע prerequisites של recovery.")}
@@ -2305,6 +2312,7 @@ async function runSnapshotWorkerTickFromUi() {
       projectPresenceState: liveState.projectPresenceState ?? currentProject.projectPresenceState,
       reviewThreadState: liveState.reviewThreadState ?? currentProject.reviewThreadState,
       collaborationFeed: liveState.collaborationFeed ?? currentProject.collaborationFeed,
+      continuityPlan: liveState.continuityPlan ?? currentProject.continuityPlan,
       businessContinuityState: liveState.businessContinuityState ?? currentProject.businessContinuityState,
       events: liveState.events ?? currentProject.events,
     };

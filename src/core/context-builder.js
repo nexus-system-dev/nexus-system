@@ -257,6 +257,7 @@ import { createRepositoryLayerForCoreEntities } from "./entity-repository-layer.
 import { createFileAndArtifactStorageModule } from "./file-artifact-storage-module.js";
 import { createBackupAndRestoreStrategy } from "./backup-restore-strategy.js";
 import { createDisasterRecoveryChecklist } from "./disaster-recovery-checklist.js";
+import { createFailoverAndContinuityPlanner } from "./failover-continuity-planner.js";
 import { createBusinessContinuityLifecycleManager } from "./business-continuity-lifecycle-manager.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
 import { createAuthenticationRouteResolver } from "./authentication-route-resolver.js";
@@ -2764,9 +2765,26 @@ export function buildProjectContext(
     restoreDecision,
     rollbackExecutionResult,
   });
+  const { continuityPlan: plannedContinuityPlan } = createFailoverAndContinuityPlanner({
+    reliabilitySlaModel: project.context?.reliabilitySlaModel ?? project.manualContext?.reliabilitySlaModel ?? null,
+    incidentAlert: {
+      ...incidentAlert,
+      projectId: project.id,
+    },
+  });
+  const continuityPlan = {
+    ...plannedContinuityPlan,
+    ...(project.context?.continuityPlan ?? {}),
+    ...(project.manualContext?.continuityPlan ?? {}),
+    failover: {
+      ...(plannedContinuityPlan.failover ?? {}),
+      ...(project.context?.continuityPlan?.failover ?? {}),
+      ...(project.manualContext?.continuityPlan?.failover ?? {}),
+    },
+  };
   const { businessContinuityState } = createBusinessContinuityLifecycleManager({
     backupStrategy,
-    continuityPlan: project.context?.continuityPlan ?? project.manualContext?.continuityPlan ?? null,
+    continuityPlan,
     disasterRecoveryChecklist,
     incidentAlert,
     snapshotSchedule: currentSnapshotSchedule,
@@ -3203,6 +3221,7 @@ export function buildProjectContext(
   context.storageRecord = storageRecord;
   context.backupStrategy = backupStrategy;
   context.restorePlan = restorePlan;
+  context.continuityPlan = continuityPlan;
   context.disasterRecoveryChecklist = disasterRecoveryChecklist;
   context.businessContinuityState = businessContinuityState;
   context.userJourneys = userJourneys;

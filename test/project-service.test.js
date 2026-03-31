@@ -1979,9 +1979,12 @@ test("project service evaluates and mutates business continuity lifecycle state"
     refresh: true,
   });
 
+  assert.equal(Boolean(continuityPayload?.continuityPlan?.continuityPlanId), true);
+  assert.equal(continuityPayload.continuityPlan.summary.planStatus, "partial");
   assert.equal(Boolean(continuityPayload?.businessContinuityState?.continuityStateId), true);
   assert.equal(Array.isArray(continuityPayload.businessContinuityState.availableActions), true);
   assert.equal(Boolean(continuityPayload.project.businessContinuityState), true);
+  assert.equal(Boolean(continuityPayload.project.continuityPlan?.continuityPlanId), true);
 
   const forcedFailover = service.applyBusinessContinuityAction({
     projectId: "giftwallet",
@@ -1992,8 +1995,15 @@ test("project service evaluates and mutates business continuity lifecycle state"
   });
 
   assert.equal(forcedFailover.businessContinuityState.lifecycleState, "failover");
-  assert.equal(forcedFailover.businessContinuityState.orchestration.failover.integrationStatus, "placeholder");
-  assert.equal(forcedFailover.businessContinuityState.orchestration.failover.isBlocking, true);
+  assert.equal(forcedFailover.businessContinuityState.orchestration.failover.integrationStatus, "connected-partial");
+  assert.equal(forcedFailover.businessContinuityState.orchestration.failover.requested, true);
+
+  const continuityPlanPayload = service.getContinuityPlan({
+    projectId: "giftwallet",
+    refresh: true,
+  });
+  assert.equal(continuityPlanPayload.continuityPlan.failover.hasPlanner, true);
+  assert.equal(continuityPlanPayload.continuityPlan.decisionTrace.reliabilityInputStatus, "fallback");
 
   service.configureSnapshotBackupSchedule({
     projectId: "giftwallet",

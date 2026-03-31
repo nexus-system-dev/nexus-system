@@ -146,12 +146,21 @@ export function createBusinessContinuityLifecycleManager({
       },
       failover: {
         dependency: "Create failover and continuity planner",
-        integrationStatus: hasFailoverPlanner ? "connected" : "placeholder",
+        integrationStatus: normalizeString(
+          failoverPlan.integrationStatus,
+          hasFailoverPlanner ? "connected" : "placeholder",
+        ),
         requested: failoverRequested,
-        isBlocking: lifecycleState === "failover" && !hasFailoverPlanner,
-        note: hasFailoverPlanner
-          ? "Failover planner integration is connected."
-          : "Failover planner is not implemented yet. Manager exposes a placeholder integration point.",
+        isBlocking:
+          lifecycleState === "failover"
+          && (!hasFailoverPlanner || failoverPlan.supportsAutomaticSwitch === false),
+        target: failoverPlan.target ?? null,
+        route: Array.isArray(failoverPlan.route) ? failoverPlan.route : [],
+        note:
+          failoverPlan.note
+          ?? (hasFailoverPlanner
+            ? "Failover planner integration is connected."
+            : "Failover planner is not implemented yet. Manager exposes a placeholder integration point."),
       },
       ownerDecision: {
         decisionId: normalizeString(normalizedOwnerDecision.decisionId, null),

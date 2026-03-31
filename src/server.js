@@ -92,6 +92,7 @@ function getProjectLiveState(projectService, projectId) {
     projectPresenceState: project.projectPresenceState ?? null,
     reviewThreadState: project.reviewThreadState ?? null,
     collaborationFeed: project.collaborationFeed ?? null,
+    continuityPlan: project.continuityPlan ?? null,
     disasterRecoveryChecklist: project.disasterRecoveryChecklist ?? null,
     businessContinuityState: project.businessContinuityState ?? null,
     events: project.events ?? [],
@@ -563,6 +564,21 @@ export function createServer(projectService, runtimeStatus = {}) {
           response,
           continuityPayload ? 200 : 404,
           continuityPayload ?? { error: "Project business continuity state not found" },
+        );
+        return;
+      }
+
+      if (suffix === "continuity-plan") {
+        const continuityPlanPayload = typeof projectService.getContinuityPlan === "function"
+          ? projectService.getContinuityPlan({
+              projectId,
+              refresh: ["1", "true", "yes"].includes((url.searchParams.get("refresh") ?? "").toLowerCase()),
+            })
+          : null;
+        sendJson(
+          response,
+          continuityPlanPayload ? 200 : 404,
+          continuityPlanPayload ?? { error: "Project continuity plan not found" },
         );
         return;
       }

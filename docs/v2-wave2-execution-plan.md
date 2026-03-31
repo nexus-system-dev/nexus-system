@@ -754,6 +754,22 @@
 - dependencies:
   - `Define screen template schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `management template contract is generated from screen template schema` → `full` | `src/core/management-template.js`, `test/management-template.test.js`
+  - `management template is wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `module behavior is covered by focused tests` → `full` | `test/management-template.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `template returns canonical list/management structure`
+  - `template payload is exposed in project context/state`
+  - `tests validate schema-driven and fallback management template behavior`
+- missing_for_green:
+  - `none`
 
 
 6. `Create state-driven template variants`  | סטטוס: 🟢 בוצע
@@ -766,6 +782,22 @@
 - dependencies:
   - `Create loading empty error states definition`  | סטטוס: 🟢 בוצע
 - connects_to: `Execution Surface`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `variant collection is generated from screen states and template set` → `full` | `src/core/state-driven-template-variants.js`, `test/state-driven-template-variants.test.js`
+  - `template variants are wired into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `module behavior is covered by focused tests` → `full` | `test/state-driven-template-variants.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `variant collection includes loading/empty/error/success coverage for canonical templates`
+  - `template variants are exposed in project context/state`
+  - `tests validate variant count and fallback behavior`
+- missing_for_green:
+  - `none`
 
 
 #### `UI Review Layer`
@@ -780,6 +812,22 @@
 - dependencies:
   - `Create goal and CTA definition module`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `validator checks primary action presence from screen contract and screen template` → `full` | `src/core/primary-action-validator.js`, `test/primary-action-validator.test.js`
+  - `validation output is aggregated into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `module behavior is covered by focused tests` → `full` | `test/primary-action-validator.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `validator returns canonical primary action assessment`
+  - `validation payload is exposed in project context/state`
+  - `tests cover valid and missing-primary-action paths`
+- missing_for_green:
+  - `none`
 
 
 2. `Create mobile usability validator`  | סטטוס: 🟢 בוצע
@@ -792,6 +840,22 @@
 - dependencies:
   - `Create mobile readiness checklist`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `validator checks mobile usability from screen template and mobile checklist` → `full` | `src/core/mobile-usability-validator.js`, `test/mobile-usability-validator.test.js`
+  - `validation output is aggregated into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `module behavior is covered by focused tests` → `full` | `test/mobile-usability-validator.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `validator returns canonical mobile usability assessment`
+  - `validation payload is exposed in project context/state`
+  - `tests cover usable and blocked mobile states`
+- missing_for_green:
+  - `none`
 
 
 3. `Create state coverage validator`  | סטטוס: 🟢 בוצע
@@ -804,6 +868,22 @@
 - dependencies:
   - `Create loading empty error states definition`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - `validator checks loading/empty/error/success coverage from screen template and screen states` → `full` | `src/core/state-coverage-validator.js`, `test/state-coverage-validator.test.js`
+  - `validation output is aggregated into context and state payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/context-builder.test.js`, `test/project-service.test.js`
+  - `module behavior is covered by focused tests` → `full` | `test/state-coverage-validator.test.js`
+- user_facing_path:
+  - exists: `no`
+  - entry_point: `n/a`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `no`
+- green_criteria:
+  - `validator returns canonical state coverage assessment`
+  - `validation payload is exposed in project context/state`
+  - `tests cover complete and missing-state paths`
+- missing_for_green:
+  - `none`
 
 
 4. `Create consistency validator`  | סטטוס: 🟢 בוצע
@@ -2312,8 +2392,45 @@
   - `none`
 - הערת מצב: ה־checklist מחובר end-to-end ל־backup/restore/snapshot state ול־Platform Observability עצמו, כולל evidence ישיר של traces/logs/readiness דרך API ו־Versioning UI.
 
+6. `Create failover and continuity planner`  | סטטוס: 🟡 חלקי
+- execution_order: `28.5`
+- description: לבנות planner שמחליט איך ממשיכים כששכבת runtime, queue, provider או workspace cluster נופלים
+- input:
+  - `reliabilitySlaModel`
+  - `incidentAlert`
+- output:
+  - `continuityPlan`
+- dependencies:
+  - `Define reliability and SLA schema`  | סטטוס: 🔴 לא בוצע
+  - `Platform Observability`
+- connects_to: `Execution Surface`
+- completion_type: `ui_ready`
+- coverage_check:
+  - `description: planner decides runtime/queue/provider/workspace-cluster continuation path with fallback, degraded mode, recovery direction, and failover route` → `full` | `src/core/failover-continuity-planner.js`, `test/failover-continuity-planner.test.js`
+  - `input: reliabilitySlaModel is consumed when present but still falls back to internal defaults because Define reliability and SLA schema is not implemented yet` → `partial` | `src/core/failover-continuity-planner.js`, `src/core/context-builder.js`, `test/failover-continuity-planner.test.js`, `test/project-service.test.js`
+  - `input: incidentAlert drives incident type, severity, and planning mode selection` → `full` | `src/core/failover-continuity-planner.js`, `src/core/context-builder.js`, `test/failover-continuity-planner.test.js`
+  - `output: continuityPlan is generated and wired into project context/state, API payloads, and the Versioning surface` → `full` | `src/core/failover-continuity-planner.js`, `src/core/project-service.js`, `src/server.js`, `web/app.js`, `test/project-service.test.js`, `test/server-health-endpoints.test.js`
+  - `dependencies: Define reliability and SLA schema remains missing, so planner uses a documented fallback reliability model` → `partial` | `src/core/failover-continuity-planner.js`
+  - `dependencies: Platform Observability is used through observability-derived incidentAlert rather than direct trace/log inputs` → `partial` | `src/core/context-builder.js`, `src/core/failover-continuity-planner.js`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Release workspace → Versioning And Restore → Apply continuity action / Refresh continuity`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `planner returns a canonical continuityPlan for runtime, queue, provider, and workspace-cluster incidents`
+  - `continuityPlan is wired into project context/state and exposed through service/API`
+  - `continuity plan is visible in the Versioning continuity surface`
+  - `tests cover decision logic and service/server integration`
+  - `planner no longer depends on fallback reliability defaults`
+  - `planner consumes Platform Observability directly or through a canonical reliability/SLA contract`
+- missing_for_green:
+  - `Define reliability and SLA schema is not implemented yet, so reliabilitySlaModel coverage is still partial and planner falls back to internal defaults`
+  - `Platform Observability is connected indirectly through incidentAlert rather than direct observability inputs inside the planner`
+- הערת מצב: משימה זו הוכנסה למסלול הפעיל של Wave 2 כ־bridge dependency חוסמת לפני `Create business continuity lifecycle manager`, בלי לבצע renumber רחב. ה־planner עצמו ממומש ומחובר ל־context/service/API/UI, אבל נשאר 🟡 בגלל reliance על fallback SLA model וחיבור observability עקיף.
 
-6. `Create business continuity lifecycle manager`  | סטטוס: 🟡 חלקי
+
+7. `Create business continuity lifecycle manager`  | סטטוס: 🟡 חלקי
 - execution_order: `29`
 - description: לבנות manager שמחבר backup, failover, incident recovery, retention policies ו־owner continuity decisions למסלול continuity אחד לאורך חיי המוצר
 - input:
@@ -2324,13 +2441,13 @@
   - `businessContinuityState`
 - dependencies:
   - `Create disaster recovery checklist`  | סטטוס: 🟢 בוצע
-  - `Create failover and continuity planner`  | סטטוס: 🔴 לא בוצע
+  - `Create failover and continuity planner`  | סטטוס: 🟡 חלקי
 - connects_to: `Project State`
 - completion_type: `ui_ready`
 - coverage_check:
   - `continuity lifecycle manager module with normal/degraded/incident/recovery/failover states` → `full` | `src/core/business-continuity-lifecycle-manager.js`, `test/business-continuity-lifecycle-manager.test.js`
   - `orchestration across backup + retention + disaster recovery checklist + owner decisions` → `full` | `src/core/business-continuity-lifecycle-manager.js`, `src/core/context-builder.js`, `test/project-service.test.js`
-  - `failover integration point tied to missing planner dependency` → `partial` | `src/core/business-continuity-lifecycle-manager.js`, `src/core/project-service.js`, `test/business-continuity-lifecycle-manager.test.js`
+  - `failover integration consumes planner output and exposes connected planning state` → `partial` | `src/core/business-continuity-lifecycle-manager.js`, `src/core/context-builder.js`, `src/core/project-service.js`, `test/project-service.test.js`
   - `API exposure and continuity actions` → `full` | `src/core/project-service.js`, `src/server.js`, `test/server-health-endpoints.test.js`
   - `Versioning UI visibility and trigger path` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
 - user_facing_path:
@@ -2345,8 +2462,8 @@
   - `tests cover lifecycle transitions and integration paths`
   - `failover planner dependency is fully implemented and connected`
 - missing_for_green:
-  - `Failover execution is still placeholder because dependency \`Create failover and continuity planner\` is not implemented yet.`
-- הערת מצב: ה־manager ממומש ומחובר end-to-end ל־backup/retention/disaster recovery/owner decisions עם state transitions ו־API/UI פעילים; אך שכבת failover בפועל מסומנת כ־placeholder עד למימוש `Create failover and continuity planner`, ולכן הסטטוס נשאר 🟡.
+  - `Create failover and continuity planner is now connected, but it is still partial because Define reliability and SLA schema is missing and observability is still indirect`
+- הערת מצב: ה־manager כבר לא תלוי בחור תיעודי; הוא צורך continuityPlan אמיתי מה־planner החדש ומציג failover integration מחובר, אבל נשאר 🟡 עד שה־planner עצמו יגיע ל־🟢 מלא.
 
 ---
 

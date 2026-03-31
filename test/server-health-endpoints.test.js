@@ -249,8 +249,26 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
       },
       refreshed: refresh === true,
     }),
+    getContinuityPlan: ({ projectId, refresh }) => ({
+      projectId,
+      continuityPlan: {
+        continuityPlanId: `continuity-plan:${projectId}:runtime`,
+        recommendedMode: "degraded",
+        summary: {
+          planStatus: "partial",
+        },
+      },
+      project: {
+        id: projectId,
+      },
+      refreshed: refresh === true,
+    }),
     getBusinessContinuityState: ({ projectId, refresh }) => ({
       projectId,
+      continuityPlan: {
+        continuityPlanId: `continuity-plan:${projectId}:runtime`,
+        recommendedMode: "recovery",
+      },
       businessContinuityState: {
         continuityStateId: `business-continuity:${projectId}`,
         lifecycleState: "recovery",
@@ -302,6 +320,7 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
     triggerType: "manual-worker-run",
   });
   const recoveryChecklistResponse = await requestJson(server, "/api/projects/giftwallet/disaster-recovery-checklist?refresh=1");
+  const continuityPlanResponse = await requestJson(server, "/api/projects/giftwallet/continuity-plan?refresh=1");
   const continuityStateResponse = await requestJson(server, "/api/projects/giftwallet/business-continuity?refresh=1");
   const continuityActionResponse = await requestJsonWithBody(server, "POST", "/api/projects/giftwallet/business-continuity/actions", {
     actionInput: {
@@ -325,6 +344,8 @@ test("server exposes snapshot schedule and manual backup mutation endpoints", as
   assert.equal(recoveryChecklistResponse.statusCode, 200);
   assert.equal(recoveryChecklistResponse.body.disasterRecoveryChecklist.checklistId, "disaster-recovery:giftwallet");
   assert.equal(recoveryChecklistResponse.body.refreshed, true);
+  assert.equal(continuityPlanResponse.statusCode, 200);
+  assert.equal(continuityPlanResponse.body.continuityPlan.continuityPlanId, "continuity-plan:giftwallet:runtime");
   assert.equal(continuityStateResponse.statusCode, 200);
   assert.equal(continuityStateResponse.body.businessContinuityState.continuityStateId, "business-continuity:giftwallet");
   assert.equal(continuityActionResponse.statusCode, 200);
@@ -347,6 +368,7 @@ test("server exposes project live-state endpoint", async () => {
         summary: { totalEntries: 1 },
       },
       collaborationFeed: { feedId: "collaboration-feed:giftwallet", items: [], summary: { totalItems: 0 } },
+      continuityPlan: { continuityPlanId: "continuity-plan:giftwallet:runtime" },
       disasterRecoveryChecklist: { checklistId: "disaster-recovery:giftwallet" },
       businessContinuityState: { continuityStateId: "business-continuity:giftwallet" },
       events: [{ type: "state.updated", payload: { projectId } }],
@@ -360,6 +382,7 @@ test("server exposes project live-state endpoint", async () => {
   assert.equal(response.body.progressState.percent, 48);
   assert.equal(response.body.liveUpdateChannel.transportMode, "polling");
   assert.equal(response.body.liveLogStream.summary.totalEntries, 1);
+  assert.equal(response.body.continuityPlan.continuityPlanId, "continuity-plan:giftwallet:runtime");
   assert.equal(response.body.disasterRecoveryChecklist.checklistId, "disaster-recovery:giftwallet");
   assert.equal(response.body.businessContinuityState.continuityStateId, "business-continuity:giftwallet");
   assert.equal(Array.isArray(response.body.events), true);

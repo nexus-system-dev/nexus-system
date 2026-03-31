@@ -339,6 +339,7 @@ export class ProjectService {
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
       snapshotPreChangeTriggerState: {},
+      continuityPlan: null,
       disasterRecoveryChecklist: null,
       businessContinuityState: null,
     };
@@ -1287,8 +1288,37 @@ export class ProjectService {
 
     return {
       projectId,
+      continuityPlan:
+        serializedProject?.continuityPlan
+        ?? serializedProject?.state?.continuityPlan
+        ?? serializedProject?.context?.continuityPlan
+        ?? null,
       businessContinuityState,
       summary: businessContinuityState.summary ?? null,
+      project: serializedProject,
+    };
+  }
+
+  getContinuityPlan({ projectId, refresh = false } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const serializedProject = refresh ? this.rebuildContext(projectId) : this.serializeProject(project);
+    const continuityPlan =
+      serializedProject?.continuityPlan
+      ?? serializedProject?.state?.continuityPlan
+      ?? serializedProject?.context?.continuityPlan
+      ?? null;
+    if (!continuityPlan) {
+      return null;
+    }
+
+    return {
+      projectId,
+      continuityPlan,
+      summary: continuityPlan.summary ?? null,
       project: serializedProject,
     };
   }
@@ -1736,6 +1766,7 @@ export class ProjectService {
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
       snapshotPreChangeTriggerState: {},
+      continuityPlan: null,
       disasterRecoveryChecklist: null,
       businessContinuityState: null,
     };
@@ -1812,6 +1843,7 @@ export class ProjectService {
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
       snapshotPreChangeTriggerState: {},
+      continuityPlan: null,
       disasterRecoveryChecklist: null,
       businessContinuityState: null,
     };
@@ -1992,6 +2024,7 @@ export class ProjectService {
     const snapshotWorkerRuntime = project.snapshotWorkerRuntime ?? builtContext.snapshotWorkerRuntime ?? null;
     const snapshotRetentionPolicy = project.snapshotRetentionPolicy ?? builtContext.snapshotRetentionPolicy ?? null;
     const snapshotRetentionDecision = project.snapshotRetentionDecision ?? builtContext.snapshotRetentionDecision ?? null;
+    const continuityPlan = builtContext.continuityPlan ?? project.continuityPlan ?? null;
     const disasterRecoveryChecklist = builtContext.disasterRecoveryChecklist ?? project.disasterRecoveryChecklist ?? null;
     const businessContinuityState = builtContext.businessContinuityState ?? project.businessContinuityState ?? null;
     project.snapshotSchedule = snapshotSchedule;
@@ -2000,6 +2033,7 @@ export class ProjectService {
     project.snapshotWorkerRuntime = snapshotWorkerRuntime;
     project.snapshotRetentionPolicy = snapshotRetentionPolicy;
     project.snapshotRetentionDecision = snapshotRetentionDecision;
+    project.continuityPlan = continuityPlan;
     project.disasterRecoveryChecklist = disasterRecoveryChecklist;
     project.businessContinuityState = businessContinuityState;
     project.context = {
@@ -2010,6 +2044,7 @@ export class ProjectService {
       snapshotWorkerRuntime,
       snapshotRetentionPolicy,
       snapshotRetentionDecision,
+      continuityPlan,
       disasterRecoveryChecklist,
       businessContinuityState,
     };
@@ -2198,6 +2233,7 @@ export class ProjectService {
       snapshotWorkerRuntime: project.context?.snapshotWorkerRuntime ?? null,
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
+      continuityPlan: project.context?.continuityPlan ?? null,
       disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
       businessContinuityState: project.context?.businessContinuityState ?? null,
       stateDiff: project.context?.stateDiff ?? null,
@@ -3060,6 +3096,7 @@ export class ProjectService {
       snapshotWorkerRuntime: project.context?.snapshotWorkerRuntime ?? null,
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
+      continuityPlan: project.context?.continuityPlan ?? null,
       disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
       businessContinuityState: project.context?.businessContinuityState ?? null,
       agents: project.agents,
