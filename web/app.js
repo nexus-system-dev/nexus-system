@@ -1310,6 +1310,7 @@ function renderVersioning(elements, project) {
   const snapshot = normalizeObject(project.snapshotRecord ?? state.snapshotRecord);
   const schedule = normalizeObject(project.snapshotSchedule ?? state.snapshotSchedule);
   const worker = normalizeObject(project.snapshotBackupWorker ?? state.snapshotBackupWorker);
+  const snapshotJobState = normalizeObject(project.snapshotJobState ?? state.snapshotJobState);
   const retentionPolicy = normalizeObject(project.snapshotRetentionPolicy ?? state.snapshotRetentionPolicy);
   const retentionDecision = normalizeObject(project.snapshotRetentionDecision ?? state.snapshotRetentionDecision);
   const disasterRecoveryChecklist = normalizeObject(project.disasterRecoveryChecklist ?? state.disasterRecoveryChecklist);
@@ -1342,8 +1343,8 @@ function renderVersioning(elements, project) {
       body: `max ${retentionPolicy.maxSnapshots ?? "?"} | pruned ${retentionDecision.summary?.pruneCount ?? 0}`,
     },
     {
-      title: `Worker: ${worker.lastExecutionStatus ?? "not-run"}`,
-      body: `status ${worker.status ?? "idle"} | errors ${worker.errorCount ?? 0}`,
+      title: `Worker: ${snapshotJobState.lastExecutionStatus ?? worker.lastExecutionStatus ?? "not-run"}`,
+      body: `status ${snapshotJobState.status ?? worker.status ?? "idle"} | errors ${worker.errorCount ?? 0}`,
     },
     {
       title: `Restore mode: ${restore.restoreMode ?? "unknown"}`,
@@ -1355,7 +1356,7 @@ function renderVersioning(elements, project) {
     },
     {
       title: `Recovery readiness: ${checklistSummary.readinessScore ?? 0}%`,
-      body: `missing ${checklistSummary.missingPrerequisites ?? 0} | steps ${checklistSteps.length}`,
+      body: `missing ${checklistSummary.missingPrerequisites ?? 0} | steps ${checklistSteps.length} | traces ${disasterRecoveryChecklist.observability?.totalTraces ?? 0}`,
     },
     {
       title: `Continuity: ${businessContinuityState.lifecycleState ?? "unknown"}`,

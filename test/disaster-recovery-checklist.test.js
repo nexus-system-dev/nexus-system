@@ -18,6 +18,18 @@ test("disaster recovery checklist builds readiness summary and ordered recovery 
       severity: "high",
       incidentType: "runtime-outage",
     },
+    platformTrace: {
+      traceId: "trace:giftwallet",
+    },
+    platformLogs: [
+      { logId: "log:giftwallet:1", level: "error" },
+    ],
+    observabilitySummary: {
+      observabilityId: "observability:giftwallet",
+      totalTraces: 1,
+      totalLogs: 1,
+      healthStatus: "active",
+    },
     snapshotSchedule: {
       snapshotScheduleId: "snapshot-schedule:giftwallet",
       enabled: true,
@@ -49,8 +61,10 @@ test("disaster recovery checklist builds readiness summary and ordered recovery 
   assert.equal(disasterRecoveryChecklist.summary.canExecuteRecovery, true);
   assert.equal(disasterRecoveryChecklist.summary.missingPrerequisites, 0);
   assert.equal(disasterRecoveryChecklist.prerequisites.length >= 6, true);
+  assert.equal(disasterRecoveryChecklist.prerequisites.some((item) => item.key === "platform-observability" && item.status === "ready"), true);
   assert.equal(disasterRecoveryChecklist.steps[0].stepId, "assess-incident");
   assert.equal(disasterRecoveryChecklist.steps[2].stepId, "restore-state");
+  assert.equal(disasterRecoveryChecklist.observability.traceId, "trace:giftwallet");
 });
 
 test("disaster recovery checklist reports missing prerequisites when strategy is incomplete", () => {

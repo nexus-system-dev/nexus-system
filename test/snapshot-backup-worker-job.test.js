@@ -5,11 +5,15 @@ import { createSnapshotBackupWorkerJob } from "../src/core/snapshot-backup-worke
 
 test("snapshot backup worker job creates enabled worker state from schedule", () => {
   const now = new Date("2026-03-30T14:00:00.000Z");
-  const { snapshotBackupWorker } = createSnapshotBackupWorkerJob({
+  const { snapshotBackupWorker, snapshotJobState, workerRuntime } = createSnapshotBackupWorkerJob({
     projectId: "giftwallet",
     snapshotSchedule: {
       intervalSeconds: 300,
       intervalMs: 300000,
+    },
+    snapshotRetentionDecision: {
+      retentionEnabled: true,
+      maxSnapshots: 5,
     },
     now,
   });
@@ -19,10 +23,14 @@ test("snapshot backup worker job creates enabled worker state from schedule", ()
   assert.equal(snapshotBackupWorker.intervalSeconds, 300);
   assert.equal(snapshotBackupWorker.nextRunAt, "2026-03-30T14:05:00.000Z");
   assert.equal(snapshotBackupWorker.summary.lastExecutionStatus, "not-run");
+  assert.equal(snapshotJobState.jobType, "snapshot-backup");
+  assert.equal(snapshotJobState.nextRunAt, "2026-03-30T14:05:00.000Z");
+  assert.equal(snapshotJobState.retention.maxSnapshots, 5);
+  assert.equal(workerRuntime.queueName, "nexus-snapshot-backups");
 });
 
 test("snapshot backup worker job preserves previous counters and supports disable input", () => {
-  const { snapshotBackupWorker } = createSnapshotBackupWorkerJob({
+  const { snapshotBackupWorker, snapshotJobState } = createSnapshotBackupWorkerJob({
     projectId: "giftwallet",
     snapshotSchedule: {
       intervalSeconds: 120,
@@ -44,4 +52,6 @@ test("snapshot backup worker job preserves previous counters and supports disabl
   assert.equal(snapshotBackupWorker.runCount, 4);
   assert.equal(snapshotBackupWorker.errorCount, 1);
   assert.equal(snapshotBackupWorker.summary.workerStatus, "disabled");
+  assert.equal(snapshotJobState.status, "idle");
+  assert.equal(snapshotJobState.enabled, false);
 });

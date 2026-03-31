@@ -334,8 +334,11 @@ export class ProjectService {
       approvalRecords: approvalRecords ?? [],
       snapshotSchedule: null,
       snapshotBackupWorker: null,
+      snapshotJobState: null,
+      snapshotWorkerRuntime: null,
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
+      snapshotPreChangeTriggerState: {},
       disasterRecoveryChecklist: null,
       businessContinuityState: null,
     };
@@ -635,20 +638,141 @@ export class ProjectService {
     }
   }
 
+  syncSnapshotBackupRuntimeState(project) {
+    if (!project) {
+      return null;
+    }
+
+    project.context = {
+      ...(project.context ?? {}),
+      snapshotBackupWorker: project.snapshotBackupWorker ?? null,
+      snapshotJobState: project.snapshotJobState ?? null,
+      snapshotWorkerRuntime: project.snapshotWorkerRuntime ?? null,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      snapshotBackupWorker: project.snapshotBackupWorker ?? null,
+      snapshotJobState: project.snapshotJobState ?? null,
+      snapshotWorkerRuntime: project.snapshotWorkerRuntime ?? null,
+    };
+
+    return project.snapshotBackupWorker ?? null;
+  }
+
+  buildPreChangeTriggerSnapshot(project = {}, builtContext = {}) {
+    const bootstrapTaskCount = Array.isArray(builtContext.bootstrapTasks) ? builtContext.bootstrapTasks.length : 0;
+    const migrationCount = Array.isArray(builtContext.migrationDiff?.migrations) ? builtContext.migrationDiff.migrations.length : 0;
+    const buildArtifactCount = Array.isArray(builtContext.deploymentRequest?.buildArtifacts)
+      ? builtContext.deploymentRequest.buildArtifacts.length
+      : 0;
+    const runtimeDeployments = Array.isArray(project.runtimeSnapshot?.deployments)
+      ? project.runtimeSnapshot.deployments.map((deployment) => ({
+        environment: deployment.environment ?? null,
+        status: deployment.status ?? null,
+        target: deployment.target ?? null,
+      }))
+      : [];
+
+    return {
+      bootstrap: JSON.stringify({
+        domain: builtContext.bootstrapPlan?.domain ?? null,
+        taskCount: bootstrapTaskCount,
+        status: builtContext.bootstrapExecutionResult?.status ?? null,
+        expectedArtifacts: Array.isArray(builtContext.bootstrapValidation?.expectedArtifacts)
+          ? builtContext.bootstrapValidation.expectedArtifacts
+          : [],
+      }),
+      migration: JSON.stringify({
+        totalChanges: builtContext.migrationDiff?.totalMigrationChanges ?? 0,
+        migrationCount,
+        targetVersion: builtContext.migrationPlan?.targetVersion ?? builtContext.migrationPlan?.version ?? null,
+      }),
+      deploy: JSON.stringify({
+        provider: builtContext.deploymentRequest?.provider ?? null,
+        environment: builtContext.deploymentRequest?.environment ?? null,
+        target: builtContext.deploymentRequest?.target ?? null,
+        artifactCount: buildArtifactCount,
+        decision: builtContext.deployPolicyDecision?.decision ?? null,
+        runtimeDeployments,
+      }),
+    };
+  }
+
+  applyScheduledPreChangeBackups(projectId, builtContext = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return;
+    }
+
+    const schedule = project.snapshotSchedule ?? project.context?.snapshotSchedule ?? null;
+    const triggers = Array.isArray(schedule?.preChangeTriggers) ? schedule.preChangeTriggers : [];
+    if (!schedule?.enabled || triggers.length === 0) {
+      return;
+    }
+
+    const currentSignatures = this.buildPreChangeTriggerSnapshot(project, builtContext);
+    const previousState =
+      project.snapshotPreChangeTriggerState && typeof project.snapshotPreChangeTriggerState === "object"
+        ? project.snapshotPreChangeTriggerState
+        : {};
+    const nextState = { ...previousState };
+
+    for (const triggerType of triggers) {
+      const normalizedTrigger = `${triggerType ?? ""}`.trim().toLowerCase();
+      const currentSignature = currentSignatures[normalizedTrigger] ?? null;
+      if (!currentSignature) {
+        continue;
+      }
+
+      const previousSignature = previousState[normalizedTrigger]?.signature ?? null;
+      if (!previousSignature) {
+        nextState[normalizedTrigger] = {
+          signature: currentSignature,
+          lastObservedAt: new Date().toISOString(),
+          lastTriggeredAt: previousState[normalizedTrigger]?.lastTriggeredAt ?? null,
+        };
+        continue;
+      }
+
+      if (previousSignature === currentSignature) {
+        continue;
+      }
+
+      this.runSnapshotBackupNow({
+        projectId,
+        triggerType: normalizedTrigger,
+        reason: `${normalizedTrigger}-pre-change-backup`,
+        skipContextRebuild: true,
+      });
+      nextState[normalizedTrigger] = {
+        signature: currentSignature,
+        lastObservedAt: new Date().toISOString(),
+        lastTriggeredAt: new Date().toISOString(),
+      };
+    }
+
+    project.snapshotPreChangeTriggerState = nextState;
+  }
+
   ensureSnapshotBackupWorker(projectId, workerInput = null) {
     const project = this.projects.get(projectId);
     if (!project) {
       return null;
     }
 
-    const { snapshotBackupWorker } = createSnapshotBackupWorkerJob({
+    const { snapshotBackupWorker, snapshotJobState, workerRuntime } = createSnapshotBackupWorkerJob({
       projectId,
       snapshotSchedule: project.snapshotSchedule ?? project.context?.snapshotSchedule ?? null,
+      snapshotRetentionDecision: project.snapshotRetentionDecision ?? project.context?.snapshotRetentionDecision ?? null,
       previousWorkerState: project.snapshotBackupWorker ?? project.context?.snapshotBackupWorker ?? null,
+      previousJobState: project.snapshotJobState ?? project.context?.snapshotJobState ?? null,
       workerInput,
     });
 
     project.snapshotBackupWorker = snapshotBackupWorker;
+    project.snapshotJobState = snapshotJobState;
+    project.snapshotWorkerRuntime = workerRuntime;
+    this.syncSnapshotBackupRuntimeState(project);
     return snapshotBackupWorker;
   }
 
@@ -749,13 +873,15 @@ export class ProjectService {
     };
   }
 
-  runSnapshotBackupNow({ projectId, triggerType = "manual", reason = null } = {}) {
+  runSnapshotBackupNow({ projectId, triggerType = "manual", reason = null, skipContextRebuild = false } = {}) {
     const project = this.projects.get(projectId);
     if (!project) {
       return null;
     }
 
-    this.rebuildContext(projectId);
+    if (!skipContextRebuild) {
+      this.rebuildContext(projectId, { skipPreChangeBackups: true });
+    }
     const projectStateSnapshot = project.context?.projectStateSnapshot;
     if (!projectStateSnapshot) {
       return null;
@@ -794,11 +920,13 @@ export class ProjectService {
       ...(project.context ?? {}),
       snapshotRecord,
       snapshotSchedule: project.snapshotSchedule ?? null,
+      snapshotPreChangeTriggerState: project.snapshotPreChangeTriggerState ?? {},
     };
     project.state = {
       ...(project.state ?? {}),
       snapshotRecord,
       snapshotSchedule: project.snapshotSchedule ?? null,
+      snapshotPreChangeTriggerState: project.snapshotPreChangeTriggerState ?? {},
     };
     const retentionResult = this.applySnapshotRetention({
       projectId,
@@ -832,14 +960,15 @@ export class ProjectService {
         status: "paused",
         updatedAt: nowIso,
       };
-      project.context = {
-        ...(project.context ?? {}),
-        snapshotBackupWorker: project.snapshotBackupWorker,
+      project.snapshotJobState = {
+        ...(project.snapshotJobState ?? {}),
+        status: "idle",
+        enabled: false,
+        lastExecutionStatus: project.snapshotBackupWorker.lastExecutionStatus ?? "not-run",
+        nextRunAt: null,
+        updatedAt: nowIso,
       };
-      project.state = {
-        ...(project.state ?? {}),
-        snapshotBackupWorker: project.snapshotBackupWorker,
-      };
+      this.syncSnapshotBackupRuntimeState(project);
       return this.serializeProject(project);
     }
 
@@ -874,14 +1003,28 @@ export class ProjectService {
           lastExecutionStatus: "success",
         },
       };
-      refreshedProject.context = {
-        ...(refreshedProject.context ?? {}),
-        snapshotBackupWorker: refreshedProject.snapshotBackupWorker,
+      refreshedProject.snapshotJobState = {
+        ...(refreshedProject.snapshotJobState ?? {}),
+        projectId,
+        status: "completed",
+        enabled: true,
+        lastExecutionStatus: "success",
+        lastRunAt: nowIso,
+        nextRunAt: refreshedProject.snapshotBackupWorker.nextRunAt ?? null,
+        attempts: refreshedProject.snapshotBackupWorker.errorCount ?? 0,
+        retention: {
+          retentionEnabled: refreshedProject.snapshotRetentionDecision?.retentionEnabled ?? null,
+          maxSnapshots: refreshedProject.snapshotRetentionDecision?.maxSnapshots ?? null,
+        },
+        updatedAt: nowIso,
+        summary: {
+          ...(refreshedProject.snapshotJobState?.summary ?? {}),
+          workerEnabled: true,
+          runtimeStatus: refreshedProject.snapshotWorkerRuntime?.status ?? "ready",
+          lastExecutionStatus: "success",
+        },
       };
-      refreshedProject.state = {
-        ...(refreshedProject.state ?? {}),
-        snapshotBackupWorker: refreshedProject.snapshotBackupWorker,
-      };
+      this.syncSnapshotBackupRuntimeState(refreshedProject);
 
       return this.serializeProject(refreshedProject);
     } catch (error) {
@@ -906,14 +1049,25 @@ export class ProjectService {
           lastExecutionStatus: "failed",
         },
       };
-      failedProject.context = {
-        ...(failedProject.context ?? {}),
-        snapshotBackupWorker: failedProject.snapshotBackupWorker,
+      failedProject.snapshotJobState = {
+        ...(failedProject.snapshotJobState ?? {}),
+        projectId,
+        status: "failed",
+        enabled: true,
+        lastExecutionStatus: "failed",
+        lastRunAt: nowIso,
+        nextRunAt: failedProject.snapshotBackupWorker.nextRunAt ?? null,
+        attempts: (failedProject.snapshotJobState?.attempts ?? currentWorker.errorCount ?? 0) + 1,
+        lastError: failedProject.snapshotBackupWorker.lastError,
+        updatedAt: nowIso,
+        summary: {
+          ...(failedProject.snapshotJobState?.summary ?? {}),
+          workerEnabled: true,
+          runtimeStatus: failedProject.snapshotWorkerRuntime?.status ?? "ready",
+          lastExecutionStatus: "failed",
+        },
       };
-      failedProject.state = {
-        ...(failedProject.state ?? {}),
-        snapshotBackupWorker: failedProject.snapshotBackupWorker,
-      };
+      this.syncSnapshotBackupRuntimeState(failedProject);
       return this.serializeProject(failedProject);
     }
   }
@@ -928,14 +1082,14 @@ export class ProjectService {
     const schedule = project.snapshotSchedule ?? null;
     const worker = this.ensureSnapshotBackupWorker(projectId);
     if (!schedule?.enabled || !worker?.enabled) {
-      project.context = {
-        ...(project.context ?? {}),
-        snapshotBackupWorker: worker,
+      project.snapshotJobState = {
+        ...(project.snapshotJobState ?? {}),
+        status: "idle",
+        enabled: Boolean(worker?.enabled),
+        nextRunAt: null,
+        updatedAt: new Date().toISOString(),
       };
-      project.state = {
-        ...(project.state ?? {}),
-        snapshotBackupWorker: worker,
-      };
+      this.syncSnapshotBackupRuntimeState(project);
       return worker;
     }
 
@@ -962,14 +1116,19 @@ export class ProjectService {
         workerStatus: "enabled",
       },
     };
-    project.context = {
-      ...(project.context ?? {}),
-      snapshotBackupWorker: project.snapshotBackupWorker,
+    project.snapshotJobState = {
+      ...(project.snapshotJobState ?? {}),
+      status: "queued",
+      enabled: true,
+      nextRunAt: project.snapshotBackupWorker.nextRunAt ?? null,
+      updatedAt: new Date().toISOString(),
+      summary: {
+        ...(project.snapshotJobState?.summary ?? {}),
+        workerEnabled: true,
+        runtimeStatus: project.snapshotWorkerRuntime?.status ?? "ready",
+      },
     };
-    project.state = {
-      ...(project.state ?? {}),
-      snapshotBackupWorker: project.snapshotBackupWorker,
-    };
+    this.syncSnapshotBackupRuntimeState(project);
 
     return project.snapshotBackupWorker;
   }
@@ -992,13 +1151,25 @@ export class ProjectService {
       scheduleInput,
     });
     project.snapshotSchedule = snapshotSchedule;
+    project.snapshotPreChangeTriggerState = Object.fromEntries(
+      Object.entries(this.buildPreChangeTriggerSnapshot(project, project.context ?? {})).map(([triggerType, signature]) => [
+        triggerType,
+        {
+          signature,
+          lastObservedAt: new Date().toISOString(),
+          lastTriggeredAt: project.snapshotPreChangeTriggerState?.[triggerType]?.lastTriggeredAt ?? null,
+        },
+      ]),
+    );
     project.context = {
       ...(project.context ?? {}),
       snapshotSchedule,
+      snapshotPreChangeTriggerState: project.snapshotPreChangeTriggerState,
     };
     project.state = {
       ...(project.state ?? {}),
       snapshotSchedule,
+      snapshotPreChangeTriggerState: project.snapshotPreChangeTriggerState,
     };
     this.syncSnapshotBackupWorkerTimer(projectId);
 
@@ -1012,14 +1183,7 @@ export class ProjectService {
     }
 
     const snapshotBackupWorker = this.ensureSnapshotBackupWorker(projectId, workerInput);
-    project.context = {
-      ...(project.context ?? {}),
-      snapshotBackupWorker,
-    };
-    project.state = {
-      ...(project.state ?? {}),
-      snapshotBackupWorker,
-    };
+    this.syncSnapshotBackupRuntimeState(project);
     this.syncSnapshotBackupWorkerTimer(projectId);
 
     return this.serializeProject(project);
@@ -1567,8 +1731,11 @@ export class ProjectService {
       approvalRecords: [],
       snapshotSchedule: null,
       snapshotBackupWorker: null,
+      snapshotJobState: null,
+      snapshotWorkerRuntime: null,
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
+      snapshotPreChangeTriggerState: {},
       disasterRecoveryChecklist: null,
       businessContinuityState: null,
     };
@@ -1640,8 +1807,11 @@ export class ProjectService {
       approvalRecords: [],
       snapshotSchedule: null,
       snapshotBackupWorker: null,
+      snapshotJobState: null,
+      snapshotWorkerRuntime: null,
       snapshotRetentionPolicy: null,
       snapshotRetentionDecision: null,
+      snapshotPreChangeTriggerState: {},
       disasterRecoveryChecklist: null,
       businessContinuityState: null,
     };
@@ -1794,7 +1964,7 @@ export class ProjectService {
     return this.serializeProject(project);
   }
 
-  rebuildContext(projectId) {
+  rebuildContext(projectId, { skipPreChangeBackups = false } = {}) {
     const project = this.projects.get(projectId);
     if (!project) {
       return null;
@@ -1808,6 +1978,9 @@ export class ProjectService {
       snapshotStore: this.projectSnapshotStore,
       reviewThreadStore: this.projectReviewThreadStore,
     });
+    if (!skipPreChangeBackups) {
+      this.applyScheduledPreChangeBackups(projectId, builtContext);
+    }
     const existingSchedule = project.snapshotSchedule ?? builtContext.snapshotSchedule ?? null;
     const { snapshotSchedule } = createSnapshotBackupSchedulingModule({
       backupStrategy: builtContext.backupStrategy ?? null,
@@ -1815,12 +1988,16 @@ export class ProjectService {
       previousSchedule: existingSchedule,
     });
     const snapshotBackupWorker = project.snapshotBackupWorker ?? builtContext.snapshotBackupWorker ?? null;
+    const snapshotJobState = project.snapshotJobState ?? builtContext.snapshotJobState ?? null;
+    const snapshotWorkerRuntime = project.snapshotWorkerRuntime ?? builtContext.snapshotWorkerRuntime ?? null;
     const snapshotRetentionPolicy = project.snapshotRetentionPolicy ?? builtContext.snapshotRetentionPolicy ?? null;
     const snapshotRetentionDecision = project.snapshotRetentionDecision ?? builtContext.snapshotRetentionDecision ?? null;
     const disasterRecoveryChecklist = builtContext.disasterRecoveryChecklist ?? project.disasterRecoveryChecklist ?? null;
     const businessContinuityState = builtContext.businessContinuityState ?? project.businessContinuityState ?? null;
     project.snapshotSchedule = snapshotSchedule;
     project.snapshotBackupWorker = snapshotBackupWorker;
+    project.snapshotJobState = snapshotJobState;
+    project.snapshotWorkerRuntime = snapshotWorkerRuntime;
     project.snapshotRetentionPolicy = snapshotRetentionPolicy;
     project.snapshotRetentionDecision = snapshotRetentionDecision;
     project.disasterRecoveryChecklist = disasterRecoveryChecklist;
@@ -1829,6 +2006,8 @@ export class ProjectService {
       ...builtContext,
       snapshotSchedule,
       snapshotBackupWorker,
+      snapshotJobState,
+      snapshotWorkerRuntime,
       snapshotRetentionPolicy,
       snapshotRetentionDecision,
       disasterRecoveryChecklist,
@@ -2015,6 +2194,8 @@ export class ProjectService {
       snapshotRecord: project.context?.snapshotRecord ?? null,
       snapshotSchedule: project.context?.snapshotSchedule ?? null,
       snapshotBackupWorker: project.context?.snapshotBackupWorker ?? null,
+      snapshotJobState: project.context?.snapshotJobState ?? null,
+      snapshotWorkerRuntime: project.context?.snapshotWorkerRuntime ?? null,
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
       disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,
@@ -2875,6 +3056,8 @@ export class ProjectService {
       collaborationFeed: project.context?.collaborationFeed ?? null,
       snapshotSchedule: project.context?.snapshotSchedule ?? null,
       snapshotBackupWorker: project.context?.snapshotBackupWorker ?? null,
+      snapshotJobState: project.context?.snapshotJobState ?? null,
+      snapshotWorkerRuntime: project.context?.snapshotWorkerRuntime ?? null,
       snapshotRetentionPolicy: project.context?.snapshotRetentionPolicy ?? null,
       snapshotRetentionDecision: project.context?.snapshotRetentionDecision ?? null,
       disasterRecoveryChecklist: project.context?.disasterRecoveryChecklist ?? null,

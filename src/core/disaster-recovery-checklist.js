@@ -135,6 +135,9 @@ export function createDisasterRecoveryChecklist({
   backupStrategy = null,
   restorePlan = null,
   incidentAlert = null,
+  platformTrace = null,
+  platformLogs = null,
+  observabilitySummary = null,
   snapshotSchedule = null,
   snapshotBackupWorker = null,
   snapshotRetentionPolicy = null,
@@ -145,12 +148,20 @@ export function createDisasterRecoveryChecklist({
   const normalizedBackupStrategy = normalizeObject(backupStrategy);
   const normalizedRestorePlan = normalizeObject(restorePlan);
   const normalizedIncidentAlert = normalizeObject(incidentAlert);
+  const normalizedPlatformTrace = normalizeObject(platformTrace);
+  const normalizedObservabilitySummary = normalizeObject(observabilitySummary);
   const normalizedSnapshotSchedule = normalizeObject(snapshotSchedule);
   const normalizedWorker = normalizeObject(snapshotBackupWorker);
   const normalizedRetentionPolicy = normalizeObject(snapshotRetentionPolicy);
   const normalizedSnapshotRecord = normalizeObject(snapshotRecord);
   const normalizedRestoreDecision = normalizeObject(restoreDecision);
   const normalizedRollbackExecutionResult = normalizeObject(rollbackExecutionResult);
+  const normalizedPlatformLogs = Array.isArray(platformLogs) ? platformLogs : [];
+  const hasObservabilityEvidence =
+    Boolean(normalizedPlatformTrace.traceId)
+    || normalizedPlatformLogs.length > 0
+    || Number(normalizedObservabilitySummary.totalTraces ?? 0) > 0
+    || Number(normalizedObservabilitySummary.totalLogs ?? 0) > 0;
 
   const prerequisites = [
     createPrerequisite({
@@ -170,6 +181,18 @@ export function createDisasterRecoveryChecklist({
         ? "Restore plan includes ordered recovery targets."
         : "Restore plan is missing.",
       evidence: normalizedRestorePlan.restorePlanId ?? null,
+    }),
+    createPrerequisite({
+      key: "platform-observability",
+      label: "Platform observability evidence is available",
+      isReady: hasObservabilityEvidence,
+      reason: hasObservabilityEvidence
+        ? "Trace and log evidence is available for recovery validation."
+        : "Missing direct observability evidence for runtime recovery readiness.",
+      evidence: normalizedPlatformTrace.traceId
+        ?? normalizedObservabilitySummary.observabilityId
+        ?? (normalizedPlatformLogs[0]?.logId ?? null),
+      allowWarning: true,
     }),
     createPrerequisite({
       key: "snapshot-schedule",
@@ -247,7 +270,13 @@ export function createDisasterRecoveryChecklist({
       incident: {
         status: normalizeString(normalizedIncidentAlert.status, "stable"),
         severity: resolveIncidentSeverity(normalizedIncidentAlert),
-        incidentType: normalizeString(normalizedIncidentAlert.incidentType, "runtime"),
+      incidentType: normalizeString(normalizedIncidentAlert.incidentType, "runtime"),
+    },
+      observability: {
+        traceId: normalizedPlatformTrace.traceId ?? null,
+        totalLogs: normalizedPlatformLogs.length,
+        totalTraces: Number(normalizedObservabilitySummary.totalTraces ?? (normalizedPlatformTrace.traceId ? 1 : 0)),
+        healthStatus: normalizeString(normalizedObservabilitySummary.healthStatus, normalizedIncidentAlert.status ?? "stable"),
       },
       prerequisites,
       steps,

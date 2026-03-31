@@ -2182,6 +2182,7 @@
   - `interval + pre-change schedule generation` → `full` | `src/core/snapshot-backup-scheduling-module.js`, `test/snapshot-backup-scheduling-module.test.js`
   - `real timer-based scheduling execution` → `full` | `src/core/project-service.js`, `test/project-service.test.js`
   - `snapshot creation and persistence from scheduler/manual trigger` → `full` | `src/core/project-service.js`, `src/core/project-snapshot-store.js`, `test/project-service.test.js`
+  - `configured bootstrap/migration/deploy triggers execute automatically from live change hooks` → `full` | `src/core/project-service.js`, `test/project-service.test.js`
   - `API controls for configure + run` → `full` | `src/server.js`, `test/server-health-endpoints.test.js`
   - `workspace UI controls and visible schedule state` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
 - user_facing_path:
@@ -2193,11 +2194,12 @@
   - `schedule can be configured with interval and trigger list`
   - `manual run stores snapshot backup through the real store`
   - `timer scheduling is active in project service`
+  - `configured bootstrap/migration/deploy triggers execute automatically from live change hooks`
   - `API and UI paths can trigger and observe schedule`
   - `tests cover module, service, server, and UI paths`
 - missing_for_green:
   - `none`
-- הערת מצב: המשימה מחוברת end-to-end: scheduler קנוני עם interval+triggers, timer פעיל ב־`ProjectService`, endpoints `POST /api/projects/:id/snapshot-backup-schedule` ו־`POST /api/projects/:id/snapshot-backups/run`, ו־UI controls ב־Versioning להפעלה/הרצה ידנית.
+- הערת מצב: ה־scheduler מחובר end-to-end: interval פעיל, UI/API להגדרה והרצה, ו־pre-change backups אוטומטיים כאשר live bootstrap/migration/deploy signals משתנים בפרויקט.
 
 
 3. `Create snapshot retention guard`  | סטטוס: 🟢 בוצע
@@ -2255,6 +2257,8 @@
   - `worker reports status (enabled/disabled, success/failure, last/next run)` → `full` | `src/core/project-service.js`, `src/server.js`, `test/project-service.test.js`, `test/server-health-endpoints.test.js`
   - `worker control and visibility are exposed via API and Versioning UI` → `full` | `src/server.js`, `web/index.html`, `web/app.js`, `test/server-health-endpoints.test.js`, `test/web-app-wave1-cockpit.test.js`
   - `error handling path is covered` → `full` | `test/project-service.test.js`, `test/snapshot-backup-worker-job.test.js`
+  - `worker output matches canonical snapshotJobState contract` → `full` | `src/core/snapshot-backup-worker-job.js`, `src/core/project-service.js`, `test/snapshot-backup-worker-job.test.js`, `test/project-service.test.js`
+  - `background worker runtime dependency is wired directly` → `full` | `src/core/snapshot-backup-worker-job.js`, `src/core/background-worker-runtime.js`, `test/snapshot-backup-worker-job.test.js`
 - user_facing_path:
   - exists: `yes`
   - entry_point: `Release workspace → Versioning And Restore → Toggle Snapshot Worker / Run Worker Tick`
@@ -2264,11 +2268,13 @@
   - `worker runs snapshot backups based on saved schedule`
   - `worker updates run status and handles failure without breaking loop`
   - `worker applies retention cleanup after backup`
+  - `worker exposes canonical snapshotJobState output rather than only internal worker metadata`
+  - `worker is backed by the shared background worker runtime dependency`
   - `worker is controllable via API and visible in Versioning UI`
   - `tests cover module + service + server + ui integration`
 - missing_for_green:
   - `none`
-- הערת מצב: ה־worker מומש end-to-end: timer מבוסס schedule ב־`ProjectService`, ריצת backup אוטומטית עם retention post-run, סטטוס הרצה (`enabled`, `lastRunAt`, `nextRunAt`, `lastStatus`) ב־project state, API להפעלה/כיבוי והרצה ידנית, ו־UI ב־Versioning לניהול וצפייה.
+- הערת מצב: ה־worker מחובר end-to-end: חיבור ישיר ל־`background-worker-runtime`, `snapshotJobState` קנוני לצד `snapshotBackupWorker`, status מלא ב־API/UI, והרצת backup+retention אמיתית לפי schedule.
 
 
 5. `Create disaster recovery checklist`  | סטטוס: 🟢 בוצע
@@ -2289,6 +2295,7 @@
   - `checklist is wired into context/state/project payload` → `full` | `src/core/context-builder.js`, `src/core/project-service.js`, `test/project-service.test.js`
   - `API endpoint exposes checklist with refresh integration` → `full` | `src/server.js`, `test/server-health-endpoints.test.js`
   - `Versioning UI shows readiness, prerequisites, and recovery steps with refresh trigger` → `full` | `web/index.html`, `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+  - `Platform Observability dependency is wired directly into checklist readiness and evidence` → `full` | `src/core/context-builder.js`, `src/core/disaster-recovery-checklist.js`, `test/disaster-recovery-checklist.test.js`, `test/project-service.test.js`
 - user_facing_path:
   - exists: `yes`
   - entry_point: `Release workspace → Versioning And Restore → Refresh recovery checklist`
@@ -2297,12 +2304,13 @@
 - green_criteria:
   - `checklist includes prerequisites, readiness score, and ordered recovery steps`
   - `checklist is connected to backup/restore/snapshot/retention/worker state`
+  - `checklist consumes observability evidence directly rather than relying only on a derived incident summary`
   - `API can return refreshed checklist for a project`
   - `UI presents checklist readiness and recovery flow in Versioning`
   - `tests cover module + service + server + ui integration`
 - missing_for_green:
   - `none`
-- הערת מצב: ה־checklist מומש end-to-end ומחובר ל־backup/restore/snapshot state בפועל; ניתן לרענן דרך API (`GET /api/projects/:id/disaster-recovery-checklist?refresh=1`) ודרך כפתור ייעודי ב־Versioning, עם תצוגת readiness, prerequisites ו־recovery steps.
+- הערת מצב: ה־checklist מחובר end-to-end ל־backup/restore/snapshot state ול־Platform Observability עצמו, כולל evidence ישיר של traces/logs/readiness דרך API ו־Versioning UI.
 
 
 6. `Create business continuity lifecycle manager`  | סטטוס: 🟡 חלקי

@@ -1766,6 +1766,48 @@ test("project service configures snapshot backup schedule and stores manual back
   assert.equal(service.snapshotBackupTimers.has("giftwallet"), false);
 });
 
+test("project service runs pre-change backups automatically when tracked deploy signals change", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: true,
+      intervalSeconds: 60,
+      preChangeTriggers: ["deploy"],
+    },
+  });
+
+  const baselineCount = service.getProjectSnapshots({
+    projectId: "giftwallet",
+    triggerType: "deploy",
+    limit: 20,
+  }).length;
+
+  const project = service.projects.get("giftwallet");
+  project.runtimeSnapshot = {
+    ...(project.runtimeSnapshot ?? {}),
+    deployments: [
+      {
+        environment: "production",
+        status: "degraded",
+        target: "vercel-edge",
+      },
+    ],
+  };
+
+  service.rebuildContext("giftwallet");
+
+  const deploySnapshots = service.getProjectSnapshots({
+    projectId: "giftwallet",
+    triggerType: "deploy",
+    limit: 20,
+  });
+  assert.equal(deploySnapshots.length, baselineCount + 1);
+  assert.equal(deploySnapshots[0].reason, "deploy-pre-change-backup");
+});
+
 test("project service enforces snapshot retention policy and cleanup decisions", () => {
   const service = createProjectService();
   service.seedDemoProject();
@@ -1832,6 +1874,9 @@ test("project service runs snapshot backup worker tick with status reporting and
     triggerType: "manual-worker-run",
   });
   assert.equal(ranTick.snapshotBackupWorker.lastExecutionStatus, "success");
+  assert.equal(ranTick.snapshotJobState.lastExecutionStatus, "success");
+  assert.equal(ranTick.snapshotJobState.status, "completed");
+  assert.equal(ranTick.snapshotJobState.summary.runtimeStatus, "ready");
   assert.equal(ranTick.snapshotBackupWorker.runCount >= 1, true);
   assert.equal(ranTick.state.snapshotRetentionDecision.summary.totalAfterCleanup <= 2, true);
 
@@ -1842,6 +1887,7 @@ test("project service runs snapshot backup worker tick with status reporting and
     },
   });
   assert.equal(disabled.snapshotBackupWorker.enabled, false);
+  assert.equal(disabled.snapshotJobState.enabled, false);
   assert.equal(service.snapshotBackupTimers.has("giftwallet"), false);
 
   const pausedTick = service.runSnapshotBackupWorkerTick({
@@ -1849,6 +1895,7 @@ test("project service runs snapshot backup worker tick with status reporting and
     triggerType: "manual-worker-run",
   });
   assert.equal(pausedTick.snapshotBackupWorker.status, "paused");
+  assert.equal(pausedTick.snapshotJobState.status, "idle");
 
   service.configureSnapshotBackupSchedule({
     projectId: "giftwallet",
@@ -1888,6 +1935,11 @@ test("project service exposes disaster recovery checklist with refresh integrati
   assert.equal(checklistPayload.disasterRecoveryChecklist.summary.readinessScore >= 0, true);
   assert.equal(Array.isArray(checklistPayload.disasterRecoveryChecklist.prerequisites), true);
   assert.equal(Array.isArray(checklistPayload.disasterRecoveryChecklist.steps), true);
+  assert.equal(checklistPayload.disasterRecoveryChecklist.observability.totalTraces >= 1, true);
+  assert.equal(
+    checklistPayload.disasterRecoveryChecklist.prerequisites.some((item) => item.key === "platform-observability"),
+    true,
+  );
 
   const serialized = service.getProject("giftwallet");
   assert.equal(Boolean(serialized.disasterRecoveryChecklist?.checklistId), true);
