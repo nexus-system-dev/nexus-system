@@ -223,6 +223,10 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.state?.aiUsageMetric?.aiUsageMetricId, "string");
   assert.equal(typeof response.body.state?.aiUsageMetric?.usageType, "string");
   assert.equal(typeof response.body.state?.aiUsageMetric?.unit, "string");
+  assert.equal(typeof response.body.context?.workspaceComputeMetric?.workspaceComputeMetricId, "string");
+  assert.equal(typeof response.body.state?.workspaceComputeMetric?.workspaceComputeMetricId, "string");
+  assert.equal(response.body.state?.workspaceComputeMetric?.usageType, "workspace");
+  assert.equal(response.body.state?.workspaceComputeMetric?.unit, "workspace-minute");
   assert.equal(response.body.state?.projectAuditEvent?.actionType, "project.agent-governance.decision");
   assert.equal(response.body.state.dataPrivacyClassification.exposureLevel, response.body.context.dataPrivacyClassification.exposureLevel);
   assert.equal(response.body.state.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");

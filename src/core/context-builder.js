@@ -107,6 +107,7 @@ import { createEmergencyKillSwitchGuard } from "./emergency-kill-switch-guard.js
 import { defineDataPrivacyClassificationSchema } from "./data-privacy-classification-schema.js";
 import { definePlatformUsageCostSchema } from "./platform-usage-cost-schema.js";
 import { createAiUsageMeter } from "./ai-usage-meter.js";
+import { createWorkspaceComputeUsageTracker } from "./workspace-compute-usage-tracker.js";
 import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-retention-and-deletion-policy-resolver.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
@@ -3338,6 +3339,10 @@ export function buildProjectContext(
       bootstrapArtifacts,
     },
   });
+  const { workspaceComputeMetric } = createWorkspaceComputeUsageTracker({
+    cloudWorkspaceModel,
+    platformTrace,
+  });
   const { localDevelopmentBridge } = createLocalDevelopmentBridgeContract({
     executionTopology,
     localEnvironmentMetadata: {
@@ -3643,6 +3648,7 @@ export function buildProjectContext(
   context.dataPrivacyClassification = dataPrivacyClassification;
   context.platformCostMetric = platformCostMetric;
   context.aiUsageMetric = aiUsageMetric;
+  context.workspaceComputeMetric = workspaceComputeMetric;
   context.privacyPolicyDecision = privacyPolicyDecision;
   context.privacyRightsResult = project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null;
   context.backupStrategy = backupStrategy;

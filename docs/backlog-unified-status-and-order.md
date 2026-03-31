@@ -9746,7 +9746,7 @@ Refinements מאושרים:
 - missing_for_green:
   - `none`
 
-3. `Create workspace compute usage tracker`  | סטטוס: 🔴 לא בוצע
+3. `Create workspace compute usage tracker`  | סטטוס: 🟢 בוצע
 - description: לבנות tracker ל־CPU, RAM, runtime duration ו־active workspace windows עבור cloud execution workspaces
 - input:
   - `cloudWorkspaceModel`
@@ -9757,6 +9757,31 @@ Refinements מאושרים:
   - `Create cloud execution workspace model`  | סטטוס: 🟢 בוצע
   - `Define platform usage cost schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - description: `full` — המודול ב־[src/core/workspace-compute-usage-tracker.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/workspace-compute-usage-tracker.js) מודד workspace runtime ברמת metric יחיד, משאיר `cpuUsage/ramUsage/activeWorkspaceWindows` כ־`null` כשאין source אמיתי, ומייצר payload cost-mapping-ready ל־Task 46.
+  - input: `full` — tracker נצרך מ־`cloudWorkspaceModel` ומ־signals runtime אמיתיים דרך `platformTrace`; ב־context wiring אין שימוש בנתונים מומצאים או fallback ל־0.
+  - output: `full` — מוחזר `workspaceComputeMetric` עם `usageType: workspace`, `quantity`, `unit: workspace-minute`, `workspaceId`, `projectId`, `runtimeDurationMs`, nullable compute fields, `source`, `recordedAt` ו־`summary`; נכתב ל־`context`, ל־`state`, ונחשף ב־payload דרך [src/core/project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js).
+  - dependencies: `full` — נשען על `Create cloud execution workspace model` ועל `Define platform usage cost schema` ברמת תאימות payload ישירה, בלי wrapper נוסף.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - יש `workspaceComputeMetric` קנוני
+  - `runtimeDurationMs` מחושב לפי precedence שנקבע
+  - `quantity` מחושב נכון בדקות
+  - `unit = workspace-minute`
+  - `usageType = workspace`
+  - `cpuUsage`, `ramUsage`, `activeWorkspaceWindows` הם nullable בלבד
+  - `source` קיים
+  - `recordedAt` קיים
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 4. `Create storage and artifact cost tracker`  | סטטוס: 🔴 לא בוצע
 - description: לבנות tracker לעלויות קבצים, artifacts, logs ו־snapshots לפי נפח, שמירה ומשך חיים
