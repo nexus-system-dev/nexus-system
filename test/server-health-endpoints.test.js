@@ -205,6 +205,9 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.context?.agentGovernancePolicy?.agentType, "string");
   assert.equal(typeof response.body.state?.agentGovernancePolicy?.agentType, "string");
   assert.equal(Array.isArray(response.body.state.agentGovernancePolicy.allowedTools), true);
+  assert.equal(typeof response.body.context?.budgetDecision?.decision, "string");
+  assert.equal(typeof response.body.state?.budgetDecision?.decision, "string");
+  assert.equal(Array.isArray(response.body.state.budgetDecision.budgetChecks), true);
   assert.equal(typeof response.body.context?.sandboxDecision?.sandboxDecisionId, "string");
   assert.equal(typeof response.body.state?.sandboxDecision?.sandboxDecisionId, "string");
   assert.equal(typeof response.body.state?.sandboxDecision?.decision, "string");

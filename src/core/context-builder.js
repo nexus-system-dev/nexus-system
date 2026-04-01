@@ -111,6 +111,7 @@ import { createWorkspaceComputeUsageTracker } from "./workspace-compute-usage-tr
 import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-retention-and-deletion-policy-resolver.js";
 import { createStorageAndArtifactCostTracker } from "./storage-and-artifact-cost-tracker.js";
 import { createCostSummaryAggregator } from "./cost-summary-aggregator.js";
+import { createUsageBudgetGuard } from "./usage-budget-guard.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
@@ -3357,6 +3358,10 @@ export function buildProjectContext(
     workspaceComputeMetric,
     buildDeployCostMetric: null,
   });
+  const { budgetDecision, approvalRequest: budgetApprovalRequest } = createUsageBudgetGuard({
+    costSummary,
+    agentGovernancePolicy,
+  });
   const { localDevelopmentBridge } = createLocalDevelopmentBridgeContract({
     executionTopology,
     localEnvironmentMetadata: {
@@ -3422,10 +3427,7 @@ export function buildProjectContext(
   });
   const { agentLimitDecision } = createAgentActionLimitGuard({
     sandboxDecision,
-    budgetDecision:
-      project.manualContext?.budgetDecision
-      ?? project.context?.budgetDecision
-      ?? null,
+    budgetDecision,
     taskContext: {
       taskType: project.manualContext?.requestContext?.taskType ?? domainCapabilities.taskTypes?.[0] ?? "generic",
       plannedActions: project.manualContext?.requestContext?.plannedActions ?? bootstrapTasks.length,
@@ -3563,7 +3565,12 @@ export function buildProjectContext(
   context.identityCompleteness = identityCompleteness;
   context.instantValuePlan = instantValuePlan;
   context.decisionIntelligence = decisionIntelligence;
-  context.approvalRequest = approvalRequestWithStatus;
+  context.approvalRequest = budgetApprovalRequest
+    ? {
+        ...approvalRequestWithStatus,
+        ...budgetApprovalRequest,
+      }
+    : approvalRequestWithStatus;
   context.approvalRule = approvalRule;
   context.approvalTrigger = approvalTrigger;
   context.approvalRecords = approvalRecords;
@@ -3573,6 +3580,7 @@ export function buildProjectContext(
   context.approvalAuditTrail = approvalAuditTrail;
   context.policySchema = policySchema;
   context.agentGovernancePolicy = agentGovernancePolicy;
+  context.budgetDecision = budgetDecision;
   context.actionPolicy = actionPolicy;
   context.policyDecision = policyDecision;
   context.policyViolations = policyViolations;

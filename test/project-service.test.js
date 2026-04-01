@@ -76,6 +76,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.agentGovernancePolicy?.agentType, "string");
   assert.equal(Array.isArray(project.state.agentGovernancePolicy?.allowedTools), true);
   assert.equal(typeof project.state.agentGovernancePolicy?.sandboxLevel, "string");
+  assert.equal(typeof project.state.budgetDecision?.decision, "string");
+  assert.equal(Array.isArray(project.state.budgetDecision?.budgetChecks), true);
   assert.equal(typeof project.state.actionPolicy?.id, "string");
   assert.equal(typeof project.state.actionPolicy?.kind, "string");
   assert.equal(typeof project.state.policyDecision?.decision, "string");

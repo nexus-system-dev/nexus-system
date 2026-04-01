@@ -168,6 +168,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.agentGovernancePolicy?.agentType, "string");
   assert.equal(Array.isArray(context.agentGovernancePolicy?.allowedTools), true);
   assert.equal(typeof context.agentGovernancePolicy?.sandboxLevel, "string");
+  assert.equal(typeof context.budgetDecision?.decision, "string");
+  assert.equal(Array.isArray(context.budgetDecision?.budgetChecks), true);
   assert.equal(typeof context.sandboxDecision?.sandboxDecisionId, "string");
   assert.equal(typeof context.sandboxDecision?.decision, "string");
   assert.equal(Array.isArray(context.sandboxDecision?.alternatives), true);

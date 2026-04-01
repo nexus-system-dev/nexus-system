@@ -9873,17 +9873,39 @@ Refinements מאושרים:
 - missing_for_green:
   - `none`
 
-7. `Create usage budget guard`  | סטטוס: 🔴 לא בוצע
+7. `Create usage budget guard`  | סטטוס: 🟢 בוצע
 - description: לבנות guard שמזהה חריגות usage, חוסם פעולות יקרות מדי ומבקש approval לפני חציית תקציב
 - input:
   - `costSummary`
-  - `budgetPolicy`
+  - `agentGovernancePolicy.spendThresholds`
 - output:
   - `budgetDecision`
 - dependencies:
   - `Create cost summary aggregator`  | סטטוס: 🟢 בוצע
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
+- completion_type: `internal_logic`
+- coverage_check:
+  - description: `full` — המודול ב־[src/core/usage-budget-guard.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/usage-budget-guard.js) מחזיר `budgetDecision` דטרמיניסטי, כולל `budgetChecks`, `remainingBudget`, `currencyMismatch`, `escalationHint`, ו־`approvalRequest` רק כשנדרש escalation.
+  - input: `full` — ה־guard צורך `costSummary` קיים ו־`agentGovernancePolicy.spendThresholds` בלי לחשב עלות מחדש; הוא מטפל במפורש ב־missing inputs, partial summaries, currency mismatch, ו־threshold overrun.
+  - output: `full` — מוחזר `budgetDecision` קנוני עם `decision`, `allowed`, `requiresEscalation`, limits, cost fields, `budgetChecks`, `summary`, ו־`source`; נכתב ל־`context`, ל־`state`, ונחשף ב־payload דרך [src/core/project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js). בנוסף `approvalRequest` משולב בפלט רק כשנדרש escalation.
+  - dependencies: `full` — נשען על `Create cost summary aggregator` כ־source of truth לעלות ועל `Approval System` רק ברמת handoff של approval payload, לא כמנוע הכרעה.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - מוחזר `budgetDecision` תמיד
+  - missing/partial inputs מטופלים בבטחה
+  - threshold policy מיושם דטרמיניסטית
+  - `budgetChecks[]` מוחזרים
+  - `approvalRequest` נוצר רק כשיש escalation
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 8. `Create cost visibility API and dashboard model`  | סטטוס: 🔴 לא בוצע
 - description: לבנות payload ו־dashboard model שמציגים למשתמש עלויות, usage trends, top cost drivers ו־budget warnings
