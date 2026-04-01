@@ -3535,18 +3535,38 @@
   - `none`
 
 
-3. `Create subscription lifecycle module`  | סטטוס: 🔴 לא בוצע
+3. `Create subscription lifecycle module`  | סטטוס: 🟢 בוצע
 - execution_order: `58`
-- description: לבנות מודול שמנהל trial, active, past_due, canceled ו־grace period עבור subscriptions
+- description: לבנות producer שמחזיר snapshot דטרמיניסטי של מצב subscription נוכחי בלי payment history ובלי lifecycle engine מלא
 - input:
-  - `billingEvent`
+  - `billingPlanSchema`
   - `workspaceModel`
 - output:
   - `subscriptionState`
 - dependencies:
-  - `Define billing plan schema`  | סטטוס: 🔴 לא בוצע
-  - `Billing & Revenue Metrics`
+  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - description: `full` via [subscription-lifecycle-module.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/subscription-lifecycle-module.js)
+  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
+  - output: `full` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
+  - dependencies: `full` via existing `billingPlanSchema` and `workspaceModel`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - מוחזר `{ subscriptionState }`
+  - status הוא רק `trial|active`
+  - אין payment history או runtime usage logic
+  - אין statuses נוספים
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 
 4. `Create usage-to-billing mapper`  | סטטוס: 🔴 לא בוצע

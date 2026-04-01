@@ -116,6 +116,7 @@ import { createCostVisibilityApiModel } from "./cost-visibility-api-model.js";
 import { createCostAwareActionSelector } from "./cost-aware-action-selector.js";
 import { defineBillingPlanSchema } from "./billing-plan-schema.js";
 import { resolveEntitlementDecision } from "./entitlement-decision-resolver.js";
+import { createSubscriptionLifecycle } from "./subscription-lifecycle-module.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
@@ -3381,6 +3382,10 @@ export function buildProjectContext(
     billingPlanSchema,
     workspaceModel,
   });
+  const { subscriptionState } = createSubscriptionLifecycle({
+    billingPlanSchema,
+    workspaceModel,
+  });
   const candidateActions = project.manualContext?.requestContext?.candidateActions ?? [];
   const costAwareActionSelection = createCostAwareActionSelector({
     candidateActions,
@@ -3610,6 +3615,7 @@ export function buildProjectContext(
   context.costDashboardModel = costDashboardModel;
   context.billingPlanSchema = billingPlanSchema;
   context.entitlementDecision = entitlementDecision;
+  context.subscriptionState = subscriptionState;
   context.costAwareActionSelection = costAwareActionSelection;
   context.actionPolicy = actionPolicy;
   context.policyDecision = policyDecision;

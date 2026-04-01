@@ -231,6 +231,9 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.context?.entitlementDecision?.entitlementDecisionId, "string");
   assert.equal(typeof response.body.state?.entitlementDecision?.entitlementDecisionId, "string");
   assert.equal(typeof response.body.state?.entitlementDecision?.decision, "string");
+  assert.equal(typeof response.body.context?.subscriptionState?.subscriptionStateId, "string");
+  assert.equal(typeof response.body.state?.subscriptionState?.subscriptionStateId, "string");
+  assert.equal(typeof response.body.state?.subscriptionState?.status, "string");
   assert.equal(typeof response.body.context?.aiUsageMetric?.aiUsageMetricId, "string");
   assert.equal(typeof response.body.state?.aiUsageMetric?.aiUsageMetricId, "string");
   assert.equal(typeof response.body.state?.aiUsageMetric?.usageType, "string");
