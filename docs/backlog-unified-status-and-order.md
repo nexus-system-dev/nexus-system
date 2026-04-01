@@ -10019,7 +10019,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Define billing plan schema`  | סטטוס: 🔴 לא בוצע
+1. `Define billing plan schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד ל־plans, limits, entitlements, trial rules ו־pricing model של Nexus
 - input:
   - `pricingStrategy`
@@ -10029,6 +10029,28 @@ Refinements מאושרים:
 - dependencies:
   - `Platform Cost & Usage Control`
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - description: `full` via [billing-plan-schema.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/billing-plan-schema.js)
+  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
+  - output: `full` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
+  - dependencies: `full` via existing `platformCostMetric`, `agentGovernancePolicy`, and `reliabilitySlaModel`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - מוחזר `billingPlanSchema`
+  - `plans[]` לא ריק
+  - `usageDimensions[]` נגזר מה־vocabulary הקיים
+  - `spendThresholds` מנורמלים
+  - אין data עסקי מומצא
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 2. `Create entitlement resolver`  | סטטוס: 🔴 לא בוצע
 - description: לבנות resolver שקובע אילו capabilities, limits ו־features זמינים למשתמש או workspace לפי plan נוכחי

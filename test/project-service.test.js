@@ -85,6 +85,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.costVisibilityPayload?.breakdown), true);
   assert.equal(typeof project.state.costDashboardModel?.dashboardId, "string");
   assert.equal(Array.isArray(project.state.costDashboardModel?.kpiCards), true);
+  assert.equal(typeof project.state.billingPlanSchema?.billingPlanSchemaId, "string");
+  assert.equal(Array.isArray(project.state.billingPlanSchema?.plans), true);
+  assert.equal(Array.isArray(project.state.billingPlanSchema?.usageDimensions), true);
   assert.equal(typeof project.state.costAwareActionSelection?.costAwareActionSelectionId, "string");
   assert.equal(typeof project.state.costAwareActionSelection?.selectionBasis, "string");
   assert.equal(Array.isArray(project.state.costAwareActionSelection?.rankedActions), true);
