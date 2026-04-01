@@ -238,6 +238,12 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.state?.costSummary?.costSummaryId, "string");
   assert.equal(typeof response.body.state?.costSummary?.summary?.summaryStatus, "string");
   assert.equal(response.body.state?.costSummary?.breakdown?.build?.unit, "build-minute");
+  assert.equal(typeof response.body.context?.costVisibilityPayload?.costVisibilityPayloadId, "string");
+  assert.equal(typeof response.body.state?.costVisibilityPayload?.costVisibilityPayloadId, "string");
+  assert.equal(Array.isArray(response.body.state?.costVisibilityPayload?.topCostDrivers), true);
+  assert.equal(typeof response.body.context?.costDashboardModel?.dashboardId, "string");
+  assert.equal(typeof response.body.state?.costDashboardModel?.dashboardId, "string");
+  assert.equal(response.body.state?.costDashboardModel?.breakdownTable?.componentType, "table");
   assert.equal(response.body.state?.projectAuditEvent?.actionType, "project.agent-governance.decision");
   assert.equal(response.body.state.dataPrivacyClassification.exposureLevel, response.body.context.dataPrivacyClassification.exposureLevel);
   assert.equal(response.body.state.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");

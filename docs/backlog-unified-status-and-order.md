@@ -9907,7 +9907,7 @@ Refinements מאושרים:
 - missing_for_green:
   - `none`
 
-8. `Create cost visibility API and dashboard model`  | סטטוס: 🔴 לא בוצע
+8. `Create cost visibility API and dashboard model`  | סטטוס: 🟢 בוצע
 - description: לבנות payload ו־dashboard model שמציגים למשתמש עלויות, usage trends, top cost drivers ו־budget warnings
 - input:
   - `costSummary`
@@ -9919,6 +9919,26 @@ Refinements מאושרים:
   - `Create cost summary aggregator`  | סטטוס: 🟢 בוצע
   - `UI / UX Foundation`
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - description: `full` via [cost-visibility-api-model.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/cost-visibility-api-model.js)
+  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
+  - output: `full` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
+  - dependencies: `partial` (`UI / UX Foundation` remains a downstream consumer, but API/state outputs are available now)
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - מוחזרים `costVisibilityPayload` ו־`costDashboardModel`
+  - `topCostDrivers` ממוינים יורד וללא slice
+  - `budgetStatus` עובד עם ובלי `budgetDecision`
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 #### `Cost-Aware Decision Engine`
 

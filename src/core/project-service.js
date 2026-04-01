@@ -2228,6 +2228,8 @@ export class ProjectService {
       workspaceComputeMetric: project.context?.workspaceComputeMetric ?? null,
       storageCostMetric: project.context?.storageCostMetric ?? null,
       costSummary: project.context?.costSummary ?? null,
+      costVisibilityPayload: project.context?.costVisibilityPayload ?? null,
+      costDashboardModel: project.context?.costDashboardModel ?? null,
       privacyPolicyDecision: project.context?.privacyPolicyDecision ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       backupStrategy: project.context?.backupStrategy ?? null,
@@ -3218,6 +3220,8 @@ export class ProjectService {
       workspaceComputeMetric: project.context?.workspaceComputeMetric ?? null,
       storageCostMetric: project.context?.storageCostMetric ?? null,
       costSummary: project.context?.costSummary ?? null,
+      costVisibilityPayload: project.context?.costVisibilityPayload ?? null,
+      costDashboardModel: project.context?.costDashboardModel ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {

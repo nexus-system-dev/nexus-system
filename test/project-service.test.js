@@ -78,6 +78,10 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.agentGovernancePolicy?.sandboxLevel, "string");
   assert.equal(typeof project.state.budgetDecision?.decision, "string");
   assert.equal(Array.isArray(project.state.budgetDecision?.budgetChecks), true);
+  assert.equal(typeof project.state.costVisibilityPayload?.costVisibilityPayloadId, "string");
+  assert.equal(Array.isArray(project.state.costVisibilityPayload?.breakdown), true);
+  assert.equal(typeof project.state.costDashboardModel?.dashboardId, "string");
+  assert.equal(Array.isArray(project.state.costDashboardModel?.kpiCards), true);
   assert.equal(typeof project.state.actionPolicy?.id, "string");
   assert.equal(typeof project.state.actionPolicy?.kind, "string");
   assert.equal(typeof project.state.policyDecision?.decision, "string");
@@ -503,6 +507,10 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.costSummary?.costSummaryId, "string");
   assert.equal(typeof project.state.costSummary?.summary?.summaryStatus, "string");
   assert.equal(project.state.costSummary?.breakdown?.build?.unit, "build-minute");
+  assert.equal(typeof project.state.costVisibilityPayload?.costVisibilityPayloadId, "string");
+  assert.equal(Array.isArray(project.state.costVisibilityPayload?.topCostDrivers), true);
+  assert.equal(typeof project.state.costDashboardModel?.dashboardId, "string");
+  assert.equal(project.state.costDashboardModel?.breakdownTable?.componentType, "table");
   assert.equal(typeof project.state.cloudWorkspaceModel?.workspaceId, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.surface?.topologyType, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.summary?.isWritable, "boolean");

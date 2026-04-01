@@ -112,6 +112,7 @@ import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-reten
 import { createStorageAndArtifactCostTracker } from "./storage-and-artifact-cost-tracker.js";
 import { createCostSummaryAggregator } from "./cost-summary-aggregator.js";
 import { createUsageBudgetGuard } from "./usage-budget-guard.js";
+import { createCostVisibilityApiModel } from "./cost-visibility-api-model.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
@@ -3362,6 +3363,10 @@ export function buildProjectContext(
     costSummary,
     agentGovernancePolicy,
   });
+  const { costVisibilityPayload, costDashboardModel } = createCostVisibilityApiModel({
+    costSummary,
+    budgetDecision,
+  });
   const { localDevelopmentBridge } = createLocalDevelopmentBridgeContract({
     executionTopology,
     localEnvironmentMetadata: {
@@ -3581,6 +3586,8 @@ export function buildProjectContext(
   context.policySchema = policySchema;
   context.agentGovernancePolicy = agentGovernancePolicy;
   context.budgetDecision = budgetDecision;
+  context.costVisibilityPayload = costVisibilityPayload;
+  context.costDashboardModel = costDashboardModel;
   context.actionPolicy = actionPolicy;
   context.policyDecision = policyDecision;
   context.policyViolations = policyViolations;

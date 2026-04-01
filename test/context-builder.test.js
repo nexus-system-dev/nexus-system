@@ -197,6 +197,12 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.costSummary?.costSummaryId, "string");
   assert.equal(typeof context.costSummary?.summary?.summaryStatus, "string");
   assert.equal(context.costSummary?.breakdown?.build?.unit, "build-minute");
+  assert.equal(typeof context.costVisibilityPayload?.costVisibilityPayloadId, "string");
+  assert.equal(Array.isArray(context.costVisibilityPayload?.breakdown), true);
+  assert.equal(Array.isArray(context.costVisibilityPayload?.topCostDrivers), true);
+  assert.equal(typeof context.costDashboardModel?.dashboardId, "string");
+  assert.equal(Array.isArray(context.costDashboardModel?.kpiCards), true);
+  assert.equal(context.costDashboardModel?.breakdownTable?.componentType, "table");
   assert.equal(typeof context.actionPolicy?.id, "string");
   assert.equal(typeof context.actionPolicy?.kind, "string");
   assert.equal(typeof context.policyDecision?.decision, "string");
