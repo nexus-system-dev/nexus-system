@@ -40,6 +40,9 @@ test("usage budget guard returns escalation on missing cost summary", () => {
   assert.equal(budgetDecision.decision, "requires-escalation");
   assert.equal(budgetDecision.source, "missing-inputs");
   assert.equal(budgetDecision.totalCost, null);
+  assert.equal(budgetDecision.constraintSource, "policy-only");
+  assert.equal(budgetDecision.hardLimitTriggered, false);
+  assert.equal(budgetDecision.softLimitTriggered, true);
   assert.equal(approvalRequest.requestType, "budget-exceeded");
 });
 
@@ -57,6 +60,8 @@ test("usage budget guard escalates on partial summary", () => {
 
   assert.equal(budgetDecision.decision, "requires-escalation");
   assert.equal(budgetDecision.requiresEscalation, true);
+  assert.equal(budgetDecision.constraintSource, "policy-only");
+  assert.equal(budgetDecision.softLimitTriggered, true);
   assert.equal(approvalRequest.requiredAction, "approve-budget");
 });
 
@@ -78,6 +83,9 @@ test("usage budget guard blocks when session threshold is exceeded and policy bl
 
   assert.equal(budgetDecision.decision, "blocked");
   assert.equal(budgetDecision.allowed, false);
+  assert.equal(budgetDecision.source, "policy-thresholds");
+  assert.equal(budgetDecision.hardLimitTriggered, true);
+  assert.equal(budgetDecision.softLimitTriggered, false);
   assert.equal(approvalRequest, null);
 });
 
@@ -101,6 +109,7 @@ test("usage budget guard uses per-action fallback when per-session is null", () 
   });
 
   assert.equal(budgetDecision.decision, "requires-escalation");
+  assert.equal(budgetDecision.softLimitTriggered, true);
   assert.equal(
     budgetDecision.budgetChecks.some((check) => check.checkType === "per-action" && check.status === "requires-escalation"),
     true,
@@ -123,6 +132,7 @@ test("usage budget guard escalates on currency mismatch and drops currency", () 
   assert.equal(budgetDecision.decision, "requires-escalation");
   assert.equal(budgetDecision.currency, null);
   assert.equal(budgetDecision.currencyMismatch, true);
+  assert.equal(budgetDecision.softLimitTriggered, true);
 });
 
 test("usage budget guard calculates remaining budget deterministically", () => {
@@ -145,4 +155,27 @@ test("usage budget guard calculates remaining budget deterministically", () => {
     ),
     true,
   );
+});
+
+test("usage budget guard upgrades constraint source when pricing metadata is usable", () => {
+  const { budgetDecision } = createUsageBudgetGuard({
+    costSummary: buildCostSummary(),
+    agentGovernancePolicy: buildPolicy(),
+    workspaceModel: {
+      workspaceId: "workspace-1",
+      visibility: "organization",
+    },
+    pricingMetadata: {
+      currency: "usd",
+      pricingModel: "tiered",
+      tier: "pro",
+    },
+  });
+
+  assert.equal(budgetDecision.decision, "allowed");
+  assert.equal(budgetDecision.source, "pricing+policy");
+  assert.equal(budgetDecision.constraintSource, "pricing+policy");
+  assert.equal(budgetDecision.hardLimitTriggered, false);
+  assert.equal(budgetDecision.softLimitTriggered, false);
+  assert.match(budgetDecision.summary, /Constraint mode: pricing\+policy\./);
 });

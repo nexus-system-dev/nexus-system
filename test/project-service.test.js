@@ -78,6 +78,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.agentGovernancePolicy?.sandboxLevel, "string");
   assert.equal(typeof project.state.budgetDecision?.decision, "string");
   assert.equal(Array.isArray(project.state.budgetDecision?.budgetChecks), true);
+  assert.equal(typeof project.state.budgetDecision?.constraintSource, "string");
+  assert.equal(typeof project.state.budgetDecision?.hardLimitTriggered, "boolean");
+  assert.equal(typeof project.state.budgetDecision?.softLimitTriggered, "boolean");
   assert.equal(typeof project.state.costVisibilityPayload?.costVisibilityPayloadId, "string");
   assert.equal(Array.isArray(project.state.costVisibilityPayload?.breakdown), true);
   assert.equal(typeof project.state.costDashboardModel?.dashboardId, "string");

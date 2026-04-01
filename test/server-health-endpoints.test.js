@@ -208,6 +208,9 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.context?.budgetDecision?.decision, "string");
   assert.equal(typeof response.body.state?.budgetDecision?.decision, "string");
   assert.equal(Array.isArray(response.body.state.budgetDecision.budgetChecks), true);
+  assert.equal(typeof response.body.state?.budgetDecision?.constraintSource, "string");
+  assert.equal(typeof response.body.state?.budgetDecision?.hardLimitTriggered, "boolean");
+  assert.equal(typeof response.body.state?.budgetDecision?.softLimitTriggered, "boolean");
   assert.equal(typeof response.body.context?.sandboxDecision?.sandboxDecisionId, "string");
   assert.equal(typeof response.body.state?.sandboxDecision?.sandboxDecisionId, "string");
   assert.equal(typeof response.body.state?.sandboxDecision?.decision, "string");

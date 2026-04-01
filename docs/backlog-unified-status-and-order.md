@@ -9978,7 +9978,7 @@ Refinements מאושרים:
 - missing_for_green:
   - `none`
 
-2. `Create budget constraint engine`  | סטטוס: 🔴 לא בוצע
+2. `Create budget constraint engine`  | סטטוס: 🟢 בוצע
 - description: לבנות engine שמחשב budget envelopes, hard limits ו־soft limits לפי workspace, provider lane ו־execution class
 - input:
   - `costSummary`
@@ -9990,6 +9990,25 @@ Refinements מאושרים:
   - `Platform Cost & Usage Control`
   - `Workspace & Access Control`
 - connects_to: `Execution Surface`
+- completion_type: `engine_upgrade`
+- coverage_check:
+  - description: `full` via [budget-constraint-engine.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/budget-constraint-engine.js)
+  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
+  - output: `full` via [usage-budget-guard.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/usage-budget-guard.js)
+  - dependencies: `partial` (`workspaceModel` and optional `pricingMetadata` are consumed conservatively; missing provider-lane/execution-class concepts are intentionally not invented)
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `usage-budget-guard` נשאר producer יחיד של `budgetDecision`
+  - נוספו `constraintSource`, `hardLimitTriggered`, `softLimitTriggered` בלבד
+  - fallback ל־`policy-only` גלוי ב־`source`/`summary`
+  - אין שינויי חוזה ל־consumers downstream
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 ---
 

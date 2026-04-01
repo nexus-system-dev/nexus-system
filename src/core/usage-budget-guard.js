@@ -1,3 +1,5 @@
+import { createBudgetConstraintEngine } from "./budget-constraint-engine.js";
+
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
@@ -75,6 +77,8 @@ function buildApprovalRequest(reason) {
 export function createUsageBudgetGuard({
   costSummary = null,
   agentGovernancePolicy = null,
+  workspaceModel = null,
+  pricingMetadata = null,
 } = {}) {
   const normalizedCostSummary = normalizeObject(costSummary);
   const normalizedPolicy = normalizeObject(agentGovernancePolicy);
@@ -87,6 +91,11 @@ export function createUsageBudgetGuard({
   const perSessionLimit = normalizeFiniteNumber(spendThresholds.perSession, null);
   const perDayLimit = normalizeFiniteNumber(spendThresholds.perDay, null);
   const overrunStatus = statusFromPolicy(escalationRules.onSpendThresholdExceeded);
+  const constraintEngine = createBudgetConstraintEngine({
+    workspaceModel,
+    pricingMetadata,
+    overrunStatus,
+  });
   const budgetChecks = [];
 
   budgetChecks.push(buildBudgetCheck({
@@ -101,6 +110,8 @@ export function createUsageBudgetGuard({
   let decision = "allowed";
   let source = "policy-thresholds";
   let primaryReason = null;
+  let hardLimitTriggered = false;
+  let softLimitTriggered = false;
 
   if (normalizedCostSummary === null || Object.keys(normalizedCostSummary).length === 0 || summaryStatus === "missing-inputs") {
     decision = "requires-escalation";
@@ -109,6 +120,7 @@ export function createUsageBudgetGuard({
   } else if (summaryStatus === "partial") {
     decision = "requires-escalation";
     primaryReason = "Cost summary is partial, so budget enforcement requires approval before continuing.";
+    softLimitTriggered = true;
   }
 
   if (perSessionLimit !== null) {
@@ -133,7 +145,10 @@ export function createUsageBudgetGuard({
     }));
 
     if (status !== "pass" && decision !== "blocked") {
+      const thresholdClassification = constraintEngine.classifyThreshold(status);
       decision = status === "blocked" ? "blocked" : "requires-escalation";
+      hardLimitTriggered ||= thresholdClassification.hardLimitTriggered;
+      softLimitTriggered ||= thresholdClassification.softLimitTriggered;
       primaryReason ??= reason;
     }
   } else if (perActionLimit !== null) {
@@ -158,14 +173,29 @@ export function createUsageBudgetGuard({
     }));
 
     if (status !== "pass" && decision !== "blocked") {
+      const thresholdClassification = constraintEngine.classifyThreshold(status);
       decision = status === "blocked" ? "blocked" : "requires-escalation";
+      hardLimitTriggered ||= thresholdClassification.hardLimitTriggered;
+      softLimitTriggered ||= thresholdClassification.softLimitTriggered;
       primaryReason ??= reason;
     }
   }
 
   if (currencyMismatch && decision !== "blocked") {
     decision = "requires-escalation";
+    softLimitTriggered = true;
     primaryReason ??= "Currency mismatch prevents safe budget enforcement.";
+  }
+
+  if (decision === "blocked") {
+    hardLimitTriggered = true;
+    softLimitTriggered = false;
+  } else if (decision === "requires-escalation") {
+    softLimitTriggered = true;
+  }
+
+  if (source !== "missing-inputs") {
+    source = constraintEngine.fallbackApplied ? "policy-thresholds" : "pricing+policy";
   }
 
   const remainingBudget =
@@ -188,6 +218,9 @@ export function createUsageBudgetGuard({
       perDayLimit,
       totalCost,
       remainingBudget,
+      constraintSource: constraintEngine.constraintSource,
+      hardLimitTriggered,
+      softLimitTriggered,
       budgetChecks,
       escalationHint: requiresEscalation
         ? {
@@ -197,10 +230,10 @@ export function createUsageBudgetGuard({
         : null,
       summary:
         decision === "blocked"
-          ? `Budget decision blocked execution because ${primaryReason ?? "a spend threshold was exceeded"}.`
+          ? `Budget decision blocked execution because ${primaryReason ?? "a spend threshold was exceeded"}. Constraint mode: ${constraintEngine.constraintSource}.`
           : decision === "requires-escalation"
-            ? `Budget decision requires escalation because ${primaryReason ?? "cost data is incomplete or over threshold"}.`
-            : "Budget decision allows execution within the configured spend thresholds.",
+            ? `Budget decision requires escalation because ${primaryReason ?? "cost data is incomplete or over threshold"}. Constraint mode: ${constraintEngine.constraintSource}.`
+            : `Budget decision allows execution within the configured spend thresholds. Constraint mode: ${constraintEngine.constraintSource}.`,
       source,
     },
     approvalRequest,

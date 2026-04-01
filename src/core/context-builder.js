@@ -3363,6 +3363,8 @@ export function buildProjectContext(
   const { budgetDecision, approvalRequest: budgetApprovalRequest } = createUsageBudgetGuard({
     costSummary,
     agentGovernancePolicy,
+    workspaceModel,
+    pricingMetadata: project.manualContext?.pricingMetadata ?? null,
   });
   const { costVisibilityPayload, costDashboardModel } = createCostVisibilityApiModel({
     costSummary,
