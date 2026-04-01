@@ -132,6 +132,8 @@ function queryElements(doc) {
     createProjectNameInput: doc.querySelector("#create-project-name-input"),
     createProjectVisionInput: doc.querySelector("#create-project-vision-input"),
     createProjectLinkInput: doc.querySelector("#create-project-link-input"),
+    createProjectFileNameInput: doc.querySelector("#create-project-file-name-input"),
+    createProjectFileContentInput: doc.querySelector("#create-project-file-content-input"),
     createProjectButton: doc.querySelector("#create-project-button"),
     developerTab: doc.querySelector("#tab-developer"),
     projectBrainTab: doc.querySelector("#tab-project-brain"),
@@ -351,6 +353,19 @@ function renderTop(elements, project) {
   const blockedTasks = normalizeArray(project.cycle?.roadmap).filter((task) => task.status === "blocked");
   const activeTasks = normalizeArray(project.cycle?.roadmap).filter((task) => task.status === "assigned");
   const activeAgents = normalizeArray(project.agents).filter((agent) => agent.status === "working").length;
+  const firstValueOutput = normalizeObject(project.firstValueOutput ?? project.state?.firstValueOutput);
+  const firstValueSummary = normalizeObject(project.firstValueSummary ?? project.state?.firstValueSummary);
+  const firstValueItems = firstValueOutput.outputId
+    ? [
+        {
+          title: firstValueOutput.preview?.headline ?? "First value is ready",
+          body:
+            firstValueOutput.preview?.detail
+            ?? firstValueSummary.message
+            ?? normalizeArray(firstValueOutput.userVisibleArtifacts).join(" | "),
+        },
+      ]
+    : [];
 
   elements.heroProjectName.textContent = project.name ?? "Project";
   elements.heroGoal.textContent = project.goal ?? "המטרה תופיע כאן";
@@ -366,6 +381,7 @@ function renderTop(elements, project) {
       { label: "משימות חסומות", value: String(blockedTasks.length) },
       { label: "סוכנים עובדים", value: String(activeAgents) },
     ])}
+    ${stackHtml("First value", firstValueItems, "עדיין אין first value זמין להצגה.")}
   `;
 }
 
@@ -1834,6 +1850,23 @@ export function createCockpitApp({
     return `שם הפרויקט: ${normalizedName}\n${normalizedVision}`.trim();
   }
 
+  function buildOnboardingUploadedFiles() {
+    const fileName = elements.createProjectFileNameInput?.value?.trim() ?? "";
+    const fileContent = elements.createProjectFileContentInput?.value ?? "";
+
+    if (!fileName && !fileContent.trim()) {
+      return [];
+    }
+
+    return [
+      {
+        name: fileName || "supporting-notes.txt",
+        type: fileName.endsWith(".md") ? "markdown" : "text",
+        content: fileContent,
+      },
+    ];
+  }
+
   function renderEmptyAppState({
     mode = "create",
     message = "אין פרויקטים",
@@ -1968,7 +2001,7 @@ export function createCockpitApp({
     renderEmptyAppState({
       mode: "onboarding",
       message: "ממשיכים ל־onboarding",
-      status: "הוסף קישור תומך אחד לפחות ואז סיים onboarding כדי לפתוח את ה־workspace.",
+      status: "הוסף קישור תומך או קובץ תומך ואז סיים onboarding כדי לפתוח את ה־workspace.",
     });
   }
 
@@ -1980,12 +2013,13 @@ export function createCockpitApp({
     const projectName = elements.createProjectNameInput?.value?.trim() ?? "";
     const visionText = elements.createProjectVisionInput?.value?.trim() ?? "";
     const supportingLink = elements.createProjectLinkInput?.value?.trim() ?? "";
+    const uploadedFiles = buildOnboardingUploadedFiles();
 
-    if (!projectName || !visionText || !supportingLink) {
+    if (!projectName || !visionText || (!supportingLink && uploadedFiles.length === 0)) {
       renderEmptyAppState({
         mode: "onboarding",
         message: "ממשיכים ל־onboarding",
-        status: "כדי לסיים onboarding צריך שם פרויקט, תיאור וקישור תומך אחד לפחות.",
+        status: "כדי לסיים onboarding צריך שם פרויקט, תיאור, וקישור תומך או קובץ תומך אחד לפחות.",
       });
       return;
     }
@@ -1996,9 +2030,19 @@ export function createCockpitApp({
       body: JSON.stringify({
         visionText: formatVisionText(projectName, visionText),
         uploadedFiles: [],
-        externalLinks: [supportingLink],
+        externalLinks: supportingLink ? [supportingLink] : [],
       }),
     });
+
+    if (uploadedFiles.length > 0) {
+      await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/files`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uploadedFiles,
+        }),
+      });
+    }
 
     const finished = await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/finish`, {
       method: "POST",

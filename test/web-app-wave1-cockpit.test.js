@@ -45,6 +45,8 @@ function createFakeDocument() {
     "#create-project-name-input",
     "#create-project-vision-input",
     "#create-project-link-input",
+    "#create-project-file-name-input",
+    "#create-project-file-content-input",
     "#create-project-button",
     "#tab-developer",
     "#tab-project-brain",
@@ -1014,9 +1016,42 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
     cycle: {
       roadmap: [{ summary: "Review bootstrap output", status: "assigned", lane: "build", dependencies: [] }],
     },
+    firstValueOutput: {
+      outputId: "first-value:launch-app",
+      preview: {
+        headline: "Your starter app is ready",
+        detail: "You already have a first app structure you can keep iterating on.",
+      },
+      summary: {
+        feelsReal: true,
+      },
+    },
+    firstValueSummary: {
+      summaryId: "first-value-summary:launch-app",
+      message: "Your starter app is ready and the project already has visible momentum.",
+    },
     agents: [{ name: "Dev Agent", status: "working", currentTask: "Review bootstrap output" }],
-    approvals: [],
+    approvals: ["Review bootstrap output before the next rerun"],
     events: [{ type: "state.updated", payload: { projectId: "launch-app" } }],
+    cockpitRecommendationSurface: {
+      surfaceId: "cockpit-recommendation-surface:launch-app",
+      headline: "Review bootstrap output",
+      summary: "Review the generated starter structure before continuing.",
+      whyNow: "The first usable output is ready and needs quick validation.",
+      approval: {
+        requiresApproval: false,
+      },
+      recommendationPanel: {
+        urgency: "normal",
+        expectedOutcome: "The next cycle can continue with less ambiguity.",
+        primaryCta: {
+          label: "Open review",
+        },
+      },
+      summaryMeta: {
+        blockerCount: 0,
+      },
+    },
     developerWorkspace: {
       contextSummary: {
         progressPercent: 18,
@@ -1189,6 +1224,29 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
       };
     }
 
+    if (url === "/api/onboarding/sessions/onboarding-launch-app/files") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            updatedSession: {
+              sessionId: "onboarding-launch-app",
+              projectIntake: {
+                uploadedFiles: [
+                  {
+                    id: "file-1",
+                    name: "brief.md",
+                    type: "markdown",
+                    content: "# Brief\nMain flow",
+                  },
+                ],
+              },
+            },
+          };
+        },
+      };
+    }
+
     if (url === "/api/onboarding/sessions/onboarding-launch-app/finish") {
       return {
         ok: true,
@@ -1198,6 +1256,17 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
             project: {
               id: "launch-app",
             },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/projects/launch-app/run-cycle") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            ok: true,
           };
         },
       };
@@ -1252,12 +1321,13 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
 
   fakeDocument.elements.get("#create-project-name-input").value = "Launch App";
   fakeDocument.elements.get("#create-project-vision-input").value = "אפליקציה עם התחברות ו־approval flow";
-  fakeDocument.elements.get("#create-project-link-input").value = "https://github.com/example/launch-app";
+  fakeDocument.elements.get("#create-project-file-name-input").value = "brief.md";
+  fakeDocument.elements.get("#create-project-file-content-input").value = "# Brief\nMain flow";
 
   await fakeDocument.elements.get("#create-project-button").listeners.click();
 
   assert.equal(fakeDocument.elements.get("#create-project-button").textContent, "סיים Onboarding");
-  assert.match(fakeDocument.elements.get("#empty-project-status").textContent, /onboarding/i);
+  assert.match(fakeDocument.elements.get("#empty-project-status").textContent, /קישור תומך או קובץ תומך/i);
 
   await fakeDocument.elements.get("#create-project-button").listeners.click();
 
@@ -1265,9 +1335,17 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
   assert.equal(fakeDocument.elements.get("#workspace-board").hidden, false);
   assert.equal(fakeDocument.elements.get("#hero-project-name").textContent, "Launch App");
   assert.match(fakeDocument.elements.get("#developer-workspace-summary").innerHTML, /18%/);
+  assert.match(fakeDocument.elements.get("#now-content").innerHTML, /Your starter app is ready/);
+  assert.match(fakeDocument.elements.get("#graph-content").innerHTML, /Review bootstrap output/);
+  assert.match(fakeDocument.elements.get("#decision-content").innerHTML, /Review bootstrap output/);
   assert.equal(requests.some((request) => request.url === "/api/project-drafts" && request.method === "POST"), true);
+  assert.equal(requests.some((request) => request.url === "/api/onboarding/sessions/onboarding-launch-app/files" && request.method === "POST"), true);
   assert.equal(requests.some((request) => request.url === "/api/onboarding/sessions/onboarding-launch-app/finish" && request.method === "POST"), true);
   assert.equal(requests.some((request) => request.url === "/api/projects/launch-app" && request.method === "GET"), true);
+
+  await fakeDocument.elements.get("#run-cycle-button").listeners.click();
+  assert.equal(requests.some((request) => request.url === "/api/projects/launch-app/run-cycle" && request.method === "POST"), true);
+  assert.equal(requests.filter((request) => request.url === "/api/projects/launch-app" && request.method === "GET").length >= 2, true);
 });
 
 test("cockpit supports proposal editing and partial acceptance through the release workspace", async () => {

@@ -723,7 +723,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 
 הערת אינטגרציה:
-- שכבת ה־API/service של `projectDraft` ו־`finish onboarding -> project` כבר קיימת בפועל, אבל ה־app shell הראשי עדיין לא מחבר מצב `אין פרויקטים` ל־`project draft creation`, ל־entry/resume של onboarding ול־`loadProject(project.id)`; את הפער הזה צריך לסגור דרך המשימות `Create project creation experience model`, `Build onboarding screen flow`, `Create first project kickoff flow`, `Create entry state variants and redirects` ו־`Create entry loading and recovery states`, בלי להציג CTA מזויף לפני שהשרשרת מחוברת end-to-end.
+- שכבת ה־API/service של `projectDraft` ו־`finish onboarding -> project` מחוברת עכשיו בפועל גם ל־cockpit path הקיים: מצב `אין פרויקטים` מוביל ל־`project draft creation`, ל־onboarding, ל־file/context enrichment ול־`loadProject(project.id)` אחרי finish. מה שעדיין חסר למסלול מלא הוא `entryStateVariants`, `entryRecoveryState`, ו־kickoff artifact קנוני שנשען על `postLoginDestination` ולא רק על orchestration ב־`web/app.js`.
 
 10. `Create project ownership binding model`  | סטטוס: 🔴 לא בוצע
 - description: לבנות מודל שקושר `projectDraft` ו־`projectState` למשתמש, ל־workspace ול־membership המתאימים כבר מרגע היצירה
@@ -3541,7 +3541,7 @@ Refinements מאושרים:
 - dependencies:
   - `Create project creation experience model`  | סטטוס: 🔴 לא בוצע
   - `Build onboarding screen flow`  | סטטוס: 🔴 לא בוצע
-  - `Create first project kickoff flow`  | סטטוס: 🔴 לא בוצע
+  - `Create first project kickoff flow`  | סטטוס: 🟡 חלקי
   - `Create entry state variants and redirects`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
 
@@ -10022,8 +10022,9 @@ Refinements מאושרים:
 1. `Define billing plan schema`  | סטטוס: 🟢 בוצע
 - description: לבנות schema אחיד ל־plans, limits, entitlements, trial rules ו־pricing model של Nexus
 - input:
-  - `pricingStrategy`
-  - `usageDimensions`
+  - `platformCostMetric`
+  - `agentGovernancePolicy`
+  - `reliabilitySlaModel`
 - output:
   - `billingPlanSchema`
 - dependencies:
@@ -10052,8 +10053,8 @@ Refinements מאושרים:
 - missing_for_green:
   - `none`
 
-2. `Create entitlement resolver`  | סטטוס: 🟢 בוצע
-- description: לבנות resolver שקובע אילו capabilities, limits ו־features זמינים למשתמש או workspace לפי plan נוכחי
+2. `Create entitlement resolver`  | סטטוס: 🟡 חלקי
+- description: לבנות resolver שקובע אילו features ו־limits זמינים למשתמש או workspace לפי plan נוכחי; כרגע המימוש נשען רק על `billingPlanSchema.entitlements.default` בלי current plan runtime
 - input:
   - `billingPlanSchema`
   - `workspaceModel`
@@ -10063,12 +10064,12 @@ Refinements מאושרים:
   - `Define billing plan schema`  | סטטוס: 🟢 בוצע
   - `Workspace & Access Control`
 - connects_to: `Project State`
-- completion_type: `api_ready`
+- completion_type: `decision_producer`
 - coverage_check:
-  - description: `full` via [entitlement-decision-resolver.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/entitlement-decision-resolver.js)
-  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
-  - output: `full` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
-  - dependencies: `full` via existing `billingPlanSchema` and `workspaceModel`
+  - description: `partial` via [entitlement-decision-resolver.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/entitlement-decision-resolver.js)
+  - input: `partial` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
+  - output: `partial` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
+  - dependencies: `partial` — עדיין אין `workspaceBillingState` או current plan assignment runtime
 - user_facing_path:
   - exists: `yes`
   - entry_point: `GET /api/projects/:id`
@@ -10077,48 +10078,225 @@ Refinements מאושרים:
 - green_criteria:
   - מוחזר `{ entitlementDecision }`
   - decision enum הוא רק `allowed|restricted|blocked`
-  - אין runtime usage logic
+  - resolution נשען על current plan runtime ולא רק על `default` schema
   - אין `capabilities`
   - features נצרכים רק מ־`billingPlanSchema`
   - יש חיבור ל־`context` ול־`state`
   - מופיע ב־project payload
   - יש unit tests ו־integration tests שעוברים
 - missing_for_green:
-  - `none`
+  - `workspaceBillingState`
+  - `plan-aware entitlement selection`
+  - `tests for upgrade/downgrade/cancel transitions`
 
-3. `Create subscription lifecycle module`  | סטטוס: 🟢 בוצע
-- description: לבנות producer שמחזיר snapshot דטרמיניסטי של מצב subscription נוכחי בלי payment history ובלי lifecycle engine מלא
+3. `Define billing event schema`  | סטטוס: 🔴 לא בוצע
+- description: לבנות schema אחיד לאירועי checkout, renewal, payment failure, cancellation, plan change ו־subscription state כדי לייצר source-of-truth קנוני ל־billing runtime
 - input:
-  - `billingPlanSchema`
-  - `workspaceModel`
+  - `workspaceId`
+  - `billingAction`
+  - `amount`
+  - `providerPayload`
 - output:
-  - `subscriptionState`
+  - `billingEvent`
 - dependencies:
-  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
+  - `External Accounts Connector`
+  - `Identity & Auth`
 - connects_to: `Project State`
-- completion_type: `api_ready`
+- completion_type: `schema_producer`
 - coverage_check:
-  - description: `full` via [subscription-lifecycle-module.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/subscription-lifecycle-module.js)
-  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
-  - output: `full` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
-  - dependencies: `full` via existing `billingPlanSchema` and `workspaceModel`
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `partial` — external connector dependency עדיין לא מיושם בקוד
 - user_facing_path:
   - exists: `yes`
   - entry_point: `GET /api/projects/:id`
   - user_can_trigger_it: `no`
   - user_can_see_result: `yes`
 - green_criteria:
-  - מוחזר `{ subscriptionState }`
-  - status הוא רק `trial|active`
-  - אין payment history או runtime usage logic
-  - אין statuses נוספים
-  - יש חיבור ל־`context` ול־`state`
-  - מופיע ב־project payload
+  - מוגדר catalog קנוני של event types ל־checkout / renewal / payment failure / retry / cancel / plan change / subscription status
+  - כל event מחזיק workspace/user/provider references, amount/currency ו־idempotency anchor
+  - ה־schema לא ממציא payment state שלא הגיע מספק או מ־runtime אמיתי
   - יש unit tests ו־integration tests שעוברים
 - missing_for_green:
-  - `none`
+  - `canonical provider payload contract`
+  - `event type catalog`
+  - `tests`
+- risks:
+  - schema צר מדי ישבור later ingestion
+  - schema עשיר מדי ימציא provider semantics שלא קיימים עדיין
 
-4. `Create usage-to-billing mapper`  | סטטוס: 🔴 לא בוצע
+4. `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
+- description: לבנות ingestion/normalization deterministic לאירועי billing כך ש־checkout flows, retries, failures ו־cancellations יומרו ל־`normalizedBillingEvent` קנוני ואידמפוטנטי
+- input:
+  - `billingEvent`
+  - `providerPayload`
+  - `workspaceModel`
+- output:
+  - `normalizedBillingEvent`
+- dependencies:
+  - `Define billing event schema`  | סטטוס: 🔴 לא בוצע
+  - `Workspace & Access Control`
+- connects_to: `Project State`
+- completion_type: `normalizer`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `partial` — billing events עצמם עדיין לא קיימים
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - raw provider payloads מנורמלים ל־`normalizedBillingEvent`
+  - ingestion הוא idempotent ולא יוצר duplicate transitions
+  - unknown provider fields נשמרים כ־trace ולא שוברים את ה־pipeline
+  - יש חיבור ל־`context` ול־`state`
+  - יש tests ל־retry/failure/cancel/update flows
+- missing_for_green:
+  - `event store or append path`
+  - `provider webhook contract`
+  - `tests`
+- risks:
+  - silent normalization יאבד billing evidence
+  - חוסר idempotency יכפיל transitions
+
+5. `Create paying user tracker`  | סטטוס: 🔴 לא בוצע
+- description: לבנות tracker שסופר משתמשים משלמים, converted users ו־active subscriptions על בסיס `normalizedBillingEvent` ולא על בסיס signals אד־הוק
+- input:
+  - `normalizedBillingEvents`
+- output:
+  - `payingUserMetrics`
+- dependencies:
+  - `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+- completion_type: `tracker`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `missing`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Project State`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - converted/paying/active subscription counts מחושבים רק מאירועים מנורמלים
+  - אין double counting על retries או duplicate events
+  - יש unit tests ו־aggregation tests
+- missing_for_green:
+  - `normalized billing events`
+  - `tests`
+- risks:
+  - retries או duplicate events ינפחו paying counts
+
+6. `Create revenue summary aggregator`  | סטטוס: 🔴 לא בוצע
+- description: לבנות aggregation של revenue, ARPU בסיסי, conversion counts ו־payment posture summary שישמש גם analytics וגם billing runtime
+- input:
+  - `payingUserMetrics`
+- output:
+  - `revenueSummary`
+- dependencies:
+  - `Create paying user tracker`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+- completion_type: `summary_aggregator`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `missing`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Project State`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - summary מחזיר revenue/conversion posture קנוני
+  - אין ערבוב בין analytics summary לבין raw billing events
+  - יש tests ל־aggregation windows ול־currency-safe counting
+- missing_for_green:
+  - `paying user metrics`
+  - `tests`
+- risks:
+  - mixing analytics and runtime concerns יטשטש source-of-truth
+
+7. `Create workspace billing state source`  | סטטוס: 🔴 לא בוצע
+- description: לבנות source-of-truth runtime ל־workspace billing state שמחזיק current plan assignment, subscription posture, trial window ו־last billing transition מתוך events מנורמלים
+- input:
+  - `normalizedBillingEvents`
+  - `billingPlanSchema`
+  - `workspaceModel`
+- output:
+  - `workspaceBillingState`
+- dependencies:
+  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
+  - `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
+  - `Workspace & Access Control`
+- connects_to: `Project State`
+- completion_type: `state_source`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `partial` — תלוי ב־billing events שעדיין חסרים
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - מוחזר `workspaceBillingState` עם `currentPlanId`, `subscriptionStatus`, `source` ו־`summary`
+  - אין plan selection מומצא כשאין events
+  - `past_due/grace/canceled` מחושבים רק אם יש event evidence מתאים
+  - יש חיבור ל־`context` ול־`state`
+  - יש tests ל־plan transition, retry recovery, cancellation ו־grace entry/exit
+- missing_for_green:
+  - `normalized billing events`
+  - `plan transition evidence`
+  - `tests`
+- risks:
+  - source לא קנוני ישבור entitlements ו־lifecycle downstream
+
+8. `Create subscription lifecycle module`  | סטטוס: 🟡 חלקי
+- description: לשדרג את producer ה־snapshot הקיים ל־lifecycle producer אמיתי שנשען על `workspaceBillingState`; כרגע המימוש מחזיר רק `trial|active` מתוך schema fallback
+- input:
+  - `workspaceBillingState`
+  - `workspaceModel`
+- output:
+  - `subscriptionState`
+- dependencies:
+  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
+  - `Create workspace billing state source`  | סטטוס: 🔴 לא בוצע
+  - `Billing & Revenue Metrics`
+- connects_to: `Project State`
+- completion_type: `lifecycle_state_producer`
+- coverage_check:
+  - description: `partial` via [subscription-lifecycle-module.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/subscription-lifecycle-module.js)
+  - input: `partial` — המימוש הנוכחי עדיין ניזון מ־`billingPlanSchema`, לא מ־`workspaceBillingState`
+  - output: `partial` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
+  - dependencies: `partial` — אין billing event layer או runtime billing state
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `subscriptionState` נשען על `workspaceBillingState`
+  - statuses נתמכים לפחות עבור `trial|active|past_due|grace|canceled`
+  - אין inferred status בלי event evidence
+  - `source` ו־`summary` משקפים fallback לעומת runtime truth
+  - יש unit tests ו־integration tests
+- missing_for_green:
+  - `workspaceBillingState`
+  - `billing event ingestion`
+  - `tests for past_due/grace/canceled`
+- risks:
+  - תיעוד שמציג snapshot כ־full lifecycle יטעה את רצף המימוש
+
+9. `Create usage-to-billing mapper`  | סטטוס: 🔴 לא בוצע
 - description: למפות usage בפועל ל־billable units כמו active workspaces, AI consumption, builds או premium actions
 - input:
   - `costSummary`
@@ -10127,22 +10305,67 @@ Refinements מאושרים:
   - `billableUsage`
 - dependencies:
   - `Platform Cost & Usage Control`
-  - `Define billing plan schema`  | סטטוס: 🔴 לא בוצע
+  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `mapper`
+- coverage_check:
+  - description: `missing`
+  - input: `partial` — `costSummary` קיים, אבל billable mapping rules עדיין לא קיימים
+  - output: `missing`
+  - dependencies: `partial`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - usage ממופה ל־billable units קנוניים
+  - אין passthrough raw cost blobs
+  - יש tests ל־workspace/model/build/provider-operation mapping
+- missing_for_green:
+  - `billing mapping rules`
+  - `tests`
+- risks:
+  - raw cost passthrough יערב cost visibility עם billing units
 
-5. `Create checkout and subscription API`  | סטטוס: 🔴 לא בוצע
-- description: לבנות API ליצירת checkout, שדרוג plan, ביטול subscription וניהול billing details
+10. `Create checkout and subscription API`  | סטטוס: 🔴 לא בוצע
+- description: לבנות API ליצירת checkout, שדרוג או הנמכת plan, ביטול subscription, retry payment, עדכון billing details וניהול payment method
 - input:
   - `workspaceId`
   - `billingInput`
 - output:
   - `billingPayload`
 - dependencies:
-  - `Create subscription lifecycle module`  | סטטוס: 🔴 לא בוצע
+  - `Define billing event schema`  | סטטוס: 🔴 לא בוצע
+  - `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
+  - `Create workspace billing state source`  | סטטוס: 🔴 לא בוצע
   - `Identity & Auth`
 - connects_to: `Project State`
+- completion_type: `api_surface`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `partial`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Execution Surface`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - אפשר ליצור checkout
+  - אפשר לבקש upgrade/downgrade/cancel/retry/update-payment-method
+  - הפעולות מייצרות billing events או runtime side effects קנוניים
+  - מוחזר payload אחיד ל־workspace
+  - יש API tests ו־authorization tests
+- missing_for_green:
+  - `billing event layer`
+  - `runtime state source`
+  - `tests`
+- risks:
+  - API בלי event emission ישאיר state לא עקבי
 
-6. `Create billing enforcement guard`  | סטטוס: 🔴 לא בוצע
+11. `Create billing enforcement guard`  | סטטוס: 🔴 לא בוצע
 - description: לבנות guard שחוסם שימוש מחוץ ל־entitlements או מעל limits ומציע upgrade path מתאים
 - input:
   - `entitlementDecision`
@@ -10150,21 +10373,71 @@ Refinements מאושרים:
 - output:
   - `billingGuardDecision`
 - dependencies:
-  - `Create entitlement resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create entitlement resolver`  | סטטוס: 🟢 בוצע
   - `Create usage-to-billing mapper`  | סטטוס: 🔴 לא בוצע
+  - `Create workspace billing state source`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
+- completion_type: `guard`
+- coverage_check:
+  - description: `missing`
+  - input: `partial`
+  - output: `missing`
+  - dependencies: `partial`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Execution Surface`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - guard נשען על entitlements, usage ו־workspace billing posture
+  - מחזיר upgrade/retry path explainable
+  - אין חסימה שמבוססת על billing state מומצא
+  - יש tests ל־out-of-plan / over-limit / payment-issue flows
+- missing_for_green:
+  - `billable usage`
+  - `workspace billing state`
+  - `tests`
+- risks:
+  - guard בלי billing posture אמיתי יחסום או יאפשר בטעות
 
-7. `Create billing settings and plan selection screen model`  | סטטוס: 🔴 לא בוצע
-- description: לבנות model למסכי plan selection, usage visibility, invoices ו־upgrade prompts
+12. `Create billing settings and plan selection screen model`  | סטטוס: 🔴 לא בוצע
+- description: לבנות model למסכי current plan, plan selection, usage visibility, billing history, retry/cancel/renew CTAs, failure notices ו־upgrade prompts
 - input:
   - `subscriptionState`
   - `billingGuardDecision`
+  - `workspaceBillingState`
+  - `normalizedBillingEvent`
 - output:
   - `billingSettingsModel`
 - dependencies:
   - `Create checkout and subscription API`  | סטטוס: 🔴 לא בוצע
+  - `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
   - `UI / UX Foundation`
 - connects_to: `Project State`
+- completion_type: `screen_model`
+- coverage_check:
+  - description: `missing`
+  - input: `partial`
+  - output: `missing`
+  - dependencies: `partial`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Execution Surface`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - המסך מציג current plan card ו־subscription status surface
+  - יש trial/past_due/grace/payment-failure banners רק אם state אמיתי קיים
+  - יש CTAs ל־upgrade/downgrade/retry/cancel/renew
+  - history/timeline נשען על billing events מנורמלים, לא על placeholder data
+  - יש UI model tests ו־payload contract tests
+- missing_for_green:
+  - `workspace billing state`
+  - `normalized billing events`
+  - `checkout/subscription api`
+  - `tests`
+- risks:
+  - UI model בלי runtime billing state יציג banners/CTAs לא אמינים
 
 ---
 
@@ -10351,39 +10624,9 @@ Refinements מאושרים:
 
 #### `Billing & Revenue Metrics`
 
-משימות טכניות:
-
-1. `Define billing event schema`  | סטטוס: 🔴 לא בוצע
-- description: לבנות schema אחיד לאירועי תשלום, conversion ו־subscription state
-- input:
-  - `userId`
-  - `billingAction`
-  - `amount`
-- output:
-  - `billingEvent`
-- dependencies:
-  - `External Accounts Connector`
-- connects_to: `Project State`
-
-2. `Create paying user tracker`  | סטטוס: 🔴 לא בוצע
-- description: לבנות tracker שסופר משתמשים משלמים, converted users ו־active subscriptions
-- input:
-  - `billingEvents`
-- output:
-  - `payingUserMetrics`
-- dependencies:
-  - `Define billing event schema`  | סטטוס: 🔴 לא בוצע
-- connects_to: `Project State`
-
-3. `Create revenue summary aggregator`  | סטטוס: 🔴 לא בוצע
-- description: לבנות aggregation של revenue, ARPU בסיסי ו־conversion counts
-- input:
-  - `payingUserMetrics`
-- output:
-  - `revenueSummary`
-- dependencies:
-  - `Create paying user tracker`  | סטטוס: 🔴 לא בוצע
-- connects_to: `Project State`
+הערת ארגון:
+- משימות ה־billing runtime foundation (`Define billing event schema`, `Create paying user tracker`, `Create revenue summary aggregator`) הוזזו לבלוק `Billing & Monetization System` כדי ליישר את ה־dependency chain של checkout / runtime billing state / subscription lifecycle.
+- `Nexus Analytics Dashboard` ממשיך לצרוך את `revenueSummary` מאותו source-of-truth בלי כפילות backlog נוספת.
 
 #### `Nexus Analytics Dashboard`
 
@@ -10868,8 +11111,8 @@ Refinements מאושרים:
   - `User Activity & Retention`
 - connects_to: `Project State`
 
-7. `Create first project kickoff flow`  | סטטוס: 🔴 לא בוצע
-- description: לבנות flow מפורש שבו משתמש חדש עובר מה־dashboard או ה־entry destination אל יצירת הפרויקט הראשון וה־onboarding הראשון
+7. `Create first project kickoff flow`  | סטטוס: 🟡 חלקי
+- description: לבנות flow שבו משתמש חדש עובר מה־cockpit/app path הקיים אל יצירת הפרויקט הראשון, onboarding, project payload usable ופעולת המשך ראשונה
 - input:
   - `postLoginDestination`
   - `activationFunnel`
@@ -10880,6 +11123,13 @@ Refinements מאושרים:
   - `Create onboarding session service`  | סטטוס: 🟢 בוצע
   - `Define activation funnel schema`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
+- coverage_check:
+  - `web empty-state -> project draft -> onboarding -> project load` → `partial` | `web/app.js`, `web/index.html`, `test/web-app-wave1-cockpit.test.js`
+  - `proposal review and rerun continue through existing cockpit path` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- missing_for_green:
+  - `postLoginDestination`-driven kickoff outside existing cockpit shell
+  - dedicated `entryStateVariants` / `entryRecoveryState` path
+  - first-project kickoff model as canonical artifact instead of app-only orchestration
 
 8. `Create landing-to-dashboard funnel assembler`  | סטטוס: 🔴 לא בוצע
 - description: להרכיב view model מלא של הזרימה מ־landing דרך access/login ועד dashboard ו־first project

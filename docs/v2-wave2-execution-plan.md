@@ -38,36 +38,36 @@
 
 ## Current Snapshot
 
-- סך הכל משימות ב־`Wave 2`: `257`
-- `🟢 בוצע`: `87`
-- `🟡 חלקי`: `0`
-- `🔴 לא בוצע`: `170`
+- סך הכל משימות ב־`Wave 2`: `259`
+- `🟢 בוצע`: `85`
+- `🟡 חלקי`: `2`
+- `🔴 לא בוצע`: `172`
 
 ## Green Audit Buckets
 
 - `🟢 audited`: משימה ירוקה שמכילה `completion_type`, `coverage_check`, `user_facing_path`, `green_criteria`, `missing_for_green`.
 - `🟢 legacy`: כל משימה ירוקה שעדיין לא עברה מיפוי כיסוי מלא לפי הכללים החדשים.
 - מצב נוכחי אחרי batch זה:
-  - `🟢 audited`: `23`
+  - `🟢 audited`: `21`
   - `🟢 legacy`: `64`
 
 ## Open Work Execution Ordering
 
-- `execution_order` ממספר רק את המשימות הפתוחות ב־`Wave 2` (`🟡` + `🔴`), מ־`1` עד `194`.
-- הסדר מחושב לפי dependencies פנימיים בין משימות פתוחות, עם עדיפות לסגירת `🟡 חלקי` מוקדם ככל האפשר.
+- `execution_order` ממספר את רצף העבודה הטכני הפעיל במסמך, כולל partials ו־open tasks, מ־`1` עד `195`.
+- הסדר מחושב לפי dependencies פנימיים בין foundations פתוחות, partial upgrades ו־delivery surfaces downstream.
 - כשיש תלות חיצונית ל־Wave 2, המסלול מסדר את המשימה במקום הנכון בתוך הגל אבל לא מוחק את ה־dependency המקורי.
 - כלל עבודה: מספר נמוך יותר קודם למספר גבוה יותר.
-- הערת מסלול: `AI Design Integration` נוסף עכשיו כמסלול טכני מלא, אבל נשמר בטווח `187–194` כדי לא לשבור את רצף העבודה הפעיל; בנקודת הגשר הבאה צריך למשוך אותו קדימה לפני implementation/review מלא.
+- הערת מסלול: `AI Design Integration` נוסף עכשיו כמסלול טכני מלא, אבל נשמר בטווח `188–195` כדי לא לשבור את רצף העבודה הפעיל; בנקודת הגשר הבאה צריך למשוך אותו קדימה לפני implementation/review מלא.
 
 שלבי העבודה הגבוהים במסלול:
 - `1–9`: סגירת partials מוקדמים של realtime ו־collaboration, יחד עם context reduction foundations.
 - `10–29`: שכבות foundation של UI, permissions, tenant isolation, human editing ו־backup foundations.
 - `30–52`: security, audit, recovery ו־resilience.
-- `53–69`: cost control ו־billing.
-- `70–100`: analytics foundations, outcome evaluation ו־feedback.
-- `101–152`: go-to-market, website, activation, launch ו־measurement.
-- `153–186`: owner control plane, operations, security ו־monitoring.
-- `187–194`: AI design integration bridge tasks שמוכנות תכנונית אבל ממתינות לחלון המימוש הנכון.
+- `53–66`: cost control ו־billing runtime foundations.
+- `67–101`: analytics foundations, outcome evaluation ו־feedback.
+- `102–153`: go-to-market, website, activation, launch ו־measurement.
+- `154–187`: owner control plane, operations, security ו־monitoring.
+- `188–195`: AI design integration bridge tasks שמוכנות תכנונית אבל ממתינות לחלון המימוש הנכון.
 
 ## Execution Plan
 
@@ -505,7 +505,7 @@
 
 
 2. `Create primitive components`  | סטטוס: 🟢 בוצע
-- execution_order: `10`
+- execution_order: `7`
 - description: לבנות רכיבי בסיס כמו button, input, textarea, select, badge, icon button
 - input:
   - `componentContract`
@@ -535,7 +535,7 @@
 
 
 3. `Create layout components`  | סטטוס: 🟢 בוצע
-- execution_order: `11`
+- execution_order: `8`
 - description: לבנות container, section, stack, grid, panel, divider
 - input:
   - `layoutSystem`
@@ -564,7 +564,7 @@
 
 
 4. `Create feedback components`  | סטטוס: 🟢 בוצע
-- execution_order: `12`
+- execution_order: `9`
 - description: לבנות loading, empty state, error state, toast, banner, progress, skeleton
 - input:
   - `interactionStateSystem`
@@ -593,7 +593,7 @@
 
 
 5. `Create navigation components`  | סטטוס: 🟢 בוצע
-- execution_order: `13`
+- execution_order: `10`
 - description: לבנות sidebar, tabs, breadcrumb, topbar, stepper
 - input:
   - `screenFlowMap`
@@ -622,7 +622,7 @@
 
 
 6. `Create data display components`  | סטטוס: 🟢 בוצע
-- execution_order: `14`
+- execution_order: `11`
 - description: לבנות table, stat card, activity log, timeline, key-value panel, status chip
 - input:
   - `screenInventory`
@@ -1062,7 +1062,7 @@
 - יש לבצע זאת בצורה מרוכזת וזהירה, רק בנקודת הגשר, ולא תוך כדי עבודה שוטפת.
 
 1. `Define AI design request schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `187`
+- execution_order: `188`
 - description: לבנות schema אחיד לבקשת AI Design שמאגדת את כל ה־context הקנוני למסך אחד לפני קריאה למודל
 - input:
   - `selectedTask`
@@ -1081,7 +1081,7 @@
 - connects_to: `Project State`
 
 2. `Define AI design response schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `188`
+- execution_order: `189`
 - description: לבנות schema אחיד ל־JSON structured output של AI Design כולל composition, copy, states, interactions ו־reasoning בלי להחזיר קוד
 - input:
   - `aiDesignRequest`
@@ -1093,7 +1093,7 @@
 - connects_to: `Project State`
 
 3. `Create AI design provider adapter`  | סטטוס: 🔴 לא בוצע
-- execution_order: `189`
+- execution_order: `190`
 - description: לבנות adapter ל־provider של מודל reasoning שמקבל `aiDesignRequest`, שולח אותו במבנה קשיח ומחזיר `aiDesignProposal` לפי schema
 - input:
   - `aiDesignRequest`
@@ -1106,7 +1106,7 @@
 - connects_to: `Execution Surface`
 
 4. `Create AI design service`  | סטטוס: 🔴 לא בוצע
-- execution_order: `190`
+- execution_order: `191`
 - description: לבנות service שאוסף context קנוני מתוך `Project State`, בונה `aiDesignRequest`, קורא ל־provider adapter ומחזיר proposal מוכן להמשך flow
 - input:
   - `projectState`
@@ -1119,7 +1119,7 @@
 - connects_to: `Project State`
 
 5. `Create AI design execution hook`  | סטטוס: 🔴 לא בוצע
-- execution_order: `191`
+- execution_order: `192`
 - description: לחבר את AI Design ל־`ProjectService` ול־execution cycle כך שכאשר נבחרת משימת עיצוב המערכת מפעילה design generation מבוקר
 - input:
   - `selectedTask`
@@ -1132,7 +1132,7 @@
 - connects_to: `Execution Surface`
 
 6. `Create design proposal validation flow`  | סטטוס: 🔴 לא בוצע
-- execution_order: `192`
+- execution_order: `193`
 - description: לבנות flow שבודק שה־proposal שחזר מהמודל תואם schema, templates, components ו־screen validators לפני review
 - input:
   - `aiDesignProposal`
@@ -1146,7 +1146,7 @@
 - connects_to: `Project State`
 
 7. `Create design proposal review handoff`  | סטטוס: 🔴 לא בוצע
-- execution_order: `193`
+- execution_order: `194`
 - description: לחבר proposal תקף ל־editing, approvals ו־partial acceptance כך שהוא יוכל להיכנס ל־human review במקום להיזרק ישר ל־implementation
 - input:
   - `aiDesignProposal`
@@ -1160,7 +1160,7 @@
 - connects_to: `Execution Surface`
 
 8. `Create design proposal state integration`  | סטטוס: 🔴 לא בוצע
-- execution_order: `194`
+- execution_order: `195`
 - description: להכניס את design proposal המאושר ל־`Project State` עם history, trace ו־links למשימות, למסכים ולזרימת review
 - input:
   - `designProposalReviewState`
@@ -1194,7 +1194,7 @@
 - אם ההכנסה מתבצעת, יש לבצע `renumbering` מרוכז וזהיר לנקודה הזאת והלאה, במקום להמשיך ידנית במסלול כאילו הבלוק לא קיים.
 
 1. `Define editable proposal schema`  | סטטוס: 🟢 בוצע
-- execution_order: `22`
+- execution_order: `19`
 - description: לבנות schema אחיד להצעות שניתן לערוך, לתקן, לאשר חלקית או לדחות ברמת section, component, copy ו־next action
 - input:
   - `proposalType`
@@ -1225,7 +1225,7 @@
 
 
 2. `Create proposal editing system`  | סטטוס: 🟢 בוצע
-- execution_order: `23`
+- execution_order: `20`
 - description: לבנות מערכת עריכה שמאפשרת למשתמש לשנות proposal קיים, להשאיר annotations וליצור revised proposal בלי לשבור את ה־history
 - input:
   - `editableProposal`
@@ -1257,7 +1257,7 @@
 
 
 3. `Create partial acceptance flow`  | סטטוס: 🟢 בוצע
-- execution_order: `24`
+- execution_order: `21`
 - description: לבנות flow שמאפשר לאשר חלק מהצעה, לדחות חלק אחר, ולהחזיר רק את החלקים הבעייתיים ל־regeneration או review נוסף
 - input:
   - `editedProposal`
@@ -1431,7 +1431,7 @@
 
 
 2. `Create live update transport layer`  | סטטוס: 🟢 בוצע
-- execution_order: `4`
+- execution_order: `1`
 - description: לבנות transport לשידור updates חיים ל־UI בלי רענון ידני
 - input:
   - `realtimeEventStream`
@@ -1461,7 +1461,7 @@
 
 
 3. `Create live log streaming module`  | סטטוס: 🟢 בוצע
-- execution_order: `5`
+- execution_order: `2`
 - description: לבנות מודול שמזריק command outputs ולוגים ל־terminal view בזמן אמת
 - input:
   - `liveUpdateChannel`
@@ -1521,7 +1521,7 @@
 
 
 2. `Create project presence model`  | סטטוס: 🟢 בוצע
-- execution_order: `6`
+- execution_order: `3`
 - description: לבנות model שמציג מי נמצא כרגע בפרויקט, באיזה workspace ובאיזה context הוא עובד
 - input:
   - `collaborationEvent`
@@ -1552,7 +1552,7 @@
 
 
 3. `Create project comments and review threads module`  | סטטוס: 🟢 בוצע
-- execution_order: `7`
+- execution_order: `4`
 - description: לבנות מודול ל־comments, review threads ו־contextual discussion על files, diffs, approvals ו־release steps
 - input:
   - `collaborationEvent`
@@ -1583,7 +1583,7 @@
 
 
 4. `Create shared approval flow model`  | סטטוס: 🟢 בוצע
-- execution_order: `8`
+- execution_order: `5`
 - description: לבנות model לשיתוף approval requests בין reviewers, owners ו־operators עם visibility ותיאום החלטות
 - input:
   - `approvalRequest`
@@ -1614,7 +1614,7 @@
 
 
 5. `Create collaboration activity feed`  | סטטוס: 🟢 בוצע
-- execution_order: `9`
+- execution_order: `6`
 - description: לבנות feed של פעולות צוות, comments, approvals ו־workspace transitions ברמת הפרויקט
 - input:
   - `collaborationEvent`
@@ -1649,7 +1649,7 @@
 #### `Project Permission Matrix`
 
 1. `Define project permission schema`  | סטטוס: 🟢 בוצע
-- execution_order: `15`
+- execution_order: `12`
 - description: לבנות schema אחיד להרשאות ברמת פרויקט כמו view, edit, run, approve, deploy, connect accounts ו־manage credentials
 - input:
   - `workspaceModel`
@@ -1679,7 +1679,7 @@
 
 
 2. `Create project role capability matrix`  | סטטוס: 🟢 בוצע
-- execution_order: `16`
+- execution_order: `13`
 - description: לבנות matrix שממפה roles כמו owner, member, operator, reviewer ו־viewer ליכולות מותרות בתוך פרויקט
 - input:
   - `projectPermissionSchema`
@@ -1708,7 +1708,7 @@
 
 
 3. `Create action-level project authorization resolver`  | סטטוס: 🟢 בוצע
-- execution_order: `17`
+- execution_order: `14`
 - description: לבנות resolver שמכריע אם actor מסוים רשאי לבצע פעולה ספציפית על פרויקט כמו deploy, code edit, release approval או credential link
 - input:
   - `actorType`
@@ -1740,7 +1740,7 @@
 
 
 4. `Create privileged action authority resolver`  | סטטוס: 🟢 בוצע
-- execution_order: `18`
+- execution_order: `15`
 - description: לבנות resolver לפעולות רגישות במיוחד כמו deploy, approval override, credential use ו־billing changes
 - input:
   - `projectAuthorizationDecision`
@@ -1775,7 +1775,7 @@
 #### `Multi-Tenancy & Workspace Isolation`
 
 1. `Define tenant isolation schema`  | סטטוס: 🟢 בוצע
-- execution_order: `19`
+- execution_order: `16`
 - description: לבנות schema אחיד לבידוד בין users, workspaces, projects ו־resources משותפים בלי דליפת מידע בין tenants
 - input:
   - `workspaceModel`
@@ -1805,7 +1805,7 @@
 
 
 2. `Create workspace isolation guard`  | סטטוס: 🟢 בוצע
-- execution_order: `20`
+- execution_order: `17`
 - description: לבנות guard שמוודא שכל קריאה לנתונים, artifacts, logs ו־linked accounts נשארת בגבולות ה־workspace הנכון
 - input:
   - `tenantIsolationSchema`
@@ -1836,7 +1836,7 @@
 
 
 3. `Create cross-tenant leak detector`  | סטטוס: 🟢 בוצע
-- execution_order: `21`
+- execution_order: `18`
 - description: לבנות detector שמזהה ערבוב state, learning signals או provider data בין tenants שונים
 - input:
   - `workspaceIsolationDecision`
@@ -2246,7 +2246,7 @@
   - `none`
 
 2. `Create snapshot backup scheduling module`  | סטטוס: 🟢 בוצע
-- execution_order: `25`
+- execution_order: `22`
 - description: לבנות scheduling בסיסי ליצירת snapshots לפי interval קבוע ו־pre-change triggers כמו bootstrap, migration ו־deploy
 - input:
   - `backupStrategy`
@@ -2283,7 +2283,7 @@
 
 
 3. `Create snapshot retention guard`  | סטטוס: 🟢 בוצע
-- execution_order: `26`
+- execution_order: `23`
 - description: לבנות guard פשוט שמגביל max snapshots, מזהה snapshots ישנים למחיקה ומכריע איזה history נשמר לכל פרויקט
 - input:
   - `snapshotRecord`
@@ -2318,7 +2318,7 @@
 
 
 4. `Create snapshot backup worker job`  | סטטוס: 🟢 בוצע
-- execution_order: `27`
+- execution_order: `24`
 - description: לבנות worker/job שמריץ snapshot creation בפועל לפי schedule ומוחק snapshots ישנים לפי retention guard
 - input:
   - `snapshotSchedule`
@@ -2358,7 +2358,7 @@
 
 
 5. `Create disaster recovery checklist`  | סטטוס: 🟢 בוצע
-- execution_order: `28`
+- execution_order: `25`
 - description: לבנות checklist אופרטיבי להתאוששות מתקלות חמורות, אובדן נתונים ו־runtime outages
 - input:
   - `backupStrategy`
@@ -2393,7 +2393,7 @@
 - הערת מצב: ה־checklist מחובר end-to-end ל־backup/restore/snapshot state ול־Platform Observability עצמו, כולל evidence ישיר של traces/logs/readiness דרך API ו־Versioning UI.
 
 5. `Define reliability and SLA schema`  | סטטוס: 🟢 בוצע
-- execution_order: `29.5`
+- execution_order: `28`
 - description: לבנות schema אחיד ל־uptime targets, recovery objectives, failure classes ו־service guarantees של Nexus
 - input:
   - `serviceTierDefinitions`
@@ -2428,7 +2428,7 @@
 - הערת מצב: המודל חדש ב־`src/core/reliability-sla-model.js`, נטען אוטומטית ב־`context-builder` כשאין model קיים, ומספק ל־planner `reliabilityModelId` קנוני בלי להוסיף persistence או לשנות את planner/lifecycle manager.
 
 6. `Create failover and continuity planner`  | סטטוס: 🟢 בוצע
-- execution_order: `28.5`
+- execution_order: `26`
 - description: לבנות planner שמחליט איך ממשיכים כששכבת runtime, queue, provider או workspace cluster נופלים
 - input:
   - `reliabilitySlaModel`
@@ -2465,7 +2465,7 @@
 
 
 7. `Create business continuity lifecycle manager`  | סטטוס: 🟢 בוצע
-- execution_order: `29`
+- execution_order: `27`
 - description: לבנות manager שמחבר backup, failover, incident recovery, retention policies ו־owner continuity decisions למסלול continuity אחד לאורך חיי המוצר
 - input:
   - `backupStrategy`
@@ -2507,7 +2507,7 @@
 #### `Security Hardening`
 
 1. `Create rate limiting and abuse protection`  | סטטוס: 🟢 בוצע
-- execution_order: `30`
+- execution_order: `29`
 - description: לבנות מנגנון rate limiting, abuse detection ו־basic throttling ל־APIs קריטיים
 - input:
   - `requestContext`
@@ -2541,7 +2541,7 @@
 
 
 2. `Create session security controls`  | סטטוס: 🟢 בוצע
-- execution_order: `31`
+- execution_order: `30`
 - description: לבנות controls ל־session expiry, rotation, suspicious activity detection ו־device/session invalidation
 - input:
   - `sessionState`
@@ -2575,7 +2575,7 @@
 
 
 3. `Create security audit event logger`  | סטטוס: 🟢 בוצע
-- execution_order: `32`
+- execution_order: `31`
 - description: לבנות logger ייעודי לאירועי אבטחה כמו failed login, privilege changes, secret access ו־policy violations
 - input:
   - `securityEvent`
@@ -2611,7 +2611,7 @@
 
 
 4. `Create secret rotation workflow`  | סטטוס: 🟢 בוצע
-- execution_order: `33`
+- execution_order: `32`
 - description: לבנות workflow לרוטציה של credentials, invalidation של references ועדכון dependent connectors
 - input:
   - `credentialReference`
@@ -2648,7 +2648,7 @@
 #### `Feature Flags & Kill Switch Control`
 
 1. `Define feature flag schema`  | סטטוס: 🟢 בוצע
-- execution_order: `34`
+- execution_order: `33`
 - description: לבנות schema אחיד ל־feature flags, rollout scopes, kill switches, environment targeting ו־default fallbacks
 - input:
   - `featureDefinitions`
@@ -2683,7 +2683,7 @@
 
 
 2. `Create feature flag resolver`  | סטטוס: 🟢 בוצע
-- execution_order: `35`
+- execution_order: `34`
 - description: לבנות resolver שמכריע אילו capabilities, routes או actions מופעלים לפי workspace, user, environment ו־risk level
 - input:
   - `featureFlagSchema`
@@ -2719,7 +2719,7 @@
 
 
 3. `Create emergency kill switch guard`  | סטטוס: 🟢 בוצע
-- execution_order: `36`
+- execution_order: `35`
 - description: לבנות guard שמאפשר לכבות במהירות execution paths, providers או risky capabilities במקרה incident או security event
 - input:
   - `featureFlagDecision`
@@ -2758,7 +2758,7 @@
 #### `Data Privacy & Compliance`
 
 1. `Define data privacy classification schema`  | סטטוס: 🟢 בוצע
-- execution_order: `37`
+- execution_order: `36`
 - description: לבנות schema אחיד לסיווג נתונים כמו public, internal, confidential, secret, personal data ו־learning-safe data
 - input:
   - `dataAsset`
@@ -2795,7 +2795,7 @@
 
 
 2. `Create privacy retention and deletion policy resolver`  | סטטוס: 🟢 בוצע
-- execution_order: `38`
+- execution_order: `37`
 - description: לבנות resolver שקובע מה נשמר, לכמה זמן, מה מותר ללמידה ומה חייב להימחק לפי סוג הנתון
 - input:
   - `dataPrivacyClassification`
@@ -2834,7 +2834,7 @@
 
 
 3. `Create compliance consent and legal basis registry`  | סטטוס: 🟢 בוצע
-- execution_order: `39`
+- execution_order: `38`
 - description: לבנות registry להסכמות, legal basis ו־processing scopes עבור data usage, learning ו־notifications
 - input:
   - `userIdentity`
@@ -2877,7 +2877,7 @@
 
 
 4. `Create privacy rights execution module`  | סטטוס: 🟢 בוצע
-- execution_order: `40`
+- execution_order: `39`
 - description: לבנות מודול לבקשות export, delete, forget me ו־learning opt-out ברמת user/workspace
 - input:
   - `privacyRequest`
@@ -2912,7 +2912,7 @@
 
 
 5. `Create compliance audit summary`  | סטטוס: 🟢 בוצע
-- execution_order: `41`
+- execution_order: `40`
 - description: לבנות summary שמרכז privacy classifications, consents, deletions ו־learning restrictions לצרכי audit ותאימות
 - input:
   - `privacyRightsResult`
@@ -2950,7 +2950,7 @@
 #### `Agent Governance & Sandboxing`
 
 1. `Define agent governance schema`  | סטטוס: 🟢 בוצע
-- execution_order: `42`
+- execution_order: `41`
 - description: לבנות schema אחיד ל־agent limits, allowed tools, sandbox levels, spend thresholds ו־escalation rules
 - input:
   - `agentType`
@@ -2988,7 +2988,7 @@
 
 
 2. `Create agent sandbox policy resolver`  | סטטוס: 🟢 בוצע
-- execution_order: `43`
+- execution_order: `42`
 - description: לבנות resolver שקובע באיזה sandbox או execution boundary agent מסוים רשאי לפעול
 - input:
   - `agentGovernancePolicy`
@@ -3024,7 +3024,7 @@
 
 
 3. `Create agent action limit guard`  | סטטוס: 🟢 בוצע
-- execution_order: `44`
+- execution_order: `43`
 - description: לבנות guard שמגביל actions מסוכנים, כמות פעולות, cost spikes ו־provider side effects לפי agent policy
 - input:
   - `sandboxDecision`
@@ -3062,7 +3062,7 @@
 
 
 4. `Create agent governance audit trail`  | סטטוס: 🟢 בוצע
-- execution_order: `45`
+- execution_order: `44`
 - description: לבנות trace שמסביר אילו limits הוחלו על agent, מה נחסם ומה דרש escalation
 - input:
   - `agentGovernancePolicy`
@@ -3106,7 +3106,7 @@
 #### `Platform Cost & Usage Control`
 
 1. `Define platform usage cost schema`  | סטטוס: 🟢 בוצע
-- execution_order: `46`
+- execution_order: `45`
 - description: לבנות schema אחיד לעלויות usage של מודלים, workspaces, storage, builds ו־provider operations
 - input:
   - `usageEvent`
@@ -3143,7 +3143,7 @@
 
 
 2. `Create AI usage meter`  | סטטוס: 🟢 בוצע
-- execution_order: `47`
+- execution_order: `46`
 - description: לבנות meter שסופר צריכת מודלים, tool runs ו־token usage לכל פרויקט, משתמש וזרימת עבודה
 - input:
   - `modelInvocation`
@@ -3181,7 +3181,7 @@
 
 
 3. `Create workspace compute usage tracker`  | סטטוס: 🟢 בוצע
-- execution_order: `48`
+- execution_order: `47`
 - description: לבנות tracker ל־CPU, RAM, runtime duration ו־active workspace windows עבור cloud execution workspaces
 - input:
   - `cloudWorkspaceModel`
@@ -3220,7 +3220,7 @@
 
 
 4. `Create storage and artifact cost tracker`  | סטטוס: 🟢 בוצע
-- execution_order: `49`
+- execution_order: `48`
 - description: לבנות tracker לעלויות קבצים, artifacts, logs ו־snapshots לפי נפח, שמירה ומשך חיים
 - input:
   - `storageRecord`
@@ -3258,7 +3258,7 @@
 
 
 5. `Create build and deploy cost tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `50`
+- execution_order: `49`
 - description: לבנות tracker לעלויות build, package, deploy ו־specialized runners כמו remote mac
 - input:
   - `buildArtifact`
@@ -3273,7 +3273,7 @@
 
 
 6. `Create cost summary aggregator`  | סטטוס: 🟢 בוצע
-- execution_order: `51`
+- execution_order: `50`
 - description: לבנות aggregator שמרכז עלויות לפי משתמש, פרויקט, workspace, provider ותקופה
 - input:
   - `platformCostMetric`
@@ -3316,7 +3316,7 @@
 
 
 7. `Create usage budget guard`  | סטטוס: 🟢 בוצע
-- execution_order: `52`
+- execution_order: `51`
 - description: לבנות guard שמזהה חריגות usage, חוסם פעולות יקרות מדי ומבקש approval לפני חציית תקציב
 - input:
   - `costSummary`
@@ -3352,7 +3352,7 @@
 
 
 8. `Create cost visibility API and dashboard model`  | סטטוס: 🟢 בוצע
-- execution_order: `53`
+- execution_order: `52`
 - description: לבנות payload ו־dashboard model שמציגים למשתמש עלויות, usage trends, top cost drivers ו־budget warnings
 - input:
   - `costSummary`
@@ -3389,7 +3389,7 @@
 #### `Cost-Aware Decision Engine`
 
 1. `Create cost-aware action selector`  | סטטוס: 🟢 בוצע
-- execution_order: `54`
+- execution_order: `53`
 - description: לבנות selector שמעדיף בין actions חלופיים לפי expected value, latency, provider cost ו־budget pressure
 - input:
   - `candidateActions`
@@ -3425,7 +3425,7 @@
 
 
 2. `Create budget constraint engine`  | סטטוס: 🟢 בוצע
-- execution_order: `55`
+- execution_order: `54`
 - description: לבנות engine שמחשב budget envelopes, hard limits ו־soft limits לפי workspace, provider lane ו־execution class
 - input:
   - `costSummary`
@@ -3465,11 +3465,12 @@
 #### `Billing & Monetization System`
 
 1. `Define billing plan schema`  | סטטוס: 🟢 בוצע
-- execution_order: `56`
+- execution_order: `55`
 - description: לבנות schema אחיד ל־plans, limits, entitlements, trial rules ו־pricing model של Nexus
 - input:
-  - `pricingStrategy`
-  - `usageDimensions`
+  - `platformCostMetric`
+  - `agentGovernancePolicy`
+  - `reliabilitySlaModel`
 - output:
   - `billingPlanSchema`
 - dependencies:
@@ -3499,9 +3500,9 @@
   - `none`
 
 
-2. `Create entitlement resolver`  | סטטוס: 🟢 בוצע
-- execution_order: `57`
-- description: לבנות resolver שקובע אילו capabilities, limits ו־features זמינים למשתמש או workspace לפי plan נוכחי
+2. `Create entitlement resolver`  | סטטוס: 🟡 חלקי
+- execution_order: `56`
+- description: לבנות resolver שקובע אילו features ו־limits זמינים למשתמש או workspace לפי plan נוכחי; כרגע המימוש נשען רק על `billingPlanSchema.entitlements.default` בלי current plan runtime
 - input:
   - `billingPlanSchema`
   - `workspaceModel`
@@ -3511,12 +3512,12 @@
   - `Define billing plan schema`  | סטטוס: 🟢 בוצע
   - `Workspace & Access Control`
 - connects_to: `Project State`
-- completion_type: `api_ready`
+- completion_type: `decision_producer`
 - coverage_check:
-  - description: `full` via [entitlement-decision-resolver.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/entitlement-decision-resolver.js)
-  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
-  - output: `full` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
-  - dependencies: `full` via existing `billingPlanSchema` and `workspaceModel`
+  - description: `partial` via [entitlement-decision-resolver.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/entitlement-decision-resolver.js)
+  - input: `partial` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
+  - output: `partial` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
+  - dependencies: `partial` — עדיין אין `workspaceBillingState` או current plan assignment runtime
 - user_facing_path:
   - exists: `yes`
   - entry_point: `GET /api/projects/:id`
@@ -3525,52 +3526,239 @@
 - green_criteria:
   - מוחזר `{ entitlementDecision }`
   - decision enum הוא רק `allowed|restricted|blocked`
-  - אין runtime usage logic
+  - resolution נשען על current plan runtime ולא רק על `default` schema
   - אין `capabilities`
   - features נצרכים רק מ־`billingPlanSchema`
   - יש חיבור ל־`context` ול־`state`
   - מופיע ב־project payload
   - יש unit tests ו־integration tests שעוברים
 - missing_for_green:
-  - `none`
+  - `workspaceBillingState`
+  - `plan-aware entitlement selection`
+  - `tests for upgrade/downgrade/cancel transitions`
 
 
-3. `Create subscription lifecycle module`  | סטטוס: 🟢 בוצע
-- execution_order: `58`
-- description: לבנות producer שמחזיר snapshot דטרמיניסטי של מצב subscription נוכחי בלי payment history ובלי lifecycle engine מלא
+3. `Define billing event schema`  | סטטוס: 🔴 לא בוצע
+- execution_order: `57`
+- description: לבנות schema אחיד לאירועי checkout, renewal, payment failure, cancellation, plan change ו־subscription state כדי לייצר source-of-truth קנוני ל־billing runtime
 - input:
-  - `billingPlanSchema`
-  - `workspaceModel`
+  - `workspaceId`
+  - `billingAction`
+  - `amount`
+  - `providerPayload`
 - output:
-  - `subscriptionState`
+  - `billingEvent`
 - dependencies:
-  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
+  - `External Accounts Connector`
+  - `Identity & Auth`
 - connects_to: `Project State`
-- completion_type: `api_ready`
+- completion_type: `schema_producer`
 - coverage_check:
-  - description: `full` via [subscription-lifecycle-module.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/subscription-lifecycle-module.js)
-  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
-  - output: `full` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
-  - dependencies: `full` via existing `billingPlanSchema` and `workspaceModel`
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `partial` — external connector dependency עדיין לא מיושם בקוד
 - user_facing_path:
   - exists: `yes`
   - entry_point: `GET /api/projects/:id`
   - user_can_trigger_it: `no`
   - user_can_see_result: `yes`
 - green_criteria:
-  - מוחזר `{ subscriptionState }`
-  - status הוא רק `trial|active`
-  - אין payment history או runtime usage logic
-  - אין statuses נוספים
-  - יש חיבור ל־`context` ול־`state`
-  - מופיע ב־project payload
+  - מוגדר catalog קנוני של event types ל־checkout / renewal / payment failure / retry / cancel / plan change / subscription status
+  - כל event מחזיק workspace/user/provider references, amount/currency ו־idempotency anchor
+  - ה־schema לא ממציא payment state שלא הגיע מספק או מ־runtime אמיתי
   - יש unit tests ו־integration tests שעוברים
 - missing_for_green:
-  - `none`
+  - `canonical provider payload contract`
+  - `event type catalog`
+  - `tests`
+- risks:
+  - schema צר מדי ישבור later ingestion
+  - schema עשיר מדי ימציא provider semantics שלא קיימים עדיין
 
 
-4. `Create usage-to-billing mapper`  | סטטוס: 🔴 לא בוצע
+4. `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
+- execution_order: `58`
+- description: לבנות ingestion/normalization deterministic לאירועי billing כך ש־checkout flows, retries, failures ו־cancellations יומרו ל־`normalizedBillingEvent` קנוני ואידמפוטנטי
+- input:
+  - `billingEvent`
+  - `providerPayload`
+  - `workspaceModel`
+- output:
+  - `normalizedBillingEvent`
+- dependencies:
+  - `Define billing event schema`  | סטטוס: 🔴 לא בוצע
+  - `Workspace & Access Control`
+- connects_to: `Project State`
+- completion_type: `normalizer`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `partial` — billing events עצמם עדיין לא קיימים
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - raw provider payloads מנורמלים ל־`normalizedBillingEvent`
+  - ingestion הוא idempotent ולא יוצר duplicate transitions
+  - unknown provider fields נשמרים כ־trace ולא שוברים את ה־pipeline
+  - יש חיבור ל־`context` ול־`state`
+  - יש tests ל־retry/failure/cancel/update flows
+- missing_for_green:
+  - `event store or append path`
+  - `provider webhook contract`
+  - `tests`
+- risks:
+  - silent normalization יאבד billing evidence
+  - חוסר idempotency יכפיל transitions
+
+
+5. `Create paying user tracker`  | סטטוס: 🔴 לא בוצע
 - execution_order: `59`
+- description: לבנות tracker שסופר משתמשים משלמים, converted users ו־active subscriptions על בסיס `normalizedBillingEvent` ולא על בסיס signals אד־הוק
+- input:
+  - `normalizedBillingEvents`
+- output:
+  - `payingUserMetrics`
+- dependencies:
+  - `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+- completion_type: `tracker`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `missing`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Project State`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - converted/paying/active subscription counts מחושבים רק מאירועים מנורמלים
+  - אין double counting על retries או duplicate events
+  - יש unit tests ו־aggregation tests
+- missing_for_green:
+  - `normalized billing events`
+  - `tests`
+- risks:
+  - retries או duplicate events ינפחו paying counts
+
+
+6. `Create revenue summary aggregator`  | סטטוס: 🔴 לא בוצע
+- execution_order: `60`
+- description: לבנות aggregation של revenue, ARPU בסיסי, conversion counts ו־payment posture summary שישמש גם analytics וגם billing runtime
+- input:
+  - `payingUserMetrics`
+- output:
+  - `revenueSummary`
+- dependencies:
+  - `Create paying user tracker`  | סטטוס: 🔴 לא בוצע
+- connects_to: `Project State`
+- completion_type: `summary_aggregator`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `missing`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Project State`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - summary מחזיר revenue/conversion posture קנוני
+  - אין ערבוב בין analytics summary לבין raw billing events
+  - יש tests ל־aggregation windows ול־currency-safe counting
+- missing_for_green:
+  - `paying user metrics`
+  - `tests`
+- risks:
+  - mixing analytics and runtime concerns יטשטש source-of-truth
+
+
+7. `Create workspace billing state source`  | סטטוס: 🔴 לא בוצע
+- execution_order: `61`
+- description: לבנות source-of-truth runtime ל־workspace billing state שמחזיק current plan assignment, subscription posture, trial window ו־last billing transition מתוך events מנורמלים
+- input:
+  - `normalizedBillingEvents`
+  - `billingPlanSchema`
+  - `workspaceModel`
+- output:
+  - `workspaceBillingState`
+- dependencies:
+  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
+  - `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
+  - `Workspace & Access Control`
+- connects_to: `Project State`
+- completion_type: `state_source`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `partial` — תלוי ב־billing events שעדיין חסרים
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - מוחזר `workspaceBillingState` עם `currentPlanId`, `subscriptionStatus`, `source` ו־`summary`
+  - אין plan selection מומצא כשאין events
+  - `past_due/grace/canceled` מחושבים רק אם יש event evidence מתאים
+  - יש חיבור ל־`context` ול־`state`
+  - יש tests ל־plan transition, retry recovery, cancellation ו־grace entry/exit
+- missing_for_green:
+  - `normalized billing events`
+  - `plan transition evidence`
+  - `tests`
+- risks:
+  - source לא קנוני ישבור entitlements ו־lifecycle downstream
+
+
+8. `Create subscription lifecycle module`  | סטטוס: 🟡 חלקי
+- execution_order: `62`
+- description: לשדרג את producer ה־snapshot הקיים ל־lifecycle producer אמיתי שנשען על `workspaceBillingState`; כרגע המימוש מחזיר רק `trial|active` מתוך schema fallback
+- input:
+  - `workspaceBillingState`
+  - `workspaceModel`
+- output:
+  - `subscriptionState`
+- dependencies:
+  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
+  - `Create workspace billing state source`  | סטטוס: 🔴 לא בוצע
+  - `Billing & Revenue Metrics`
+- connects_to: `Project State`
+- completion_type: `lifecycle_state_producer`
+- coverage_check:
+  - description: `partial` via [subscription-lifecycle-module.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/subscription-lifecycle-module.js)
+  - input: `partial` — המימוש הנוכחי עדיין ניזון מ־`billingPlanSchema`, לא מ־`workspaceBillingState`
+  - output: `partial` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
+  - dependencies: `partial` — אין billing event layer או runtime billing state
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - `subscriptionState` נשען על `workspaceBillingState`
+  - statuses נתמכים לפחות עבור `trial|active|past_due|grace|canceled`
+  - אין inferred status בלי event evidence
+  - `source` ו־`summary` משקפים fallback לעומת runtime truth
+  - יש unit tests ו־integration tests
+- missing_for_green:
+  - `workspaceBillingState`
+  - `billing event ingestion`
+  - `tests for past_due/grace/canceled`
+- risks:
+  - תיעוד שמציג snapshot כ־full lifecycle יטעה את רצף המימוש
+
+
+9. `Create usage-to-billing mapper`  | סטטוס: 🔴 לא בוצע
+- execution_order: `63`
 - description: למפות usage בפועל ל־billable units כמו active workspaces, AI consumption, builds או premium actions
 - input:
   - `costSummary`
@@ -3579,26 +3767,71 @@
   - `billableUsage`
 - dependencies:
   - `Platform Cost & Usage Control`
-  - `Define billing plan schema`  | סטטוס: 🔴 לא בוצע
+  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `mapper`
+- coverage_check:
+  - description: `missing`
+  - input: `partial` — `costSummary` קיים, אבל billable mapping rules עדיין לא קיימים
+  - output: `missing`
+  - dependencies: `partial`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - usage ממופה ל־billable units קנוניים
+  - אין passthrough raw cost blobs
+  - יש tests ל־workspace/model/build/provider-operation mapping
+- missing_for_green:
+  - `billing mapping rules`
+  - `tests`
+- risks:
+  - raw cost passthrough יערב cost visibility עם billing units
 
 
-5. `Create checkout and subscription API`  | סטטוס: 🔴 לא בוצע
-- execution_order: `60`
-- description: לבנות API ליצירת checkout, שדרוג plan, ביטול subscription וניהול billing details
+10. `Create checkout and subscription API`  | סטטוס: 🔴 לא בוצע
+- execution_order: `64`
+- description: לבנות API ליצירת checkout, שדרוג או הנמכת plan, ביטול subscription, retry payment, עדכון billing details וניהול payment method
 - input:
   - `workspaceId`
   - `billingInput`
 - output:
   - `billingPayload`
 - dependencies:
-  - `Create subscription lifecycle module`  | סטטוס: 🔴 לא בוצע
+  - `Define billing event schema`  | סטטוס: 🔴 לא בוצע
+  - `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
+  - `Create workspace billing state source`  | סטטוס: 🔴 לא בוצע
   - `Identity & Auth`
 - connects_to: `Project State`
+- completion_type: `api_surface`
+- coverage_check:
+  - description: `missing`
+  - input: `missing`
+  - output: `missing`
+  - dependencies: `partial`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Execution Surface`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - אפשר ליצור checkout
+  - אפשר לבקש upgrade/downgrade/cancel/retry/update-payment-method
+  - הפעולות מייצרות billing events או runtime side effects קנוניים
+  - מוחזר payload אחיד ל־workspace
+  - יש API tests ו־authorization tests
+- missing_for_green:
+  - `billing event layer`
+  - `runtime state source`
+  - `tests`
+- risks:
+  - API בלי event emission ישאיר state לא עקבי
 
 
-6. `Create billing enforcement guard`  | סטטוס: 🔴 לא בוצע
-- execution_order: `61`
+11. `Create billing enforcement guard`  | סטטוס: 🔴 לא בוצע
+- execution_order: `65`
 - description: לבנות guard שחוסם שימוש מחוץ ל־entitlements או מעל limits ומציע upgrade path מתאים
 - input:
   - `entitlementDecision`
@@ -3606,23 +3839,73 @@
 - output:
   - `billingGuardDecision`
 - dependencies:
-  - `Create entitlement resolver`  | סטטוס: 🔴 לא בוצע
+  - `Create entitlement resolver`  | סטטוס: 🟢 בוצע
   - `Create usage-to-billing mapper`  | סטטוס: 🔴 לא בוצע
+  - `Create workspace billing state source`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Execution Surface`
+- completion_type: `guard`
+- coverage_check:
+  - description: `missing`
+  - input: `partial`
+  - output: `missing`
+  - dependencies: `partial`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Execution Surface`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - guard נשען על entitlements, usage ו־workspace billing posture
+  - מחזיר upgrade/retry path explainable
+  - אין חסימה שמבוססת על billing state מומצא
+  - יש tests ל־out-of-plan / over-limit / payment-issue flows
+- missing_for_green:
+  - `billable usage`
+  - `workspace billing state`
+  - `tests`
+- risks:
+  - guard בלי billing posture אמיתי יחסום או יאפשר בטעות
 
 
-7. `Create billing settings and plan selection screen model`  | סטטוס: 🔴 לא בוצע
-- execution_order: `62`
-- description: לבנות model למסכי plan selection, usage visibility, invoices ו־upgrade prompts
+12. `Create billing settings and plan selection screen model`  | סטטוס: 🔴 לא בוצע
+- execution_order: `66`
+- description: לבנות model למסכי current plan, plan selection, usage visibility, billing history, retry/cancel/renew CTAs, failure notices ו־upgrade prompts
 - input:
   - `subscriptionState`
   - `billingGuardDecision`
+  - `workspaceBillingState`
+  - `normalizedBillingEvent`
 - output:
   - `billingSettingsModel`
 - dependencies:
   - `Create checkout and subscription API`  | סטטוס: 🔴 לא בוצע
+  - `Create billing event ingestion and normalization module`  | סטטוס: 🔴 לא בוצע
   - `UI / UX Foundation`
 - connects_to: `Project State`
+- completion_type: `screen_model`
+- coverage_check:
+  - description: `missing`
+  - input: `partial`
+  - output: `missing`
+  - dependencies: `partial`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `Execution Surface`
+  - user_can_trigger_it: `yes`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - המסך מציג current plan card ו־subscription status surface
+  - יש trial/past_due/grace/payment-failure banners רק אם state אמיתי קיים
+  - יש CTAs ל־upgrade/downgrade/retry/cancel/renew
+  - history/timeline נשען על billing events מנורמלים, לא על placeholder data
+  - יש UI model tests ו־payload contract tests
+- missing_for_green:
+  - `workspace billing state`
+  - `normalized billing events`
+  - `checkout/subscription api`
+  - `tests`
+- risks:
+  - UI model בלי runtime billing state יציג banners/CTAs לא אמינים
 
 ---
 
@@ -3632,7 +3915,7 @@
 #### `Project Creation Metrics`
 
 1. `Define project creation event schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `63`
+- execution_order: `67`
 - description: לבנות schema אחיד לאירועי יצירת פרויקט דרך Nexus
 - input:
   - `userId`
@@ -3646,7 +3929,7 @@
 
 
 2. `Create project creation tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `64`
+- execution_order: `68`
 - description: לבנות tracker שמקליט כל יצירת פרויקט ומעדכן counters מצטברים
 - input:
   - `projectCreationEvent`
@@ -3658,7 +3941,7 @@
 
 
 3. `Create project creation aggregation module`  | סטטוס: 🔴 לא בוצע
-- execution_order: `65`
+- execution_order: `69`
 - description: לבנות aggregation לפי יום, שבוע, משתמש ומקור יצירה
 - input:
   - `projectCreationMetrics`
@@ -3672,7 +3955,7 @@
 #### `Task Execution Metrics`
 
 1. `Define task execution metric schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `66`
+- execution_order: `70`
 - description: לבנות schema אחיד למטריקות של משימות שבוצעו בפועל
 - input:
   - `taskResult`
@@ -3685,7 +3968,7 @@
 
 
 2. `Create task execution tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `67`
+- execution_order: `71`
 - description: לבנות tracker שסופר משימות completed, failed, retried ו־blocked
 - input:
   - `taskExecutionMetric`
@@ -3697,7 +3980,7 @@
 
 
 3. `Create task throughput aggregator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `68`
+- execution_order: `72`
 - description: לבנות aggregation לפי פרויקט, lane, agent ופרקי זמן
 - input:
   - `taskExecutionCounters`
@@ -3711,7 +3994,7 @@
 #### `Time Saved Estimation`
 
 1. `Define time saved estimation schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `69`
+- execution_order: `73`
 - description: לבנות schema אחיד לחישוב זמן שנחסך מול baseline
 - input:
   - `taskType`
@@ -3725,7 +4008,7 @@
 
 
 2. `Create baseline effort estimator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `70`
+- execution_order: `74`
 - description: לבנות estimator שמחשב זמן ידני משוער לפי task type, domain ו־scope
 - input:
   - `taskType`
@@ -3739,7 +4022,7 @@
 
 
 3. `Create time saved calculator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `71`
+- execution_order: `75`
 - description: לבנות calculator שמחשב `timeSaved` לכל משימה ולכל פרויקט
 - input:
   - `executionDuration`
@@ -3752,7 +4035,7 @@
 
 
 4. `Create productivity summary aggregator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `72`
+- execution_order: `76`
 - description: לבנות aggregation של זמן שנחסך לפי משתמש, פרויקט ותקופה
 - input:
   - `timeSavedMetrics`
@@ -3766,7 +4049,7 @@
 #### `User Activity & Retention`
 
 1. `Define user activity event schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `73`
+- execution_order: `77`
 - description: לבנות schema אחיד לאירועי שימוש במוצר עצמו
 - input:
   - `userId`
@@ -3780,7 +4063,7 @@
 
 
 2. `Create session activity tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `74`
+- execution_order: `78`
 - description: לבנות tracker לסשנים, חזרות, active sessions ו־last seen
 - input:
   - `userActivityEvent`
@@ -3792,7 +4075,7 @@
 
 
 3. `Create returning user resolver`  | סטטוס: 🔴 לא בוצע
-- execution_order: `75`
+- execution_order: `79`
 - description: לבנות resolver שקובע אם משתמש הוא returning user לפי windows מוגדרים
 - input:
   - `userSessionMetrics`
@@ -3804,7 +4087,7 @@
 
 
 4. `Create retention metrics aggregator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `76`
+- execution_order: `80`
 - description: לבנות aggregation של D1/D7/D30, repeat usage ו־retention cohorts
 - input:
   - `returningUserMetrics`
@@ -3816,7 +4099,7 @@
 
 
 5. `Create retention and re-engagement planner`  | סטטוס: 🔴 לא בוצע
-- execution_order: `77`
+- execution_order: `81`
 - description: לבנות planner מפורש לשימור, reactivation ו־ongoing re-engagement לפי cohorts, drop-offs ו־product milestones
 - input:
   - `retentionSummary`
@@ -3831,48 +4114,15 @@
 
 #### `Billing & Revenue Metrics`
 
-1. `Define billing event schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `78`
-- description: לבנות schema אחיד לאירועי תשלום, conversion ו־subscription state
-- input:
-  - `userId`
-  - `billingAction`
-  - `amount`
-- output:
-  - `billingEvent`
-- dependencies:
-  - `External Accounts Connector`
-- connects_to: `Project State`
-
-
-2. `Create paying user tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `79`
-- description: לבנות tracker שסופר משתמשים משלמים, converted users ו־active subscriptions
-- input:
-  - `billingEvents`
-- output:
-  - `payingUserMetrics`
-- dependencies:
-  - `Define billing event schema`  | סטטוס: 🔴 לא בוצע
-- connects_to: `Project State`
-
-
-3. `Create revenue summary aggregator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `80`
-- description: לבנות aggregation של revenue, ARPU בסיסי ו־conversion counts
-- input:
-  - `payingUserMetrics`
-- output:
-  - `revenueSummary`
-- dependencies:
-  - `Create paying user tracker`  | סטטוס: 🔴 לא בוצע
-- connects_to: `Project State`
+הערת ארגון:
+- foundations של billing runtime (`Define billing event schema`, `Create paying user tracker`, `Create revenue summary aggregator`) הוזזו לבלוק `Billing & Monetization System` כדי ליישר את שרשרת ה־payments/runtime לפני `subscription lifecycle`.
+- בלוק `Nexus Analytics Dashboard` ממשיך לצרוך `revenueSummary` מאותו source-of-truth בלי ליצור backlog כפול.
 
 
 #### `Nexus Analytics Dashboard`
 
 1. `Define analytics dashboard schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `81`
+- execution_order: `82`
 - description: לבנות schema אחיד ל־product analytics dashboard של Nexus
 - input:
   - `analyticsMetrics`
@@ -3884,7 +4134,7 @@
 
 
 2. `Create analytics summary assembler`  | סטטוס: 🔴 לא בוצע
-- execution_order: `82`
+- execution_order: `83`
 - description: לבנות assembler שמאגד project creation, tasks, time saved, retention ו־revenue ל־summary אחד
 - input:
   - `projectCreationSummary`
@@ -3900,7 +4150,7 @@
 
 
 3. `Create analytics API`  | סטטוס: 🔴 לא בוצע
-- execution_order: `83`
+- execution_order: `84`
 - description: לבנות endpoints לקבלת metrics ו־summaries של Nexus עצמו
 - input:
   - `timeRange`
@@ -3913,7 +4163,7 @@
 
 
 4. `Create analytics dashboard screen`  | סטטוס: 🔴 לא בוצע
-- execution_order: `84`
+- execution_order: `85`
 - description: לבנות מסך dashboard פנימי למדדי Nexus
 - input:
   - `analyticsPayload`
@@ -3928,7 +4178,7 @@
 #### `Product Feedback Loop`
 
 1. `Define feature success schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `85`
+- execution_order: `86`
 - description: לבנות schema אחיד למדידת הצלחת פיצ'ר לפי activation, repeat usage, completion quality, override rate ו־drop-off points
 - input:
   - `featureUsageEvents`
@@ -3941,7 +4191,7 @@
 
 
 2. `Create feature success tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `86`
+- execution_order: `87`
 - description: לבנות tracker שמחשב עבור כל feature את adoption, stickiness, success rate ו־friction indicators
 - input:
   - `featureSuccessMetric`
@@ -3955,7 +4205,7 @@
 
 
 3. `Create product iteration feedback engine`  | סטטוס: 🔴 לא בוצע
-- execution_order: `87`
+- execution_order: `88`
 - description: לבנות engine שמחזיר recommendations לשיפור flows, features ו־defaults לפי feature success, outcome scores ו־user behavior
 - input:
   - `featureSuccessSummary`
@@ -3972,7 +4222,7 @@
 #### `Outcome & Goal Evaluation`
 
 1. `Define outcome evaluation schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `88`
+- execution_order: `89`
 - description: לבנות schema אחיד להערכת outcomes של פעולות ברמת execution, product, user value ו־business impact
 - input:
   - `actionResult`
@@ -3987,7 +4237,7 @@
 
 
 2. `Create action success scoring engine`  | סטטוס: 🔴 לא בוצע
-- execution_order: `89`
+- execution_order: `90`
 - description: לבנות engine שמחשב success score אמיתי לפעולה לפי outcome quality, side effects, reversals ו־user acceptance
 - input:
   - `outcomeEvaluation`
@@ -4001,7 +4251,7 @@
 
 
 3. `Create outcome feedback loop`  | סטטוס: 🔴 לא בוצע
-- execution_order: `90`
+- execution_order: `91`
 - description: לבנות loop שמחזיר success scores ו־failure patterns חזרה ל־learning, recommendation ו־priority systems
 - input:
   - `actionSuccessScore`
@@ -4015,7 +4265,7 @@
 
 
 4. `Create goal progress evaluator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `91`
+- execution_order: `92`
 - description: לבנות evaluator שמודד כמה התקדמנו למטרה המוצהרת של הפרויקט לפי outcomes, blockers, throughput ו־first value progression
 - input:
   - `projectGoal`
@@ -4030,7 +4280,7 @@
 
 
 5. `Create milestone tracking system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `92`
+- execution_order: `93`
 - description: לבנות system שממפה milestones קריטיים, עוקב אחרי completion שלהם ומציג drift בין milestone plan לבין actual outcome
 - input:
   - `goalProgressState`
@@ -4046,7 +4296,7 @@
 #### `Meta Orchestration Layer`
 
 1. `Define post-execution evaluation schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `93`
+- execution_order: `94`
 - description: לבנות schema אחיד לזרימה שאחרי execution כולל consistency, outcome, bottleneck, cost ו־feedback signals
 - input:
   - `executionResult`
@@ -4126,7 +4376,7 @@
 #### `Product Positioning & Messaging`
 
 1. `Define Nexus positioning schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `94`
+- execution_order: `95`
 - description: לבנות schema אחיד ל־positioning של Nexus כולל audience, problem, promise, differentiation ו־proof points
 - input:
   - `productVision`
@@ -4141,7 +4391,7 @@
 
 
 2. `Create core messaging framework`  | סטטוס: 🔴 לא בוצע
-- execution_order: `95`
+- execution_order: `96`
 - description: לבנות framework להודעות הליבה של Nexus כולל headline, subheadline, value props, objections ו־CTA angles
 - input:
   - `nexusPositioning`
@@ -4153,7 +4403,7 @@
 
 
 3. `Create audience-specific messaging variants`  | סטטוס: 🔴 לא בוצע
-- execution_order: `96`
+- execution_order: `97`
 - description: לבנות וריאציות messaging לקהלים שונים כמו indie builders, agencies, founders ו־operators
 - input:
   - `messagingFramework`
@@ -4167,7 +4417,7 @@
 
 
 4. `Create objection and FAQ map`  | סטטוס: 🔴 לא בוצע
-- execution_order: `97`
+- execution_order: `98`
 - description: לבנות מפת objections, trust concerns ו־FAQ product answers עבור Nexus
 - input:
   - `messagingFramework`
@@ -4182,7 +4432,7 @@
 
 
 5. `Create product CTA strategy`  | סטטוס: 🔴 לא בוצע
-- execution_order: `98`
+- execution_order: `99`
 - description: להגדיר אילו CTAs מובילים את Nexus כמו join waitlist, request access, start project או book demo
 - input:
   - `messagingFramework`
@@ -4198,7 +4448,7 @@
 #### `Product Website & Conversion Funnel`
 
 1. `Define Nexus website schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `99`
+- execution_order: `100`
 - description: לבנות schema אחיד למבנה האתר של Nexus כולל home, product, pricing, FAQ ו־conversion pages
 - input:
   - `messagingFramework`
@@ -4212,7 +4462,7 @@
 
 
 2. `Create landing page information architecture`  | סטטוס: 🔴 לא בוצע
-- execution_order: `100`
+- execution_order: `101`
 - description: לבנות information architecture לדף הבית וה־landing pages של Nexus כולל sections, proof blocks ו־CTA placements
 - input:
   - `nexusWebsiteSchema`
@@ -4225,7 +4475,7 @@
 
 
 3. `Create Nexus website copy pack`  | סטטוס: 🔴 לא בוצע
-- execution_order: `101`
+- execution_order: `102`
 - description: לבנות חבילת copy מלאה לאתר של Nexus כולל headline, subheadline, sections, FAQ ו־microcopy
 - input:
   - `landingPageIa`
@@ -4240,7 +4490,7 @@
 
 
 4. `Create website conversion flow`  | סטטוס: 🔴 לא בוצע
-- execution_order: `102`
+- execution_order: `103`
 - description: לבנות flow קנוני של מבקר -> CTA -> signup/waitlist/access request -> onboarding entry
 - input:
   - `productCtaStrategy`
@@ -4254,7 +4504,7 @@
 
 
 5. `Create waitlist and access request module`  | סטטוס: 🔴 לא בוצע
-- execution_order: `103`
+- execution_order: `104`
 - description: לבנות מודול לקליטת משתמשים לרשימת המתנה, access requests ו־status updates
 - input:
   - `visitorInput`
@@ -4269,7 +4519,7 @@
 
 
 6. `Create website experiment and CTA test layer`  | סטטוס: 🔴 לא בוצע
-- execution_order: `104`
+- execution_order: `105`
 - description: לבנות שכבה לניסויי CTA, headlines ו־section variants באתר של Nexus
 - input:
   - `websiteCopyPack`
@@ -4283,7 +4533,7 @@
 
 
 7. `Create trust proof block builder`  | סטטוס: 🔴 לא בוצע
-- execution_order: `105`
+- execution_order: `106`
 - description: לבנות builder ל־proof blocks, credibility signals, demos, testimonials ו־trust messaging עבור דפי הכניסה של Nexus
 - input:
   - `messagingFramework`
@@ -4297,7 +4547,7 @@
 
 
 8. `Create persona-specific landing variant resolver`  | סטטוס: 🔴 לא בוצע
-- execution_order: `106`
+- execution_order: `107`
 - description: לבנות resolver שבוחר variant נכון של landing page לפי persona, channel intent ו־entry context
 - input:
   - `messagingVariants`
@@ -4314,7 +4564,7 @@
 #### `Landing, Access & App Entry Flow`
 
 1. `Define product delivery model schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `107`
+- execution_order: `108`
 - description: לבנות schema אחיד למודל האספקה של Nexus כמוצר web-first, כולל public site, app entry, future CLI ו־future desktop wrappers
 - input:
   - `productStrategy`
@@ -4328,7 +4578,7 @@
 
 
 2. `Create public site and app boundary model`  | סטטוס: 🔴 לא בוצע
-- execution_order: `108`
+- execution_order: `109`
 - description: לבנות מודל ברור שמפריד בין האתר הציבורי של Nexus לבין אזור האפליקציה, כולל routes, trust boundaries ו־handoff points
 - input:
   - `productDeliveryModel`
@@ -4342,7 +4592,7 @@
 
 
 3. `Create access mode resolver`  | סטטוס: 🔴 לא בוצע
-- execution_order: `109`
+- execution_order: `110`
 - description: לבנות resolver שקובע אם Nexus עובד ב־open access, waitlist, invite only או request access לפי stage של המוצר
 - input:
   - `productDeliveryModel`
@@ -4357,7 +4607,7 @@
 
 
 4. `Create public landing to auth handoff flow`  | סטטוס: 🔴 לא בוצע
-- execution_order: `110`
+- execution_order: `111`
 - description: לבנות handoff קנוני מה־landing page ל־signup, login, waitlist או access request בלי לשבור את ההקשר השיווקי
 - input:
   - `siteAppBoundary`
@@ -4372,7 +4622,7 @@
 
 
 5. `Create app entry gate resolver`  | סטטוס: 🔴 לא בוצע
-- execution_order: `111`
+- execution_order: `112`
 - description: לבנות resolver שמכריע אם משתמש נכנס ישר ל־app, עובר דרך access gate, חוזר ל־login או מנותב ל־waitlist state
 - input:
   - `landingAuthHandoff`
@@ -4387,7 +4637,7 @@
 
 
 6. `Create post-login destination resolver`  | סטטוס: 🔴 לא בוצע
-- execution_order: `112`
+- execution_order: `113`
 - description: לבנות resolver שמחליט אם אחרי login המשתמש נוחת ב־dashboard, onboarding resume, waitlist status, approval inbox או first project kickoff
 - input:
   - `appEntryDecision`
@@ -4401,9 +4651,9 @@
 - connects_to: `Project State`
 
 
-7. `Create first project kickoff flow`  | סטטוס: 🔴 לא בוצע
-- execution_order: `113`
-- description: לבנות flow מפורש שבו משתמש חדש עובר מה־dashboard או ה־entry destination אל יצירת הפרויקט הראשון וה־onboarding הראשון
+7. `Create first project kickoff flow`  | סטטוס: 🟡 חלקי
+- execution_order: `114`
+- description: לבנות flow שבו משתמש חדש עובר מה־cockpit/app path הקיים אל יצירת הפרויקט הראשון, onboarding, project payload usable ופעולת המשך ראשונה
 - input:
   - `postLoginDestination`
   - `activationFunnel`
@@ -4414,10 +4664,17 @@
   - `Create onboarding session service`  | סטטוס: 🟢 בוצע
   - `Define activation funnel schema`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
+- coverage_check:
+  - `web empty-state -> project draft -> onboarding -> project load` → `partial` | `web/app.js`, `web/index.html`, `test/web-app-wave1-cockpit.test.js`
+  - `proposal review and rerun continue through existing cockpit path` → `full` | `web/app.js`, `test/web-app-wave1-cockpit.test.js`
+- missing_for_green:
+  - `postLoginDestination`-driven kickoff outside existing cockpit shell
+  - dedicated `entryStateVariants` / `entryRecoveryState` path
+  - first-project kickoff model as canonical artifact instead of app-only orchestration
 
 
 8. `Create landing-to-dashboard funnel assembler`  | סטטוס: 🔴 לא בוצע
-- execution_order: `114`
+- execution_order: `115`
 - description: להרכיב view model מלא של הזרימה מ־landing דרך access/login ועד dashboard ו־first project
 - input:
   - `landingAuthHandoff`
@@ -4427,13 +4684,13 @@
 - output:
   - `landingToDashboardFlow`
 - dependencies:
-  - `Create first project kickoff flow`  | סטטוס: 🔴 לא בוצע
+  - `Create first project kickoff flow`  | סטטוס: 🟡 חלקי
   - `Create post-login destination resolver`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
 
 
 9. `Create app landing entry experience`  | סטטוס: 🔴 לא בוצע
-- execution_order: `115`
+- execution_order: `116`
 - description: לבנות חוויית כניסה ראשית ל־app עם value framing, CTAs, first-visit states ו־handoff ברור ל־signup, login או create project
 - input:
   - `siteAppBoundary`
@@ -4448,7 +4705,7 @@
 
 
 10. `Create entry state variants and redirects`  | סטטוס: 🔴 לא בוצע
-- execution_order: `116`
+- execution_order: `117`
 - description: לבנות מצבי UI ו־redirects למשתמש חדש, משתמש מחובר בלי פרויקט, משתמש עם פרויקט קיים ו־session expired
 - input:
   - `appEntryDecision`
@@ -4462,7 +4719,7 @@
 
 
 11. `Create entry loading and recovery states`  | סטטוס: 🔴 לא בוצע
-- execution_order: `117`
+- execution_order: `118`
 - description: לבנות מצבי loading, bootstrap failure, empty workspace ו־resume recovery למסך הכניסה הראשי של האפליקציה
 - input:
   - `appEntryDecision`
@@ -4476,7 +4733,7 @@
 
 
 12. `Create app entry trust and orientation panel`  | סטטוס: 🔴 לא בוצע
-- execution_order: `118`
+- execution_order: `119`
 - description: לבנות panel שמסביר למשתמש החדש מה Nexus עושה, למה לסמוך עליו, ומה יקרה אחרי הלחיצה הראשונה
 - input:
   - `appLandingEntry`
@@ -4490,7 +4747,7 @@
 
 
 13. `Create entry decision support flow`  | סטטוס: 🔴 לא בוצע
-- execution_order: `119`
+- execution_order: `120`
 - description: לבנות flow שעוזר למשתמש לבחור בין signup, demo, waitlist, login או create first project לפי readiness, trust level ו־access mode
 - input:
   - `entryStateVariants`
@@ -4507,7 +4764,7 @@
 #### `Product-Led Onboarding Marketing`
 
 1. `Define activation funnel schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `120`
+- execution_order: `121`
 - description: לבנות schema אחיד ל־activation funnel של Nexus מההרשמה עד first project success
 - input:
   - `websiteConversionFlow`
@@ -4521,7 +4778,7 @@
 
 
 2. `Create first value milestone mapper`  | סטטוס: 🔴 לא בוצע
-- execution_order: `121`
+- execution_order: `122`
 - description: למפות milestones כמו signup, first project, first task, first execution ו־first visible result
 - input:
   - `activationFunnel`
@@ -4535,7 +4792,7 @@
 
 
 3. `Create onboarding marketing copy flow`  | סטטוס: 🔴 לא בוצע
-- execution_order: `122`
+- execution_order: `123`
 - description: לבנות רצף מסרים ל־signup confirmation, welcome, activation prompts ו־drop-off recovery
 - input:
   - `activationFunnel`
@@ -4549,7 +4806,7 @@
 
 
 4. `Create activation drop-off detector`  | סטטוס: 🔴 לא בוצע
-- execution_order: `123`
+- execution_order: `124`
 - description: לבנות detector שמזהה משתמשים שנתקעו בין signup לבין first value ומסווג את סיבת התקיעה
 - input:
   - `activationMilestones`
@@ -4563,7 +4820,7 @@
 
 
 5. `Create re-engagement trigger planner`  | סטטוס: 🔴 לא בוצע
-- execution_order: `124`
+- execution_order: `125`
 - description: לבנות planner שמחליט מתי לשלוח nudges, emails או in-app prompts כדי להחזיר משתמש ל־activation
 - input:
   - `activationDropOffs`
@@ -4579,7 +4836,7 @@
 #### `Content & Launch Engine`
 
 1. `Create Nexus content strategy profile`  | סטטוס: 🔴 לא בוצע
-- execution_order: `125`
+- execution_order: `126`
 - description: לבנות profile ייעודי לאסטרטגיית התוכן של Nexus כולל pillars, formats, founder voice ו־channel fit
 - input:
   - `nexusPositioning`
@@ -4593,7 +4850,7 @@
 
 
 2. `Create launch content calendar`  | סטטוס: 🔴 לא בוצע
-- execution_order: `126`
+- execution_order: `127`
 - description: לבנות editorial calendar לתקופת pre-launch, launch ו־post-launch של Nexus
 - input:
   - `nexusContentStrategy`
@@ -4607,7 +4864,7 @@
 
 
 3. `Create founder and product story asset builder`  | סטטוס: 🔴 לא בוצע
-- execution_order: `127`
+- execution_order: `128`
 - description: לבנות assets שמספרים את הסיפור של Nexus, הבעיה שהוא פותר והמסע של הבנייה שלו
 - input:
   - `nexusPositioning`
@@ -4621,7 +4878,7 @@
 
 
 4. `Create social and community content pack`  | סטטוס: 🔴 לא בוצע
-- execution_order: `128`
+- execution_order: `129`
 - description: לבנות pack של posts, threads, community intros ו־conversation starters להשקת Nexus
 - input:
   - `storyAssets`
@@ -4635,7 +4892,7 @@
 
 
 5. `Create product demo and proof asset plan`  | סטטוס: 🔴 לא בוצע
-- execution_order: `129`
+- execution_order: `130`
 - description: לבנות plan לנכסי proof כמו demo videos, screenshots, walkthroughs ו־result snapshots
 - input:
   - `websiteCopyPack`
@@ -4651,7 +4908,7 @@
 #### `Launch Campaign System`
 
 1. `Create Nexus launch campaign brief`  | סטטוס: 🔴 לא בוצע
-- execution_order: `130`
+- execution_order: `131`
 - description: לבנות brief לקמפיין ההשקה הראשון של Nexus כולל audience, message, channels, budget assumption ו־success criteria
 - input:
   - `nexusPositioning`
@@ -4665,7 +4922,7 @@
 
 
 2. `Create launch channel rollout plan`  | סטטוס: 🔴 לא בוצע
-- execution_order: `131`
+- execution_order: `132`
 - description: לבנות rollout plan לפי ערוצים כמו website, email, X, LinkedIn, communities ו־waitlist updates
 - input:
   - `launchCampaignBrief`
@@ -4679,7 +4936,7 @@
 
 
 3. `Create launch asset readiness checklist`  | סטטוס: 🔴 לא בוצע
-- execution_order: `132`
+- execution_order: `133`
 - description: לבנות checklist שמוודא שכל ה־assets, copy, CTA flows, proof elements ו־tracking מוכנים לפני push
 - input:
   - `launchRolloutPlan`
@@ -4693,7 +4950,7 @@
 
 
 4. `Create launch draft publishing plan`  | סטטוס: 🔴 לא בוצע
-- execution_order: `133`
+- execution_order: `134`
 - description: לבנות plan שמתרגם rollout ל־drafts, scheduled content, waitlist messages ו־campaign pushes
 - input:
   - `launchRolloutPlan`
@@ -4707,7 +4964,7 @@
 
 
 5. `Create launch feedback intake module`  | סטטוס: 🔴 לא בוצע
-- execution_order: `134`
+- execution_order: `135`
 - description: לבנות intake לתגובות משתמשים, replies, objections ו־early signal clustering מההשקה
 - input:
   - `launchPublishingPlan`
@@ -4721,7 +4978,7 @@
 
 
 6. `Create go-to-market planning model`  | סטטוס: 🔴 לא בוצע
-- execution_order: `135`
+- execution_order: `136`
 - description: לבנות model מפורש לתוכנית go-to-market של Nexus שמחברת positioning, channels, rollout, activation ו־success criteria
 - input:
   - `launchCampaignBrief`
@@ -4736,7 +4993,7 @@
 
 
 7. `Create promotion execution planner`  | סטטוס: 🔴 לא בוצע
-- execution_order: `136`
+- execution_order: `137`
 - description: לבנות planner מפורש להרצת promotion בערוצים השונים כולל schedule, assets, approvals ו־distribution responsibilities
 - input:
   - `launchRolloutPlan`
@@ -4750,7 +5007,7 @@
 
 
 8. `Create launch marketing execution tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `137`
+- execution_order: `138`
 - description: לבנות tracker שמראה מה כבר פורסם, מה בתור, מה נכשל ומה דורש התערבות ידנית בהרצת ההשקה השיווקית
 - input:
   - `promotionExecutionPlan`
@@ -4766,7 +5023,7 @@
 #### `GTM Measurement & Feedback`
 
 1. `Define GTM metric schema for Nexus`  | סטטוס: 🔴 לא בוצע
-- execution_order: `138`
+- execution_order: `139`
 - description: לבנות schema אחיד למטריקות go-to-market של Nexus כמו visits, signups, activation, waitlist conversion ו־campaign attribution
 - input:
   - `campaignPlan`
@@ -4780,7 +5037,7 @@
 
 
 2. `Create acquisition source tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `139`
+- execution_order: `140`
 - description: לבנות tracker למקורות תנועה והרשמה כמו direct, community, social, referrals ו־campaign links
 - input:
   - `projectCreationEvent`
@@ -4794,7 +5051,7 @@
 
 
 3. `Create website-to-activation funnel analyzer`  | סטטוס: 🔴 לא בוצע
-- execution_order: `140`
+- execution_order: `141`
 - description: לבנות analyzer שמחבר ביקור באתר, signup, onboarding, first project ו־first activation
 - input:
   - `acquisitionSourceMetrics`
@@ -4808,7 +5065,7 @@
 
 
 4. `Create launch performance dashboard assembler`  | סטטוס: 🔴 לא בוצע
-- execution_order: `141`
+- execution_order: `142`
 - description: לבנות assembler שמרכז launch KPIs, website conversion, channel performance ו־activation insights במסך אחד
 - input:
   - `websiteActivationFunnel`
@@ -4823,7 +5080,7 @@
 
 
 5. `Create GTM optimization loop`  | סטטוס: 🔴 לא בוצע
-- execution_order: `142`
+- execution_order: `143`
 - description: לבנות loop שמציע שיפורים ל־positioning, site copy, CTA strategy, channels ו־activation flow לפי נתוני אמת
 - input:
   - `launchPerformanceDashboard`
@@ -4837,7 +5094,7 @@
 
 
 6. `Create first-touch attribution recorder`  | סטטוס: 🔴 לא בוצע
-- execution_order: `143`
+- execution_order: `144`
 - description: לבנות recorder ששומר first-touch source, landing variant, CTA path ו־anonymous visit context עוד לפני auth או signup
 - input:
   - `visitorContext`
@@ -4852,7 +5109,7 @@
 
 
 7. `Create pre-auth conversion event collector`  | סטטוס: 🔴 לא בוצע
-- execution_order: `144`
+- execution_order: `145`
 - description: לבנות collector לאירועי pre-auth כמו landing views, CTA clicks, waitlist attempts, demo requests ו־auth handoff starts
 - input:
   - `firstTouchAttribution`
@@ -4866,7 +5123,7 @@
 
 
 8. `Create conversion analytics model`  | סטטוס: 🔴 לא בוצע
-- execution_order: `145`
+- execution_order: `146`
 - description: לבנות model מפורש ל־conversion analytics שמחבר visits, CTA clicks, signup starts, activation ו־drop-off reasons
 - input:
   - `preAuthConversionEvents`
@@ -4880,7 +5137,7 @@
 
 
 9. `Create growth loop management state`  | סטטוס: 🔴 לא בוצע
-- execution_order: `146`
+- execution_order: `147`
 - description: לבנות state ניהולי שמרכז hypotheses, experiments, conversions, retention moves ו־next growth actions ללולאת שיפור מתמשכת
 - input:
   - `continuousGrowthLoop`
@@ -4900,7 +5157,7 @@
 #### `Owner Control Center`
 
 1. `Define owner control plane schema`  | סטטוס: 🔴 לא בוצע
-- execution_order: `147`
+- execution_order: `148`
 - description: לבנות schema אחיד ל־owner mode כולל owner identity, privileged views, critical KPIs, alerts ו־decision queues
 - input:
   - `ownerContext`
@@ -4914,7 +5171,7 @@
 
 
 2. `Create owner control center`  | סטטוס: 🔴 לא בוצע
-- execution_order: `148`
+- execution_order: `149`
 - description: לבנות assembler ראשי שמרכז metrics, incidents, roadmap state, security signals ו־recommended actions לבעלים
 - input:
   - `ownerControlPlane`
@@ -4930,7 +5187,7 @@
 
 
 3. `Create daily overview generator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `149`
+- execution_order: `150`
 - description: לבנות generator לתמונת מצב יומית של מה חשוב היום, מה השתנה, מה נתקע ומה דורש החלטה
 - input:
   - `ownerControlCenter`
@@ -4944,7 +5201,7 @@
 
 
 4. `Create owner priority engine`  | סטטוס: 🔴 לא בוצע
-- execution_order: `150`
+- execution_order: `151`
 - description: לבנות engine שמדרג מה הכי חשוב לבעלים עכשיו לפי risk, revenue impact, user impact ו־execution urgency
 - input:
   - `dailyOwnerOverview`
@@ -4958,7 +5215,7 @@
 
 
 5. `Create action recommendation system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `151`
+- execution_order: `152`
 - description: לבנות system שמציע לבעלים את הפעולה הבאה ברמת מוצר, תפעול, כספים, growth או reliability
 - input:
   - `ownerPriorityQueue`
@@ -4971,7 +5228,7 @@
 
 
 6. `Create owner decision dashboard`  | סטטוס: 🔴 לא בוצע
-- execution_order: `152`
+- execution_order: `153`
 - description: לבנות dashboard model לבעלים שמרכז החלטות פתוחות, overrides, approvals ו־follow-up actions
 - input:
   - `ownerActionRecommendations`
@@ -4987,7 +5244,7 @@
 #### `Owner Daily Operations`
 
 1. `Create daily workflow generator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `153`
+- execution_order: `154`
 - description: לבנות generator לשגרת עבודה יומית של בעלים לפי health, growth, delivery ו־open decisions
 - input:
   - `dailyOwnerOverview`
@@ -5001,7 +5258,7 @@
 
 
 2. `Create focus area selector`  | סטטוס: 🔴 לא בוצע
-- execution_order: `154`
+- execution_order: `155`
 - description: לבנות selector שמכריע אם היום הפוקוס הוא reliability, product, growth, cost, security או delivery
 - input:
   - `ownerDailyWorkflow`
@@ -5014,7 +5271,7 @@
 
 
 3. `Create task recommendation engine`  | סטטוס: 🔴 לא בוצע
-- execution_order: `155`
+- execution_order: `156`
 - description: לבנות engine שמציע לבעלים task list יומית לפי focus area, blockers ו־strategic priorities
 - input:
   - `ownerFocusArea`
@@ -5028,7 +5285,7 @@
 
 
 4. `Create owner routine assistant`  | סטטוס: 🔴 לא בוצע
-- execution_order: `156`
+- execution_order: `157`
 - description: לבנות assistant שמגדיר checklists, recurring reviews ו־end-of-day closure לבעלים
 - input:
   - `ownerTaskList`
@@ -5043,7 +5300,7 @@
 #### `Owner Business Cockpit`
 
 1. `Create revenue tracking system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `157`
+- execution_order: `158`
 - description: לבנות owner-facing tracking לרווחים, paid conversions ו־revenue events
 - input:
   - `revenueSummary`
@@ -5057,7 +5314,7 @@
 
 
 2. `Create cost tracking system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `158`
+- execution_order: `159`
 - description: לבנות owner-facing tracking לעלויות AI, compute, storage, tools ו־providers
 - input:
   - `costSummary`
@@ -5070,7 +5327,7 @@
 
 
 3. `Create profit and margin analyzer`  | סטטוס: 🔴 לא בוצע
-- execution_order: `159`
+- execution_order: `160`
 - description: לבנות analyzer שמחבר revenue ו־cost ל־margin, contribution ואזורי שחיקה
 - input:
   - `ownerRevenueView`
@@ -5084,7 +5341,7 @@
 
 
 4. `Create unit economics dashboard`  | סטטוס: 🔴 לא בוצע
-- execution_order: `160`
+- execution_order: `161`
 - description: לבנות dashboard owner-facing ל־CAC, LTV, payback ו־cost-to-serve assumptions
 - input:
   - `unitEconomics`
@@ -5098,7 +5355,7 @@
 
 
 5. `Create cash flow projection engine`  | סטטוס: 🔴 לא בוצע
-- execution_order: `161`
+- execution_order: `162`
 - description: לבנות engine שמקרין cash runway, expected inflows ו־upcoming obligations
 - input:
   - `ownerRevenueView`
@@ -5112,7 +5369,7 @@
 
 
 6. `Create user analytics dashboard`  | סטטוס: 🔴 לא בוצע
-- execution_order: `162`
+- execution_order: `163`
 - description: לבנות dashboard owner-facing ל־active users, project creation, retention, churn ו־usage segments
 - input:
   - `retentionSummary`
@@ -5126,7 +5383,7 @@
 
 
 7. `Create feature usage tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `163`
+- execution_order: `164`
 - description: לבנות tracker לשימוש בפיצ'רים, modules ו־adoption depth ברמת owner view
 - input:
   - `userActivityEvents`
@@ -5140,7 +5397,7 @@
 
 
 8. `Create decision accuracy tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `164`
+- execution_order: `165`
 - description: לבנות tracker שבודק אם recommendations, priorities ו־owner decisions הובילו לתוצאות טובות
 - input:
   - `ownerActionRecommendations`
@@ -5154,7 +5411,7 @@
 
 
 9. `Create automation impact tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `165`
+- execution_order: `166`
 - description: לבנות tracker להשפעת automation על זמן שנחסך, throughput, failures ו־owner workload
 - input:
   - `taskThroughputSummary`
@@ -5170,7 +5427,7 @@
 
 
 10. `Create system roadmap tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `166`
+- execution_order: `167`
 - description: לבנות tracker owner-facing להתקדמות roadmap, delivery slippage, velocity ו־backlog health
 - input:
   - `roadmap`
@@ -5186,7 +5443,7 @@
 #### `Owner Operations & Incidents`
 
 1. `Create operations signal aggregator`  | סטטוס: 🔴 לא בוצע
-- execution_order: `167`
+- execution_order: `168`
 - description: לבנות aggregator שמרכז health, queue, runtime, security, cost ו־growth anomalies לשכבת owner אחת
 - input:
   - `platformTrace`
@@ -5202,7 +5459,7 @@
 
 
 2. `Create critical alert prioritizer`  | סטטוס: 🔴 לא בוצע
-- execution_order: `168`
+- execution_order: `169`
 - description: לבנות prioritizer שמבדיל בין alerts קריטיים, חשובים ורועשים מדי לפני שהם מגיעים לבעלים
 - input:
   - `ownerOperationsSignals`
@@ -5216,7 +5473,7 @@
 
 
 3. `Create noise suppression system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `169`
+- execution_order: `170`
 - description: לבנות מנגנון suppression שמונע spam alerts לבעלים ומעלה רק מה שבאמת דורש תשומת לב
 - input:
   - `prioritizedOwnerAlerts`
@@ -5230,7 +5487,7 @@
 
 
 4. `Create incident detection system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `170`
+- execution_order: `171`
 - description: לבנות system לזיהוי incidents, outages, degradation ו־service anomalies ברמת owner
 - input:
   - `ownerOperationsSignals`
@@ -5244,7 +5501,7 @@
 
 
 5. `Create outage response manager`  | סטטוס: 🔴 לא בוצע
-- execution_order: `171`
+- execution_order: `172`
 - description: לבנות manager לתגובה owner-facing על outage כולל runbook, owner actions ו־communication state
 - input:
   - `ownerIncident`
@@ -5258,7 +5515,7 @@
 
 
 6. `Create incident timeline tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `172`
+- execution_order: `173`
 - description: לבנות tracker לציר זמן של incident, detection, mitigation, recovery ו־follow-up
 - input:
   - `ownerIncident`
@@ -5271,7 +5528,7 @@
 
 
 7. `Create root cause analysis system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `173`
+- execution_order: `174`
 - description: לבנות system שמציע root cause candidates, affected services ו־corrective actions אחרי incident
 - input:
   - `incidentTimeline`
@@ -5285,7 +5542,7 @@
 
 
 8. `Create live project monitoring model`  | סטטוס: 🔴 לא בוצע
-- execution_order: `174`
+- execution_order: `175`
 - description: לבנות model שמרכז health, runtime, deploy status, verification signals ו־live alerts ברמת פרויקט בודד אחרי launch
 - input:
   - `platformTrace`
@@ -5300,7 +5557,7 @@
 
 
 9. `Create maintenance task generation engine`  | סטטוס: 🔴 לא בוצע
-- execution_order: `175`
+- execution_order: `176`
 - description: לבנות engine שמפיק maintenance tasks מתוך incidents, degraded health, security signals ו־aging operational debt
 - input:
   - `liveProjectMonitoring`
@@ -5316,7 +5573,7 @@
 #### `Owner Security & Privileged Access`
 
 1. `Create owner secure authentication system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `176`
+- execution_order: `177`
 - description: לבנות auth layer מחמירה יותר ל־owner mode עם elevated trust requirements
 - input:
   - `userIdentity`
@@ -5330,7 +5587,7 @@
 
 
 2. `Create enforced multi-factor authentication`  | סטטוס: 🔴 לא בוצע
-- execution_order: `177`
+- execution_order: `178`
 - description: לבנות enforcement ל־MFA בבעלים עבור login, privileged mode ו־critical actions
 - input:
   - `ownerAuthState`
@@ -5343,7 +5600,7 @@
 
 
 3. `Create device trust system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `178`
+- execution_order: `179`
 - description: לבנות system שבודק trusted devices, device risk ו־session posture עבור owner mode
 - input:
   - `ownerAuthState`
@@ -5357,7 +5614,7 @@
 
 
 4. `Create sensitive action confirmation system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `179`
+- execution_order: `180`
 - description: לבנות flow אישור נוסף לפעולות כמו override, billing changes, secret access או global toggles
 - input:
   - `ownerMfaDecision`
@@ -5371,7 +5628,7 @@
 
 
 5. `Create step-up authentication system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `180`
+- execution_order: `181`
 - description: לבנות step-up auth למצבים של risk גבוה, session anomalies או privileged mode activation
 - input:
   - `deviceTrustDecision`
@@ -5385,7 +5642,7 @@
 
 
 6. `Create privileged mode system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `181`
+- execution_order: `182`
 - description: לבנות mode ייעודי לבעלים שמאפשר פעולות רגישות רק לפרק זמן מוגבל ועם audit מלא
 - input:
   - `stepUpAuthDecision`
@@ -5399,7 +5656,7 @@
 
 
 7. `Create admin-only access layer`  | סטטוס: 🔴 לא בוצע
-- execution_order: `182`
+- execution_order: `183`
 - description: לבנות access layer שמבודדת owner-only routes, dashboards ו־system controls משאר ה־workspace flows
 - input:
   - `privilegedModeState`
@@ -5413,7 +5670,7 @@
 
 
 8. `Create critical operation guardrails`  | סטטוס: 🔴 לא בוצע
-- execution_order: `183`
+- execution_order: `184`
 - description: לבנות guardrails שמגבילים owner actions מסוכנים, mass overrides ו־global changes בלי confirmations מתאימים
 - input:
   - `ownerAccessDecision`
@@ -5429,7 +5686,7 @@
 #### `Owner Audit & Monitoring`
 
 1. `Create owner audit log viewer`  | סטטוס: 🔴 לא בוצע
-- execution_order: `184`
+- execution_order: `185`
 - description: לבנות viewer model לבעלים עבור system actions, privileged actions, security events ו־critical changes
 - input:
   - `auditLogRecord`
@@ -5443,7 +5700,7 @@
 
 
 2. `Create system-wide activity tracker`  | סטטוס: 🔴 לא בוצע
-- execution_order: `185`
+- execution_order: `186`
 - description: לבנות tracker רוחבי לפעילות users, workspaces, agents, providers ו־owner actions
 - input:
   - `platformTrace`
@@ -5457,7 +5714,7 @@
 
 
 3. `Create critical change history system`  | סטטוס: 🔴 לא בוצע
-- execution_order: `186`
+- execution_order: `187`
 - description: לבנות system להיסטוריית שינויים קריטיים כמו permission changes, billing changes, owner overrides ו־security policy updates
 - input:
   - `systemActivityFeed`
