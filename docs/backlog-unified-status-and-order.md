@@ -10052,18 +10052,39 @@ Refinements מאושרים:
 - missing_for_green:
   - `none`
 
-2. `Create entitlement resolver`  | סטטוס: 🔴 לא בוצע
+2. `Create entitlement resolver`  | סטטוס: 🟢 בוצע
 - description: לבנות resolver שקובע אילו capabilities, limits ו־features זמינים למשתמש או workspace לפי plan נוכחי
 - input:
   - `billingPlanSchema`
   - `workspaceModel`
-  - `usageSummary`
 - output:
   - `entitlementDecision`
 - dependencies:
-  - `Define billing plan schema`  | סטטוס: 🔴 לא בוצע
+  - `Define billing plan schema`  | סטטוס: 🟢 בוצע
   - `Workspace & Access Control`
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - description: `full` via [entitlement-decision-resolver.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/entitlement-decision-resolver.js)
+  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
+  - output: `full` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
+  - dependencies: `full` via existing `billingPlanSchema` and `workspaceModel`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - מוחזר `{ entitlementDecision }`
+  - decision enum הוא רק `allowed|restricted|blocked`
+  - אין runtime usage logic
+  - אין `capabilities`
+  - features נצרכים רק מ־`billingPlanSchema`
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 3. `Create subscription lifecycle module`  | סטטוס: 🔴 לא בוצע
 - description: לבנות מודול שמנהל trial, active, past_due, canceled ו־grace period עבור subscriptions

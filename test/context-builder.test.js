@@ -191,6 +191,9 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.billingPlanSchema?.billingPlanSchemaId, "string");
   assert.equal(Array.isArray(context.billingPlanSchema?.plans), true);
   assert.equal(Array.isArray(context.billingPlanSchema?.usageDimensions), true);
+  assert.equal(typeof context.entitlementDecision?.entitlementDecisionId, "string");
+  assert.equal(typeof context.entitlementDecision?.decision, "string");
+  assert.equal(Array.isArray(context.entitlementDecision?.features), true);
   assert.equal(typeof context.aiUsageMetric?.aiUsageMetricId, "string");
   assert.equal(typeof context.aiUsageMetric?.usageType, "string");
   assert.equal(typeof context.aiUsageMetric?.unit, "string");

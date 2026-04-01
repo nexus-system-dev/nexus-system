@@ -115,6 +115,7 @@ import { createUsageBudgetGuard } from "./usage-budget-guard.js";
 import { createCostVisibilityApiModel } from "./cost-visibility-api-model.js";
 import { createCostAwareActionSelector } from "./cost-aware-action-selector.js";
 import { defineBillingPlanSchema } from "./billing-plan-schema.js";
+import { resolveEntitlementDecision } from "./entitlement-decision-resolver.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
 import { defineInitialProjectStateCreationContract } from "./initial-project-state-creation-contract.js";
@@ -3376,6 +3377,10 @@ export function buildProjectContext(
     agentGovernancePolicy,
     reliabilitySlaModel,
   });
+  const { entitlementDecision } = resolveEntitlementDecision({
+    billingPlanSchema,
+    workspaceModel,
+  });
   const candidateActions = project.manualContext?.requestContext?.candidateActions ?? [];
   const costAwareActionSelection = createCostAwareActionSelector({
     candidateActions,
@@ -3604,6 +3609,7 @@ export function buildProjectContext(
   context.costVisibilityPayload = costVisibilityPayload;
   context.costDashboardModel = costDashboardModel;
   context.billingPlanSchema = billingPlanSchema;
+  context.entitlementDecision = entitlementDecision;
   context.costAwareActionSelection = costAwareActionSelection;
   context.actionPolicy = actionPolicy;
   context.policyDecision = policyDecision;
