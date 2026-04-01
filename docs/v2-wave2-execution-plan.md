@@ -3272,18 +3272,47 @@
 - connects_to: `Project State`
 
 
-6. `Create cost summary aggregator`  | סטטוס: 🔴 לא בוצע
+6. `Create cost summary aggregator`  | סטטוס: 🟢 בוצע
 - execution_order: `51`
 - description: לבנות aggregator שמרכז עלויות לפי משתמש, פרויקט, workspace, provider ותקופה
 - input:
-  - `platformCostMetrics`
+  - `platformCostMetric`
+  - `aiUsageMetric`
+  - `storageCostMetric`
+  - `workspaceComputeMetric`
+  - `buildDeployCostMetric`
 - output:
   - `costSummary`
 - dependencies:
   - `Create build and deploy cost tracker`  | סטטוס: 🔴 לא בוצע
-  - `Create storage and artifact cost tracker`  | סטטוס: 🔴 לא בוצע
-  - `Create AI usage meter`  | סטטוס: 🔴 לא בוצע
+  - `Create storage and artifact cost tracker`  | סטטוס: 🟢 בוצע
+  - `Create AI usage meter`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `internal_logic`
+- coverage_check:
+  - description: `full` — האגרגטור ב־[src/core/cost-summary-aggregator.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/cost-summary-aggregator.js) מרכז 5 dimensions ל־`costSummary` קנוני, בלי meter חדש ובלי double counting, תוך הפרדה בין core dimensions (`model/workspace/storage`) ל־extended (`build/providerOperation`).
+  - input: `full` — המודול צורך inputs נפרדים (`platformCostMetric`, `aiUsageMetric`, `storageCostMetric`, `workspaceComputeMetric`, `buildDeployCostMetric`) ולא מניח collection type חדש; הוא עובד גם כש־`buildDeployCostMetric` חסר.
+  - output: `full` — מוחזר `costSummary` עם `breakdown`, `groupedByScope`, `totalEstimatedCost`, `currency`, `currencyMismatch`, `period` ו־`summary`; נכתב ל־`context`, ל־`state`, ונחשף ב־payload דרך [src/core/project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js).
+  - dependencies: `full` — נשען בפועל על `Create AI usage meter`, `Create storage and artifact cost tracker`, `Create workspace compute usage tracker`, ו־`Define platform usage cost schema`; `buildDeployCostMetric` נשאר nullable ולכן Task 50 לא חוסם ירוק.
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - יש `costSummary` קנוני
+  - breakdown כולל 5 dimensions
+  - `build` יכול להיות `null` בלי לשבור את ה־aggregator
+  - `providerOperation` נלקח רק מ־`platformCostMetric` עם `usageType === provider-operation`
+  - `summaryStatus` מחושב רק לפי core dimensions
+  - `groupedByScope` מחזיק totals בלבד
+  - currency נבדק לפני חיבור עלויות
+  - `period` מחושב נכון
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 
 7. `Create usage budget guard`  | סטטוס: 🔴 לא בוצע
@@ -3295,7 +3324,7 @@
 - output:
   - `budgetDecision`
 - dependencies:
-  - `Create cost summary aggregator`  | סטטוס: 🔴 לא בוצע
+  - `Create cost summary aggregator`  | סטטוס: 🟢 בוצע
   - `Approval System`  | סטטוס: 🟡 חלקי
 - connects_to: `Execution Surface`
 
@@ -3310,7 +3339,7 @@
   - `costVisibilityPayload`
   - `costDashboardModel`
 - dependencies:
-  - `Create cost summary aggregator`  | סטטוס: 🔴 לא בוצע
+  - `Create cost summary aggregator`  | סטטוס: 🟢 בוצע
   - `UI / UX Foundation`
 - connects_to: `Project State`
 

@@ -498,6 +498,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.storageCostMetric?.storageCostMetricId, "string");
   assert.equal(project.state.storageCostMetric?.usageType, "storage");
   assert.equal(project.state.storageCostMetric?.unit, "gb-month");
+  assert.equal(typeof project.state.costSummary?.costSummaryId, "string");
+  assert.equal(typeof project.state.costSummary?.summary?.summaryStatus, "string");
+  assert.equal(project.state.costSummary?.breakdown?.build?.unit, "build-minute");
   assert.equal(typeof project.state.cloudWorkspaceModel?.workspaceId, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.surface?.topologyType, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.summary?.isWritable, "boolean");

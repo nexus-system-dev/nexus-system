@@ -231,6 +231,10 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.state?.storageCostMetric?.storageCostMetricId, "string");
   assert.equal(response.body.state?.storageCostMetric?.usageType, "storage");
   assert.equal(response.body.state?.storageCostMetric?.unit, "gb-month");
+  assert.equal(typeof response.body.context?.costSummary?.costSummaryId, "string");
+  assert.equal(typeof response.body.state?.costSummary?.costSummaryId, "string");
+  assert.equal(typeof response.body.state?.costSummary?.summary?.summaryStatus, "string");
+  assert.equal(response.body.state?.costSummary?.breakdown?.build?.unit, "build-minute");
   assert.equal(response.body.state?.projectAuditEvent?.actionType, "project.agent-governance.decision");
   assert.equal(response.body.state.dataPrivacyClassification.exposureLevel, response.body.context.dataPrivacyClassification.exposureLevel);
   assert.equal(response.body.state.dataPrivacyClassification.storageBinding.retentionPolicy.policyId, "project-lifecycle");

@@ -2226,6 +2226,7 @@ export class ProjectService {
       aiUsageMetric: project.context?.aiUsageMetric ?? null,
       workspaceComputeMetric: project.context?.workspaceComputeMetric ?? null,
       storageCostMetric: project.context?.storageCostMetric ?? null,
+      costSummary: project.context?.costSummary ?? null,
       privacyPolicyDecision: project.context?.privacyPolicyDecision ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       backupStrategy: project.context?.backupStrategy ?? null,
@@ -3214,6 +3215,7 @@ export class ProjectService {
       aiUsageMetric: project.context?.aiUsageMetric ?? null,
       workspaceComputeMetric: project.context?.workspaceComputeMetric ?? null,
       storageCostMetric: project.context?.storageCostMetric ?? null,
+      costSummary: project.context?.costSummary ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {

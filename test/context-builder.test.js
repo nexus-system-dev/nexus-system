@@ -192,6 +192,9 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.storageCostMetric?.storageCostMetricId, "string");
   assert.equal(context.storageCostMetric?.usageType, "storage");
   assert.equal(context.storageCostMetric?.unit, "gb-month");
+  assert.equal(typeof context.costSummary?.costSummaryId, "string");
+  assert.equal(typeof context.costSummary?.summary?.summaryStatus, "string");
+  assert.equal(context.costSummary?.breakdown?.build?.unit, "build-minute");
   assert.equal(typeof context.actionPolicy?.id, "string");
   assert.equal(typeof context.actionPolicy?.kind, "string");
   assert.equal(typeof context.policyDecision?.decision, "string");
