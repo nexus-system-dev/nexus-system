@@ -3388,7 +3388,7 @@
 
 #### `Cost-Aware Decision Engine`
 
-1. `Create cost-aware action selector`  | סטטוס: 🔴 לא בוצע
+1. `Create cost-aware action selector`  | סטטוס: 🟢 בוצע
 - execution_order: `54`
 - description: לבנות selector שמעדיף בין actions חלופיים לפי expected value, latency, provider cost ו־budget pressure
 - input:
@@ -3401,6 +3401,27 @@
   - `Platform Cost & Usage Control`
   - `Decision Intelligence Layer`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
+- completion_type: `api_ready`
+- coverage_check:
+  - description: `full` via [cost-aware-action-selector.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/cost-aware-action-selector.js)
+  - input: `full` via [context-builder.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/context-builder.js)
+  - output: `full` via [project-service.js](/Users/yogevlavian/Desktop/The%20Nexus/src/core/project-service.js)
+  - dependencies: `full` via existing `budgetDecision` and `decisionIntelligence`
+- user_facing_path:
+  - exists: `yes`
+  - entry_point: `GET /api/projects/:id`
+  - user_can_trigger_it: `no`
+  - user_can_see_result: `yes`
+- green_criteria:
+  - מוחזר `costAwareActionSelection` תמיד
+  - הדירוג deterministic וללא score
+  - `selectedAction` נבחר רק אם executable-now
+  - לכל action יש structured `reason`
+  - יש חיבור ל־`context` ול־`state`
+  - מופיע ב־project payload
+  - יש unit tests ו־integration tests שעוברים
+- missing_for_green:
+  - `none`
 
 
 2. `Create budget constraint engine`  | סטטוס: 🔴 לא בוצע

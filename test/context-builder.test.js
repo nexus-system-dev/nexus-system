@@ -203,6 +203,10 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.costDashboardModel?.dashboardId, "string");
   assert.equal(Array.isArray(context.costDashboardModel?.kpiCards), true);
   assert.equal(context.costDashboardModel?.breakdownTable?.componentType, "table");
+  assert.equal(typeof context.costAwareActionSelection?.costAwareActionSelectionId, "string");
+  assert.equal(typeof context.costAwareActionSelection?.selectionBasis, "string");
+  assert.equal(Array.isArray(context.costAwareActionSelection?.rankedActions), true);
+  assert.equal(typeof context.costAwareActionSelection?.summary?.hasSelection, "boolean");
   assert.equal(typeof context.actionPolicy?.id, "string");
   assert.equal(typeof context.actionPolicy?.kind, "string");
   assert.equal(typeof context.policyDecision?.decision, "string");

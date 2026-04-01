@@ -82,6 +82,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.costVisibilityPayload?.breakdown), true);
   assert.equal(typeof project.state.costDashboardModel?.dashboardId, "string");
   assert.equal(Array.isArray(project.state.costDashboardModel?.kpiCards), true);
+  assert.equal(typeof project.state.costAwareActionSelection?.costAwareActionSelectionId, "string");
+  assert.equal(typeof project.state.costAwareActionSelection?.selectionBasis, "string");
+  assert.equal(Array.isArray(project.state.costAwareActionSelection?.rankedActions), true);
   assert.equal(typeof project.state.actionPolicy?.id, "string");
   assert.equal(typeof project.state.actionPolicy?.kind, "string");
   assert.equal(typeof project.state.policyDecision?.decision, "string");
@@ -511,6 +514,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.costVisibilityPayload?.topCostDrivers), true);
   assert.equal(typeof project.state.costDashboardModel?.dashboardId, "string");
   assert.equal(project.state.costDashboardModel?.breakdownTable?.componentType, "table");
+  assert.equal(typeof project.state.costAwareActionSelection?.costAwareActionSelectionId, "string");
+  assert.equal(Array.isArray(project.state.costAwareActionSelection?.rankedActions), true);
+  assert.equal(typeof project.state.costAwareActionSelection?.summary?.rankedCount, "number");
   assert.equal(typeof project.state.cloudWorkspaceModel?.workspaceId, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.surface?.topologyType, "string");
   assert.equal(typeof project.state.cloudWorkspaceModel?.summary?.isWritable, "boolean");

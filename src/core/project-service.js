@@ -2230,6 +2230,7 @@ export class ProjectService {
       costSummary: project.context?.costSummary ?? null,
       costVisibilityPayload: project.context?.costVisibilityPayload ?? null,
       costDashboardModel: project.context?.costDashboardModel ?? null,
+      costAwareActionSelection: project.context?.costAwareActionSelection ?? null,
       privacyPolicyDecision: project.context?.privacyPolicyDecision ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       backupStrategy: project.context?.backupStrategy ?? null,
@@ -3222,6 +3223,7 @@ export class ProjectService {
       costSummary: project.context?.costSummary ?? null,
       costVisibilityPayload: project.context?.costVisibilityPayload ?? null,
       costDashboardModel: project.context?.costDashboardModel ?? null,
+      costAwareActionSelection: project.context?.costAwareActionSelection ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
       overview: {
