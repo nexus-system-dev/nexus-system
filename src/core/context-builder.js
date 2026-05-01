@@ -1784,6 +1784,7 @@ export function buildProjectContext(
   });
   const { productivitySummary } = createProductivitySummaryAggregator({
     timeSaved,
+    humanUserProductivity,
   });
   const { outcomeEvaluation } = defineOutcomeEvaluationSchema({
     projectId: project.id ?? null,

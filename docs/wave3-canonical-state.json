@@ -1046,8 +1046,8 @@
       "execution_order": "037",
       "taskName": "Upgrade productivity summary to true byUser aggregation",
       "lane": "Behavioral Analytics & User Truth",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create human user productivity resolver.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

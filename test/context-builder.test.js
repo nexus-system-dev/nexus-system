@@ -1347,7 +1347,7 @@ test("context builder exposes task execution metric with dependency-blocked entr
       giftwallet: 1050000,
     },
     byUser: {
-      "qa-agent": 1050000,
+      "anonymous-user": 1050000,
     },
     byDay: {
       "2026-01-01": 1050000,

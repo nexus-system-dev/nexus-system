@@ -19,6 +19,14 @@ function buildTimeSavedEntries(timeSaved) {
   return normalizeArray(normalizedTimeSaved.entries).map((entry) => normalizeObject(entry));
 }
 
+function buildHumanUserBucket(humanUserProductivity = null) {
+  const normalized = normalizeObject(humanUserProductivity);
+  const byHumanUser = normalizeObject(normalized.byHumanUser);
+  return Object.fromEntries(
+    Object.entries(byHumanUser).filter(([, value]) => normalizeFiniteNumber(value) !== null),
+  );
+}
+
 function sumTimeSaved(entries) {
   return entries.reduce((sum, entry) => {
     const timeSavedMs = normalizeFiniteNumber(entry?.timeSavedMs);
@@ -58,14 +66,21 @@ function resolveDayKey(entry) {
 
 export function createProductivitySummaryAggregator({
   timeSaved = null,
+  humanUserProductivity = null,
 } = {}) {
   const entries = buildTimeSavedEntries(timeSaved);
+  const humanUserBucket = buildHumanUserBucket(humanUserProductivity);
+  const useHumanUserAggregation =
+    normalizeString(humanUserProductivity?.status) === "ready"
+    && Object.keys(humanUserBucket).length > 0;
 
   return {
     productivitySummary: {
       totalTimeSavedMs: sumTimeSaved(entries),
       byProject: buildTimeSavedBucket(entries, (entry) => normalizeString(entry?.projectId)),
-      byUser: buildTimeSavedBucket(entries, (entry) => normalizeString(entry?.agentId)),
+      byUser: useHumanUserAggregation
+        ? humanUserBucket
+        : buildTimeSavedBucket(entries, (entry) => normalizeString(entry?.agentId)),
       byDay: buildTimeSavedBucket(entries, resolveDayKey),
     },
   };
