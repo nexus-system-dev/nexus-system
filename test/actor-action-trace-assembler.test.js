@@ -57,3 +57,31 @@ test("actor action trace assembler falls back safely without explicit execution 
   assert.equal(Array.isArray(actorActionTrace.providerSideEffects), true);
   assert.equal(Array.isArray(actorActionTrace.affectedArtifacts), true);
 });
+
+test("actor action trace assembler normalizes malformed trace and artifact fields", () => {
+  const { actorActionTrace } = createActorActionTraceAssembler({
+    projectAuditRecord: {
+      projectAuditRecordId: " project-audit-record:1 ",
+      projectId: " giftwallet ",
+      actionType: " project.deploy.requested ",
+      category: " deploy ",
+      summary: " Deployment queued ",
+      traceId: " trace-1 ",
+    },
+    executionResult: {
+      status: " invoked ",
+      reason: " queued ",
+      artifacts: [" app-shell ", { artifactId: " artifact-2 ", path: " dist/app.zip ", status: " produced " }],
+      metadata: {
+        surfaces: [" hosting-provider "],
+      },
+    },
+  });
+
+  assert.equal(actorActionTrace.actorActionTraceId, "actor-action-trace:project-audit-record:1");
+  assert.equal(actorActionTrace.projectId, "giftwallet");
+  assert.equal(actorActionTrace.outcome.status, "invoked");
+  assert.equal(actorActionTrace.providerSideEffects[0].provider, "hosting-provider");
+  assert.equal(actorActionTrace.affectedArtifacts[0].artifactId, "app-shell");
+  assert.equal(actorActionTrace.affectedArtifacts[1].path, "dist/app.zip");
+});

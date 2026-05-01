@@ -42,3 +42,52 @@ test("project presence model falls back safely to current actor", () => {
   assert.equal(Array.isArray(projectPresenceState.participants), true);
   assert.equal(typeof projectPresenceState.summary.totalParticipants, "number");
 });
+
+test("project presence model normalizes malformed participant identifiers and statuses", () => {
+  const { projectPresenceState } = createProjectPresenceModel({
+    collaborationEvent: {
+      actor: {
+        actorId: "  ",
+        displayName: "  ",
+        role: "  ",
+        presence: " ACTIVE ",
+      },
+      target: {
+        workspaceId: "  ",
+        projectId: "  ",
+        workspaceArea: " release-workspace ",
+      },
+    },
+    userSessionMetric: {
+      status: " ACTIVE ",
+      activeUsers: [
+        {
+          userId: "  ",
+          actorId: " reviewer-1 ",
+          displayName: "  ",
+          role: "  ",
+          status: " ACTIVE ",
+          workspaceArea: " release-workspace ",
+          currentSurface: " review-panel ",
+          currentTask: " ship review ",
+          sessionId: " session-1 ",
+          lastSeenAt: " 2026-04-20T10:00:00.000Z ",
+        },
+      ],
+    },
+  });
+
+  assert.equal(projectPresenceState.presenceStateId, "project-presence:project");
+  assert.equal(projectPresenceState.workspaceId, null);
+  assert.equal(projectPresenceState.projectId, null);
+  assert.equal(projectPresenceState.workspaceArea, "release-workspace");
+  assert.equal(projectPresenceState.activeParticipantCount, 1);
+  assert.equal(projectPresenceState.participants[0].participantId, "reviewer-1");
+  assert.equal(projectPresenceState.participants[0].displayName, "Collaborator 1");
+  assert.equal(projectPresenceState.participants[0].role, "viewer");
+  assert.equal(projectPresenceState.participants[0].status, "active");
+  assert.equal(projectPresenceState.participants[0].currentSurface, "review-panel");
+  assert.equal(projectPresenceState.participants[0].currentTask, "ship review");
+  assert.equal(projectPresenceState.participants[0].sessionId, "session-1");
+  assert.equal(projectPresenceState.participants[0].lastSeenAt, "2026-04-20T10:00:00.000Z");
+});

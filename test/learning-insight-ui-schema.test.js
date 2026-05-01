@@ -48,3 +48,42 @@ test("learning insight UI schema falls back to safe defaults when learning data 
   assert.equal(learningInsightViewModel.confidence.band, "low");
   assert.equal(typeof learningInsightViewModel.recommendationReasoning.summary, "string");
 });
+
+test("learning insight UI schema normalizes malformed identifiers and trace payloads", () => {
+  const { learningInsightViewModel } = defineLearningInsightUiSchema({
+    learningInsights: {
+      insightSetId: { bad: true },
+      summary: " summary ",
+      items: [
+        {
+          id: {},
+          title: " Insight title ",
+          pattern: " Pattern label ",
+          description: 42,
+          confidence: "medium",
+          reasoning: " because ",
+          evidence: ["proof", undefined],
+        },
+      ],
+    },
+    learningTrace: {
+      traceSteps: [
+        {
+          stepId: {},
+          title: " Trace title ",
+          reasoning: " trace reasoning ",
+          source: " memory ",
+        },
+      ],
+    },
+  });
+
+  assert.equal(learningInsightViewModel.viewModelId, "learning-insight-view:nexus");
+  assert.equal(learningInsightViewModel.summary.headline, "summary");
+  assert.equal(learningInsightViewModel.insights[0].insightId, "learning-insight-1");
+  assert.equal(learningInsightViewModel.insights[0].title, "Insight title");
+  assert.equal(learningInsightViewModel.insights[0].pattern, "Pattern label");
+  assert.equal(learningInsightViewModel.insights[0].summary, null);
+  assert.equal(learningInsightViewModel.insights[0].recommendationReasoning, "because");
+  assert.equal(learningInsightViewModel.recommendationReasoning.traceSteps[0].source, "memory");
+});

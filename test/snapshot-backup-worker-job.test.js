@@ -55,3 +55,35 @@ test("snapshot backup worker job preserves previous counters and supports disabl
   assert.equal(snapshotJobState.status, "idle");
   assert.equal(snapshotJobState.enabled, false);
 });
+
+test("snapshot backup worker job normalizes malformed project and schedule fields", () => {
+  const { snapshotBackupWorker, snapshotJobState } = createSnapshotBackupWorkerJob({
+    projectId: " giftwallet ",
+    snapshotSchedule: {
+      snapshotScheduleId: " snapshot-schedule:giftwallet ",
+      intervalSeconds: 120,
+      supportedTriggerTypes: [" deploy "],
+      summary: {
+        scheduleStatus: " scheduled ",
+      },
+    },
+    snapshotRetentionDecision: {
+      retentionPolicyId: " retention-policy:giftwallet ",
+    },
+    previousWorkerState: {
+      workerJobId: " snapshot-backup-worker:giftwallet ",
+      lastExecutionStatus: " success ",
+      lastRunAt: " 2026-03-30T13:50:00.000Z ",
+    },
+    previousJobState: {
+      jobId: " snapshot-job:giftwallet ",
+    },
+  });
+
+  assert.equal(snapshotBackupWorker.workerJobId, "snapshot-backup-worker:giftwallet");
+  assert.equal(snapshotBackupWorker.projectId, "giftwallet");
+  assert.equal(snapshotBackupWorker.lastExecutionStatus, "success");
+  assert.equal(snapshotJobState.jobId, "snapshot-job:giftwallet");
+  assert.equal(snapshotJobState.projectId, "giftwallet");
+  assert.equal(snapshotJobState.lastRunAt, "2026-03-30T13:50:00.000Z");
+});

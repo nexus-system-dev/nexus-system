@@ -42,3 +42,47 @@ test("mobile readiness checklist falls back safely for missing contract", () => 
   assert.equal(typeof mobileChecklist.checklistId, "string");
   assert.equal(Array.isArray(mobileChecklist.checklistItems), true);
 });
+
+test("mobile readiness checklist treats non-boolean mobile support flags as fallback-safe values", () => {
+  const { mobileChecklist } = createMobileReadinessChecklist({
+    screenContract: {
+      screenType: "detail",
+      interactionModel: {
+        supportsMobile: "no",
+      },
+    },
+  });
+
+  assert.equal(mobileChecklist.supportsMobile, true);
+  assert.equal(mobileChecklist.summary.mobileReadyByContract, true);
+});
+
+test("mobile readiness checklist keeps state coverage status consistent with required flag", () => {
+  const { mobileChecklist } = createMobileReadinessChecklist({
+    screenContract: {
+      screenType: "detail",
+      layout: {
+        layout: "detail",
+        supportsSidebar: false,
+        supportsProgress: false,
+      },
+      stateSupport: {
+        loading: false,
+        error: false,
+        success: false,
+      },
+      interactionModel: {
+        primaryActionRequired: false,
+        supportsMobile: true,
+      },
+    },
+  });
+
+  const stateCoverage = mobileChecklist.checklistItems.find((item) => item.key === "state-coverage");
+  const primaryActionAccess = mobileChecklist.checklistItems.find((item) => item.key === "primary-action-access");
+
+  assert.equal(stateCoverage?.required, false);
+  assert.equal(stateCoverage?.status, "optional");
+  assert.equal(primaryActionAccess?.required, false);
+  assert.equal(primaryActionAccess?.status, "optional");
+});

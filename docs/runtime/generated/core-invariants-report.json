@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-04-16T20:28:19.344Z",
+  "passed": true,
+  "violationCount": 0,
+  "warningCount": 0,
+  "violations": [],
+  "warnings": [],
+  "canonicalStateReadable": true,
+  "canonicalStateFile": "docs/wave2-canonical-state.json",
+  "invariantsManifestFile": "docs/runtime/core-invariants.json"
+}

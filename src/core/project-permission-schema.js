@@ -2,12 +2,18 @@ function normalizeWorkspaceModel(workspaceModel) {
   return workspaceModel && typeof workspaceModel === "object" ? workspaceModel : {};
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function normalizeProjectType(projectType) {
-  return typeof projectType === "string" && projectType.trim() ? projectType.trim().toLowerCase() : "generic";
+  return normalizeString(projectType, "generic").toLowerCase();
 }
 
 function normalizeRoles(workspaceModel) {
-  const roles = Array.isArray(workspaceModel.roles) ? workspaceModel.roles.filter(Boolean) : [];
+  const roles = Array.isArray(workspaceModel.roles)
+    ? workspaceModel.roles.map((role) => normalizeString(role, null)?.toLowerCase()).filter(Boolean)
+    : [];
   return roles.length > 0 ? [...new Set(roles)] : ["viewer"];
 }
 
@@ -117,10 +123,10 @@ export function defineProjectPermissionSchema({
 
   return {
     projectPermissionSchema: {
-      permissionSchemaId: `project-permissions:${normalizedWorkspaceModel.workspaceId ?? "workspace"}:${normalizedProjectType}`,
-      workspaceId: normalizedWorkspaceModel.workspaceId ?? null,
+      permissionSchemaId: `project-permissions:${normalizeString(normalizedWorkspaceModel.workspaceId, "workspace")}:${normalizedProjectType}`,
+      workspaceId: normalizeString(normalizedWorkspaceModel.workspaceId, null),
       projectType: normalizedProjectType,
-      visibility: normalizedWorkspaceModel.visibility ?? "private",
+      visibility: normalizeString(normalizedWorkspaceModel.visibility, "private"),
       supportedActions: [
         "view",
         "edit",

@@ -6,6 +6,10 @@ function normalizeRequestContext(requestContext) {
   return requestContext && typeof requestContext === "object" ? requestContext : {};
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function normalizeLogEntries(runtimeEvents) {
   if (Array.isArray(runtimeEvents.formattedLogs) && runtimeEvents.formattedLogs.length > 0) {
     return runtimeEvents.formattedLogs;
@@ -23,11 +27,11 @@ function buildTraceSteps(runtimeEvents) {
   const progressEntries = Array.isArray(runtimeEvents.progressEntries) ? runtimeEvents.progressEntries : [];
 
   return [...progressEntries, ...executionEvents].map((entry, index) => ({
-    stepId: entry.stepId ?? entry.id ?? `trace-step-${index + 1}`,
-    source: entry.source ?? entry.type ?? "runtime",
-    status: entry.status ?? "observed",
-    timestamp: entry.timestamp ?? null,
-    message: entry.message ?? null,
+    stepId: normalizeString(entry.stepId, normalizeString(entry.id, `trace-step-${index + 1}`)),
+    source: normalizeString(entry.source, normalizeString(entry.type, "runtime")),
+    status: normalizeString(entry.status, "observed"),
+    timestamp: normalizeString(entry.timestamp, null),
+    message: normalizeString(entry.message, null),
   }));
 }
 
@@ -44,32 +48,32 @@ export function createPlatformLoggingAndTracingLayer({
   const payload = {
     platformTrace: {
       traceId:
-        normalizedRequestContext.requestId
-        ?? normalizedRuntimeEvents.runId
+        normalizeString(normalizedRequestContext.requestId, null)
+        ?? normalizeString(normalizedRuntimeEvents.runId, null)
         ?? `platform-trace-${Date.now()}`,
-      route: normalizedRequestContext.route ?? null,
-      method: normalizedRequestContext.method ?? null,
-      actorId: normalizedRequestContext.actorId ?? null,
-      workspaceId: normalizedRequestContext.workspaceId ?? null,
+      route: normalizeString(normalizedRequestContext.route, null),
+      method: normalizeString(normalizedRequestContext.method, null),
+      actorId: normalizeString(normalizedRequestContext.actorId, null),
+      workspaceId: normalizeString(normalizedRequestContext.workspaceId, null),
       service:
-        normalizedRequestContext.service
-        ?? normalizedRuntimeEvents.service
+        normalizeString(normalizedRequestContext.service, null)
+        ?? normalizeString(normalizedRuntimeEvents.service, null)
         ?? "nexus-runtime",
-      runId: normalizedRuntimeEvents.runId ?? null,
+      runId: normalizeString(normalizedRuntimeEvents.runId, null),
       status:
-        normalizedRuntimeEvents.status
-        ?? normalizedRuntimeEvents.progressPhase
+        normalizeString(normalizedRuntimeEvents.status, null)
+        ?? normalizeString(normalizedRuntimeEvents.progressPhase, null)
         ?? "observed",
       steps: traceSteps,
     },
     platformLogs: platformLogs.map((entry, index) => ({
-      logId: entry.logId ?? `platform-log-${index + 1}`,
-      level: entry.level ?? (entry.exitCode && entry.exitCode !== 0 ? "error" : "info"),
-      source: entry.source ?? entry.type ?? "runtime",
-      message: entry.message ?? entry.output ?? entry.command ?? "Runtime event observed",
-      timestamp: entry.timestamp ?? null,
+      logId: normalizeString(entry.logId, `platform-log-${index + 1}`),
+      level: normalizeString(entry.level, entry.exitCode && entry.exitCode !== 0 ? "error" : "info"),
+      source: normalizeString(entry.source, normalizeString(entry.type, "runtime")),
+      message: normalizeString(entry.message, normalizeString(entry.output, normalizeString(entry.command, "Runtime event observed"))),
+      timestamp: normalizeString(entry.timestamp, null),
       metadata: {
-        command: entry.command ?? null,
+        command: normalizeString(entry.command, null),
         exitCode: entry.exitCode ?? null,
       },
     })),

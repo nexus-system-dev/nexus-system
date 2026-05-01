@@ -69,3 +69,35 @@ test("system audit log stores records in the audit log store", () => {
   assert.equal(storedRecords[0].auditLogId, auditLogRecord.auditLogId);
   assert.equal(storedRecords[0].category, "access");
 });
+
+test("system audit log normalizes malformed actor and action strings", () => {
+  const { auditLogRecord } = createAuditLogForSystemActions({
+    systemAction: {
+      actionType: " security.connector-outage ",
+      status: " recorded ",
+      projectId: " giftwallet ",
+      summary: " Connector outage detected ",
+      source: " connector-service ",
+      traceId: " trace-1 ",
+      riskLevel: " high ",
+    },
+    actorContext: {
+      actorId: " user-1 ",
+      actorType: " user ",
+      actorRole: " owner ",
+      workspaceId: " workspace-1 ",
+    },
+  });
+
+  assert.equal(auditLogRecord.actionType, "security.connector-outage");
+  assert.equal(auditLogRecord.status, "recorded");
+  assert.equal(auditLogRecord.projectId, "giftwallet");
+  assert.equal(auditLogRecord.workspaceId, "workspace-1");
+  assert.equal(auditLogRecord.actorId, "user-1");
+  assert.equal(auditLogRecord.actorType, "user");
+  assert.equal(auditLogRecord.actorRole, "owner");
+  assert.equal(auditLogRecord.summary, "Connector outage detected");
+  assert.equal(auditLogRecord.source, "connector-service");
+  assert.equal(auditLogRecord.traceId, "trace-1");
+  assert.equal(auditLogRecord.riskLevel, "high");
+});

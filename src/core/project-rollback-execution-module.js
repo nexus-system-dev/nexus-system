@@ -6,6 +6,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function resolveRestorePayload(snapshotRecord) {
   return normalizeObject(snapshotRecord.restorePayload);
 }
@@ -137,12 +141,12 @@ export function createProjectRollbackExecutionModule({
 
   return {
     rollbackExecutionResult: {
-      rollbackExecutionId: `rollback-execution:${normalizedSnapshotRecord.snapshotRecordId ?? "unknown-snapshot"}`,
-      snapshotRecordId: normalizedSnapshotRecord.snapshotRecordId ?? null,
-      restoreDecisionId: normalizedRestoreDecision.restoreDecisionId ?? null,
+      snapshotRecordId: normalizeString(normalizedSnapshotRecord.snapshotRecordId, null),
+      rollbackExecutionId: `rollback-execution:${normalizeString(normalizedSnapshotRecord.snapshotRecordId, "unknown-snapshot")}`,
+      restoreDecisionId: normalizeString(normalizedRestoreDecision.restoreDecisionId, null),
       executionStatus,
       executed: executionStatus !== "blocked",
-      restoreMode: normalizedRestoreDecision.restoreMode ?? "blocked",
+      restoreMode: normalizeString(normalizedRestoreDecision.restoreMode, "blocked"),
       appliedTargets,
       restoredProjectState,
       restoredExecutionGraph,
@@ -151,7 +155,7 @@ export function createProjectRollbackExecutionModule({
           ? restoredWorkspaceReference
           : appliedTargets.find((target) => target.target === "workspace-reference") ?? null,
       linkedMetadataResults,
-      blockedReason: executionStatus === "blocked" ? normalizedRestoreDecision.blockedReason ?? null : null,
+      blockedReason: executionStatus === "blocked" ? normalizeString(normalizedRestoreDecision.blockedReason, null) : null,
       summary: {
         restoredTargetCount: appliedTargets.length,
         restoredStateVersion: normalizedSnapshotRecord.versions?.stateVersion ?? null,

@@ -11,8 +11,12 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function inferSnapshotReason(snapshot) {
-  const lifecyclePhase = snapshot.stateSummary?.lifecyclePhase ?? "unknown";
+  const lifecyclePhase = normalizeString(snapshot.stateSummary?.lifecyclePhase, "unknown");
 
   if (lifecyclePhase === "execution") {
     return "pre-execution-change";
@@ -38,25 +42,26 @@ function inferTriggerType(snapshot) {
 function buildSnapshotRecord(projectStateSnapshot = null, overrides = null) {
   const normalizedSnapshot = normalizeObject(projectStateSnapshot);
   const normalizedOverrides = normalizeObject(overrides);
-  const snapshotId = normalizedSnapshot.snapshotId ?? "project-state-snapshot:unknown-project:v1";
+  const snapshotId = normalizeString(normalizedSnapshot.snapshotId, "project-state-snapshot:unknown-project:v1");
   const stateVersion = normalizedSnapshot.stateVersion ?? 1;
   const executionGraphVersion = normalizedSnapshot.executionGraphVersion ?? 1;
+  const projectId = normalizeString(normalizedSnapshot.projectId, "unknown-project");
 
   return {
     snapshotRecordId: `snapshot-record:${snapshotId}`,
     snapshotId,
-    projectId: normalizedSnapshot.projectId ?? "unknown-project",
+    projectId,
     storageType: "project-snapshot-store",
-    triggerType: normalizedOverrides.triggerType ?? inferTriggerType(normalizedSnapshot),
-    reason: normalizedOverrides.reason ?? inferSnapshotReason(normalizedSnapshot),
+    triggerType: normalizeString(normalizedOverrides.triggerType, inferTriggerType(normalizedSnapshot)),
+    reason: normalizeString(normalizedOverrides.reason, inferSnapshotReason(normalizedSnapshot)),
     versions: {
       stateVersion,
       executionGraphVersion,
     },
     workspaceReference: {
-      workspaceId: normalizedSnapshot.workspaceReference?.workspaceId ?? null,
-      workspaceArea: normalizedSnapshot.workspaceReference?.workspaceArea ?? "developer-workspace",
-      workspaceVisibility: normalizedSnapshot.workspaceReference?.workspaceVisibility ?? "workspace",
+      workspaceId: normalizeString(normalizedSnapshot.workspaceReference?.workspaceId, null),
+      workspaceArea: normalizeString(normalizedSnapshot.workspaceReference?.workspaceArea, "developer-workspace"),
+      workspaceVisibility: normalizeString(normalizedSnapshot.workspaceReference?.workspaceVisibility, "workspace"),
     },
     restoreMetadata: {
       ...normalizeObject(normalizedSnapshot.restoreMetadata),
@@ -71,7 +76,7 @@ function buildSnapshotRecord(projectStateSnapshot = null, overrides = null) {
     },
     storageMetadata: {
       storedAt: new Date().toISOString(),
-      checksum: `${normalizedSnapshot.projectId ?? "unknown-project"}:${stateVersion}:${executionGraphVersion}`,
+      checksum: `${projectId}:${stateVersion}:${executionGraphVersion}`,
       includesExecutionGraph: executionGraphVersion > 0,
     },
     summary: {
@@ -142,11 +147,16 @@ export class ProjectSnapshotStore {
     reason = null,
     limit = 50,
   } = {}) {
+    const normalizedProjectId = normalizeString(projectId, null);
+    const normalizedWorkspaceId = normalizeString(workspaceId, null);
+    const normalizedTriggerType = normalizeString(triggerType, null);
+    const normalizedReason = normalizeString(reason, null);
+
     return this.readAll()
-      .filter((record) => (projectId ? record.projectId === projectId : true))
-      .filter((record) => (workspaceId ? record.workspaceReference?.workspaceId === workspaceId : true))
-      .filter((record) => (triggerType ? record.triggerType === triggerType : true))
-      .filter((record) => (reason ? record.reason === reason : true))
+      .filter((record) => (normalizedProjectId ? record.projectId === normalizedProjectId : true))
+      .filter((record) => (normalizedWorkspaceId ? record.workspaceReference?.workspaceId === normalizedWorkspaceId : true))
+      .filter((record) => (normalizedTriggerType ? record.triggerType === normalizedTriggerType : true))
+      .filter((record) => (normalizedReason ? record.reason === normalizedReason : true))
       .slice(-limit);
   }
 

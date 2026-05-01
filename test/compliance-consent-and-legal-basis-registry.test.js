@@ -179,3 +179,30 @@ test("owner consent record is transformed into a supporting project-scoped entry
   assert.equal(entry.scopeType, "project");
   assert.equal(entry.legalBasis, "consent");
 });
+
+test("consent registry normalizes malformed consent and notification fields", () => {
+  const state = buildRegistry({
+    userIdentity: {
+      userId: " user-1 ",
+    },
+    notificationPreferences: {
+      userId: " user-1 ",
+      channels: [" email ", " sms "],
+      frequency: " digest ",
+    },
+    consentRecord: {
+      consentId: " consent:project-1:learning ",
+      projectId: " project-1 ",
+      approved: true,
+      actionType: " learning ",
+      target: " model-training ",
+    },
+  });
+
+  const notificationEntry = state.legalBasisEntries.find((entry) => entry.processingScope === "notifications");
+  const projectEntry = state.consentEntries.find((entry) => entry.entryId.includes("consent-registry:consent:project-1:learning"));
+  assert.equal(notificationEntry.legalBasisDetails.channels[0], "email");
+  assert.equal(notificationEntry.legalBasisDetails.frequency, "digest");
+  assert.equal(projectEntry.legalBasisDetails.actionType, "learning");
+  assert.equal(projectEntry.legalBasisDetails.target, "model-training");
+});

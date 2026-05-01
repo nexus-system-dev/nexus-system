@@ -112,3 +112,27 @@ test("kill switch can be triggered by both incident and flag", () => {
   assert.equal(killSwitchDecision.killedPaths.includes("provider-execution"), true);
   assert.equal(killSwitchDecision.killedPaths.includes("agent-runtime"), true);
 });
+
+test("emergency kill switch guard normalizes malformed incident and flag fields", () => {
+  const { killSwitchDecision } = createEmergencyKillSwitchGuard({
+    incidentAlert: {
+      status: " active ",
+      severity: " CRITICAL ",
+      incidentType: "connector-outage ",
+      affectedComponents: [" connector-service "],
+    },
+    featureFlagDecision: {
+      flagResults: [
+        {
+          flagId: " emergency-execution-stop ",
+          reason: " kill-switch ",
+        },
+      ],
+    },
+  });
+
+  assert.equal(killSwitchDecision.isActive, true);
+  assert.equal(killSwitchDecision.triggeredBy, "both");
+  assert.equal(killSwitchDecision.triggerSources.incidentSeverity, "critical");
+  assert.equal(killSwitchDecision.triggerSources.featureFlags[0], "emergency-execution-stop");
+});

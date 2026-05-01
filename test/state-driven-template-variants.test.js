@@ -55,3 +55,53 @@ test("createStateDrivenTemplateVariants falls back safely without inputs", () =>
   assert.equal(templateVariants.summary.totalVariants, 16);
   assert.equal(typeof templateVariants.variantCollectionId, "string");
 });
+
+test("createStateDrivenTemplateVariants normalizes malformed templates and screen states", () => {
+  const { templateVariants } = createStateDrivenTemplateVariants({
+    screenStates: {
+      screens: [
+        null,
+        {
+          screenType: " dashboard ",
+          states: {
+            loading: { enabled: true, headline: " טוענים ", description: 42, tone: {} },
+          },
+        },
+        {
+          screenType: {},
+          states: "bad",
+        },
+      ],
+      summary: "bad",
+    },
+    screenTemplates: {
+      dashboardTemplate: {
+        templateId: " dashboard-template:main ",
+        templateType: " dashboard ",
+        sections: { topbar: { enabled: true } },
+      },
+      detailPageTemplate: {
+        templateId: {},
+        templateType: [],
+        sections: null,
+      },
+      workflowTemplate: "bad",
+      managementTemplate: {
+        templateId: "management-template:ops",
+        templateType: "management",
+        sections: { filterBar: { enabled: true } },
+      },
+    },
+  });
+
+  const dashboardTemplate = templateVariants.templates.find((template) => template.templateType === "dashboard");
+  const loadingVariant = dashboardTemplate.variants.find((variant) => variant.stateKey === "loading");
+  const detailTemplate = templateVariants.templates.find((template) => template.templateType === "detail");
+
+  assert.equal(dashboardTemplate.templateId, "dashboard-template:main");
+  assert.equal(loadingVariant.headline, "טוענים");
+  assert.equal(loadingVariant.description, null);
+  assert.equal(loadingVariant.tone, "neutral");
+  assert.equal(detailTemplate.templateId, "detail-template:unknown");
+  assert.equal(detailTemplate.summary.enabledVariantCount, 0);
+});

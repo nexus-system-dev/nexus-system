@@ -36,3 +36,16 @@ test("workspace settings module respects provided settings", () => {
   assert.equal(workspaceSettings.teamPreferences.notifications, "instant");
   assert.equal(workspaceSettings.teamPreferences.reviewStyle, "sync");
 });
+
+test("workspace settings module preserves raw workspaceOperatingMode without validation", () => {
+  const { workspaceSettings } = createOrganizationWorkspaceSettingsModule({
+    workspaceModel: {
+      workspaceId: "workspace-3",
+    },
+    settingsInput: {
+      workspaceOperatingMode: "invalid-custom-mode",
+    },
+  });
+
+  assert.equal(workspaceSettings.workspaceOperatingMode, "invalid-custom-mode");
+});

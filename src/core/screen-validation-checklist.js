@@ -10,6 +10,10 @@ function normalizeScreenStates(screenStates) {
   return screenStates && typeof screenStates === "object" ? screenStates : {};
 }
 
+function resolveBooleanFlag(value, fallback = false) {
+  return typeof value === "boolean" ? value : fallback;
+}
+
 function createValidationItem({ key, label, passed, reason, severity = "required" }) {
   return {
     key,
@@ -30,8 +34,16 @@ export function createScreenValidationChecklist({
   const normalizedScreenContract = normalizeScreenContract(screenContract);
   const normalizedMobileChecklist = normalizeMobileChecklist(mobileChecklist);
   const normalizedScreenStates = normalizeScreenStates(screenStates);
+  const interactionModel = normalizedScreenContract.interactionModel ?? {};
+  const primaryActionRequired = resolveBooleanFlag(interactionModel.primaryActionRequired, true);
+  const supportsMobileDeclared = typeof interactionModel.supportsMobile === "boolean";
 
-  const primaryActionDefined = Boolean(normalizedScreenContract.primaryActionRequired || normalizedScreenContract.interactionModel?.primaryActionRequired);
+  const primaryActionDefined =
+    primaryActionRequired === false
+      ? true
+      : Boolean(
+          normalizedScreenContract.primaryAction?.actionId && normalizedScreenContract.primaryAction?.label
+        ) || primaryActionRequired;
   const mobileCoverage = Array.isArray(normalizedMobileChecklist.checklistItems) && normalizedMobileChecklist.checklistItems.length > 0;
   const stateDefinitions = normalizedScreenStates.states ?? {};
   const stateCoverage =
@@ -45,7 +57,7 @@ export function createScreenValidationChecklist({
       label: "למסך חייבת להיות פעולה ראשית ברורה לפני implementation",
       passed: primaryActionDefined,
       reason: primaryActionDefined
-        ? "החוזה מגדיר פעולה ראשית למסך."
+        ? (primaryActionRequired === false ? "החוזה מגדיר שהפעולה הראשית אופציונלית למסך זה." : "החוזה מגדיר פעולה ראשית למסך.")
         : "אין פעולה ראשית ברורה בחוזה המסך.",
     }),
     createValidationItem({
@@ -67,11 +79,11 @@ export function createScreenValidationChecklist({
     createValidationItem({
       key: "mobile-support-flag",
       label: "חוזה המסך צריך להצהיר אם המסך נתמך במובייל",
-      passed: normalizedScreenContract.interactionModel?.supportsMobile !== false,
+      passed: supportsMobileDeclared,
       reason:
-        normalizedScreenContract.interactionModel?.supportsMobile !== false
-          ? "המסך מסומן כתומך מובייל."
-          : "חוזה המסך מסמן שהמסך לא תומך מובייל.",
+        supportsMobileDeclared
+          ? "חוזה המסך מצהיר במפורש על תמיכה במובייל."
+          : "חוזה המסך לא מצהיר בצורה בוליאנית מפורשת על תמיכה במובייל.",
       severity: "advisory",
     }),
   ];

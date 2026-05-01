@@ -1,5 +1,16 @@
+const CANONICAL_SCREEN_TYPES = new Set(["wizard", "dashboard", "tracking", "workspace", "detail"]);
+
 function normalizeScreenContract(screenContract) {
   return screenContract && typeof screenContract === "object" ? screenContract : {};
+}
+
+function normalizeScreenType(screenType) {
+  if (typeof screenType !== "string") {
+    return "detail";
+  }
+
+  const normalized = screenType.trim().toLowerCase();
+  return CANONICAL_SCREEN_TYPES.has(normalized) ? normalized : "detail";
 }
 
 function buildGoal(screenType) {
@@ -106,11 +117,13 @@ export function createGoalAndCtaDefinitionModule({
   screenContract,
 } = {}) {
   const normalizedScreenContract = normalizeScreenContract(screenContract);
-  const screenType = normalizedScreenContract.screenType ?? "detail";
+  const screenType = normalizeScreenType(normalizedScreenContract.screenType);
+  const primaryActionRequired = normalizedScreenContract.interactionModel?.primaryActionRequired !== false;
+  const secondaryActionsSupported = normalizedScreenContract.interactionModel?.secondaryActionsSupported !== false;
 
   return {
     screenGoal: buildGoal(screenType),
-    primaryAction: buildPrimaryAction(screenType),
-    secondaryActions: buildSecondaryActions(screenType),
+    primaryAction: primaryActionRequired ? buildPrimaryAction(screenType) : null,
+    secondaryActions: secondaryActionsSupported ? buildSecondaryActions(screenType) : [],
   };
 }

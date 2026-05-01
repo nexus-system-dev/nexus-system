@@ -7,6 +7,15 @@ function createHandledAssignmentSet(events) {
   );
 }
 
+function createFailedTaskSet(events) {
+  return new Set(
+    events
+      .filter((event) => event.type === "task.failed")
+      .map((event) => event.payload.taskId)
+      .filter(Boolean),
+  );
+}
+
 export class AgentRuntime {
   constructor({ eventBus, workers = [], killSwitchDecisionResolver = null }) {
     this.eventBus = eventBus;
@@ -32,6 +41,7 @@ export class AgentRuntime {
 
     const events = this.eventBus.getEvents();
     const handledAssignments = createHandledAssignmentSet(events);
+    const failedTaskIds = createFailedTaskSet(events);
     const assignmentEvents = events.filter(
       (event) =>
         event.type === "task.assigned" &&
@@ -56,13 +66,27 @@ export class AgentRuntime {
         continue;
       }
 
+      const isRetryExecution = failedTaskIds.has(event.payload.task.id);
+
       try {
+        if (isRetryExecution) {
+          results.push(
+            this.eventBus.emit("task.retried", {
+              assignmentEventId: event.id,
+              projectId: event.payload.projectId,
+              taskId: event.payload.task.id,
+              taskType: event.payload.task.taskType ?? null,
+              agentId: event.payload.agentId,
+            }),
+          );
+        }
         const output = worker.execute(event.payload);
         results.push(
           this.eventBus.emit("task.completed", {
             assignmentEventId: event.id,
             projectId: event.payload.projectId,
             taskId: event.payload.task.id,
+            taskType: event.payload.task.taskType ?? null,
             agentId: event.payload.agentId,
             output,
           }),
@@ -73,6 +97,7 @@ export class AgentRuntime {
             assignmentEventId: event.id,
             projectId: event.payload.projectId,
             taskId: event.payload.task.id,
+            taskType: event.payload.task.taskType ?? null,
             agentId: event.payload.agentId,
             reason: error.message,
           }),

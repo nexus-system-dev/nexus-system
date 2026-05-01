@@ -6,11 +6,18 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function dedupeParticipants(participants) {
   const seen = new Set();
   return normalizeArray(participants).filter((participant) => {
     const normalizedParticipant = normalizeObject(participant);
-    const participantId = normalizedParticipant.participantId ?? normalizedParticipant.displayName ?? null;
+    const participantId = normalizeString(
+      normalizedParticipant.participantId,
+      normalizeString(normalizedParticipant.displayName, null),
+    );
     if (!participantId || seen.has(participantId)) {
       return false;
     }
@@ -25,14 +32,14 @@ function buildBaseContext(collaborationEvent, branchDiffActivityPanel) {
   const diffs = normalizeObject(branchDiffActivityPanel.diffs);
 
   return {
-    workspaceArea: eventTarget.workspaceArea ?? "developer-workspace",
-    diffHeadline: diffs.headline ?? "No pending diff",
-    executionRequestId: diffs.executionRequestId ?? null,
+    workspaceArea: normalizeString(eventTarget.workspaceArea, "developer-workspace"),
+    diffHeadline: normalizeString(diffs.headline, "No pending diff"),
+    executionRequestId: normalizeString(diffs.executionRequestId, null),
   };
 }
 
 function resolveThreadType(collaborationEvent) {
-  const eventType = collaborationEvent.eventType ?? "comment";
+  const eventType = normalizeString(collaborationEvent.eventType, "comment").toLowerCase();
 
   if (eventType === "shared-approval") {
     return "approval-thread";
@@ -52,25 +59,29 @@ function resolveThreadType(collaborationEvent) {
 function buildMessages(collaborationEvent, statusOverride = null) {
   const actor = normalizeObject(collaborationEvent.actor);
   const payload = normalizeObject(collaborationEvent.payload);
+  const eventId = normalizeString(collaborationEvent.eventId, "collaboration-event");
+  const normalizedStatusOverride = normalizeString(statusOverride, null);
+  const normalizedStatus = normalizeString(payload.reviewStatus, normalizeString(payload.approvalStatus, "open"));
 
   return [
     {
-      messageId: `${collaborationEvent.eventId ?? "collaboration-event"}:message-1`,
-      authorId: actor.actorId ?? null,
-      authorName: actor.displayName ?? "Unknown collaborator",
-      body: payload.message ?? "Collaboration update",
-      mentions: normalizeArray(payload.mentions),
-      status: statusOverride ?? payload.reviewStatus ?? payload.approvalStatus ?? "open",
+      messageId: `${eventId}:message-1`,
+      authorId: normalizeString(actor.actorId, null),
+      authorName: normalizeString(actor.displayName, "Unknown collaborator"),
+      body: normalizeString(payload.message, "Collaboration update"),
+      mentions: normalizeArray(payload.mentions).map((mention) => normalizeString(mention, null)).filter(Boolean),
+      status: normalizeString(normalizedStatusOverride, normalizedStatus),
     },
   ];
 }
 
 function buildEventThread(collaborationEvent, baseContext) {
-  if (!collaborationEvent.eventId) {
+  const eventId = normalizeString(collaborationEvent.eventId, null);
+  if (!eventId) {
     return null;
   }
 
-  const eventType = collaborationEvent.eventType ?? "comment";
+  const eventType = normalizeString(collaborationEvent.eventType, "comment").toLowerCase();
   const isDiscussionEvent = ["comment", "mention", "shared-review", "shared-approval"].includes(eventType);
 
   if (!isDiscussionEvent) {
@@ -78,13 +89,13 @@ function buildEventThread(collaborationEvent, baseContext) {
   }
 
   const payload = normalizeObject(collaborationEvent.payload);
-  const resourceId = collaborationEvent.target?.resourceId ?? baseContext.executionRequestId ?? null;
+  const resourceId = normalizeString(collaborationEvent.target?.resourceId, baseContext.executionRequestId);
   const messages = buildMessages(collaborationEvent);
 
   return {
-    threadId: `thread:${collaborationEvent.eventId}`,
+    threadId: `thread:${eventId}`,
     threadType: resolveThreadType(collaborationEvent),
-    title: payload.message ?? "Collaboration discussion",
+    title: normalizeString(payload.message, "Collaboration discussion"),
     contextTarget: {
       ...baseContext,
       resourceType:
@@ -111,26 +122,27 @@ function buildEventThread(collaborationEvent, baseContext) {
 function buildDiffThread(branchDiffActivityPanel, baseContext) {
   const diffs = normalizeObject(branchDiffActivityPanel.diffs);
   const totalChanges = diffs.totalChanges ?? 0;
+  const executionRequestId = normalizeString(diffs.executionRequestId, null);
 
-  if (!diffs.executionRequestId && totalChanges <= 0) {
+  if (!executionRequestId && totalChanges <= 0) {
     return null;
   }
 
   return {
-    threadId: `thread:diff:${diffs.executionRequestId ?? "current"}`,
+    threadId: `thread:diff:${executionRequestId ?? "current"}`,
     threadType: "review-thread",
-    title: diffs.headline ?? "Review pending changes",
+    title: normalizeString(diffs.headline, "Review pending changes"),
     contextTarget: {
       ...baseContext,
       resourceType: "diff",
-      resourceId: diffs.executionRequestId ?? null,
+      resourceId: executionRequestId,
       approvalRecordId: null,
       filePath: totalChanges > 0 ? "workspace/diff-preview" : null,
       pullRequestId: null,
     },
     messages: [
       {
-        messageId: `diff-message:${diffs.executionRequestId ?? "current"}`,
+        messageId: `diff-message:${executionRequestId ?? "current"}`,
         authorId: null,
         authorName: "Nexus",
         body: `${totalChanges} changes are ready for contextual review.`,
@@ -147,30 +159,32 @@ function buildDiffThread(branchDiffActivityPanel, baseContext) {
 function buildApprovalThreads(branchDiffActivityPanel, baseContext) {
   return normalizeArray(branchDiffActivityPanel.pendingApprovals).map((approval, index) => {
     const normalizedApproval = normalizeObject(approval);
+    const approvalRecordId = normalizeString(normalizedApproval.approvalRecordId, null);
+    const status = normalizeString(normalizedApproval.status, "pending");
     return {
-      threadId: `thread:approval:${normalizedApproval.approvalRecordId ?? index + 1}`,
+      threadId: `thread:approval:${approvalRecordId ?? index + 1}`,
       threadType: "approval-thread",
-      title: `Approval review for ${normalizedApproval.actionType ?? normalizedApproval.approvalType ?? "project change"}`,
+      title: `Approval review for ${normalizeString(normalizedApproval.actionType, normalizeString(normalizedApproval.approvalType, "project change"))}`,
       contextTarget: {
         ...baseContext,
         resourceType: "approval",
-        resourceId: normalizedApproval.approvalRecordId ?? null,
-        approvalRecordId: normalizedApproval.approvalRecordId ?? null,
+        resourceId: approvalRecordId,
+        approvalRecordId,
         filePath: null,
         pullRequestId: null,
       },
       messages: [
         {
-          messageId: `approval-message:${normalizedApproval.approvalRecordId ?? index + 1}`,
+          messageId: `approval-message:${approvalRecordId ?? index + 1}`,
           authorId: null,
           authorName: "Nexus",
-          body: `Approval is ${normalizedApproval.status ?? "pending"} and waiting for coordinated review.`,
+          body: `Approval is ${status} and waiting for coordinated review.`,
           mentions: [],
-          status: normalizedApproval.status ?? "pending",
+          status,
         },
       ],
       participants: [],
-      status: normalizedApproval.status ?? "pending",
+      status,
       source: "approval-record",
     };
   });
@@ -179,30 +193,32 @@ function buildApprovalThreads(branchDiffActivityPanel, baseContext) {
 function buildReleaseThreads(branchDiffActivityPanel, baseContext) {
   return normalizeArray(branchDiffActivityPanel.pullRequests).map((pullRequest, index) => {
     const normalizedPullRequest = normalizeObject(pullRequest);
+    const pullRequestId = normalizeString(normalizedPullRequest.id, null);
+    const pullRequestState = normalizeString(normalizedPullRequest.state, "open");
     return {
-      threadId: `thread:release:${normalizedPullRequest.id ?? index + 1}`,
+      threadId: `thread:release:${pullRequestId ?? index + 1}`,
       threadType: "release-thread",
-      title: normalizedPullRequest.title ?? "Release review",
+      title: normalizeString(normalizedPullRequest.title, "Release review"),
       contextTarget: {
         ...baseContext,
         resourceType: "release-step",
-        resourceId: normalizedPullRequest.id ?? null,
+        resourceId: pullRequestId,
         approvalRecordId: null,
         filePath: null,
-        pullRequestId: normalizedPullRequest.id ?? null,
+        pullRequestId,
       },
       messages: [
         {
-          messageId: `release-message:${normalizedPullRequest.id ?? index + 1}`,
+          messageId: `release-message:${pullRequestId ?? index + 1}`,
           authorId: null,
           authorName: "Nexus",
-          body: `Release review is ${normalizedPullRequest.state ?? "open"} on ${normalizedPullRequest.targetBranch ?? "main"}.`,
+          body: `Release review is ${pullRequestState} on ${normalizeString(normalizedPullRequest.targetBranch, "main")}.`,
           mentions: [],
-          status: normalizedPullRequest.state ?? "open",
+          status: pullRequestState,
         },
       ],
       participants: [],
-      status: normalizedPullRequest.state ?? "open",
+      status: pullRequestState,
       source: "pull-request",
     };
   });
@@ -269,11 +285,12 @@ export function createProjectCommentsAndReviewThreadsModule({
   }
 
   const threads = [...threadsById.values()].sort(compareThreads);
-  const openThreads = threads.filter((thread) => !["resolved", "closed", "merged"].includes(thread.status)).length;
+  const openThreads = threads.filter((thread) => !["resolved", "closed", "merged"].includes(normalizeString(thread.status, "").toLowerCase())).length;
+  const projectId = normalizeString(normalizedCollaborationEvent.target?.projectId, "project");
 
   return {
     reviewThreadState: {
-      threadStateId: `review-thread-state:${normalizedCollaborationEvent.target?.projectId ?? "project"}`,
+      threadStateId: `review-thread-state:${projectId}`,
       threads,
       summary: {
         totalThreads: threads.length,

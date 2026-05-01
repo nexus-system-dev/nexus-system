@@ -6,6 +6,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function resolveStateVersion(projectState) {
   if (Number.isInteger(projectState.stateVersion) && projectState.stateVersion > 0) {
     return projectState.stateVersion;
@@ -38,8 +42,8 @@ export function defineProjectStateSnapshotSchema({
   const edges = normalizeArray(normalizedExecutionGraph.edges);
   const stateVersion = resolveStateVersion(normalizedProjectState);
   const executionGraphVersion = resolveExecutionGraphVersion(normalizedProjectState, normalizedExecutionGraph);
-  const projectId = normalizedProjectState.projectId ?? "unknown-project";
-  const workspaceId = normalizedProjectState.workspaceId ?? null;
+  const projectId = normalizeString(normalizedProjectState.projectId, "unknown-project");
+  const workspaceId = normalizeString(normalizedProjectState.workspaceId, null);
 
   return {
     projectStateSnapshot: {
@@ -49,8 +53,8 @@ export function defineProjectStateSnapshotSchema({
       executionGraphVersion,
       workspaceReference: {
         workspaceId,
-        workspaceArea: normalizedProjectState.workspaceArea ?? "developer-workspace",
-        workspaceVisibility: normalizedProjectState.workspaceVisibility ?? "workspace",
+        workspaceArea: normalizeString(normalizedProjectState.workspaceArea, "developer-workspace"),
+        workspaceVisibility: normalizeString(normalizedProjectState.workspaceVisibility, "workspace"),
       },
       restoreMetadata: {
         canRestoreFull: true,
@@ -67,14 +71,14 @@ export function defineProjectStateSnapshotSchema({
         lifecyclePhase: normalizedProjectState.lifecyclePhase ?? "unknown",
         hasArtifacts: Boolean(normalizedProjectState.hasArtifacts),
         hasBlockers: Boolean(normalizedProjectState.hasBlockers),
-        updatedAt: normalizedProjectState.updatedAt ?? null,
+        updatedAt: normalizeString(normalizedProjectState.updatedAt, null),
       },
       artifactSummary: {
         artifactCount: normalizedProjectState.artifactCount ?? 0,
-        outputPaths: normalizeArray(normalizedProjectState.outputPaths),
-        packageFormat: normalizedProjectState.packageFormat ?? null,
+        outputPaths: normalizeArray(normalizedProjectState.outputPaths).map((value) => normalizeString(value, null)).filter(Boolean),
+        packageFormat: normalizeString(normalizedProjectState.packageFormat, null),
         packagedFileCount: normalizedProjectState.packagedFileCount ?? 0,
-        verificationStatus: normalizedProjectState.verificationStatus ?? "unknown",
+        verificationStatus: normalizeString(normalizedProjectState.verificationStatus, "unknown"),
       },
       executionGraphSummary: {
         totalNodes: nodes.length,
@@ -86,17 +90,17 @@ export function defineProjectStateSnapshotSchema({
         projectState: normalizedProjectState,
         executionGraph: normalizedExecutionGraph,
         workspaceReference: {
-          workspaceId,
-          workspaceArea: normalizedProjectState.workspaceArea ?? "developer-workspace",
-          workspaceVisibility: normalizedProjectState.workspaceVisibility ?? "workspace",
+        workspaceId,
+        workspaceArea: normalizeString(normalizedProjectState.workspaceArea, "developer-workspace"),
+        workspaceVisibility: normalizeString(normalizedProjectState.workspaceVisibility, "workspace"),
         },
         linkedMetadata: {
           artifactSummary: {
             artifactCount: normalizedProjectState.artifactCount ?? 0,
-            outputPaths: normalizeArray(normalizedProjectState.outputPaths),
-            packageFormat: normalizedProjectState.packageFormat ?? null,
+            outputPaths: normalizeArray(normalizedProjectState.outputPaths).map((value) => normalizeString(value, null)).filter(Boolean),
+            packageFormat: normalizeString(normalizedProjectState.packageFormat, null),
             packagedFileCount: normalizedProjectState.packagedFileCount ?? 0,
-            verificationStatus: normalizedProjectState.verificationStatus ?? "unknown",
+            verificationStatus: normalizeString(normalizedProjectState.verificationStatus, "unknown"),
           },
         },
       },

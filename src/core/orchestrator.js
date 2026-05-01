@@ -4,10 +4,12 @@ import { CanonicalStateStore } from "./state-store.js";
 import { AgentMemoryStore } from "./memory.js";
 import { EventBus } from "./event-bus.js";
 import { buildExecutionGraph, reconcileRoadmap } from "./project-graph.js";
+import { mapMaintenanceBacklogToRoadmapTasks } from "./maintenance-task-intake-mapper.js";
 
 function summarizeTask(task) {
   return {
     id: task.id,
+    taskType: task.taskType,
     lane: task.lane,
     summary: task.summary,
     successCriteria: task.successCriteria,
@@ -62,7 +64,11 @@ export class NexusOrchestrator {
     });
 
     const plannedRoadmap = this.planner.generateInitialRoadmap(initialSnapshot.state);
-    const roadmap = reconcileRoadmap(plannedRoadmap, {
+    const { mergedTasks: roadmapWithMaintenance } = mapMaintenanceBacklogToRoadmapTasks({
+      maintenanceBacklog: initialSnapshot.state?.maintenanceBacklog ?? null,
+      existingTasks: plannedRoadmap,
+    });
+    const roadmap = reconcileRoadmap(roadmapWithMaintenance, {
       completedTaskIds,
     });
     const executionGraph = buildExecutionGraph(roadmap, {

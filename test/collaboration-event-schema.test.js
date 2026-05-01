@@ -30,10 +30,30 @@ test("collaboration event schema returns canonical shared approval event", () =>
   assert.equal(collaborationEvent.summary.isSharedEvent, true);
 });
 
-test("collaboration event schema falls back safely to presence signal", () => {
-  const { collaborationEvent } = defineCollaborationEventSchema();
+test("collaboration event schema derives canonical fallback presence signal from assembled input", () => {
+  const { collaborationEvent: fallbackEvent } = defineCollaborationEventSchema({
+    workspaceAction: {
+      actionType: "presence-signal",
+      message: "Workspace presence updated",
+      workspaceId: "workspace-2",
+      projectId: "project-2",
+      workspaceArea: "developer-workspace",
+      visibility: "workspace",
+    },
+    actorContext: {
+      actorId: "user-2",
+      displayName: "Collaborator",
+      role: "viewer",
+      presence: "idle",
+      workspaceVisibility: "workspace",
+      workspaceId: "workspace-2",
+      projectId: "project-2",
+      workspaceArea: "developer-workspace",
+    },
+  });
 
-  assert.equal(typeof collaborationEvent.eventId, "string");
-  assert.equal(collaborationEvent.eventType, "presence-signal");
-  assert.equal(typeof collaborationEvent.summary.workspaceArea, "string");
+  assert.equal(typeof fallbackEvent.eventId, "string");
+  assert.equal(fallbackEvent.eventType, "presence-signal");
+  assert.equal(fallbackEvent.actor.presence, "idle");
+  assert.equal(fallbackEvent.summary.isSharedEvent, false);
 });

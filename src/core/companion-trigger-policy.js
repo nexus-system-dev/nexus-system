@@ -4,13 +4,20 @@ function normalizeObject(value) {
     : {};
 }
 
+function normalizeString(value, fallback) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function resolveDecision({ companionState, policyTrace, executionStatus }) {
   const normalizedCompanionState = normalizeObject(companionState);
   const normalizedPolicyTrace = normalizeObject(policyTrace);
   const normalizedExecutionStatus = normalizeObject(executionStatus);
-  const state = normalizedCompanionState.state ?? normalizedCompanionState.mode ?? "observing";
-  const executionMode = normalizedExecutionStatus.mode ?? "interactive";
-  const runStatus = normalizedExecutionStatus.status ?? "idle";
+  const state = normalizeString(
+    normalizedCompanionState.state,
+    normalizeString(normalizedCompanionState.mode, "observing"),
+  ).toLowerCase();
+  const executionMode = normalizeString(normalizedExecutionStatus.mode, "interactive").toLowerCase();
+  const runStatus = normalizeString(normalizedExecutionStatus.status, "idle").toLowerCase();
 
   if (executionMode === "critical-run" || runStatus === "running-critical") {
     return "stay-quiet";
@@ -42,8 +49,8 @@ function buildSummary({ decisionType, policyTrace, executionStatus }) {
   return {
     decisionType,
     requiresApproval: normalizedPolicyTrace.requiresApproval === true,
-    blockedByPolicy: normalizedPolicyTrace.finalDecision === "blocked",
-    executionMode: normalizedExecutionStatus.mode ?? "interactive",
+    blockedByPolicy: normalizeString(normalizedPolicyTrace.finalDecision, "").toLowerCase() === "blocked",
+    executionMode: normalizeString(normalizedExecutionStatus.mode, "interactive").toLowerCase(),
     canInterrupt: decisionType === "interrupt",
   };
 }
@@ -64,13 +71,17 @@ export function createCompanionTriggerPolicy({
 
   return {
     companionTriggerDecision: {
-      decisionId: `companion-trigger:${normalizedExecutionStatus.projectId ?? "project"}`,
+      decisionId: `companion-trigger:${normalizeString(normalizedExecutionStatus.projectId, "project")}`,
       decisionType,
       visibility: buildVisibility(decisionType),
       reasons: [
-        normalizedPolicyTrace.reason
-          ?? normalizedCompanionState.reasons?.[0]
-          ?? "No trigger reason is available yet.",
+        normalizeString(
+          normalizedPolicyTrace.reason,
+          normalizeString(
+            normalizedCompanionState.reasons?.[0],
+            "No trigger reason is available yet.",
+          ),
+        ),
       ],
       summary: buildSummary({
         decisionType,

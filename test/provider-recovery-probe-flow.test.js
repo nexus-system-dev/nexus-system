@@ -70,3 +70,25 @@ test("provider recovery probe flow stays idle when the circuit is closed", () =>
   assert.equal(providerRecoveryProbe.reopenDecision, "no-reopen-needed");
   assert.equal(providerRecoveryProbe.summary.canProbe, false);
 });
+
+test("provider recovery probe flow normalizes malformed circuit state and provider payload fields", () => {
+  const { providerRecoveryProbe } = createProviderRecoveryProbeFlow({
+    circuitBreakerDecision: {
+      providerType: " hosting ",
+      circuitState: " open ",
+      decision: " fail-fast ",
+      cooldownWindowMs: 60000,
+      retryAfterMs: 45000,
+    },
+    providerSession: {
+      providerType: " hosting ",
+      operationTypes: [" poll ", " deploy "],
+    },
+  });
+
+  assert.equal(providerRecoveryProbe.providerRecoveryProbeId, "provider-recovery-probe:hosting");
+  assert.equal(providerRecoveryProbe.providerType, "hosting");
+  assert.equal(providerRecoveryProbe.status, "scheduled");
+  assert.equal(providerRecoveryProbe.schedule.pollOperation, "poll");
+  assert.equal(providerRecoveryProbe.workerJob.payload.providerType, "hosting");
+});

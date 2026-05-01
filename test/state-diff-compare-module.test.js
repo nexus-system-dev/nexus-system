@@ -65,3 +65,18 @@ test("state diff compare module falls back safely", () => {
   assert.equal(Array.isArray(stateDiff.graphChanges), true);
   assert.equal(Array.isArray(stateDiff.artifactChanges), true);
 });
+
+test("state diff compare module normalizes malformed identifiers", () => {
+  const { stateDiff } = createStateDiffAndCompareModule({
+    snapshotRecord: {
+      snapshotRecordId: "  ",
+    },
+    comparisonTarget: {
+      comparisonTargetId: " comparison-target:project-1 ",
+    },
+  });
+
+  assert.equal(stateDiff.stateDiffId, "state-diff:unknown-snapshot");
+  assert.equal(stateDiff.snapshotRecordId, null);
+  assert.equal(stateDiff.comparisonTargetId, "comparison-target:project-1");
+});

@@ -2,6 +2,18 @@ function normalizeLayoutSystem(layoutSystem) {
   return layoutSystem && typeof layoutSystem === "object" ? layoutSystem : {};
 }
 
+function normalizeLayoutSystemId(layoutSystemId) {
+  return typeof layoutSystemId === "string" && layoutSystemId.trim() ? layoutSystemId.trim() : "nexus";
+}
+
+function normalizeLayoutGroup(layoutGroup) {
+  return layoutGroup && typeof layoutGroup === "object" ? layoutGroup : {};
+}
+
+function normalizeMeasurement(value, fallback) {
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
 function createLayoutComponent({
   componentType,
   anatomy,
@@ -25,10 +37,11 @@ export function createLayoutComponents({
   layoutSystem,
 } = {}) {
   const normalizedLayoutSystem = normalizeLayoutSystem(layoutSystem);
-  const grid = normalizedLayoutSystem.grid ?? {};
-  const spacingScale = normalizedLayoutSystem.spacingScale ?? {};
-  const sectionRhythm = normalizedLayoutSystem.sectionRhythm ?? {};
-  const containerWidths = normalizedLayoutSystem.containerWidths ?? {};
+  const normalizedLayoutSystemId = normalizeLayoutSystemId(normalizedLayoutSystem.layoutSystemId);
+  const grid = normalizeLayoutGroup(normalizedLayoutSystem.grid);
+  const spacingScale = normalizeLayoutGroup(normalizedLayoutSystem.spacingScale);
+  const sectionRhythm = normalizeLayoutGroup(normalizedLayoutSystem.sectionRhythm);
+  const containerWidths = normalizeLayoutGroup(normalizedLayoutSystem.containerWidths);
 
   const components = [
     createLayoutComponent({
@@ -36,9 +49,9 @@ export function createLayoutComponents({
       anatomy: ["outerFrame", "innerContent"],
       usage: "page-level width control for dashboards, setup flows and workspaces",
       layoutRules: {
-        maxWidth: containerWidths.standard ?? 960,
-        wideWidth: containerWidths.wide ?? 1280,
-        paddingX: spacingScale.lg ?? 20,
+        maxWidth: normalizeMeasurement(containerWidths.standard, 960),
+        wideWidth: normalizeMeasurement(containerWidths.wide, 1280),
+        paddingX: normalizeMeasurement(spacingScale.lg, 20),
       },
       responsiveBehavior: {
         mobile: "fills available width with reduced side padding",
@@ -54,9 +67,9 @@ export function createLayoutComponents({
       anatomy: ["header", "body", "footer"],
       usage: "vertical content grouping with consistent spacing rhythm",
       layoutRules: {
-        gap: sectionRhythm.sectionGap ?? 32,
-        contentGap: sectionRhythm.contentGap ?? 12,
-        topOffset: sectionRhythm.pageTop ?? 48,
+        gap: normalizeMeasurement(sectionRhythm.sectionGap, 32),
+        contentGap: normalizeMeasurement(sectionRhythm.contentGap, 12),
+        topOffset: normalizeMeasurement(sectionRhythm.pageTop, 48),
       },
       responsiveBehavior: {
         mobile: "compresses vertical rhythm while preserving section separation",
@@ -72,9 +85,9 @@ export function createLayoutComponents({
       anatomy: ["items"],
       usage: "one-dimensional vertical or horizontal grouping of repeated content blocks",
       layoutRules: {
-        gap: spacingScale.md ?? 12,
-        compactGap: spacingScale.sm ?? 8,
-        spaciousGap: spacingScale.lg ?? 20,
+        gap: normalizeMeasurement(spacingScale.md, 12),
+        compactGap: normalizeMeasurement(spacingScale.sm, 8),
+        spaciousGap: normalizeMeasurement(spacingScale.lg, 20),
       },
       responsiveBehavior: {
         mobile: "defaults to vertical stacking",
@@ -90,9 +103,9 @@ export function createLayoutComponents({
       anatomy: ["gridFrame", "gridItems"],
       usage: "multi-column content arrangements across dashboards and workbench panels",
       layoutRules: {
-        columns: grid.columns ?? 12,
-        gutter: grid.gutter ?? 20,
-        maxContentWidth: grid.maxContentWidth ?? 1280,
+        columns: normalizeMeasurement(grid.columns, 12),
+        gutter: normalizeMeasurement(grid.gutter, 20),
+        maxContentWidth: normalizeMeasurement(grid.maxContentWidth, 1280),
       },
       responsiveBehavior: {
         mobile: "collapses to 1 or 2 columns depending on screen density",
@@ -108,9 +121,9 @@ export function createLayoutComponents({
       anatomy: ["panelFrame", "panelHeader", "panelBody", "panelFooter"],
       usage: "bounded workspace surfaces for tools, logs, branches and summaries",
       layoutRules: {
-        padding: spacingScale.lg ?? 20,
-        internalGap: sectionRhythm.panelGap ?? 20,
-        minWidth: grid.workbenchMinWidth ?? 1180,
+        padding: normalizeMeasurement(spacingScale.lg, 20),
+        internalGap: normalizeMeasurement(sectionRhythm.panelGap, 20),
+        minWidth: normalizeMeasurement(grid.workbenchMinWidth, 1180),
       },
       responsiveBehavior: {
         mobile: "collapses chrome and prioritizes body content",
@@ -126,8 +139,8 @@ export function createLayoutComponents({
       anatomy: ["line"],
       usage: "lightweight separation between sections, rows and dense content groups",
       layoutRules: {
-        spacingBefore: spacingScale.md ?? 12,
-        spacingAfter: spacingScale.md ?? 12,
+        spacingBefore: normalizeMeasurement(spacingScale.md, 12),
+        spacingAfter: normalizeMeasurement(spacingScale.md, 12),
         thickness: 1,
       },
       responsiveBehavior: {
@@ -143,7 +156,7 @@ export function createLayoutComponents({
 
   return {
     layoutComponents: {
-      layoutComponentLibraryId: `layout-components:${normalizedLayoutSystem.layoutSystemId ?? "nexus"}`,
+      layoutComponentLibraryId: `layout-components:${normalizedLayoutSystemId}`,
       components,
       summary: {
         totalComponents: components.length,

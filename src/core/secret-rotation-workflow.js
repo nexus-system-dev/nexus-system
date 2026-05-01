@@ -18,13 +18,17 @@ function cloneAccount(account) {
   return account && typeof account === "object" ? structuredClone(account) : account;
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function normalizeOldReference(credentialReference, affectedConnectors) {
   const matchedRecord = affectedConnectors[0]?.linkedAccount?.credentialVaultRecord ?? null;
   if (credentialReference && typeof credentialReference === "object") {
-    return {
-      credentialReference: credentialReference.credentialReference ?? matchedRecord?.credentialReference ?? null,
-      credentialKey: credentialReference.credentialKey ?? matchedRecord?.credentialKey ?? null,
-      status: credentialReference.status ?? matchedRecord?.status ?? null,
+      return {
+      credentialReference: normalizeString(credentialReference.credentialReference ?? matchedRecord?.credentialReference, null),
+      credentialKey: normalizeString(credentialReference.credentialKey ?? matchedRecord?.credentialKey, null),
+      status: normalizeString(credentialReference.status ?? matchedRecord?.status, null),
       encryptedCredential: credentialReference.encryptedCredential ?? matchedRecord?.encryptedCredential ?? null,
       secretReferenceLifecycle: {
         ...(matchedRecord?.secretReferenceLifecycle ?? {}),
@@ -34,9 +38,9 @@ function normalizeOldReference(credentialReference, affectedConnectors) {
   }
 
   return {
-    credentialReference: typeof credentialReference === "string" ? credentialReference : matchedRecord?.credentialReference ?? null,
-    credentialKey: matchedRecord?.credentialKey ?? null,
-    status: matchedRecord?.status ?? null,
+    credentialReference: normalizeString(credentialReference, normalizeString(matchedRecord?.credentialReference, null)),
+    credentialKey: normalizeString(matchedRecord?.credentialKey, null),
+    status: normalizeString(matchedRecord?.status, null),
     encryptedCredential: matchedRecord?.encryptedCredential ?? null,
     secretReferenceLifecycle: {
       ...(matchedRecord?.secretReferenceLifecycle ?? {}),
@@ -90,8 +94,8 @@ export function createSecretRotationWorkflow({
       rotationId,
       failedAt: "invalidation",
       oldReference,
-      requestedBy: normalizedRotationRequest.requestedBy,
-      reason: normalizedRotationRequest.reason,
+      requestedBy: normalizeString(normalizedRotationRequest.requestedBy, null),
+      reason: normalizeString(normalizedRotationRequest.reason, null),
       affectedConnectors,
       error: "Credential reference is not attached to any linked connector",
     });
@@ -138,10 +142,10 @@ export function createSecretRotationWorkflow({
   let nextReferencePayload;
   try {
     nextReferencePayload = vaultInterface({
-      credentialKey: oldReference.credentialKey ?? `${project?.id ?? "project"}-rotated-secret`,
+      credentialKey: oldReference.credentialKey ?? `${normalizeString(project?.id, "project")}-rotated-secret`,
       credentialValue: normalizedRotationRequest.nextCredentialValue,
       encryptedCredential,
-      credentialReference: `${oldReference.credentialReference}:rotated:${Date.now()}`,
+      credentialReference: `${normalizeString(oldReference.credentialReference, "missing-reference")}:rotated:${Date.now()}`,
     });
   } catch (error) {
     return buildFailedResult({
@@ -190,9 +194,9 @@ export function createSecretRotationWorkflow({
       };
     }
 
-    const authMode = linkedAccount.accountRecord?.connectionMode ?? linkedAccount.providerSession?.authMode ?? "manual";
-    const status = linkedAccount.accountRecord?.status ?? linkedAccount.providerSession?.status ?? "connected";
-    const providerType = linkedAccount.accountRecord?.provider ?? linkedAccount.providerSession?.providerType ?? "generic";
+    const authMode = normalizeString(linkedAccount.accountRecord?.connectionMode ?? linkedAccount.providerSession?.authMode, "manual");
+    const status = normalizeString(linkedAccount.accountRecord?.status ?? linkedAccount.providerSession?.status, "connected");
+    const providerType = normalizeString(linkedAccount.accountRecord?.provider ?? linkedAccount.providerSession?.providerType, "generic");
     const { providerSession } = createProviderConnectorContract({
       providerType,
       credentials: {
@@ -236,9 +240,9 @@ export function createSecretRotationWorkflow({
         updated: !connectorUpdateErrors.some((error) => error.accountId === connector.accountId),
       })),
       rotatedAt: new Date().toISOString(),
-      requestedBy: normalizedRotationRequest.requestedBy,
-      reason: normalizedRotationRequest.reason,
-      mode: normalizedRotationRequest.mode,
+      requestedBy: normalizeString(normalizedRotationRequest.requestedBy, null),
+      reason: normalizeString(normalizedRotationRequest.reason, null),
+      mode: normalizeString(normalizedRotationRequest.mode, null),
       connectorUpdateErrors,
     },
     linkedAccounts: accounts,

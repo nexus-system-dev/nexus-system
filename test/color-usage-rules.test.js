@@ -35,3 +35,36 @@ test("color usage rules falls back safely without design tokens", () => {
   assert.equal(typeof colorRules.roles.surface.token, "string");
   assert.equal(typeof colorRules.states.danger.token, "string");
 });
+
+test("color usage rules normalizes invalid token set ids and color token values", () => {
+  const { colorRules } = createColorUsageRules({
+    designTokens: {
+      tokenSetId: { invalid: true },
+      colors: {
+        accent: ["#0f766e"],
+        warning: 12,
+        border: null,
+        canvas: "  #111111  ",
+      },
+    },
+  });
+
+  assert.equal(colorRules.colorRulesId, "color-rules:nexus");
+  assert.equal(colorRules.roles.canvas.token, "#111111");
+  assert.equal(colorRules.roles.accent.token, "#0f766e");
+  assert.equal(colorRules.roles.border.token, "#d6d3d1");
+  assert.equal(colorRules.states.warning.token, "#b45309");
+});
+
+test("color usage rules ignores non-object colors payloads", () => {
+  const { colorRules } = createColorUsageRules({
+    designTokens: {
+      tokenSetId: "design-tokens:nexus",
+      colors: "bad-payload",
+    },
+  });
+
+  assert.equal(colorRules.colorRulesId, "color-rules:design-tokens:nexus");
+  assert.equal(colorRules.roles.surface.token, "#fffaf0");
+  assert.equal(colorRules.states.success.token, "#15803d");
+});

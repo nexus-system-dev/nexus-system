@@ -6,21 +6,32 @@ function normalizeLearningInsightViewModel(learningInsightViewModel) {
   return learningInsightViewModel && typeof learningInsightViewModel === "object" ? learningInsightViewModel : {};
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function normalizeRegions(regions) {
+  if (!Array.isArray(regions)) {
+    return [];
+  }
+
+  return regions.filter((region) => typeof region === "string" && region.trim()).map((region) => region.trim());
+}
+
 export function createAiLearningWorkspaceTemplate({
   screenTemplateSchema,
   learningInsightViewModel,
 } = {}) {
   const normalizedScreenTemplateSchema = normalizeScreenTemplateSchema(screenTemplateSchema);
   const normalizedLearningInsightViewModel = normalizeLearningInsightViewModel(learningInsightViewModel);
-  const regions = Array.isArray(normalizedScreenTemplateSchema.regions)
-    ? normalizedScreenTemplateSchema.regions
-    : [];
+  const baseTemplateId = normalizeString(normalizedScreenTemplateSchema.templateId);
+  const regions = normalizeRegions(normalizedScreenTemplateSchema.regions);
 
   return {
     aiLearningWorkspaceTemplate: {
-      templateId: `ai-learning-workspace:${normalizedScreenTemplateSchema.templateId ?? "workspace"}`,
+      templateId: `ai-learning-workspace:${baseTemplateId ?? "workspace"}`,
       templateType: "ai-learning-workspace",
-      baseTemplateId: normalizedScreenTemplateSchema.templateId ?? null,
+      baseTemplateId,
       sections: {
         topbar: {
           enabled: regions.includes("topbar"),
@@ -57,7 +68,7 @@ export function createAiLearningWorkspaceTemplate({
         ],
         supportsInsightExploration: true,
         insightCount: Array.isArray(normalizedLearningInsightViewModel.insights)
-          ? normalizedLearningInsightViewModel.insights.length
+          ? normalizedLearningInsightViewModel.insights.filter((insight) => insight && typeof insight === "object").length
           : 0,
       },
       summary: {

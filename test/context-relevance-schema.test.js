@@ -51,3 +51,37 @@ test("context relevance schema falls back safely without explicit inputs", () =>
   assert.equal(typeof contextRelevanceSchema.summary.totalEntries, "number");
   assert.equal(typeof contextRelevanceSchema.summary.highestPriorityScore, "number");
 });
+
+test("context relevance schema normalizes malformed identifiers and string inputs", () => {
+  const { contextRelevanceSchema } = defineContextRelevanceSchema({
+    projectState: {
+      id: {},
+      projectId: " project-9 ",
+      screenReviewReport: {
+        summary: {
+          blockedScreens: 1,
+        },
+      },
+      progressState: {
+        status: " blocked ",
+        percent: 12,
+      },
+      approvals: ["approval-1"],
+      events: [{ type: "state.updated" }],
+    },
+    interactionContext: {
+      projectId: " project-9 ",
+      currentSurface: " workspace ",
+      currentTask: " focus task ",
+      urgency: " high ",
+      visible: true,
+    },
+  });
+
+  assert.equal(contextRelevanceSchema.schemaId, "context-relevance:project-9");
+  assert.equal(contextRelevanceSchema.contextEntries[0].sourceId, "project-9");
+  assert.equal(contextRelevanceSchema.contextEntries[0].reasons.includes("progress-status:blocked"), true);
+  assert.equal(contextRelevanceSchema.contextEntries[1].sourceId, "project-9");
+  assert.equal(contextRelevanceSchema.contextEntries[1].reasons.includes("surface:workspace"), true);
+  assert.equal(contextRelevanceSchema.contextEntries[1].reasons.includes("urgency:high"), true);
+});

@@ -84,3 +84,31 @@ test("feature flag schema computes summary values", () => {
   assert.equal(typeof featureFlagSchema.summary.killSwitchesActive, "number");
   assert.equal(Array.isArray(featureFlagSchema.summary.environmentsTargeted), true);
 });
+
+test("feature flag schema normalizes malformed environment config and defaults", () => {
+  const { featureFlagSchema } = defineFeatureFlagSchema({
+    environmentConfig: {
+      projectId: " giftwallet ",
+      environment: " prod ",
+      defaultMode: " gradual ",
+      provider: " vercel ",
+      target: " edge ",
+      runtimeSource: " request-context ",
+    },
+    featureDefinitions: [
+      {
+        flagId: "custom-flag",
+        description: " Custom flag ",
+        defaultFallback: " disabled ",
+      },
+    ],
+  });
+
+  const customFlag = featureFlagSchema.flags.find((flag) => flag.flagId === "custom-flag");
+  assert.equal(featureFlagSchema.featureFlagSchemaId, "feature-flag-schema:giftwallet");
+  assert.equal(featureFlagSchema.environmentConfig.projectId, "giftwallet");
+  assert.equal(featureFlagSchema.environmentConfig.environment, "production");
+  assert.equal(featureFlagSchema.environmentConfig.provider, "vercel");
+  assert.equal(customFlag.description, "Custom flag");
+  assert.equal(customFlag.defaultFallback, "disabled");
+});

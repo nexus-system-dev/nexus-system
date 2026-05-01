@@ -51,3 +51,24 @@ test("snapshot retention guard keeps snapshots when policy is disabled", () => {
   assert.equal(snapshotRetentionDecision.shouldPrune, false);
   assert.equal(snapshotRetentionDecision.deletedSnapshotRecordIds.length, 0);
 });
+
+test("snapshot retention guard normalizes malformed trigger and record identifiers", () => {
+  const { snapshotRetentionDecision } = createSnapshotRetentionGuard({
+    snapshotRecord: {
+      snapshotRecordId: " snapshot-record:giftwallet:v4 ",
+    },
+    triggerType: " manual-cleanup ",
+    retentionPolicy: {
+      enabled: true,
+      maxSnapshots: 1,
+    },
+    snapshotRecords: [
+      { snapshotRecordId: " snapshot-record:giftwallet:v1 ", storageMetadata: { storedAt: "2026-03-30T09:00:00.000Z" } },
+      { snapshotRecordId: " snapshot-record:giftwallet:v2 ", storageMetadata: { storedAt: "2026-03-30T10:00:00.000Z" } },
+    ],
+  });
+
+  assert.equal(snapshotRetentionDecision.triggerType, "manual-cleanup");
+  assert.equal(snapshotRetentionDecision.deletedSnapshotRecordIds[0], "snapshot-record:giftwallet:v1");
+  assert.equal(snapshotRetentionDecision.retainedSnapshotRecordIds[0], "snapshot-record:giftwallet:v2");
+});

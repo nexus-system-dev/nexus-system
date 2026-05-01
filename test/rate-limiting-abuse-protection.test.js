@@ -200,3 +200,45 @@ test("route scanning detection blocks clients that probe many unknown api routes
   assert.equal(blocked.rateLimitDecision.decision, "abuse-blocked");
   assert.equal(blocked.rateLimitDecision.abuseSignals.routeScanning, 5);
 });
+
+test("rate limiting normalizes malformed route keys and response kind fields", () => {
+  const store = createInMemoryRateLimitStore();
+  const routeDefinition = {
+    method: "POST",
+    path: " /api/auth/login ",
+    tier: " critical ",
+    kind: " auth ",
+    bucketKey: " /api/auth/* ",
+  };
+
+  createRateLimitingAndAbuseProtection({
+    requestContext: createRequestContext({
+      ipAddress: "10.0.0.22",
+      userId: null,
+      pathName: " /api/auth/login ",
+      method: "POST",
+      timestamp: 40_000,
+    }),
+    routeDefinition,
+    rateLimitStore: store,
+  });
+  createRateLimitingAndAbuseProtection({
+    requestContext: {
+      ...createRequestContext({
+        ipAddress: "10.0.0.22",
+        userId: null,
+        pathName: " /api/auth/login ",
+        method: "POST",
+        timestamp: 40_000,
+      }),
+      phase: " response ",
+      responseStatusCode: 401,
+      timestamp: 40_100,
+    },
+    routeDefinition,
+    rateLimitStore: store,
+  });
+
+  assert.equal(store.clientSignals.get("critical:10.0.0.22").authFailures.length, 1);
+  assert.equal(store.requestBuckets.has("critical:10.0.0.22:/api/auth/*"), true);
+});

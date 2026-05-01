@@ -2,6 +2,10 @@ function normalizeProjectPermissionSchema(projectPermissionSchema) {
   return projectPermissionSchema && typeof projectPermissionSchema === "object" ? projectPermissionSchema : {};
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function createEmptyCapabilities() {
   return {
     view: false,
@@ -37,7 +41,7 @@ function buildCapabilitiesByRole(projectPermissionSchema) {
 
   return Object.fromEntries(
     entries.map((entry) => [
-      entry?.role ?? "viewer",
+      normalizeString(entry?.role, "viewer")?.toLowerCase(),
       {
         ...createEmptyCapabilities(),
         ...(entry?.capabilities ?? {}),
@@ -91,9 +95,9 @@ export function createProjectRoleCapabilityMatrix({
 
   return {
     roleCapabilityMatrix: {
-      roleCapabilityMatrixId: `role-capability-matrix:${normalizedProjectPermissionSchema.permissionSchemaId ?? "project-permissions:unknown"}`,
-      permissionSchemaId: normalizedProjectPermissionSchema.permissionSchemaId ?? null,
-      projectType: normalizedProjectPermissionSchema.projectType ?? "generic",
+      roleCapabilityMatrixId: `role-capability-matrix:${normalizeString(normalizedProjectPermissionSchema.permissionSchemaId, "project-permissions:unknown")}`,
+      permissionSchemaId: normalizeString(normalizedProjectPermissionSchema.permissionSchemaId, null),
+      projectType: normalizeString(normalizedProjectPermissionSchema.projectType, "generic")?.toLowerCase(),
       roles: roleEntries,
       actionFamilies: {
         collaboration: ["view", "edit", "approve"],

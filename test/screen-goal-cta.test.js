@@ -25,3 +25,44 @@ test("goal and CTA module returns dashboard action set", () => {
   assert.equal(result.primaryAction.label, "הצעד הבא");
   assert.equal(result.secondaryActions.some((action) => action.label === "רענון"), true);
 });
+
+test("goal and CTA module omits primary action when the screen contract marks it optional", () => {
+  const result = createGoalAndCtaDefinitionModule({
+    screenContract: {
+      screenType: "detail",
+      interactionModel: {
+        primaryActionRequired: false,
+        secondaryActionsSupported: true,
+      },
+    },
+  });
+
+  assert.equal(result.primaryAction, null);
+  assert.equal(result.secondaryActions.some((action) => action.label === "ביטול"), true);
+});
+
+test("goal and CTA module normalizes unknown and drifted screen types before deriving CTAs", () => {
+  const unknownType = createGoalAndCtaDefinitionModule({
+    screenContract: {
+      screenType: "modal",
+      interactionModel: {
+        primaryActionRequired: true,
+        secondaryActionsSupported: true,
+      },
+    },
+  });
+  const normalizedWorkspace = createGoalAndCtaDefinitionModule({
+    screenContract: {
+      screenType: "  WORKSPACE  ",
+      interactionModel: {
+        primaryActionRequired: true,
+        secondaryActionsSupported: true,
+      },
+    },
+  });
+
+  assert.equal(unknownType.primaryAction?.actionId, "confirm-screen-action");
+  assert.equal(unknownType.screenGoal, "להציג מידע ברור ולאפשר המשך פעולה");
+  assert.equal(normalizedWorkspace.primaryAction?.actionId, "apply-workspace-update");
+  assert.equal(normalizedWorkspace.screenGoal, "לאפשר עבודה ממוקדת על תוכן, תכנון או ניתוח");
+});

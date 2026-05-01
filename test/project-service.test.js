@@ -6,8 +6,7 @@ import path from "node:path";
 
 import { ProjectService } from "../src/core/project-service.js";
 
-function createProjectService() {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-service-"));
+function createProjectService(directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-service-"))) {
   return new ProjectService({
     eventLogPath: path.join(directory, "events.ndjson"),
   });
@@ -23,6 +22,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(project.cycle.roadmap.length >= 2, true);
   assert.equal(project.cycle.roadmap.some((task) => task.id === "saas-billing"), true);
   assert.equal(project.cycle.roadmap.some((task) => task.id === "saas-acquisition"), true);
+  assert.equal(project.cycle.roadmap.every((task) => typeof task.taskType === "string" && task.taskType.length > 0), true);
   assert.equal(project.cycle.assignments.length >= 1, true);
   assert.equal(project.events.length >= 4, true);
   assert.equal(project.scan.exists, true);
@@ -43,6 +43,27 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(project.state.businessContext.gtmStage, "build");
   assert.equal(Array.isArray(project.state.businessContext.kpis), true);
   assert.equal(typeof project.state.projectIdentity?.identityId, "string");
+  assert.equal(typeof project.state.productBoundaryModel?.productBoundaryModelId, "string");
+  assert.equal(typeof project.state.productBoundaryModel?.automationClass, "string");
+  assert.equal(Array.isArray(project.state.productBoundaryModel?.supportedWorkflows), true);
+  assert.equal(typeof project.state.capabilityLimitMap?.capabilityLimitMapId, "string");
+  assert.equal(Array.isArray(project.state.capabilityLimitMap?.promises), true);
+  assert.equal(Array.isArray(project.state.capabilityLimitMap?.limits), true);
+  assert.equal(typeof project.state.boundaryDisclosureModel?.boundaryDisclosureModelId, "string");
+  assert.equal(Array.isArray(project.state.boundaryDisclosureModel?.disclosureCards), true);
+  assert.equal(typeof project.state.systemCapabilityRegistry?.systemCapabilityRegistryId, "string");
+  assert.equal(Array.isArray(project.state.systemCapabilityRegistry?.capabilities), true);
+  assert.equal(typeof project.state.capabilityDecision?.capabilityDecisionId, "string");
+  assert.equal(typeof project.state.capabilityDecision?.decision, "string");
+  assert.equal(typeof project.state.atomicExecutionEnvelope?.atomicExecutionEnvelopeId, "string");
+  assert.equal(typeof project.state.atomicExecutionEnvelope?.status, "string");
+  assert.equal(typeof project.state.externalExecutionResult?.externalExecutionResultId, "string");
+  assert.equal(typeof project.state.externalExecutionResult?.dispatchDecision, "string");
+  assert.equal(typeof project.state.executionConsistencyReport?.executionConsistencyReportId, "string");
+  assert.equal(typeof project.state.executionConsistencyReport?.summary?.isConsistent, "boolean");
+  assert.equal(typeof project.atomicExecutionEnvelope?.atomicExecutionEnvelopeId, "string");
+  assert.equal(typeof project.externalExecutionResult?.externalExecutionResultId, "string");
+  assert.equal(typeof project.executionConsistencyReport?.executionConsistencyReportId, "string");
   assert.equal(typeof project.state.projectDraft?.id, "string");
   assert.equal(typeof project.state.projectDraft?.owner?.displayName, "string");
   assert.equal(typeof project.state.projectDraft?.onboardingReadiness?.canStartOnboarding, "boolean");
@@ -94,6 +115,13 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.subscriptionState?.subscriptionStateId, "string");
   assert.equal(typeof project.state.subscriptionState?.status, "string");
   assert.equal(typeof project.state.subscriptionState?.source, "string");
+  assert.equal(
+    project.state.subscriptionState?.source === "workspace-billing-state"
+      || project.state.subscriptionState?.source === "billing-plan-schema"
+      || project.state.subscriptionState?.source === "fallback-default",
+    true,
+  );
+  assert.equal(typeof project.state.subscriptionState?.summary, "string");
   assert.equal(typeof project.state.costAwareActionSelection?.costAwareActionSelectionId, "string");
   assert.equal(typeof project.state.costAwareActionSelection?.selectionBasis, "string");
   assert.equal(Array.isArray(project.state.costAwareActionSelection?.rankedActions), true);
@@ -153,6 +181,18 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.userIdentity?.authMetadata?.provider, "string");
   assert.equal(typeof project.state.authenticationState?.status, "string");
   assert.equal(typeof project.state.authenticationState?.isAuthenticated, "boolean");
+  assert.equal(typeof project.state.ownerAuthState?.ownerAuthStateId, "string");
+  assert.equal(typeof project.state.ownerAuthState?.trustLevel, "string");
+  assert.equal(typeof project.state.ownerMfaDecision?.ownerMfaDecisionId, "string");
+  assert.equal(typeof project.state.ownerMfaDecision?.decision, "string");
+  assert.equal(Array.isArray(project.state.ownerMfaDecision?.checks), true);
+  assert.equal(typeof project.state.deviceTrustDecision?.deviceTrustDecisionId, "string");
+  assert.equal(typeof project.state.deviceTrustDecision?.decision, "string");
+  assert.equal(typeof project.state.sensitiveActionConfirmation?.sensitiveActionConfirmationId, "string");
+  assert.equal(typeof project.state.stepUpAuthDecision?.stepUpAuthDecisionId, "string");
+  assert.equal(typeof project.state.privilegedModeState?.privilegedModeStateId, "string");
+  assert.equal(typeof project.state.ownerAccessDecision?.ownerAccessDecisionId, "string");
+  assert.equal(typeof project.state.criticalOperationDecision?.criticalOperationDecisionId, "string");
   assert.equal(typeof project.state.sessionState?.status, "string");
   assert.equal(typeof project.state.securitySignals?.suspiciousActivity, "boolean");
   assert.equal(typeof project.state.sessionSecurityDecision?.decision, "string");
@@ -177,6 +217,10 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.projectCreationRedirect?.redirectId, "string");
   assert.equal(typeof project.state.projectCreationRedirect?.target, "string");
   assert.equal(typeof project.state.projectCreationRedirect?.summary?.canReturnLater, "boolean");
+  assert.equal(typeof project.state.nexusAppShellSchema?.nexusAppShellSchemaId, "string");
+  assert.equal(Array.isArray(project.state.nexusAppShellSchema?.routeRegistry), true);
+  assert.equal(typeof project.state.authenticatedAppShell?.authenticatedAppShellId, "string");
+  assert.equal(typeof project.state.navigationRouteSurface?.navigationRouteSurfaceId, "string");
   assert.equal(typeof project.state.onboardingProgress?.progressId, "string");
   assert.equal(typeof project.state.onboardingProgress?.currentStep, "string");
   assert.equal(Array.isArray(project.state.onboardingProgress?.completedSteps), true);
@@ -216,10 +260,21 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.workspaceIsolationDecision?.decision, "string");
   assert.equal(typeof project.state.workspaceIsolationDecision?.resourceType, "string");
   assert.equal(Array.isArray(project.state.workspaceIsolationDecision?.checks), true);
+  assert.equal(typeof project.state.tenantBoundaryEvidence?.tenantBoundaryEvidenceId, "string");
+  assert.equal(typeof project.state.tenantBoundaryEvidence?.evidenceStatus, "string");
+  assert.equal(Array.isArray(project.state.tenantBoundaryEvidence?.evidenceChecks), true);
   assert.equal(typeof project.state.leakageAlert?.leakageAlertId, "string");
   assert.equal(typeof project.state.leakageAlert?.severity, "string");
   assert.equal(Array.isArray(project.state.leakageAlert?.leakSignals), true);
   assert.equal(Array.isArray(project.state.leakageAlert?.checks), true);
+  assert.equal(
+    project.state.leakageAlert?.severity,
+    project.state.tenantBoundaryEvidence?.evidenceStatus === "blocked"
+      ? "critical"
+      : project.state.tenantBoundaryEvidence?.evidenceStatus === "requires-approval"
+        ? "warning"
+        : "clear",
+  );
   assert.equal(typeof project.state.projectOwnershipBinding?.bindingId, "string");
   assert.equal(typeof project.state.projectOwnershipBinding?.ownerUserId === "string" || project.state.projectOwnershipBinding?.ownerUserId === null, true);
   assert.equal(typeof project.state.initialProjectStateContract?.contractId, "string");
@@ -234,6 +289,10 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.stateBootstrapPayload?.approvals), true);
   assert.equal(typeof project.state.stateBootstrapPayload?.summary?.canBootstrap, "boolean");
   assert.equal(typeof project.state.workspaceModel?.workspaceId, "string");
+  assert.deepEqual(Object.keys(project.state.workspaceMode ?? {}), ["type"]);
+  assert.equal(typeof project.state.workspaceMode?.type, "string");
+  assert.deepEqual(Object.keys(project.state.workspaceModeDefinitions ?? {}), ["user-only", "hybrid", "autonomous"]);
+  assert.equal(project.state.workspaceModeDefinitions?.["user-only"]?.actor, "user");
   assert.equal(typeof project.state.membershipRecord?.membershipId, "string");
   assert.equal(Array.isArray(project.state.membershipRecord?.roles), true);
   assert.equal(typeof project.state.accessDecision?.decision, "string");
@@ -241,6 +300,12 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.collaborationEvent?.eventId, "string");
   assert.equal(typeof project.state.collaborationEvent?.eventType, "string");
   assert.equal(typeof project.state.collaborationEvent?.summary?.isSharedEvent, "boolean");
+  assert.equal(typeof project.state.collaborationEvent?.actor?.role, "string");
+  assert.equal(typeof project.state.collaborationEvent?.target?.workspaceArea, "string");
+  assert.equal(
+    project.state.collaborationEvent?.target?.workspaceId,
+    project.state.workspaceModel?.workspaceId,
+  );
   assert.equal(typeof project.state.projectPresenceState?.presenceStateId, "string");
   assert.equal(Array.isArray(project.state.projectPresenceState?.participants), true);
   assert.equal(typeof project.state.projectPresenceState?.summary?.activeParticipantCount, "number");
@@ -250,6 +315,11 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.collaborationFeed?.feedId, "string");
   assert.equal(Array.isArray(project.state.collaborationFeed?.items), true);
   assert.equal(typeof project.state.collaborationFeed?.summary?.containsWorkspaceTransitions, "boolean");
+  assert.equal(typeof project.state.collaborationFeed?.summary?.totalItems, "number");
+  assert.equal(
+    project.state.collaborationFeed?.items.some((item) => item.source === "collaboration-event"),
+    true,
+  );
   assert.equal(typeof project.state.projectStateSnapshot?.snapshotId, "string");
   assert.equal(typeof project.state.projectStateSnapshot?.stateVersion, "number");
   assert.equal(typeof project.state.projectStateSnapshot?.summary?.isRestorable, "boolean");
@@ -272,6 +342,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.workspaceSettings?.teamPreferences?.notifications, "string");
   assert.equal(Array.isArray(project.state.userJourneys?.journeys), true);
   assert.equal(Array.isArray(project.state.journeySteps), true);
+  assert.equal(typeof project.state.journeyStateRegistry?.stateModelType, "string");
+  assert.equal(Array.isArray(project.state.journeyTransitionRegistry), true);
   assert.equal(typeof project.state.journeyMap?.summary?.totalJourneys, "number");
   assert.equal(Array.isArray(project.state.journeyMap?.flows), true);
   assert.equal(typeof project.state.screenInventory?.summary?.totalScreens, "number");
@@ -382,6 +454,9 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.screenReviewReport?.screens[0]?.summary?.isReady, "boolean");
   assert.equal(typeof project.state.screenReviewReport?.summary?.blockedScreens, "number");
   assert.equal(typeof project.state.learningInsightViewModel?.viewModelId, "string");
+  assert.equal(typeof project.state.learningInsights?.insightSetId, "string");
+  assert.equal(Array.isArray(project.state.learningInsights?.items), true);
+  assert.equal(typeof project.state.learningInsights?.sourceWorkspaceId, "string");
   assert.equal(Array.isArray(project.state.learningInsightViewModel?.insights), true);
   assert.equal(Array.isArray(project.state.learningInsightViewModel?.patterns), true);
   assert.equal(typeof project.state.learningInsightViewModel?.confidence?.band, "string");
@@ -416,31 +491,76 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.companionState?.stateId, "string");
   assert.equal(typeof project.state.companionState?.mode, "string");
   assert.equal(typeof project.state.companionState?.summary?.hasRecommendations, "boolean");
+  assert.equal(typeof project.state.companionState?.sourceSignals?.insightCount, "number");
+  assert.equal(
+    project.state.companionState?.sourceSignals?.insightCount,
+    project.state.learningInsights?.summaryCounts?.totalInsights,
+  );
   assert.equal(typeof project.state.companionTriggerDecision?.decisionId, "string");
   assert.equal(typeof project.state.companionTriggerDecision?.decisionType, "string");
   assert.equal(typeof project.state.companionTriggerDecision?.summary?.executionMode, "string");
+  assert.equal(typeof project.state.companionTriggerDecision?.summary?.requiresApproval, "boolean");
+  assert.equal(
+    project.state.companionTriggerDecision?.summary?.canInterrupt,
+    project.state.companionTriggerDecision?.decisionType === "interrupt",
+  );
   assert.equal(typeof project.state.companionMessagePriority?.priorityId, "string");
   assert.equal(typeof project.state.companionMessagePriority?.priority, "string");
   assert.equal(typeof project.state.companionMessagePriority?.summary?.requiresApproval, "boolean");
+  assert.equal(typeof project.state.companionMessagePriority?.summary?.insightCount, "number");
+  assert.equal(
+    project.state.companionMessagePriority?.summary?.insightCount,
+    project.state.learningInsights?.summaryCounts?.totalInsights,
+  );
   assert.equal(typeof project.state.companionPresence?.presenceId, "string");
   assert.equal(typeof project.state.companionPresence?.tone, "string");
   assert.equal(typeof project.state.companionPresence?.summary?.prefersDockPresence, "boolean");
   assert.equal(typeof project.state.companionDock?.dockId, "string");
   assert.equal(typeof project.state.companionDock?.summary?.headline, "string");
+  assert.equal(project.state.companionDock?.priority, project.state.companionMessagePriority?.priority);
   assert.equal(typeof project.state.companionPanel?.panelId, "string");
   assert.equal(typeof project.state.companionPanel?.summary?.showsNextActions, "boolean");
+  assert.equal(
+    project.state.companionPanel?.sections?.summary?.priority,
+    project.state.companionMessagePriority?.priority,
+  );
   assert.equal(typeof project.state.animationStateRules?.animationRulesId, "string");
   assert.equal(typeof project.state.animationStateRules?.animationMode, "string");
   assert.equal(typeof project.state.animationStateRules?.summary?.respectsQuietMode, "boolean");
+  assert.equal(
+    project.state.animationStateRules?.summary?.respectsQuietMode,
+    project.state.companionTriggerDecision?.decisionType === "stay-quiet",
+  );
   assert.equal(typeof project.state.companionModeSettings?.settingsId, "string");
   assert.equal(typeof project.state.companionModeSettings?.selectedMode, "string");
   assert.equal(typeof project.state.companionModeSettings?.summary?.suppressesCompanion, "boolean");
+  assert.equal(
+    Array.isArray(project.state.companionModeSettings?.availableModes),
+    true,
+  );
+  assert.equal(
+    project.state.companionModeSettings?.selectedMode,
+    project.state.userPreferenceProfile?.companionMode,
+  );
   assert.equal(typeof project.state.interruptionDecision?.decisionId, "string");
   assert.equal(typeof project.state.interruptionDecision?.decision, "string");
   assert.equal(typeof project.state.interruptionDecision?.summary?.blockedByApprovalSensitivity, "boolean");
+  assert.equal(typeof project.state.interruptionDecision?.summary?.blockedByQuietMode, "boolean");
+  assert.equal(
+    project.state.interruptionDecision?.allowed,
+    project.state.interruptionDecision?.decision === "allow",
+  );
   assert.equal(typeof project.state.aiCompanionTemplate?.templateId, "string");
   assert.equal(typeof project.state.aiCompanionTemplate?.sections?.companionPanelZone?.enabled, "boolean");
   assert.equal(typeof project.state.aiCompanionTemplate?.summary?.hasExpandedCompanionPanel, "boolean");
+  assert.equal(
+    project.state.aiCompanionTemplate?.companionSurface?.dock?.priority,
+    project.state.companionDock?.priority ?? "advisory",
+  );
+  assert.equal(
+    project.state.aiCompanionTemplate?.companionSurface?.panel?.priority,
+    project.state.companionPanel?.sections?.summary?.priority ?? project.state.companionDock?.priority ?? "advisory",
+  );
   assert.equal(typeof project.state.developerWorkspace?.workspaceId, "string");
   assert.equal(typeof project.state.developerWorkspace?.fileTree?.totalFiles, "number");
   assert.equal(typeof project.state.developerWorkspace?.terminal?.status, "string");
@@ -453,6 +573,11 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.commandConsoleView?.consoleId, "string");
   assert.equal(Array.isArray(project.state.commandConsoleView?.commands), true);
   assert.equal(Array.isArray(project.state.commandConsoleView?.logStreams?.stdout), true);
+  assert.equal(typeof project.state.dailyWorkspaceSurface?.dailyWorkspaceSurfaceId, "string");
+  assert.equal(typeof project.state.guidedTaskExecutionSurface?.guidedTaskExecutionSurfaceId, "string");
+  assert.equal(typeof project.state.taskStepFlowProgress?.taskStepFlowProgressId, "string");
+  assert.equal(typeof project.state.taskApprovalHandoffPanel?.taskApprovalHandoffPanelId, "string");
+  assert.equal(typeof project.state.settingsProfileSurface?.settingsProfileSurfaceId, "string");
   assert.equal(typeof project.state.liveLogStream?.streamId, "string");
   assert.equal(Array.isArray(project.state.liveLogStream?.streams?.stdout), true);
   assert.equal(typeof project.state.liveLogStream?.summary?.commandOutputs, "number");
@@ -516,12 +641,54 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.workspaceComputeMetric?.workspaceComputeMetricId, "string");
   assert.equal(project.state.workspaceComputeMetric?.usageType, "workspace");
   assert.equal(project.state.workspaceComputeMetric?.unit, "workspace-minute");
+  assert.equal(typeof project.state.buildDeployCostMetric?.buildDeployCostMetricId, "string");
+  assert.equal(project.state.buildDeployCostMetric?.unit, "build-minute");
   assert.equal(typeof project.state.storageCostMetric?.storageCostMetricId, "string");
   assert.equal(project.state.storageCostMetric?.usageType, "storage");
   assert.equal(project.state.storageCostMetric?.unit, "gb-month");
   assert.equal(typeof project.state.costSummary?.costSummaryId, "string");
   assert.equal(typeof project.state.costSummary?.summary?.summaryStatus, "string");
   assert.equal(project.state.costSummary?.breakdown?.build?.unit, "build-minute");
+  assert.equal(Array.isArray(project.state.normalizedBillingEvents), true);
+  assert.equal(project.state.normalizedBillingEvents.every((event) => !Object.hasOwn(event, "providerPayload")), true);
+  assert.equal(typeof project.state.billableUsage?.billableUsageId, "string");
+  assert.equal(Array.isArray(project.state.billableUsage?.items), true);
+  assert.equal(typeof project.state.billableUsage?.summary?.summaryStatus, "string");
+  assert.equal(typeof project.state.reasonableUsagePolicy?.policyId, "string");
+  assert.equal(typeof project.state.reasonableUsagePolicy?.workspaceMode, "string");
+  assert.equal(typeof project.state.reasonableUsagePolicy?.threshold?.source, "string");
+  assert.equal(typeof project.state.reasonableUsagePolicy?.summary?.summaryStatus, "string");
+  assert.equal(typeof project.state.workspaceBillingState?.workspaceBillingStateId, "string");
+  assert.equal(typeof project.state.payingUserMetrics?.payingUserMetricsId, "string");
+  assert.equal(typeof project.state.payingUserMetrics?.payingUsers, "number");
+  assert.equal(typeof project.state.payingUserMetrics?.summary?.countedEvents, "number");
+  assert.equal(typeof project.state.revenueSummary?.revenueSummaryId, "string");
+  assert.equal(typeof project.state.revenueSummary?.paymentPosture, "string");
+  assert.equal(typeof project.state.revenueSummary?.summary?.summaryStatus, "string");
+  assert.equal(typeof project.state.billingGuardDecision?.billingGuardDecisionId, "string");
+  assert.equal(typeof project.state.billingGuardDecision?.decision, "string");
+  assert.equal(Array.isArray(project.state.billingGuardDecision?.guardChecks), true);
+  assert.equal(typeof project.state.billingGuardDecision?.summary?.summaryStatus, "string");
+  assert.deepEqual(Object.keys(project.state.billingSettingsModel ?? {}), [
+    "currentPlan",
+    "subscription",
+    "availableActions",
+    "history",
+  ]);
+  assert.equal(Array.isArray(project.state.billingSettingsModel?.availableActions), true);
+  assert.equal(Array.isArray(project.state.billingSettingsModel?.history), true);
+  assert.equal(
+    project.state.billingSettingsModel?.availableActions.some((action) => action.actionType === "renew"),
+    false,
+  );
+  assert.equal(Object.hasOwn(project.state.billingSettingsModel ?? {}, "usage"), false);
+  assert.equal(Object.hasOwn(project.state.billingSettingsModel ?? {}, "paymentMethod"), false);
+  assert.equal(Object.hasOwn(project.state.billingSettingsModel ?? {}, "billingDetails"), false);
+  assert.equal(Object.hasOwn(project.state.billingSettingsModel ?? {}, "invoices"), false);
+  assert.equal(
+    project.state.billingApprovalRequest === null || typeof project.state.billingApprovalRequest?.requestType === "string",
+    true,
+  );
   assert.equal(typeof project.state.costVisibilityPayload?.costVisibilityPayloadId, "string");
   assert.equal(Array.isArray(project.state.costVisibilityPayload?.topCostDrivers), true);
   assert.equal(typeof project.state.costDashboardModel?.dashboardId, "string");
@@ -583,6 +750,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.editedProposal?.annotations), true);
   assert.equal(typeof project.state.proposalEditHistory?.historyId, "string");
   assert.equal(typeof project.state.proposalEditHistory?.summary?.preservesHistory, "boolean");
+  assert.equal(typeof project.state.approvalOutcome?.approvalOutcomeId, "string");
+  assert.equal(typeof project.state.approvalOutcome?.status, "string");
   assert.equal(typeof project.state.partialAcceptanceDecision?.decisionId, "string");
   assert.equal(typeof project.state.partialAcceptanceDecision?.summary?.requiresRegeneration, "boolean");
   assert.equal(typeof project.state.remainingProposalScope?.scopeId, "string");
@@ -631,6 +800,12 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.actorActionTrace?.affectedArtifacts), true);
   assert.equal(typeof project.state.projectAuditPayload?.projectAuditPayloadId, "string");
   assert.equal(Array.isArray(project.state.projectAuditPayload?.entries), true);
+  assert.equal(typeof project.state.ownerAuditView?.ownerAuditViewId, "string");
+  assert.equal(Array.isArray(project.state.ownerAuditView?.entries), true);
+  assert.equal(typeof project.state.systemActivityFeed?.systemActivityFeedId, "string");
+  assert.equal(Array.isArray(project.state.systemActivityFeed?.entries), true);
+  assert.equal(typeof project.state.criticalChangeHistory?.criticalChangeHistoryId, "string");
+  assert.equal(Array.isArray(project.state.criticalChangeHistory?.entries), true);
   assert.equal(typeof project.state.nexusPersistenceSchema?.schemaId, "string");
   assert.equal(typeof project.state.nexusPersistenceSchema?.summary?.totalEntities, "number");
   assert.equal(typeof project.state.migrationPlan?.migrationPlanId, "string");
@@ -656,6 +831,12 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.notificationCenterState?.inbox), true);
   assert.equal(typeof project.state.notificationPreferences?.frequency, "string");
   assert.equal(Array.isArray(project.state.notificationPreferences?.channels), true);
+  assert.equal(typeof project.state.userPreferenceProfile?.profileId, "string");
+  assert.equal(typeof project.state.userPreferenceProfile?.companionMode, "string");
+  assert.equal(
+    project.state.userPreferenceProfile?.summary?.notificationFrequency,
+    project.state.notificationPreferences?.frequency,
+  );
   assert.equal(typeof project.state.complianceConsentState?.complianceConsentStateId, "string");
   assert.equal(Array.isArray(project.state.complianceConsentState?.consentEntries), true);
   assert.equal(typeof project.state.complianceAuditSummary?.complianceAuditSummaryId, "string");
@@ -791,9 +972,793 @@ test("project service can run additional cycles against persisted events", () =>
   assert.equal(project.id, "giftwallet");
   assert.equal(Array.isArray(project.runtimeResults), true);
   assert.equal(Array.isArray(project.taskResults), true);
-  assert.equal(project.taskResults.every((result) => result.status === "completed" || result.status === "failed"), true);
+  assert.equal(project.taskResults.every((result) => ["completed", "failed", "retried", "blocked"].includes(result.status)), true);
+  assert.equal(project.taskResults.every((result) => typeof result.taskType === "string" && result.taskType.length > 0), true);
+  assert.equal(Array.isArray(project.blockedTaskOutcomes), true);
+  assert.equal(Array.isArray(project.state.taskResults), true);
+  assert.equal(Array.isArray(project.state.blockedTaskOutcomes), true);
+  assert.equal(Array.isArray(project.taskTransitionEvents), true);
+  assert.equal(Array.isArray(project.state.taskTransitionEvents), true);
+  assert.equal(typeof project.taskExecutionMetric?.taskExecutionMetricId, "string");
+  assert.equal(Array.isArray(project.taskExecutionMetric?.entries), true);
+  assert.equal(typeof project.outcomeFeedbackState?.status, "string");
+  assert.equal(typeof project.goalProgressState?.status, "string");
+  assert.equal(typeof project.milestoneTracking?.status, "string");
+  assert.equal(typeof project.postExecutionEvaluation?.status, "string");
+  assert.equal(typeof project.postExecutionReport?.status, "string");
+  assert.equal(typeof project.crossLayerFeedbackState?.status, "string");
+  assert.equal(typeof project.adaptiveExecutionDecision?.loopMode, "string");
+  assert.equal(typeof project.systemOptimizationPlan?.status, "string");
+  assert.deepEqual(Object.keys(project.taskExecutionCounters ?? {}), [
+    "totalCompleted",
+    "totalFailed",
+    "totalRetried",
+    "totalBlocked",
+  ]);
+  assert.deepEqual(Object.keys(project.taskThroughputSummary ?? {}), [
+    "totalCompleted",
+    "totalFailed",
+    "totalRetried",
+    "totalBlocked",
+    "byProject",
+    "byLane",
+    "byAgent",
+    "byDay",
+  ]);
+  assert.equal(typeof project.baselineEstimate?.baselineEstimateId, "string");
+  assert.equal(Array.isArray(project.baselineEstimate?.entries), true);
+  assert.equal(typeof project.timeSavedMetric?.timeSavedMetricId, "string");
+  assert.equal(Array.isArray(project.timeSavedMetric?.entries), true);
+  assert.equal(typeof project.timeSaved?.timeSavedId, "string");
+  assert.equal(Array.isArray(project.timeSaved?.entries), true);
+  assert.equal(typeof project.productivitySummary?.totalTimeSavedMs, "number");
+  assert.equal(typeof project.outcomeEvaluation?.outcomeEvaluationId, "string");
+  assert.equal(typeof project.outcomeEvaluation?.status, "string");
+  assert.equal(typeof project.state.outcomeEvaluation?.outcomeEvaluationId, "string");
+  assert.equal(typeof project.actionSuccessScore?.actionSuccessScoreId, "string");
+  assert.equal(typeof project.actionSuccessScore?.score, "number");
+  assert.equal(typeof project.state.actionSuccessScore?.actionSuccessScoreId, "string");
+  assert.equal(typeof project.nexusPositioning?.nexusPositioningId, "string");
+  assert.equal(typeof project.nexusPositioning?.status, "string");
+  assert.equal(typeof project.messagingFramework?.messagingFrameworkId, "string");
+  assert.equal(typeof project.messagingFramework?.status, "string");
+  assert.deepEqual(Object.keys(project.productivitySummary ?? {}), [
+    "totalTimeSavedMs",
+    "byProject",
+    "byUser",
+    "byDay",
+  ]);
+  assert.equal(typeof project.userActivityEvent?.userActivityEventId, "string");
+  assert.equal(typeof project.userActivityEvent?.activityType, "string");
+  assert.equal(Array.isArray(project.userActivityHistory?.entries), true);
+  assert.equal(project.userActivityHistory?.entries.length >= 1, true);
+  assert.equal(typeof project.userSessionMetric?.totalSessions, "number");
+  assert.equal(typeof project.userSessionMetric?.activeSessionCount, "number");
+  assert.equal(Array.isArray(project.userSessionHistory?.entries), true);
+  assert.equal(project.userSessionHistory?.entries.length >= 1, true);
+  assert.equal(typeof project.returningUserMetric?.isReturningUser, "boolean");
+  assert.equal(typeof project.retentionSummary?.totalReturningUsers, "number");
+  assert.deepEqual(Object.keys(project.retentionSummary ?? {}), [
+    "totalReturningUsers",
+    "totalNonReturningUsers",
+    "repeatUsageCount",
+    "byDay",
+  ]);
   assert.equal(project.events.some((event) => event.type === "task.completed"), true);
   assert.equal(project.cycle.executionGraph.nodes.some((node) => node.status === "done"), true);
+});
+
+test("project service keeps durable user activity/session history stable across repeated rebuilds and restart", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-user-history-service-"));
+  const service = createProjectService(directory);
+  service.seedDemoProject();
+
+  const project = service.projects.get("giftwallet");
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    userActivityEvent: {
+      activityType: "session-active",
+      timestamp: "2026-02-01T10:00:00.000Z",
+    },
+    userSessionMetric: {
+      ...(project.manualContext?.userSessionMetric ?? {}),
+      userId: "user-1",
+      sessionId: "session-1",
+      status: "active",
+      workspaceId: "workspace-anonymous",
+      projectId: "giftwallet",
+      workspaceArea: "developer-workspace",
+      currentSurface: "developer-workspace",
+      currentTask: "growth-loop",
+      lastSeenAt: "2026-02-01T10:00:00.000Z",
+      activeUsers: [],
+    },
+  };
+
+  service.rebuildContext("giftwallet");
+  const first = service.getProject("giftwallet");
+  assert.equal(first.userActivityHistory.entries.length >= 1, true);
+  assert.equal(first.userSessionHistory.entries.some((entry) => entry.sessionId === "session-1"), true);
+
+  service.rebuildContext("giftwallet");
+  const repeated = service.getProject("giftwallet");
+  assert.equal(repeated.userActivityHistory.entries.length, first.userActivityHistory.entries.length);
+  assert.equal(repeated.userSessionHistory.entries.length, first.userSessionHistory.entries.length);
+
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    userActivityEvent: {
+      activityType: "session-active",
+      timestamp: "2026-02-10T10:00:00.000Z",
+    },
+    userSessionMetric: {
+      ...(project.manualContext?.userSessionMetric ?? {}),
+      userId: "user-1",
+      sessionId: "session-2",
+      status: "active",
+      workspaceId: "workspace-anonymous",
+      projectId: "giftwallet",
+      workspaceArea: "developer-workspace",
+      currentSurface: "developer-workspace",
+      currentTask: "retention-audit",
+      lastSeenAt: "2026-02-10T10:00:00.000Z",
+      activeUsers: [],
+    },
+  };
+
+  service.rebuildContext("giftwallet");
+  const later = service.getProject("giftwallet");
+  assert.equal(later.userActivityHistory.entries.length, first.userActivityHistory.entries.length + 1);
+  assert.equal(later.userSessionHistory.entries.some((entry) => entry.sessionId === "session-2"), true);
+  assert.equal(
+    later.userSessionHistory.entries.some(
+      (entry) => entry.sessionId === "session-2" && typeof entry.returningUserMetricId === "string",
+    ),
+    true,
+  );
+});
+
+test("project service serialization preserves nexus positioning", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.projects.get("giftwallet");
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    competitiveContext: {
+      competitors: ["Linear"],
+      alternatives: ["manual backlog"],
+      differentiation: ["execution-native"],
+      strengths: ["governed automation"],
+      weaknesses: ["setup required"],
+    },
+  };
+
+  const result = service.runCycle("giftwallet");
+
+  assert.equal(result.nexusPositioning?.status, "ready");
+  assert.equal(result.messagingFramework?.status, "ready");
+  assert.equal(result.messagingVariants?.status, "ready");
+  assert.equal(result.landingVariantDecision?.status, "ready");
+  assert.equal(result.objectionMap?.status, "ready");
+  assert.equal(result.faqMap?.status, "ready");
+  assert.equal(result.activationGoals?.status, "ready");
+  assert.equal(result.productCtaStrategy?.status, "ready");
+  assert.equal(result.nexusWebsiteSchema?.status, "ready");
+  assert.equal(result.landingPageIa?.status, "ready");
+  assert.equal(result.websiteCopyPack?.status, "ready");
+  assert.equal(result.websiteConversionFlow?.status, "ready");
+  assert.equal(result.waitlistRecord?.status, "not-required");
+  assert.equal(result.accessRequest?.status, "not-required");
+  assert.equal(result.websiteExperimentPlan?.status, "ready");
+  assert.equal(result.trustProofBlocks?.status, "ready");
+  assert.equal(result.productDeliveryModel?.status, "ready");
+  assert.equal(result.siteAppBoundary?.status, "ready");
+  assert.equal(result.accessModeDecision?.status, "ready");
+  assert.equal(result.landingAuthHandoff?.status, "ready");
+  assert.equal(result.landingAuthHandoff?.destinationRoute, "/request-access");
+  assert.equal(result.appEntryDecision?.status, "ready");
+  assert.equal(result.appEntryDecision?.decision, "direct-app");
+  assert.equal(result.postLoginDestination?.status, "ready");
+  assert.equal(result.postLoginDestination?.destination, "first-project-kickoff");
+  assert.equal(result.appLandingEntry?.status, "ready");
+  assert.equal(result.entryStateVariants?.status, "ready");
+  assert.equal(result.entryRecoveryState?.status, "ready");
+  assert.equal(result.entryOrientationPanel?.status, "ready");
+  assert.equal(result.entryDecisionSupport?.status, "ready");
+  assert.equal(result.firstProjectKickoff?.status, "ready");
+  assert.equal(result.landingToDashboardFlow?.status, "ready");
+  assert.equal(result.activationFunnel?.status, "ready");
+  assert.equal(result.activationMilestones?.status, "ready");
+  assert.equal(result.onboardingMarketingFlow?.status, "ready");
+  assert.equal(result.activationDropOffs?.status, "ready");
+  assert.equal(result.reEngagementPlan?.status, "ready");
+  assert.equal(result.nexusContentStrategy?.status, "ready");
+  assert.equal(result.launchContentCalendar?.status, "ready");
+  assert.equal(result.storyAssets?.status, "ready");
+  assert.equal(result.socialCommunityPack?.status, "ready");
+  assert.equal(result.productProofPlan?.status, "ready");
+  assert.equal(result.launchCampaignBrief?.status, "ready");
+  assert.equal(result.launchRolloutPlan?.status, "ready");
+  assert.equal(result.launchReadinessChecklist?.status, "ready");
+  assert.equal(result.launchPublishingPlan?.status, "ready");
+  assert.equal(result.launchFeedbackSummary?.status, "ready");
+  assert.equal(result.goToMarketPlan?.status, "ready");
+  assert.equal(result.promotionExecutionPlan?.status, "ready");
+  assert.equal(result.launchMarketingExecution?.status, "ready");
+  assert.equal(result.gtmMetricSchema?.status, "ready");
+  assert.equal(result.acquisitionSourceMetrics?.status, "ready");
+  assert.equal(result.firstTouchAttribution?.status, "ready");
+  assert.equal(result.preAuthConversionEvents?.status, "ready");
+  assert.equal(result.websiteActivationFunnel?.status, "ready");
+  assert.equal(result.conversionAnalytics?.status, "ready");
+  assert.equal(result.launchPerformanceDashboard?.status, "ready");
+  assert.equal(result.gtmOptimizationPlan?.status, "ready");
+  assert.equal(result.growthLoopManagement?.status, "ready");
+  assert.equal(result.serviceReliabilityDashboard?.status, "ready");
+  assert.equal(typeof result.serviceReliabilityDashboard?.uptimeTargetPercent, "number");
+  assert.equal(typeof result.serviceReliabilityDashboard?.incidentStatus, "string");
+  assert.equal(result.ownerControlPlane?.status, "ready");
+  assert.equal(result.ownerControlCenter?.status, "ready");
+  assert.equal(result.dailyOwnerOverview?.status, "ready");
+  assert.equal(result.ownerPriorityQueue?.status, "ready");
+  assert.equal(result.ownerActionRecommendations?.status, "ready");
+  assert.equal(result.ownerDecisionDashboard?.status, "ready");
+  assert.equal(result.ownerDailyWorkflow?.status, "ready");
+  assert.equal(result.ownerFocusArea?.status, "ready");
+  assert.equal(result.ownerTaskList?.status, "ready");
+  assert.equal(result.ownerRoutinePlan?.status, "ready");
+  assert.equal(result.ownerRevenueView?.status, "ready");
+  assert.equal(result.ownerCostView?.status, "ready");
+  assert.equal(result.profitMarginSummary?.status, "ready");
+  assert.equal(result.unitEconomicsDashboard?.status, "ready");
+  assert.equal(result.cashFlowProjection?.status, "ready");
+  assert.equal(result.ownerUserAnalytics?.status, "ready");
+  assert.equal(result.featureUsageSummary?.status, "ready");
+  assert.equal(result.decisionAccuracySummary?.status, "ready");
+  assert.equal(result.automationImpactSummary?.status, "ready");
+  assert.equal(result.roadmapTracking?.status, "ready");
+  assert.equal(result.ownerOperationsSignals?.status, "ready");
+  assert.equal(result.prioritizedOwnerAlerts?.status, "ready");
+  assert.equal(result.ownerAlertFeed?.status, "ready");
+  assert.equal(result.ownerIncident?.status, "ready");
+  assert.equal(result.outageResponsePlan?.status, "ready");
+  assert.equal(result.incidentTimeline?.status, "ready");
+  assert.equal(result.rootCauseSummary?.status, "ready");
+  assert.equal(result.liveProjectMonitoring?.status, "ready");
+  assert.equal(typeof result.maintenanceBacklog?.status, "string");
+  assert.equal(Array.isArray(result.maintenanceBacklog?.items), true);
+  assert.equal(result.nexusAppShellSchema?.status, "ready");
+  assert.equal(result.authenticatedAppShell?.status, "ready");
+  assert.equal(result.navigationRouteSurface?.status, "ready");
+  assert.equal(result.dashboardHomeSurface?.status, "ready");
+  assert.equal(result.unifiedHomeDashboard?.status, "ready");
+  assert.equal(result.todayPrioritiesFeed?.status, "ready");
+  assert.equal(result.ownerVisibilityStrip?.status, "ready");
+  assert.equal(result.aiControlCenterSurface?.status, "ready");
+  assert.equal(result.aiControlCenterSurface?.generatedSurfacePreview?.isPreviewable, true);
+  assert.equal(typeof result.aiDesignRequest?.requestId, "string");
+  assert.equal(typeof result.aiDesignProposal?.proposalId, "string");
+  assert.equal(typeof result.aiDesignExecutionState?.executionStateId, "string");
+  assert.equal(typeof result.renderableDesignProposal?.proposalId, "string");
+  assert.equal(result.designProposalValidation?.status, "valid");
+  assert.equal(result.designProposalReviewState?.status, "ready-for-review");
+  assert.equal(result.proposalApplyDecision?.status, "ready-for-state-integration");
+  assert.equal(result.acceptedScreenState?.status, "accepted");
+  assert.equal(result.dailyWorkspaceSurface?.status, "ready");
+  assert.equal(result.guidedTaskExecutionSurface?.status, "ready");
+  assert.equal(result.taskStepFlowProgress?.status, "ready");
+  assert.equal(result.taskApprovalHandoffPanel?.status, "ready");
+  assert.equal(result.settingsProfileSurface?.status, "ready");
+  assert.equal(result.landingVariantDecision?.acquisitionSource, "developer-workspace");
+  assert.equal(Array.isArray(result.messagingVariants?.variants), true);
+  assert.equal(result.productCtaStrategy?.primaryCta?.label, "Request access");
+  assert.equal(result.messagingFramework?.headline, result.nexusPositioning?.promise);
+  assert.deepEqual(result.nexusPositioning?.competitiveContext, {
+    competitors: ["Linear"],
+    alternatives: ["manual backlog"],
+    differentiation: ["execution-native"],
+    strengths: ["governed automation"],
+    weaknesses: ["setup required"],
+  });
+});
+
+test("project service serialization preserves canonical retried task results", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+  const project = service.projects.get("giftwallet");
+
+  project.runtimeResults = [
+    {
+      id: "evt-retry-1",
+      type: "task.retried",
+      timestamp: "2026-01-01T00:02:00.000Z",
+      payload: {
+        projectId: "giftwallet",
+        taskId: "task-1",
+        agentId: "dev-agent",
+        assignmentEventId: "assign-3",
+      },
+    },
+  ];
+  project.taskResults = [
+    {
+      id: "evt-retry-1",
+      type: "task.retried",
+      projectId: "giftwallet",
+      taskId: "task-1",
+      taskType: "backend",
+      agentId: "dev-agent",
+      assignmentEventId: "assign-3",
+      status: "retried",
+      output: null,
+      reason: null,
+      timestamp: "2026-01-01T00:02:00.000Z",
+    },
+  ];
+  project.taskTransitionEvents = [
+    {
+      eventId: "evt-retry-1",
+      type: "task.retried",
+      status: "retried",
+      projectId: "giftwallet",
+      taskId: "task-1",
+      taskType: "backend",
+      agentId: "dev-agent",
+      assignmentEventId: "assign-3",
+      timestamp: "2026-01-01T00:02:00.000Z",
+    },
+  ];
+  project.state = {
+    ...(project.state ?? {}),
+    taskResults: project.taskResults,
+    taskTransitionEvents: project.taskTransitionEvents,
+  };
+
+  const serialized = service.serializeProject(project);
+
+  assert.equal(serialized.runtimeResults[0].type, "task.retried");
+  assert.equal(serialized.taskResults[0].status, "retried");
+  assert.equal(serialized.taskResults[0].taskType, "backend");
+  assert.deepEqual(serialized.blockedTaskOutcomes, []);
+  assert.deepEqual(serialized.taskTransitionEvents, [
+    {
+      eventId: "evt-retry-1",
+      type: "task.retried",
+      status: "retried",
+      projectId: "giftwallet",
+      taskId: "task-1",
+      taskType: "backend",
+      agentId: "dev-agent",
+      assignmentEventId: "assign-3",
+      timestamp: "2026-01-01T00:02:00.000Z",
+    },
+  ]);
+  assert.equal(typeof serialized.taskExecutionMetric?.taskExecutionMetricId, "string");
+  assert.deepEqual(serialized.taskExecutionCounters, {
+    totalCompleted: 0,
+    totalFailed: 0,
+    totalRetried: 0,
+    totalBlocked: 0,
+  });
+  assert.deepEqual(serialized.taskThroughputSummary, {
+    totalCompleted: 0,
+    totalFailed: 0,
+    totalRetried: 0,
+    totalBlocked: 0,
+    byProject: {},
+    byLane: {},
+    byAgent: {},
+    byDay: {},
+  });
+  assert.deepEqual(serialized.productivitySummary, project.context?.productivitySummary ?? null);
+  assert.deepEqual(serialized.outcomeEvaluation, project.context?.outcomeEvaluation ?? project.state?.outcomeEvaluation ?? null);
+  assert.deepEqual(serialized.actionSuccessScore, project.context?.actionSuccessScore ?? project.state?.actionSuccessScore ?? null);
+});
+
+test("project service maps maintenance backlog items into roadmap and execution graph tasks", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.projects.get("giftwallet");
+  project.runtimeSnapshot = {
+    ...(project.runtimeSnapshot ?? {}),
+    ci: [{ status: "failed" }],
+    deployments: [],
+    errorLogs: [],
+    monitoring: [],
+  };
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    continuityPlan: {
+      continuityPlanId: "continuity-1",
+      summary: {
+        status: "ready",
+      },
+    },
+    causalImpactReport: {
+      primaryCause: "queue-saturation",
+      affectedServices: ["worker-queue"],
+    },
+  };
+
+  const result = service.runCycle("giftwallet");
+
+  assert.equal(result.maintenanceBacklog?.status, "ready");
+  assert.equal(Array.isArray(result.cycle?.roadmap), true);
+  const maintenanceRoadmapTasks = result.cycle.roadmap.filter((task) => task.id.includes("maintenance-backlog"));
+  const maintenanceGraphNodes = result.cycle.executionGraph.nodes.filter((node) =>
+    node.id.includes("maintenance-backlog")
+  );
+
+  assert.equal(maintenanceRoadmapTasks.length >= 2, true);
+  assert.equal(
+    maintenanceRoadmapTasks.some((task) => task.dependencies.length === 0),
+    true,
+  );
+  assert.equal(
+    maintenanceRoadmapTasks.some((task) => task.dependencies.length > 0 && ["blocked", "ready"].includes(task.status)),
+    true,
+  );
+  assert.equal(
+    maintenanceGraphNodes.some((node) => node.blockedBy.length === 0),
+    true,
+  );
+  assert.equal(
+    maintenanceGraphNodes.some((node) => node.blockedBy.length === 0 && ["ready", "blocked"].includes(node.status)),
+    true,
+  );
+});
+
+test("project service assigns and executes maintenance tasks in the default runtime path", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.projects.get("giftwallet");
+  project.runtimeSnapshot = {
+    ...(project.runtimeSnapshot ?? {}),
+    ci: [{ status: "failed" }],
+    deployments: [],
+    errorLogs: [],
+    monitoring: [],
+  };
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    continuityPlan: {
+      continuityPlanId: "continuity-1",
+      summary: {
+        status: "ready",
+      },
+    },
+    causalImpactReport: {
+      primaryCause: "queue-saturation",
+      affectedServices: ["worker-queue"],
+    },
+  };
+
+  const result = service.runCycle("giftwallet");
+
+  assert.equal(
+    result.runtimeResults.some((event) => event.type === "task.completed" && event.payload.taskId.includes("maintenance-backlog")),
+    true,
+  );
+  assert.equal(
+    result.cycle.roadmap.some((task) => task.id.includes("maintenance-backlog") && task.status === "done"),
+    true,
+  );
+});
+
+test("project service promotes maintenance follow-up task after dependency completes on the next cycle", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.projects.get("giftwallet");
+  project.runtimeSnapshot = {
+    ...(project.runtimeSnapshot ?? {}),
+    ci: [{ status: "failed" }],
+    deployments: [],
+    errorLogs: [],
+    monitoring: [],
+  };
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    continuityPlan: {
+      continuityPlanId: "continuity-1",
+      summary: {
+        status: "ready",
+      },
+    },
+    causalImpactReport: {
+      primaryCause: "queue-saturation",
+      affectedServices: ["worker-queue"],
+    },
+  };
+
+  service.runCycle("giftwallet");
+  const secondResult = service.runCycle("giftwallet");
+
+  assert.equal(
+    secondResult.runtimeResults.some((event) => event.type === "task.completed" && event.payload.taskId.endsWith(":root-cause")),
+    true,
+  );
+});
+
+test("project service keeps maintenance backlog stable across repeated cycles", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.projects.get("giftwallet");
+  project.runtimeSnapshot = {
+    ...(project.runtimeSnapshot ?? {}),
+    ci: [{ status: "failed" }],
+    deployments: [],
+    errorLogs: [],
+    monitoring: [],
+  };
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    continuityPlan: {
+      continuityPlanId: "continuity-1",
+      summary: {
+        status: "ready",
+      },
+    },
+    causalImpactReport: {
+      primaryCause: "queue-saturation",
+      affectedServices: ["worker-queue"],
+    },
+  };
+
+  const firstResult = service.runCycle("giftwallet");
+  const secondResult = service.runCycle("giftwallet");
+
+  assert.deepEqual(
+    firstResult.maintenanceBacklog.items.map((item) => item.maintenanceTaskId),
+    secondResult.maintenanceBacklog.items.map((item) => item.maintenanceTaskId),
+  );
+  assert.equal(
+    new Set(secondResult.cycle.roadmap.filter((task) => task.id.includes("maintenance-backlog")).map((task) => task.id)).size,
+    secondResult.cycle.roadmap.filter((task) => task.id.includes("maintenance-backlog")).length,
+  );
+});
+
+test("project service surfaces maintenance backlog through owner-facing state when maintenance is active", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const project = service.projects.get("giftwallet");
+  project.runtimeSnapshot = {
+    ...(project.runtimeSnapshot ?? {}),
+    ci: [{ status: "failed" }],
+    deployments: [],
+    errorLogs: [],
+    monitoring: [],
+  };
+  project.manualContext = {
+    ...(project.manualContext ?? {}),
+    continuityPlan: {
+      continuityPlanId: "continuity-1",
+      summary: {
+        status: "ready",
+      },
+    },
+    causalImpactReport: {
+      primaryCause: "queue-saturation",
+      affectedServices: ["worker-queue"],
+    },
+  };
+
+  const result = service.runCycle("giftwallet");
+
+  assert.equal(result.maintenanceBacklog?.status, "ready");
+  assert.equal(result.ownerControlCenter?.maintenanceStatus, "ready");
+  assert.equal(result.ownerControlCenter?.maintenanceTaskCount >= 2, true);
+  assert.equal(result.ownerControlCenter?.requiresMaintenanceReview, true);
+  assert.equal(result.dailyOwnerOverview?.maintenanceTaskCount >= 2, true);
+  assert.equal(result.dailyOwnerOverview?.requiresMaintenanceReview, true);
+});
+
+test("project service ingests valid provider billing payload and updates normalized events", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+  const before = service.getProject("giftwallet");
+
+  const result = service.ingestProviderBillingEvent("giftwallet", {
+    providerType: "generic-webhook",
+    providerPayload: {
+      providerEventType: "plan-change",
+      workspaceRef: before.state.workspaceModel.workspaceId,
+      customerRef: "customer-77",
+      amountValue: 5,
+      currencyCode: "USD",
+      providerEventId: "provider-plan-1",
+      occurredAt: "2026-02-01T10:00:00.000Z",
+      payload: {
+        planDelta: "upgrade",
+      },
+    },
+  });
+  const after = service.getProject("giftwallet");
+
+  assert.equal(result.ingestStatus, "accepted");
+  assert.equal(result.stateRefreshRequired, true);
+  assert.equal(result.normalizedBillingEvent?.eventType, "plan-change");
+  assert.equal(after.state.normalizedBillingEvents.at(-1)?.eventType, "plan-change");
+  assert.deepEqual(after.state.normalizedBillingEvents.at(-1)?.metadata?.unmappedFields, {
+    providerPayload: {
+      planDelta: "upgrade",
+    },
+  });
+  assert.equal(after.state.workspaceBillingState?.lastBillingEventType, "plan-change");
+  assert.equal(Array.isArray(after.state.billingSettingsModel?.history), true);
+  assert.equal(after.state.billingSettingsModel?.history.at(-1)?.eventType, "plan-change");
+  assert.equal(
+    after.state.billingSettingsModel?.availableActions.some((action) => action.actionType === "renew"),
+    false,
+  );
+});
+
+test("provider-ingested checkout events feed paying user metrics and duplicates do not inflate counts", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+  const workspaceId = service.getProject("giftwallet").state.workspaceModel.workspaceId;
+
+  const first = service.ingestProviderBillingEvent("giftwallet", {
+    providerType: "generic-webhook",
+    providerPayload: {
+      providerEventType: "checkout",
+      workspaceRef: workspaceId,
+      customerRef: "paying-user-1",
+      amountValue: 49,
+      currencyCode: "USD",
+      providerEventId: "provider-checkout-1",
+      occurredAt: "2026-02-01T09:00:00.000Z",
+    },
+  });
+  const afterFirst = service.getProject("giftwallet");
+  const second = service.ingestProviderBillingEvent("giftwallet", {
+    providerType: "generic-webhook",
+    providerPayload: {
+      providerEventType: "checkout",
+      workspaceRef: workspaceId,
+      customerRef: "paying-user-1",
+      amountValue: 49,
+      currencyCode: "USD",
+      providerEventId: "provider-checkout-1",
+      occurredAt: "2026-02-01T09:00:00.000Z",
+    },
+  });
+  const afterSecond = service.getProject("giftwallet");
+
+  assert.equal(first.ingestStatus, "accepted");
+  assert.equal(afterFirst.state.payingUserMetrics?.payingUsers, 1);
+  assert.equal(afterFirst.state.payingUserMetrics?.convertedUsers, 1);
+  assert.equal(afterFirst.state.payingUserMetrics?.activeSubscriptions, 1);
+  assert.equal(typeof afterFirst.state.revenueSummary?.revenueSummaryId, "string");
+  assert.equal(second.ingestStatus, "duplicate");
+  assert.equal(afterSecond.state.payingUserMetrics?.payingUsers, 1);
+  assert.equal(afterSecond.state.payingUserMetrics?.summary?.ignoredEvents >= 0, true);
+  assert.equal(typeof afterSecond.state.revenueSummary?.paymentPosture, "string");
+});
+
+test("project service provider ingestion duplicate does not append again and returns existing stored event", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+  const project = service.getProject("giftwallet");
+  const payload = {
+    providerEventType: "retry",
+    workspaceRef: project.state.workspaceModel.workspaceId,
+    customerRef: "customer-55",
+    amountValue: 0,
+    currencyCode: "USD",
+    providerEventId: "provider-retry-1",
+    occurredAt: "2026-02-01T11:00:00.000Z",
+  };
+
+  const first = service.ingestProviderBillingEvent("giftwallet", {
+    providerType: "generic-webhook",
+    providerPayload: payload,
+  });
+  const beforeCount = service.getProject("giftwallet").state.normalizedBillingEvents.length;
+  const second = service.ingestProviderBillingEvent("giftwallet", {
+    providerType: "generic-webhook",
+    providerPayload: payload,
+  });
+  const after = service.getProject("giftwallet");
+
+  assert.equal(first.ingestStatus, "accepted");
+  assert.equal(second.ingestStatus, "duplicate");
+  assert.equal(second.stateRefreshRequired, false);
+  assert.equal(second.normalizedBillingEvent?.idempotencyKey, "billing:generic-webhook:provider-retry-1");
+  assert.equal(after.state.normalizedBillingEvents.length, beforeCount);
+});
+
+test("project service rejects invalid or incompatible provider payload without changing state", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+  const before = service.getProject("giftwallet");
+  const beforeCount = before.state.normalizedBillingEvents.length;
+
+  const invalid = service.ingestProviderBillingEvent("giftwallet", {
+    providerType: "generic-webhook",
+    providerPayload: {
+      providerEventType: "checkout",
+      workspaceRef: before.state.workspaceModel.workspaceId,
+      amountValue: 10,
+      currencyCode: "USD",
+      providerEventId: null,
+      occurredAt: "2026-02-01T12:00:00.000Z",
+    },
+  });
+  const mismatch = service.ingestProviderBillingEvent("giftwallet", {
+    providerType: "generic-webhook",
+    providerPayload: {
+      providerEventType: "checkout",
+      workspaceRef: "other-workspace",
+      customerRef: "customer-1",
+      amountValue: 10,
+      currencyCode: "USD",
+      providerEventId: "provider-invalid-2",
+      occurredAt: "2026-02-01T12:05:00.000Z",
+    },
+  });
+  const after = service.getProject("giftwallet");
+
+  assert.equal(invalid.ingestStatus, "rejected");
+  assert.equal(mismatch.ingestStatus, "rejected");
+  assert.equal(after.state.normalizedBillingEvents.length, beforeCount);
+});
+
+test("project service provider ingestion covers retry payment-failure cancel plan-change and subscription-state", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+  const workspaceId = service.getProject("giftwallet").state.workspaceModel.workspaceId;
+  const eventTypes = [
+    "retry",
+    "payment-failure",
+    "cancel",
+    "plan-change",
+    "subscription-state",
+  ];
+
+  for (const [index, providerEventType] of eventTypes.entries()) {
+    const result = service.ingestProviderBillingEvent("giftwallet", {
+      providerType: "generic-webhook",
+      providerPayload: {
+        providerEventType,
+        workspaceRef: workspaceId,
+        customerRef: `customer-${index}`,
+        amountValue: 0,
+        currencyCode: "USD",
+        providerEventId: `provider-event-${providerEventType}`,
+        occurredAt: `2026-02-01T12:0${index}:00.000Z`,
+      },
+    });
+
+    assert.equal(result.ingestStatus, "accepted");
+    assert.equal(result.normalizedBillingEvent?.eventType, providerEventType);
+  }
+});
+
+test("project service provider ingestion returns rejected envelope for unknown project id", () => {
+  const service = createProjectService();
+  const result = service.ingestProviderBillingEvent("missing-project", {
+    providerType: "generic-webhook",
+    providerPayload: {
+      providerEventType: "checkout",
+      workspaceRef: "workspace-demo-user",
+      amountValue: 10,
+      currencyCode: "USD",
+      providerEventId: "provider-missing-project",
+      occurredAt: "2026-02-01T12:30:00.000Z",
+    },
+  });
+
+  assert.deepEqual(result, {
+    ingestStatus: "rejected",
+    normalizedBillingEvent: null,
+    stateRefreshRequired: false,
+  });
 });
 
 test("project service stores ai analysis output", async () => {
@@ -973,7 +1938,11 @@ test("project service executes privacy rights requests and writes the result thr
     updatedProject.state.complianceConsentState.activeRestrictions.some((entry) => entry.processingScope === "learning"),
     true,
   );
-  assert.equal(updatedProject.context.learningInsightViewModel.summary.totalInsights, 0);
+  assert.equal(typeof updatedProject.state.learningInsights?.insightSetId, "string");
+  assert.equal(
+    updatedProject.context.learningInsightViewModel.summary.totalInsights,
+    updatedProject.state.learningInsights.summaryCounts.totalInsights,
+  );
 });
 
 test("project service connects a project to git hosting and stores repo snapshot", async () => {
@@ -1087,6 +2056,7 @@ test("project service creates onboarding session for a new project draft", () =>
   assert.equal(session.projectDraft.goal, "אפליקציה להזמנת שליחים בזמן אמת");
   assert.equal(session.projectDraft.owner.userId, "user-1");
   assert.equal(session.projectDraft.creationSource, "onboarding-session");
+  assert.equal(Object.hasOwn(session, "projectCreationEvent"), false);
   assert.equal(session.projectDraft.onboardingReadiness.canStartOnboarding, true);
   assert.equal(service.getOnboardingSession(session.sessionId)?.sessionId, session.sessionId);
 });
@@ -1117,6 +2087,24 @@ test("project service creates project draft for authenticated user", () => {
 
   assert.equal(result.projectDraftId, "launch-studio");
   assert.equal(result.projectDraft.id, "launch-studio");
+  assert.equal(typeof result.projectCreationEvent?.projectCreationEventId, "string");
+  assert.equal(result.projectCreationEvent?.userId, "user-1");
+  assert.equal(result.projectCreationEvent?.projectId, "launch-studio");
+  assert.equal(result.projectCreationEvent?.creationSource, "project-creation");
+  assert.equal(typeof result.projectCreationEvent?.timestamp, "string");
+  assert.equal(Array.isArray(result.projectCreationEvents), true);
+  assert.equal(result.projectCreationEvents.length, 1);
+  assert.equal(result.projectCreationEvents[0].projectCreationEventId, result.projectCreationEvent.projectCreationEventId);
+  assert.deepEqual(result.projectCreationMetric, {
+    totalProjectsCreated: 1,
+  });
+  assert.equal(result.projectCreationSummary.totalProjectsCreated, 1);
+  assert.deepEqual(result.projectCreationSummary.byUser, {
+    "user-1": 1,
+  });
+  assert.deepEqual(result.projectCreationSummary.byCreationSource, {
+    "project-creation": 1,
+  });
   assert.equal(result.projectDraft.owner.email, "draft-user@example.com");
   assert.equal(result.projectDraft.onboardingReadiness.canStartOnboarding, true);
   assert.equal(result.projectCreationExperience.primaryAction.actionId, "create-first-project");
@@ -1344,6 +2332,8 @@ test("project service supports signup login and logout auth flows", () => {
 
   assert.equal(typeof signedUp.authPayload.userIdentity.userId, "string");
   assert.equal(signedUp.authPayload.authenticationState.isAuthenticated, true);
+  assert.equal(signedUp.authPayload.ownerAuthState.isOwner, true);
+  assert.equal(signedUp.authPayload.ownerMfaDecision.decision, "required");
   assert.equal(typeof signedUp.authPayload.sessionState.sessionId, "string");
   assert.equal(typeof signedUp.authPayload.tokenBundle.accessToken, "string");
   assert.equal(signedUp.authPayload.authenticationRouteDecision.route, "workspace");
@@ -1364,6 +2354,7 @@ test("project service supports signup login and logout auth flows", () => {
   });
 
   assert.equal(loggedIn.authPayload.authenticationState.status, "authenticated");
+  assert.equal(loggedIn.authPayload.ownerMfaDecision.decision, "required");
   assert.equal(loggedIn.authPayload.sessionState.status, "active");
   assert.equal(loggedIn.authPayload.authenticationRouteDecision.route, "workspace");
   assert.equal(typeof loggedIn.authPayload.verificationFlowState.status, "string");
@@ -1377,6 +2368,7 @@ test("project service supports signup login and logout auth flows", () => {
   });
 
   assert.equal(loggedOut.authPayload.authenticationState.status, "logged-out");
+  assert.equal(loggedOut.authPayload.ownerMfaDecision.decision, "not-required");
   assert.equal(loggedOut.authPayload.sessionState.status, "inactive");
   assert.equal(loggedOut.authPayload.authenticationRouteDecision.route, "login");
   assert.equal(loggedOut.authPayload.tokenBundle.accessToken, null);
@@ -1404,6 +2396,33 @@ test("project service supports signup login and logout auth flows", () => {
   assert.equal(reset.authPayload.verificationFlowState.status, "pending");
   assert.equal(typeof reset.authPayload.authenticationViewState.screens.error.enabled, "boolean");
   assert.equal(typeof reset.authPayload.postAuthRedirect.destination, "string");
+
+  service.signupUser({
+    userInput: {
+      email: "secure-owner@example.com",
+      displayName: "Secure Owner",
+    },
+    credentials: {
+      password: "secret123",
+      hasMfa: true,
+    },
+  });
+
+  const privilegedLogin = service.loginUser({
+    userInput: {
+      email: "secure-owner@example.com",
+    },
+    credentials: {
+      password: "secret123",
+      authMethod: "password",
+      ownerSecurityContext: {
+        privilegedMode: true,
+      },
+    },
+  });
+
+  assert.equal(privilegedLogin.authPayload.ownerMfaDecision.decision, "challenge-required");
+  assert.equal(privilegedLogin.authPayload.ownerMfaDecision.requiresChallenge, true);
 
   const invite = service.inviteWorkspaceMember({
     userInput: {
@@ -1471,6 +2490,303 @@ test("project service blocks onboarding finish when intake is incomplete instead
   assert.equal(finished.onboardingCompletionDecision.isComplete, false);
   assert.equal(finished.onboardingStateHandoff.handoffStatus, "needs-clarification");
   assert.equal(service.listProjects().some((project) => project.id === draft.projectDraftId), false);
+});
+
+test("project service carries canonical project creation event into project state after onboarding finish", () => {
+  const service = createProjectService();
+
+  const signedUp = service.signupUser({
+    userInput: {
+      email: "creation-event@example.com",
+      displayName: "Creation Event",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const draft = service.createProjectDraft({
+    userInput: {
+      email: "creation-event@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Creation Event App",
+      visionText: "מערכת שמייצרת event קנוני בעת יצירת draft",
+    },
+  });
+
+  const session = service.createOnboardingSession({
+    userId: signedUp.authPayload.userIdentity.userId,
+    projectDraftId: draft.projectDraftId,
+    initialInput: "",
+  });
+
+  const updated = service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: Creation Event App\nאפליקציה עם onboarding ויצירת פרויקט",
+    uploadedFiles: [],
+    externalLinks: [],
+  });
+  assert.equal(updated.updatedSession.projectDraft.name, "Creation Event App");
+
+  service.uploadOnboardingFiles({
+    sessionId: session.sessionId,
+    uploadedFiles: [{ name: "spec.md", type: "markdown", content: "# Spec" }],
+  });
+
+  const finished = service.finishOnboardingSession(session.sessionId);
+
+  assert.equal(finished.blocked, false);
+  assert.equal(finished.project.state.projectCreationEvent.projectId, draft.projectDraftId);
+  assert.equal(
+    finished.project.state.projectCreationEvent.projectCreationEventId,
+    draft.projectCreationEvent.projectCreationEventId,
+  );
+  assert.equal(finished.project.state.projectCreationEvent.creationSource, "project-creation");
+  assert.equal(Array.isArray(finished.project.state.projectCreationEvents), true);
+  assert.equal(finished.project.state.projectCreationEvents.length, 1);
+  assert.equal(
+    finished.project.state.projectCreationEvents[0].projectCreationEventId,
+    draft.projectCreationEvent.projectCreationEventId,
+  );
+  assert.deepEqual(finished.project.state.projectCreationMetric, {
+    totalProjectsCreated: 1,
+  });
+  assert.deepEqual(finished.project.state.projectCreationSummary.byUser, {
+    [signedUp.authPayload.userIdentity.userId]: 1,
+  });
+  assert.deepEqual(finished.project.state.projectCreationSummary.byCreationSource, {
+    "project-creation": 1,
+  });
+  assert.equal(Object.hasOwn(finished.project.state.projectCreationMetric, "byCreationSource"), false);
+  assert.equal(Object.hasOwn(finished.project.state.projectCreationMetric, "uniqueCreators"), false);
+  assert.equal(Array.isArray(finished.project.context.projectCreationEvents), true);
+  assert.equal(finished.project.context.projectCreationEvents.length, 1);
+  assert.equal(finished.project.context.projectCreationSummary.totalProjectsCreated, 1);
+});
+
+test("project service hands uploaded onboarding intake into scanner-backed project scan state", () => {
+  const service = createProjectService();
+
+  const signedUp = service.signupUser({
+    userInput: {
+      email: "scanner-handoff@example.com",
+      displayName: "Scanner Handoff",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const draft = service.createProjectDraft({
+    userInput: {
+      email: "scanner-handoff@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Scanner Intake App",
+      visionText: "מערכת שממשיכה מפרויקט קיים עם onboarding ו-growth funnel",
+    },
+  });
+
+  const session = service.createOnboardingSession({
+    userId: signedUp.authPayload.userIdentity.userId,
+    projectDraftId: draft.projectDraftId,
+    initialInput: "",
+  });
+
+  service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: Scanner Intake App\nאפליקציה עם login, billing ו-growth funnel",
+    uploadedFiles: [],
+    externalLinks: ["https://github.com/example/scanner-intake-app"],
+  });
+
+  service.uploadOnboardingFiles({
+    sessionId: session.sessionId,
+    uploadedFiles: [
+      {
+        name: "README.md",
+        type: "markdown",
+        content: "# Scanner Intake App\n\nTODO: onboarding flow\n",
+      },
+      {
+        name: "docs/architecture.md",
+        type: "markdown",
+        content: "# Architecture\n\nmissing: analytics import\n",
+      },
+      {
+        name: "ga-export.csv",
+        type: "text/csv",
+        content: "date,users\n2026-04-01,120\n",
+      },
+    ],
+  });
+
+  const finished = service.finishOnboardingSession(session.sessionId);
+
+  assert.equal(finished.blocked, false);
+  assert.equal(finished.project.scan.exists, true);
+  assert.equal(finished.project.scan.knowledge.readme.path, "README.md");
+  assert.equal(finished.project.scan.knowledge.docs.some((doc) => doc.path === "docs/architecture.md"), true);
+  assert.equal(finished.project.state.knowledge.knownGaps.includes("onboarding flow"), true);
+  assert.equal(finished.project.state.knowledge.knownGaps.includes("analytics import"), true);
+  assert.equal(finished.project.state.product.hasAuth, true);
+});
+
+test("project service normalizes imported business assets after onboarding intake handoff", () => {
+  const service = createProjectService();
+
+  const signedUp = service.signupUser({
+    userInput: {
+      email: "import-normalization@example.com",
+      displayName: "Import Normalization",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const draft = service.createProjectDraft({
+    userInput: {
+      email: "import-normalization@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Import Continuation App",
+      visionText: "מערכת שממשיכה ממוצר קיים עם login ו-growth funnel",
+    },
+  });
+
+  const session = service.createOnboardingSession({
+    userId: signedUp.authPayload.userIdentity.userId,
+    projectDraftId: draft.projectDraftId,
+    initialInput: "",
+  });
+
+  service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: Import Continuation App\nאפליקציה עם login, billing ו-growth funnel",
+    uploadedFiles: [],
+    externalLinks: [
+      "https://github.com/example/import-continuation-app",
+      "https://app.example.com",
+    ],
+  });
+
+  service.uploadOnboardingFiles({
+    sessionId: session.sessionId,
+    uploadedFiles: [
+      {
+        name: "README.md",
+        type: "markdown",
+        content: "# Import Continuation App\n\nTODO: onboarding flow\n",
+      },
+      {
+        name: "docs/architecture.md",
+        type: "markdown",
+        content: "# Architecture\n\nmissing: analytics import\n",
+      },
+    ],
+  });
+
+  const finished = service.finishOnboardingSession(session.sessionId);
+
+  assert.equal(finished.blocked, false);
+  assert.equal(finished.project.existingBusinessAssets.status, "ready");
+  assert.equal(finished.project.existingBusinessAssets.summary.totalAssets, 5);
+  assert.equal(finished.project.existingBusinessAssets.summary.repositoryAssetCount, 1);
+  assert.equal(finished.project.existingBusinessAssets.diagnosisSeed.hasAuth, true);
+  assert.equal(finished.project.repositoryImportAndCodebaseDiagnosis.status, "ready");
+  assert.equal(finished.project.repositoryImportAndCodebaseDiagnosis.repoStatus.branchCount, 1);
+  assert.equal(finished.project.liveWebsiteIngestionAndFunnelDiagnosis.status, "ready");
+  assert.equal(finished.project.liveWebsiteIngestionAndFunnelDiagnosis.website.hostname, "app.example.com");
+  assert.equal(finished.project.importedAnalyticsNormalization.status, "ready");
+  assert.equal(finished.project.importedAnalyticsNormalization.summary.importedAssetCount, 1);
+  assert.equal(finished.project.importedAssetTaskExtraction.status, "ready");
+  assert.equal(finished.project.importedAssetTaskExtraction.summary.totalExtractedTasks >= 5, true);
+  assert.equal(
+    finished.project.existingBusinessAssets.importAndContinueSeed.nextCapabilities.includes("repository-diagnosis"),
+    true,
+  );
+  assert.equal(
+    finished.project.state.repositoryImportAndCodebaseDiagnosis.importContinuation.nextCapabilities.includes(
+      "imported-asset-task-extraction",
+    ),
+    true,
+  );
+  assert.equal(
+    finished.project.state.liveWebsiteIngestionAndFunnelDiagnosis.importContinuation.nextCapabilities.includes(
+      "imported-asset-task-extraction",
+    ),
+    true,
+  );
+  assert.equal(
+    finished.project.state.importedAnalyticsNormalization.importContinuation.nextCapabilities.includes(
+      "imported-asset-task-extraction",
+    ),
+    true,
+  );
+  assert.equal(
+    finished.project.state.importedAssetTaskExtraction.summary.sourceCoverage.includes("analytics"),
+    true,
+  );
+  assert.equal(
+    finished.project.state.existingBusinessAssets.assets.some(
+      (asset) => asset.path === "README.md" && asset.sourceStages.includes("uploaded-intake"),
+    ),
+    true,
+  );
+});
+
+test("project service increments project creation metric cumulatively across draft creations", () => {
+  const service = createProjectService();
+
+  service.signupUser({
+    userInput: {
+      email: "tracker-a@example.com",
+      displayName: "Tracker A",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const first = service.createProjectDraft({
+    userInput: {
+      email: "tracker-a@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Tracker Alpha",
+      visionText: "אפליקציה ראשונה",
+    },
+  });
+
+  const second = service.createProjectDraft({
+    userInput: {
+      email: "tracker-a@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Tracker Beta",
+      visionText: "אפליקציה שנייה",
+    },
+  });
+
+  assert.deepEqual(first.projectCreationMetric, {
+    totalProjectsCreated: 1,
+  });
+  assert.deepEqual(second.projectCreationMetric, {
+    totalProjectsCreated: 2,
+  });
+  assert.equal(Array.isArray(second.projectCreationEvents), true);
+  assert.equal(second.projectCreationEvents.length, 2);
+  assert.equal(second.projectCreationSummary.totalProjectsCreated, 2);
+  assert.deepEqual(second.projectCreationSummary.byUser, {
+    "user-1": 2,
+  });
+  assert.deepEqual(second.projectCreationSummary.byCreationSource, {
+    "project-creation": 2,
+  });
+  assert.equal(Object.hasOwn(second.projectCreationMetric, "byCreationSource"), false);
+  assert.equal(Object.hasOwn(second.projectCreationMetric, "uniqueCreators"), false);
 });
 
 test("project service supports proposal editing and partial acceptance as real mutations", () => {
@@ -1576,6 +2892,10 @@ test("project service supports proposal editing and partial acceptance as real m
     },
   });
 
+  assert.equal(partial.state.approvalOutcome.status, "rejected");
+  assert.equal(Array.isArray(partial.state.approvalOutcome.sectionOutcomes), true);
+  assert.equal(Array.isArray(partial.state.approvalOutcome.componentOutcomes), true);
+  assert.equal(Array.isArray(partial.state.approvalOutcome.copyOutcomes), true);
   assert.equal(partial.state.partialAcceptanceDecision.status, "partially-accepted");
   assert.equal(partial.state.partialAcceptanceDecision.approvedSections[0].sectionId, firstSection.sectionId);
   assert.equal(partial.state.partialAcceptanceDecision.rejectedComponents[0].componentId, firstComponent.componentId);

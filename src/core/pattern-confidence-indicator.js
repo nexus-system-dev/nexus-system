@@ -8,6 +8,18 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function normalizeConfidenceScore(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.max(0, Math.min(1, value));
+  }
+
+  return 0.35;
+}
+
 function toConfidenceTone(confidenceBand) {
   if (confidenceBand === "high") {
     return "trusted";
@@ -36,18 +48,28 @@ function buildIndicators(learningInsightViewModel) {
   return patterns.map((pattern, index) => {
     const normalizedPattern = normalizeObject(pattern);
     const linkedInsight = insights.find((insight) => insight.pattern === normalizedPattern.label) ?? insights[index] ?? {};
-    const confidenceBand = normalizedPattern.confidenceBand ?? linkedInsight.confidenceBand ?? "low";
-    const confidenceScore = normalizedPattern.confidenceScore ?? linkedInsight.confidenceScore ?? 0.35;
+    const confidenceBand =
+      normalizeString(normalizedPattern.confidenceBand)
+      ?? normalizeString(linkedInsight.confidenceBand)
+      ?? "low";
+    const confidenceScore = normalizeConfidenceScore(
+      normalizedPattern.confidenceScore ?? linkedInsight.confidenceScore,
+    );
 
     return {
-      indicatorId: `confidence-indicator:${normalizedPattern.patternId ?? index + 1}`,
-      patternId: normalizedPattern.patternId ?? null,
-      label: normalizedPattern.label ?? linkedInsight.pattern ?? `Pattern ${index + 1}`,
+      indicatorId: `confidence-indicator:${normalizeString(normalizedPattern.patternId) ?? index + 1}`,
+      patternId: normalizeString(normalizedPattern.patternId),
+      label:
+        normalizeString(normalizedPattern.label)
+        ?? normalizeString(linkedInsight.pattern)
+        ?? `Pattern ${index + 1}`,
       confidenceBand,
       confidenceScore,
       confidenceLabel: toConfidenceLabel(confidenceBand),
       tone: toConfidenceTone(confidenceBand),
-      reasoning: linkedInsight.recommendationReasoning ?? linkedInsight.summary ?? null,
+      reasoning:
+        normalizeString(linkedInsight.recommendationReasoning)
+        ?? normalizeString(linkedInsight.summary),
     };
   });
 }
@@ -60,7 +82,7 @@ export function createPatternConfidenceIndicator({
 
   return {
     confidenceIndicator: {
-      indicatorCollectionId: `pattern-confidence:${normalizedViewModel.viewModelId ?? "nexus"}`,
+      indicatorCollectionId: `pattern-confidence:${normalizeString(normalizedViewModel.viewModelId) ?? "nexus"}`,
       indicators,
       summary: {
         totalPatterns: indicators.length,

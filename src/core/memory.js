@@ -11,6 +11,7 @@ export class AgentMemoryStore {
       businessGoal: projectSnapshot.state.businessGoal,
       task: {
         id: task.id,
+        taskType: task.taskType,
         lane: task.lane,
         summary: task.summary,
         successCriteria: task.successCriteria,

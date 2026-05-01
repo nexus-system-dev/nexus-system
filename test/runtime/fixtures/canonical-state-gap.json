@@ -1,0 +1,18 @@
+{
+  "wave2OrderedExecutionMap": [
+    {
+      "execution_order": 1,
+      "taskName": "First task",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": 3,
+      "taskName": "Third task (gap at 2)",
+      "state": "in-progress",
+      "blocker": null,
+      "bridgeCondition": null
+    }
+  ]
+}

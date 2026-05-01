@@ -57,7 +57,7 @@ export function createSessionSecurityControls({
         decision: "invalidated",
         isBlocked: true,
         requiresRotation: false,
-        reason: "Session was revoked",
+        reason: normalizeString(normalizedSessionState.revocationReason, "Session was revoked"),
         triggeredControls: ["revoke-check"],
       },
     };
@@ -81,7 +81,7 @@ export function createSessionSecurityControls({
         decision: "suspicious",
         isBlocked: true,
         requiresRotation: false,
-        reason: "Suspicious session activity detected",
+        reason: normalizeString(normalizedSecuritySignals.reason, "Suspicious session activity detected"),
         triggeredControls: [
           "suspicious-activity-check",
           normalizedSecuritySignals.burstDetected ? "burst-detected" : null,
@@ -98,7 +98,7 @@ export function createSessionSecurityControls({
         decision: "rotation-required",
         isBlocked: false,
         requiresRotation: true,
-        reason: "Session age exceeded rotation threshold",
+        reason: normalizeString(normalizedSessionState.rotationReason, "Session age exceeded rotation threshold"),
         triggeredControls: ["rotation-window-check"],
       },
     };

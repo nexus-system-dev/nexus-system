@@ -8,6 +8,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 function buildImpactSignals(impactSummary) {
   const normalizedImpactSummary = normalizeObject(impactSummary);
   const signals = [];
@@ -38,10 +42,13 @@ function buildLearningReasons(learningTrace) {
   return traceSteps.map((step, index) => {
     const normalizedStep = normalizeObject(step);
     return {
-      reasonId: normalizedStep.stepId ?? `learning-reason-${index + 1}`,
-      label: normalizedStep.title ?? normalizedStep.pattern ?? `Learning trace ${index + 1}`,
-      explanation: normalizedStep.reasoning ?? normalizedStep.summary ?? null,
-      source: normalizedStep.source ?? normalizedStep.kind ?? "learning-trace",
+      reasonId: normalizeString(normalizedStep.stepId) ?? `learning-reason-${index + 1}`,
+      label:
+        normalizeString(normalizedStep.title)
+        ?? normalizeString(normalizedStep.pattern)
+        ?? `Learning trace ${index + 1}`,
+      explanation: normalizeString(normalizedStep.reasoning) ?? normalizeString(normalizedStep.summary),
+      source: normalizeString(normalizedStep.source) ?? normalizeString(normalizedStep.kind) ?? "learning-trace",
     };
   });
 }
@@ -54,9 +61,9 @@ function buildPolicyReasons(policyTrace) {
     const normalizedStep = normalizeObject(step);
     return {
       reasonId: `policy-reason-${index + 1}`,
-      label: normalizedStep.step ?? `Policy step ${index + 1}`,
-      explanation: normalizedStep.reason ?? normalizedPolicyTrace.reason ?? null,
-      decision: normalizedStep.decision ?? normalizedPolicyTrace.finalDecision ?? "unknown",
+      label: normalizeString(normalizedStep.step) ?? `Policy step ${index + 1}`,
+      explanation: normalizeString(normalizedStep.reason) ?? normalizeString(normalizedPolicyTrace.reason),
+      decision: normalizeString(normalizedStep.decision) ?? normalizeString(normalizedPolicyTrace.finalDecision) ?? "unknown",
     };
   });
 }
@@ -94,7 +101,7 @@ export function createRecommendationReasoningPanelContract({
 
   return {
     reasoningPanel: {
-      panelId: `reasoning-panel:${normalizedPolicyTrace.actionType ?? "project"}`,
+      panelId: `reasoning-panel:${normalizeString(normalizedPolicyTrace.actionType) ?? "project"}`,
       headline: buildHeadline(normalizedImpactSummary, normalizedPolicyTrace, normalizedLearningTrace),
       impact: {
         totalChanges: normalizedImpactSummary.totalChanges ?? 0,
@@ -106,13 +113,15 @@ export function createRecommendationReasoningPanelContract({
         ],
       },
       learning: {
-        recommendationReasoning: normalizedLearningTrace.recommendationReasoning ?? null,
+        recommendationReasoning: normalizeString(normalizedLearningTrace.recommendationReasoning),
         reasons: learningReasons,
       },
       policy: {
-        finalDecision: normalizedPolicyTrace.finalDecision ?? "unknown",
+        finalDecision: normalizeString(normalizedPolicyTrace.finalDecision) ?? "unknown",
         requiresApproval: normalizedPolicyTrace.requiresApproval === true,
-        blockingSources: normalizeArray(normalizedPolicyTrace.blockingSources),
+        blockingSources: normalizeArray(normalizedPolicyTrace.blockingSources)
+          .filter((source) => typeof source === "string" && source.trim())
+          .map((source) => source.trim()),
         reasons: policyReasons,
       },
       summary: {

@@ -107,14 +107,15 @@ function createBaselineEntries({ userId, workspaceId, projectId }) {
 
 function deriveEntriesFromConsentRecord({ consentRecord, userId, projectId }) {
   const normalizedConsent = normalizeObject(consentRecord);
-  if (!normalizedConsent.consentId) {
+  const consentId = normalizeString(normalizedConsent.consentId, null);
+  if (!consentId) {
     return [];
   }
 
   return [
     normalizeEntry(
       {
-        entryId: `consent-registry:${normalizedConsent.consentId}:data-usage`,
+        entryId: `consent-registry:${consentId}:data-usage`,
         processingScope: "data-usage",
         scopeType: "project",
         scopeId: projectId ?? normalizedConsent.projectId ?? null,
@@ -122,8 +123,8 @@ function deriveEntriesFromConsentRecord({ consentRecord, userId, projectId }) {
         legalBasis: "consent",
         legalBasisDetails: {
           source: "owner-consent-record",
-          actionType: normalizedConsent.actionType ?? null,
-          target: normalizedConsent.target ?? null,
+          actionType: normalizeString(normalizedConsent.actionType, null),
+          target: normalizeString(normalizedConsent.target, null),
         },
       },
       { userId, projectId, processingScope: "data-usage" },
@@ -133,25 +134,28 @@ function deriveEntriesFromConsentRecord({ consentRecord, userId, projectId }) {
 
 function deriveEntriesFromNotificationPreferences({ notificationPreferences, userId }) {
   const normalizedPreferences = normalizeObject(notificationPreferences);
-  if (!normalizedPreferences.userId && !userId) {
+  const preferenceUserId = normalizeString(normalizedPreferences.userId, null) ?? userId;
+  if (!preferenceUserId) {
     return [];
   }
 
   return [
     normalizeEntry(
       {
-        entryId: `consent-registry:${userId ?? normalizedPreferences.userId ?? "anonymous"}:global:notifications-preference`,
+        entryId: `consent-registry:${preferenceUserId}:global:notifications-preference`,
         processingScope: "notifications",
         scopeType: "global",
         status: "missing",
         legalBasis: "unknown",
         legalBasisDetails: {
           source: "notification-preferences-signal",
-          channels: Array.isArray(normalizedPreferences.channels) ? normalizedPreferences.channels : [],
-          frequency: normalizedPreferences.frequency ?? null,
+          channels: Array.isArray(normalizedPreferences.channels)
+            ? normalizedPreferences.channels.map((channel) => normalizeString(channel, null)).filter(Boolean)
+            : [],
+          frequency: normalizeString(normalizedPreferences.frequency, null),
         },
       },
-      { userId, processingScope: "notifications" },
+      { userId: preferenceUserId, processingScope: "notifications" },
     ),
   ];
 }
@@ -280,7 +284,7 @@ export function createComplianceConsentAndLegalBasisRegistry({
 } = {}) {
   const normalizedUserIdentity = normalizeObject(userIdentity);
   const normalizedScopeContext = normalizeObject(scopeContext);
-  const userId = normalizedUserIdentity.userId ?? null;
+  const userId = normalizeString(normalizedUserIdentity.userId, null);
   const workspaceId = normalizeString(normalizedScopeContext.workspaceId, null);
   const projectId = normalizeString(normalizedScopeContext.projectId, null);
 

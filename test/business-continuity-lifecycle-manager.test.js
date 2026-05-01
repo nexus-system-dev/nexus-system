@@ -75,3 +75,32 @@ test("business continuity lifecycle manager resolves failover with missing plann
   assert.equal(businessContinuityState.orchestration.failover.integrationStatus, "placeholder");
   assert.equal(businessContinuityState.orchestration.failover.isBlocking, true);
 });
+
+test("business continuity lifecycle manager normalizes malformed project and failover target fields", () => {
+  const { businessContinuityState } = createBusinessContinuityLifecycleManager({
+    backupStrategy: {
+      backupStrategyId: " backup-strategy:giftwallet ",
+      projectId: " giftwallet ",
+    },
+    continuityPlan: {
+      failover: {
+        hasPlanner: true,
+        integrationStatus: " connected ",
+        target: " standby-runtime ",
+      },
+    },
+    disasterRecoveryChecklist: {
+      projectId: " giftwallet ",
+      summary: {
+        readinessScore: 90,
+        canExecuteRecovery: true,
+      },
+      steps: [],
+    },
+  });
+
+  assert.equal(businessContinuityState.continuityStateId, "business-continuity:giftwallet");
+  assert.equal(businessContinuityState.projectId, "giftwallet");
+  assert.equal(businessContinuityState.orchestration.failover.integrationStatus, "connected");
+  assert.equal(businessContinuityState.orchestration.failover.target, "standby-runtime");
+});

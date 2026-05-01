@@ -53,3 +53,42 @@ test("context relevance filter falls back safely", () => {
   assert.equal(Array.isArray(relevanceFilteredContext.summarizedContext), true);
   assert.equal(Array.isArray(relevanceFilteredContext.droppedContext), true);
 });
+
+test("context relevance filter normalizes malformed schema ids and screen context strings", () => {
+  const { relevanceFilteredContext } = createContextRelevanceFilter({
+    contextRelevanceSchema: {
+      schemaId: {},
+      contextEntries: [
+        {
+          source: " project-state ",
+          relevanceScore: "bad",
+          priorityScore: 0.8,
+          freshnessScore: 0.4,
+          tokenWeight: "bad",
+          reasons: [" active-bottleneck-present ", null],
+        },
+        {
+          source: " interaction-context ",
+          relevanceScore: 0.4,
+          priorityScore: 0.5,
+          freshnessScore: 0.7,
+          tokenWeight: 0.3,
+          reasons: [" currently-visible "],
+        },
+      ],
+    },
+    projectState: {
+      activeBottleneck: { reason: " Approval needed " },
+    },
+    screenContext: {
+      currentSurface: " workspace ",
+      currentTask: " review-flow ",
+      urgency: " high ",
+    },
+  });
+
+  assert.equal(relevanceFilteredContext.filterId, "relevance-filter:context");
+  assert.equal(relevanceFilteredContext.keptContext[0].summary, "Approval needed");
+  assert.equal(relevanceFilteredContext.summarizedContext[0].summary, "workspace");
+  assert.equal(relevanceFilteredContext.keptContext[0].reasons[0], "active-bottleneck-present");
+});

@@ -8,6 +8,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 function buildProjectStateItems(projectState) {
   const state = normalizeObject(projectState);
 
@@ -16,7 +20,10 @@ function buildProjectStateItems(projectState) {
       itemId: "project-active-bottleneck",
       source: "project-state",
       section: "activeBottleneck",
-      summary: state.activeBottleneck?.reason ?? state.activeBottleneck?.bottleneckId ?? "No active bottleneck",
+      summary:
+        normalizeString(state.activeBottleneck?.reason)
+        ?? normalizeString(state.activeBottleneck?.bottleneckId)
+        ?? "No active bottleneck",
       payload: state.activeBottleneck ?? null,
     },
     {
@@ -52,28 +59,31 @@ function buildProjectStateItems(projectState) {
 
 function buildScreenContextItems(screenContext) {
   const context = normalizeObject(screenContext);
+  const currentSurface = normalizeString(context.currentSurface) ?? normalizeString(context.surface) ?? "workspace";
+  const currentTask = normalizeString(context.currentTask) ?? normalizeString(context.taskId);
+  const urgency = normalizeString(context.urgency) ?? "normal";
 
   return [
     {
       itemId: "screen-current-surface",
       source: "interaction-context",
       section: "currentSurface",
-      summary: context.currentSurface ?? context.surface ?? "workspace",
-      payload: context.currentSurface ?? context.surface ?? "workspace",
+      summary: currentSurface,
+      payload: currentSurface,
     },
     {
       itemId: "screen-current-task",
       source: "interaction-context",
       section: "currentTask",
-      summary: context.currentTask ?? context.taskId ?? "No task in focus",
-      payload: context.currentTask ?? context.taskId ?? null,
+      summary: currentTask ?? "No task in focus",
+      payload: currentTask,
     },
     {
       itemId: "screen-urgency",
       source: "interaction-context",
       section: "urgency",
-      summary: context.urgency ?? "normal",
-      payload: context.urgency ?? "normal",
+      summary: urgency,
+      payload: urgency,
     },
   ];
 }
@@ -95,16 +105,24 @@ function resolveAction(entry) {
 }
 
 function decorateItems(items, entry) {
+  const normalizedSource = normalizeString(entry.source);
+  const tokenWeight = typeof entry.tokenWeight === "number" && Number.isFinite(entry.tokenWeight) ? entry.tokenWeight : 0;
+  const relevanceScore = typeof entry.relevanceScore === "number" && Number.isFinite(entry.relevanceScore) ? entry.relevanceScore : 0;
+  const priorityScore = typeof entry.priorityScore === "number" && Number.isFinite(entry.priorityScore) ? entry.priorityScore : 0;
+  const freshnessScore = typeof entry.freshnessScore === "number" && Number.isFinite(entry.freshnessScore) ? entry.freshnessScore : 0;
+
   return items
-    .filter((item) => item.source === entry.source)
+    .filter((item) => item.source === normalizedSource)
     .map((item) => ({
       ...item,
       action: resolveAction(entry),
-      tokenWeight: entry.tokenWeight,
-      relevanceScore: entry.relevanceScore,
-      priorityScore: entry.priorityScore,
-      freshnessScore: entry.freshnessScore,
-      reasons: normalizeArray(entry.reasons),
+      tokenWeight,
+      relevanceScore,
+      priorityScore,
+      freshnessScore,
+      reasons: normalizeArray(entry.reasons)
+        .filter((reason) => typeof reason === "string" && reason.trim())
+        .map((reason) => reason.trim()),
     }));
 }
 
@@ -126,7 +144,7 @@ export function createContextRelevanceFilter({
 
   return {
     relevanceFilteredContext: {
-      filterId: `relevance-filter:${schema.schemaId ?? "context"}`,
+      filterId: `relevance-filter:${normalizeString(schema.schemaId) ?? "context"}`,
       keptContext: kept,
       summarizedContext: summarized.map((item) => ({
         itemId: item.itemId,

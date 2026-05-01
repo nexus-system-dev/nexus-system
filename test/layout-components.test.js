@@ -50,3 +50,60 @@ test("createLayoutComponents falls back safely without explicit layout system", 
   assert.equal(layoutComponents.components[5].preview.items[0], "Section A");
   assert.equal(layoutComponents.summary.supportsWorkbenchLayouts, true);
 });
+
+test("createLayoutComponents normalizes invalid layout identity and numeric payloads", () => {
+  const { layoutComponents } = createLayoutComponents({
+    layoutSystem: {
+      layoutSystemId: { invalid: true },
+      grid: {
+        columns: "12",
+        gutter: 0,
+        maxContentWidth: null,
+        workbenchMinWidth: -40,
+      },
+      spacingScale: {
+        sm: Number.NaN,
+        md: "12",
+        lg: Infinity,
+      },
+      sectionRhythm: {
+        pageTop: false,
+        sectionGap: "",
+        panelGap: -8,
+        contentGap: {},
+      },
+      containerWidths: {
+        standard: 0,
+        wide: "wide",
+      },
+    },
+  });
+
+  assert.equal(layoutComponents.layoutComponentLibraryId, "layout-components:nexus");
+  assert.equal(layoutComponents.components[0].layoutRules.maxWidth, 960);
+  assert.equal(layoutComponents.components[0].layoutRules.wideWidth, 1280);
+  assert.equal(layoutComponents.components[1].layoutRules.gap, 32);
+  assert.equal(layoutComponents.components[1].layoutRules.contentGap, 12);
+  assert.equal(layoutComponents.components[2].layoutRules.gap, 12);
+  assert.equal(layoutComponents.components[3].layoutRules.columns, 12);
+  assert.equal(layoutComponents.components[3].layoutRules.gutter, 20);
+  assert.equal(layoutComponents.components[4].layoutRules.minWidth, 1180);
+});
+
+test("createLayoutComponents ignores non-object layout groups and emits safe defaults", () => {
+  const { layoutComponents } = createLayoutComponents({
+    layoutSystem: {
+      layoutSystemId: "layout-system:design-tokens:nexus",
+      grid: "invalid",
+      spacingScale: 3,
+      sectionRhythm: null,
+      containerWidths: "wide",
+    },
+  });
+
+  assert.equal(layoutComponents.layoutComponentLibraryId, "layout-components:layout-system:design-tokens:nexus");
+  assert.equal(layoutComponents.components[0].layoutRules.paddingX, 20);
+  assert.equal(layoutComponents.components[3].layoutRules.columns, 12);
+  assert.equal(layoutComponents.components[4].layoutRules.padding, 20);
+  assert.equal(layoutComponents.components[5].layoutRules.spacingBefore, 12);
+});

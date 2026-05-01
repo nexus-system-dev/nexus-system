@@ -39,11 +39,11 @@
 
 ## Current Progress
 
-- התקדמות נוכחית של הגל: `0/80` משימות סגורות = `0%`
+- התקדמות נוכחית של הגל: `0/82` משימות סגורות = `0%`
 - חלוקת סטטוסים כרגע:
   - `🟢 בוצע`: `0`
   - `🟡 חלקי / תלות חלקית / תלוי בשכבה קודמת`: `0`
-  - `🔴 לא בוצע`: `80`
+  - `🔴 לא בוצע`: `82`
 
 ## Block Execution Order
 
@@ -405,7 +405,7 @@
 - למה עכשיו: זו נקודת המעבר הקריטית בין חוץ לפנים.
 
 20. `Create post-login destination resolver`
-- סטטוס: `🔴 לא בוצע`
+- סטטוס: `🟡 חלקי`
 - description: לבנות resolver שמחליט אם אחרי login המשתמש נוחת ב־dashboard, onboarding resume, waitlist status, approval inbox או first project kickoff
 - input:
   - `appEntryDecision`
@@ -419,9 +419,10 @@
 - connects_to: `Project State`
 - execution_order: `2.17`
 - למה עכשיו: destination נכון קובע activation ולא רק login success.
+- status_note: קיים כבר runtime resolver צר של `postAuthRedirect`, אבל לא `postLoginDestination` קנוני עם כל היעדים המוצהרים של Wave 4.
 
 21. `Create first project kickoff flow`
-- סטטוס: `🔴 לא בוצע`
+- סטטוס: `🟡 חלקי`
 - description: לבנות flow מפורש שבו משתמש חדש עובר מה־dashboard או ה־entry destination אל יצירת הפרויקט הראשון וה־onboarding הראשון
 - input:
   - `postLoginDestination`
@@ -435,6 +436,7 @@
 - connects_to: `Project State`
 - execution_order: `2.18`
 - למה עכשיו: kickoff מפורש מחבר את כניסת המשתמש ל־first project actual.
+- status_note: ה־cockpit path הקיים כבר תומך ב־first project usable flow, אבל עדיין לא כ־entry-system canonical artifact מלא.
 
 22. `Create landing-to-dashboard funnel assembler`
 - סטטוס: `🔴 לא בוצע`
@@ -447,8 +449,8 @@
 - output:
   - `landingToDashboardFlow`
 - dependencies:
-  - `Create first project kickoff flow`  | סטטוס: `🔴 לא בוצע`
-  - `Create post-login destination resolver`  | סטטוס: `🔴 לא בוצע`
+  - `Create first project kickoff flow`  | סטטוס: `🟡 חלקי`
+  - `Create post-login destination resolver`  | סטטוס: `🟡 חלקי`
 - connects_to: `Project State`
 - execution_order: `2.19`
 - למה עכשיו: assembler סוגר את ה־funnel למודל אחד שאפשר למדוד ולשפר.
@@ -1001,12 +1003,15 @@
 - description: לבנות dashboard owner-facing ל־active users, project creation, retention, churn ו־usage segments
 - input:
   - `retentionSummary`
+  - `retentionCurveSummary`
   - `projectCreationSummary`
   - `taskThroughputSummary`
 - output:
   - `ownerUserAnalytics`
 - dependencies:
   - `Nexus Product Analytics`
+  - `Create durable project creation event history store`  | סטטוס: `🔴 לא בוצע` | owner: `Wave 3`
+  - `Create retention curve analyzer`  | סטטוס: `🔴 לא בוצע` | owner: `Wave 3`
 - connects_to: `Project State`
 - execution_order: `3.16`
 - למה עכשיו: owner cockpit צריך לחבר business metrics ל־user metrics.
@@ -1073,9 +1078,46 @@
 - execution_order: `3.20`
 - למה עכשיו: owner צריך לראות health של roadmap, לא רק של execution ו־revenue.
 
+#### Sub-block: `Owner Billing Operations`
+
+63. `Create coupon application management flow`
+- סטטוס: `🔴 לא בוצע`
+- description: לבנות flow owner-facing להגדרת והחלת coupons/offers על checkout או plan change כך שהנחות מסחריות ינוהלו כמנגנון מבוקר ולא כחלק מליבת billing action הפשוטה
+- input:
+  - `ownerRevenueView`
+  - `pricingModelDecision`
+  - `billingPayload`
+- output:
+  - `couponApplicationPayload`
+- dependencies:
+  - `Create revenue tracking system`  | סטטוס: `🔴 לא בוצע`
+  - `Create checkout and subscription API`  | סטטוס: `🟢 בוצע`
+  - `Create pricing model engine`  | סטטוס: `🔴 לא בוצע`
+- connects_to: `Execution Surface`
+- execution_order: `3.21`
+- למה עכשיו: coupons הם commercial/pricing control מתקדם שתלוי גם ב־billing core וגם ב־owner revenue/pricing systems, ולכן נכון למקם אותו ב־Wave 4.
+
+64. `Create manual invoice actions flow`
+- סטטוס: `🔴 לא בוצע`
+- description: לבנות flow owner/operator לפעולות invoice ידניות כמו review, resend, mark-as-handled או administrative resolution בלי לערבב אותן עם self-serve subscription actions
+- input:
+  - `ownerRevenueView`
+  - `workspaceBillingState`
+  - `normalizedBillingEvent`
+- output:
+  - `manualInvoiceActionPayload`
+- dependencies:
+  - `Create revenue tracking system`  | סטטוס: `🔴 לא בוצע`
+  - `Create checkout and subscription API`  | סטטוס: `🟢 בוצע`
+  - `Create self-serve invoice state model`  | סטטוס: `🔴 לא בוצע`
+  - `Expand billing settings and plan selection screen model`  | סטטוס: `🔴 לא בוצע`
+- connects_to: `Execution Surface`
+- execution_order: `3.22`
+- למה עכשיו: manual invoice actions הן finance/operator flow מובהק שדורש owner visibility, audit ו־runtime billing history מעבר לליבת checkout של Wave 2.
+
 #### Sub-block: `Owner Operations & Incidents`
 
-63. `Create operations signal aggregator`
+65. `Create operations signal aggregator`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות aggregator שמרכז health, queue, runtime, security, cost ו־growth anomalies לשכבת owner אחת
 - input:
@@ -1089,10 +1131,10 @@
   - `Platform Observability`
   - `Platform Cost & Usage Control`
 - connects_to: `Project State`
-- execution_order: `3.21`
+- execution_order: `3.23`
 - למה עכשיו: זהו מקור האמת התפעולי של owner mode.
 
-64. `Create critical alert prioritizer`
+66. `Create critical alert prioritizer`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות prioritizer שמבדיל בין alerts קריטיים, חשובים ורועשים מדי לפני שהם מגיעים לבעלים
 - input:
@@ -1104,10 +1146,10 @@
   - `Create operations signal aggregator`  | סטטוס: `🔴 לא בוצע`
   - `Create owner priority engine`  | סטטוס: `🔴 לא בוצע`
 - connects_to: `Project State`
-- execution_order: `3.22`
+- execution_order: `3.24`
 - למה עכשיו: owner לא יכול לספוג raw alerts בלי prioritization.
 
-65. `Create noise suppression system`
+67. `Create noise suppression system`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות מנגנון suppression שמונע spam alerts לבעלים ומעלה רק מה שבאמת דורש תשומת לב
 - input:
@@ -1119,10 +1161,10 @@
   - `Create critical alert prioritizer`  | סטטוס: `🔴 לא בוצע`
   - `Owner Daily Operations`
 - connects_to: `Project State`
-- execution_order: `3.23`
+- execution_order: `3.25`
 - למה עכשיו: suppression נדרש כדי שהבעלים לא יטבעו ברעש.
 
-66. `Create incident detection system`
+68. `Create incident detection system`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות system לזיהוי incidents, outages, degradation ו־service anomalies ברמת owner
 - input:
@@ -1134,10 +1176,10 @@
   - `Create operations signal aggregator`  | סטטוס: `🔴 לא בוצע`
   - `Platform Observability`
 - connects_to: `Project State`
-- execution_order: `3.24`
+- execution_order: `3.26`
 - למה עכשיו: incident layer הופכת signals ל־actionable owner events.
 
-67. `Create outage response manager`
+69. `Create outage response manager`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות manager לתגובה owner-facing על outage כולל runbook, owner actions ו־communication state
 - input:
@@ -1149,10 +1191,10 @@
   - `Create incident detection system`  | סטטוס: `🔴 לא בוצע`
   - `Scalability`
 - connects_to: `Project State`
-- execution_order: `3.25`
+- execution_order: `3.27`
 - למה עכשיו: owner needs response plan, not just incident detection.
 
-68. `Create incident timeline tracker`
+70. `Create incident timeline tracker`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות tracker לציר זמן של incident, detection, mitigation, recovery ו־follow-up
 - input:
@@ -1163,10 +1205,10 @@
 - dependencies:
   - `Create incident detection system`  | סטטוס: `🔴 לא בוצע`
 - connects_to: `Project State`
-- execution_order: `3.26`
+- execution_order: `3.28`
 - למה עכשיו: timeline מספקת traceability לתפעול וללימוד.
 
-69. `Create root cause analysis system`
+71. `Create root cause analysis system`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות system שמציע root cause candidates, affected services ו־corrective actions אחרי incident
 - input:
@@ -1178,12 +1220,12 @@
   - `Create incident timeline tracker`  | סטטוס: `🔴 לא בוצע`
   - `Operating Model & Defensibility`
 - connects_to: `Project State`
-- execution_order: `3.27`
+- execution_order: `3.29`
 - למה עכשיו: RCA סוגר את הלופ בין incident ל־improvement.
 
 #### Sub-block: `Owner Security & Privileged Access`
 
-70. `Create owner secure authentication system`
+72. `Create owner secure authentication system`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות auth layer מחמירה יותר ל־owner mode עם elevated trust requirements
 - input:
@@ -1195,10 +1237,10 @@
   - `Identity & Auth`
   - `Security Hardening`
 - connects_to: `Project State`
-- execution_order: `3.28`
+- execution_order: `3.30`
 - למה עכשיו: owner plane בלי secure auth הוא סיכון ישיר.
 
-71. `Create enforced multi-factor authentication`
+73. `Create enforced multi-factor authentication`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות enforcement ל־MFA בבעלים עבור login, privileged mode ו־critical actions
 - input:
@@ -1209,10 +1251,10 @@
 - dependencies:
   - `Create owner secure authentication system`  | סטטוס: `🔴 לא בוצע`
 - connects_to: `Project State`
-- execution_order: `3.29`
+- execution_order: `3.31`
 - למה עכשיו: MFA הוא baseline ל־owner operations.
 
-72. `Create device trust system`
+74. `Create device trust system`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות system שבודק trusted devices, device risk ו־session posture עבור owner mode
 - input:
@@ -1224,10 +1266,10 @@
   - `Create owner secure authentication system`  | סטטוס: `🔴 לא בוצע`
   - `Security Hardening`
 - connects_to: `Project State`
-- execution_order: `3.30`
+- execution_order: `3.32`
 - למה עכשיו: device trust מחזקת privileged access beyond credentials בלבד.
 
-73. `Create sensitive action confirmation system`
+75. `Create sensitive action confirmation system`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות flow אישור נוסף לפעולות כמו override, billing changes, secret access או global toggles
 - input:
@@ -1239,10 +1281,10 @@
   - `Create enforced multi-factor authentication`  | סטטוס: `🔴 לא בוצע`
   - `Project Permission Matrix`
 - connects_to: `Execution Surface`
-- execution_order: `3.31`
+- execution_order: `3.33`
 - למה עכשיו: sensitive actions דורשות step-up ו־confirmation layers.
 
-74. `Create step-up authentication system`
+76. `Create step-up authentication system`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות step-up auth למצבים של risk גבוה, session anomalies או privileged mode activation
 - input:
@@ -1254,10 +1296,10 @@
   - `Create device trust system`  | סטטוס: `🔴 לא בוצע`
   - `Security Hardening`
 - connects_to: `Project State`
-- execution_order: `3.32`
+- execution_order: `3.34`
 - למה עכשיו: step-up auth מגשרת בין regular auth ל־privileged mode.
 
-75. `Create privileged mode system`
+77. `Create privileged mode system`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות mode ייעודי לבעלים שמאפשר פעולות רגישות רק לפרק זמן מוגבל ועם audit מלא
 - input:
@@ -1269,10 +1311,10 @@
   - `Create step-up authentication system`  | סטטוס: `🔴 לא בוצע`
   - `Create sensitive action confirmation system`  | סטטוס: `🔴 לא בוצע`
 - connects_to: `Project State`
-- execution_order: `3.33`
+- execution_order: `3.35`
 - למה עכשיו: privileged mode מרכזת את כל פעולות owner הרגישות לתוך מסגרת מבוקרת.
 
-76. `Create admin-only access layer`
+78. `Create admin-only access layer`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות access layer שמבודדת owner-only routes, dashboards ו־system controls משאר ה־workspace flows
 - input:
@@ -1284,10 +1326,10 @@
   - `Create privileged mode system`  | סטטוס: `🔴 לא בוצע`
   - `Owner Control Center`
 - connects_to: `Execution Surface`
-- execution_order: `3.34`
+- execution_order: `3.36`
 - למה עכשיו: owner routes חייבים הפרדה ברורה מה־workspace הרגיל.
 
-77. `Create critical operation guardrails`
+79. `Create critical operation guardrails`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות guardrails שמגבילים owner actions מסוכנים, mass overrides ו־global changes בלי confirmations מתאימים
 - input:
@@ -1299,12 +1341,12 @@
   - `Create admin-only access layer`  | סטטוס: `🔴 לא בוצע`
   - `Policy Layer`  | סטטוס: `🟢 בוצע`
 - connects_to: `Execution Surface`
-- execution_order: `3.35`
+- execution_order: `3.37`
 - למה עכשיו: זו שכבת ה־last line of defense לפעולות owner מסוכנות.
 
 #### Sub-block: `Owner Audit & Monitoring`
 
-78. `Create owner audit log viewer`
+80. `Create owner audit log viewer`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות viewer model לבעלים עבור system actions, privileged actions, security events ו־critical changes
 - input:
@@ -1316,10 +1358,10 @@
   - `Platform Observability`
   - `Project Audit Trail`
 - connects_to: `Project State`
-- execution_order: `3.36`
+- execution_order: `3.38`
 - למה עכשיו: owner audit view היא תנאי ל־trust, governance ו־incident review.
 
-79. `Create system-wide activity tracker`
+81. `Create system-wide activity tracker`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות tracker רוחבי לפעילות users, workspaces, agents, providers ו־owner actions
 - input:
@@ -1331,10 +1373,10 @@
   - `Platform Observability`
   - `Project Audit Trail`
 - connects_to: `Project State`
-- execution_order: `3.37`
+- execution_order: `3.39`
 - למה עכשיו: system-wide tracker מחבר audit, monitoring ו־owner visibility.
 
-80. `Create critical change history system`
+82. `Create critical change history system`
 - סטטוס: `🔴 לא בוצע`
 - description: לבנות system להיסטוריית שינויים קריטיים כמו permission changes, billing changes, owner overrides ו־security policy updates
 - input:
@@ -1346,7 +1388,7 @@
   - `Create system-wide activity tracker`  | סטטוס: `🔴 לא בוצע`
   - `Create audit log for system actions`  | סטטוס: `🟢 בוצע`
 - connects_to: `Project State`
-- execution_order: `3.38`
+- execution_order: `3.40`
 - למה עכשיו: change history סוגרת traceability מלאה לבעלים.
 
 ## First Executable Order
@@ -1381,6 +1423,25 @@
 - אסור להתחיל `Create root cause analysis system` לפני `Create incident timeline tracker`.
 - אסור להתחיל `Create privileged mode system` לפני `Create step-up authentication system` ו־`Create sensitive action confirmation system`.
 - אסור להתחיל `Create critical operation guardrails` לפני `Create admin-only access layer`.
+
+## Corrected Closure Flow (Audit Sync)
+
+כדי לסגור את `Wave 4` לפי ה־baseline האמיתי:
+
+1. להתייחס ל־entry foundations שמגיעות מ־`Wave 2` כ־`🟡`, לא כ־missing:
+   - `Create post-login destination resolver`
+   - `Create first project kickoff flow`
+2. לסגור קודם את ה־public/app entry chain האמיתית:
+   - `product delivery model`
+   - `site/app boundary`
+   - `access mode`
+   - `landing to auth handoff`
+   - `app entry gate`
+3. רק אז לסגור את ההשלמה של:
+   - `post-login destination`
+   - `first project kickoff`
+   - `landing-to-dashboard funnel assembler`
+4. ב־Owner/GTM flows להשתמש ב־billing core שכבר קיים (`checkout and subscription API` = `🟢`), ולא להציג אותו כתלות חסרה.
 
 ## End State Of This File
 

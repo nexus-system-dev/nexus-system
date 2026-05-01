@@ -44,3 +44,23 @@ test("createStateCoverageValidator reports missing success on workflow", () => {
   assert.deepEqual(stateCoverageValidation.summary.missingStates, ["success"]);
   assert.deepEqual(stateCoverageValidation.blockingIssues, ["missing-success-state"]);
 });
+
+test("createStateCoverageValidator normalizes malformed identifiers and state payloads", () => {
+  const { stateCoverageValidation } = createStateCoverageValidator({
+    screenId: { bad: true },
+    screenTemplate: {
+      templateType: " management ",
+    },
+    screenStates: {
+      screenType: " tracking ",
+      states: "bad",
+    },
+  });
+
+  assert.equal(stateCoverageValidation.validationId, "state-coverage-validation:tracking");
+  assert.equal(stateCoverageValidation.screenId, null);
+  assert.equal(stateCoverageValidation.screenType, "tracking");
+  assert.equal(stateCoverageValidation.templateType, "management");
+  assert.deepEqual(stateCoverageValidation.summary.requiredStates, ["loading", "empty", "error", "success"]);
+  assert.deepEqual(stateCoverageValidation.summary.availableStates, []);
+});

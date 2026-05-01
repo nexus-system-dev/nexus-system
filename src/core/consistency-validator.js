@@ -10,9 +10,28 @@ function normalizeComponentLibrary(componentLibrary) {
   return componentLibrary && typeof componentLibrary === "object" ? componentLibrary : {};
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function normalizePrimaryComponents(primaryComponents) {
+  if (!Array.isArray(primaryComponents)) {
+    return [];
+  }
+
+  return primaryComponents
+    .filter((componentType) => typeof componentType === "string" && componentType.trim())
+    .map((componentType) => componentType.trim());
+}
+
 function hasComponentType(componentLibrary, componentType) {
   const components = Array.isArray(componentLibrary.components) ? componentLibrary.components : [];
-  return components.some((component) => component.componentType === componentType);
+  return components.some(
+    (component) =>
+      component
+      && typeof component === "object"
+      && normalizeString(component.componentType) === componentType,
+  );
 }
 
 export function createConsistencyValidator({
@@ -24,7 +43,9 @@ export function createConsistencyValidator({
   const normalizedScreenTemplate = normalizeScreenTemplate(screenTemplate);
   const normalizedDesignTokens = normalizeDesignTokens(designTokens);
   const normalizedComponentLibrary = normalizeComponentLibrary(componentLibrary);
-  const requiredComponents = normalizedScreenTemplate.composition?.primaryComponents ?? [];
+  const normalizedScreenId = normalizeString(screenId);
+  const templateType = normalizeString(normalizedScreenTemplate.templateType);
+  const requiredComponents = normalizePrimaryComponents(normalizedScreenTemplate.composition?.primaryComponents);
   const missingComponents = requiredComponents.filter((componentType) =>
     !hasComponentType(normalizedComponentLibrary, componentType),
   );
@@ -35,9 +56,9 @@ export function createConsistencyValidator({
 
   return {
     consistencyValidation: {
-      validationId: `consistency-validation:${screenId ?? normalizedScreenTemplate.templateType ?? "unknown"}`,
-      screenId: screenId ?? null,
-      templateType: normalizedScreenTemplate.templateType ?? null,
+      validationId: `consistency-validation:${normalizedScreenId ?? templateType ?? "unknown"}`,
+      screenId: normalizedScreenId,
+      templateType,
       summary: {
         hasColorTokens,
         hasSpacingTokens,

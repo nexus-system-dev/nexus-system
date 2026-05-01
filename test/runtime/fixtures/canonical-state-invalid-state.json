@@ -1,0 +1,25 @@
+{
+  "wave2OrderedExecutionMap": [
+    {
+      "execution_order": 1,
+      "taskName": "Task with valid state",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": 2,
+      "taskName": "Task with invalid state",
+      "state": "completed",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": 3,
+      "taskName": "Task with another invalid state",
+      "state": "pending",
+      "blocker": null,
+      "bridgeCondition": null
+    }
+  ]
+}

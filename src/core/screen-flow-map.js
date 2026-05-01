@@ -10,33 +10,56 @@ function normalizeScreenInventory(screenInventory) {
     : { screens: [] };
 }
 
-function inferTrigger(flowType) {
-  if (flowType === "onboarding") {
-    return "project-created";
+function normalizeTransitionMap(flow) {
+  if (Array.isArray(flow?.transitionMap) && flow.transitionMap.length > 0) {
+    const transitionDetails = new Map(
+      (Array.isArray(flow?.transitions) ? flow.transitions : [])
+        .filter((transition) => transition && typeof transition === "object")
+        .map((transition) => [transition.transitionId ?? transition.fromStepId ?? transition.stepId ?? null, transition]),
+    );
+
+    return flow.transitionMap.map((entry) => {
+      const transitionId = entry?.transitionId ?? entry?.fromStepId ?? entry?.stepId ?? null;
+      const details = transitionId ? transitionDetails.get(transitionId) ?? {} : {};
+      return {
+        ...details,
+        ...entry,
+        transitionId,
+      };
+    });
   }
 
-  if (flowType === "execution") {
-    return "task-selected";
+  if (Array.isArray(flow?.transitions)) {
+    return flow.transitions.map((transition, index, transitions) => ({
+      transitionId: transition.transitionId ?? transition.fromStepId ?? transition.stepId ?? null,
+      nextTransitionId: transitions[index + 1]?.transitionId ?? transitions[index + 1]?.fromStepId ?? transitions[index + 1]?.stepId ?? null,
+      branch: transition.branch ?? "success",
+      isTerminal: index === transitions.length - 1,
+      trigger: transition.trigger ?? null,
+      actingComponent: transition.actingComponent ?? null,
+      fromState: transition.fromState ?? null,
+      toState: transition.toState ?? null,
+    }));
   }
 
-  if (flowType === "tracking") {
-    return "release-started";
-  }
-
-  if (flowType === "project-creation") {
-    return "growth-workflow-opened";
-  }
-
-  return "manual-navigation";
+  return [];
 }
 
-function inferNextAction(transition, flowType) {
-  if (transition?.toStepId) {
-    return `go-to:${transition.toStepId}`;
+function resolveTrigger(screen, transitionEntry) {
+  return screen.trigger ?? transitionEntry?.trigger ?? "manual-navigation";
+}
+
+function inferNextAction(screen, transitionEntry) {
+  if (transitionEntry?.nextTransitionId) {
+    return `go-to:${transitionEntry.nextTransitionId}`;
   }
 
-  if (flowType === "tracking") {
-    return "review-status";
+  if ((screen.branch ?? transitionEntry?.branch) === "approval") {
+    return "request-approval-decision";
+  }
+
+  if (screen.flowType === "failure-recovery-continuity") {
+    return "review-recovery-status";
   }
 
   return "complete-flow";
@@ -51,7 +74,11 @@ export function createScreenToFlowMapping({
   const flowIndex = new Map(normalizedJourneyMap.flows.map((flow) => [flow.journeyId, flow]));
   const mappings = normalizedScreenInventory.screens.map((screen) => {
     const flow = flowIndex.get(screen.journeyId) ?? null;
-    const transition = flow?.transitions?.find((entry) => entry.fromStepId === screen.stepId) ?? null;
+    const transitionMap = normalizeTransitionMap(flow);
+    const transitionEntry =
+      transitionMap.find((entry) => entry.transitionId === (screen.transitionId ?? screen.stepId)) ??
+      transitionMap.find((entry) => entry.transitionId === screen.stepId) ??
+      null;
 
     return {
       screenId: screen.screenId,
@@ -59,10 +86,15 @@ export function createScreenToFlowMapping({
       journeyId: screen.journeyId,
       flowType: screen.flowType,
       stepId: screen.stepId,
-      trigger: inferTrigger(screen.flowType),
-      nextAction: inferNextAction(transition, screen.flowType),
-      nextStepId: transition?.toStepId ?? null,
-      isTerminal: Boolean(transition?.isTerminal),
+      transitionId: screen.transitionId ?? screen.stepId ?? null,
+      trigger: resolveTrigger(screen, transitionEntry),
+      nextAction: inferNextAction(screen, transitionEntry),
+      nextStepId: transitionEntry?.nextTransitionId ?? null,
+      branch: screen.branch ?? transitionEntry?.branch ?? "success",
+      actingComponent: screen.actingComponent ?? transitionEntry?.actingComponent ?? null,
+      fromState: screen.fromState ?? transitionEntry?.fromState ?? null,
+      toState: screen.toState ?? transitionEntry?.toState ?? null,
+      isTerminal: Boolean(screen.isExitScreen ?? transitionEntry?.isTerminal),
     };
   });
 

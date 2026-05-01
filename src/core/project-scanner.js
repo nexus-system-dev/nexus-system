@@ -58,6 +58,10 @@ const TEST_DEPENDENCIES = {
 };
 
 const AUTH_KEYWORDS = [
+  "login",
+  "logout",
+  "authentication",
+  "oauth",
   "passport",
   "nextauth",
   "next-auth",

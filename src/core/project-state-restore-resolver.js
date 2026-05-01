@@ -2,6 +2,10 @@ function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function countRollbackTargets(rollbackPlan) {
   const scope = normalizeObject(rollbackPlan.scope);
   return Object.values(scope).reduce((sum, items) => sum + (Array.isArray(items) ? items.length : 0), 0);
@@ -51,16 +55,16 @@ export function createProjectStateRestoreResolver({
 
   return {
     restoreDecision: {
-      restoreDecisionId: `restore-decision:${normalizedSnapshotRecord.snapshotRecordId ?? "unknown-snapshot"}`,
-      snapshotRecordId: normalizedSnapshotRecord.snapshotRecordId ?? null,
-      rollbackPlanId: normalizedRollbackPlan.rollbackPlanId ?? null,
+      restoreDecisionId: `restore-decision:${normalizeString(normalizedSnapshotRecord.snapshotRecordId, "unknown-snapshot")}`,
+      snapshotRecordId: normalizeString(normalizedSnapshotRecord.snapshotRecordId, null),
+      rollbackPlanId: normalizeString(normalizedRollbackPlan.rollbackPlanId, null),
       restoreMode,
       canRestore: restoreMode !== "blocked",
       requiresApproval: normalizedSnapshotRecord.restoreMetadata?.requiresApproval === true,
       requiresManualConfirmation:
         normalizedRollbackPlan.requiresConfirmation === true
         || normalizedRollbackPlan.summary?.hasExternalEffects === true,
-      blockedReason,
+      blockedReason: normalizeString(blockedReason, blockedReason),
       restoreTargets:
         restoreMode === "full"
           ? normalizedSnapshotRecord.restoreMetadata?.restoreScope ?? []

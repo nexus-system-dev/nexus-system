@@ -26,3 +26,18 @@ test("createManagementTemplate falls back safely when schema is missing", () => 
   assert.equal(managementTemplate.sections.bulkActions.enabled, false);
   assert.equal(managementTemplate.summary.enabledSections, 0);
 });
+
+test("createManagementTemplate normalizes invalid template identity and regions", () => {
+  const { managementTemplate } = createManagementTemplate({
+    screenTemplateSchema: {
+      templateId: ["bad"],
+      regions: [" topbar ", "data-table", 4, null, ""],
+    },
+  });
+
+  assert.equal(managementTemplate.templateId, "management-template:management");
+  assert.equal(managementTemplate.baseTemplateId, null);
+  assert.equal(managementTemplate.sections.topbar.enabled, true);
+  assert.equal(managementTemplate.sections.dataTable.enabled, true);
+  assert.equal(managementTemplate.summary.enabledSections, 2);
+});

@@ -121,8 +121,8 @@ export function createBusinessContinuityLifecycleManager({
         : "healthy";
 
   const businessContinuityState = {
-    continuityStateId: `business-continuity:${normalizedBackupStrategy.projectId ?? "unknown-project"}`,
-    projectId: normalizedBackupStrategy.projectId ?? normalizedChecklist.projectId ?? null,
+    continuityStateId: `business-continuity:${normalizeString(normalizedBackupStrategy.projectId ?? normalizedChecklist.projectId, "unknown-project")}`,
+    projectId: normalizeString(normalizedBackupStrategy.projectId ?? normalizedChecklist.projectId, null),
     lifecycleState,
     phase,
     continuityStatus,
@@ -154,7 +154,7 @@ export function createBusinessContinuityLifecycleManager({
         isBlocking:
           lifecycleState === "failover"
           && (!hasFailoverPlanner || failoverPlan.supportsAutomaticSwitch === false),
-        target: failoverPlan.target ?? null,
+        target: normalizeString(failoverPlan.target, null),
         route: Array.isArray(failoverPlan.route) ? failoverPlan.route : [],
         note:
           failoverPlan.note

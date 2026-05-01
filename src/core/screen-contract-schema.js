@@ -1,7 +1,12 @@
+const CANONICAL_SCREEN_TYPES = new Set(["wizard", "dashboard", "tracking", "workspace", "detail"]);
+
 function normalizeScreenType(screenType) {
-  return typeof screenType === "string" && screenType.trim()
-    ? screenType.trim()
-    : "detail";
+  if (typeof screenType !== "string") {
+    return "detail";
+  }
+
+  const normalized = screenType.trim().toLowerCase();
+  return CANONICAL_SCREEN_TYPES.has(normalized) ? normalized : "detail";
 }
 
 function buildLayout(screenType) {

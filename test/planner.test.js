@@ -61,6 +61,7 @@ test("planner uses reliable casino gaps to build domain-specific roadmap", () =>
   });
 
   assert.equal(roadmap[0].id, "casino-db-migrations");
+  assert.equal(roadmap[0].taskType, "backend");
 });
 
 test("planner builds saas roadmap for saas domain", () => {
@@ -108,6 +109,7 @@ test("planner builds saas roadmap for saas domain", () => {
   assert.equal(roadmap.some((task) => task.id === "saas-billing"), true);
   assert.equal(roadmap.some((task) => task.id === "saas-onboarding"), true);
   assert.equal(roadmap.some((task) => task.id === "saas-acquisition"), true);
+  assert.equal(roadmap.every((task) => typeof task.taskType === "string" && task.taskType.length > 0), true);
 });
 
 test("planner builds mobile roadmap for mobile app domain", () => {
@@ -148,6 +150,7 @@ test("planner builds mobile roadmap for mobile app domain", () => {
 
   assert.equal(roadmap.some((task) => task.id === "mobile-api-integration"), true);
   assert.equal(roadmap.some((task) => task.id === "mobile-release"), true);
+  assert.equal(roadmap.find((task) => task.id === "mobile-release")?.taskType, "release");
 });
 
 test("planner builds agency roadmap for agency system domain", () => {
@@ -188,4 +191,5 @@ test("planner builds agency roadmap for agency system domain", () => {
 
   assert.equal(roadmap.some((task) => task.id === "agency-intake"), true);
   assert.equal(roadmap.some((task) => task.id === "agency-reporting"), true);
+  assert.equal(roadmap.every((task) => typeof task.taskType === "string" && task.taskType.length > 0), true);
 });

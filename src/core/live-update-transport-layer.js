@@ -10,15 +10,9 @@ function normalizeSummary(summary) {
 
 function resolveTransportMode(summary) {
   const totalEvents = summary.totalEvents ?? 0;
-  const runtimeSignals = (summary.progressEvents ?? 0) + (summary.logEvents ?? 0);
-  const workspaceSignals = (summary.fileChanges ?? 0) + (summary.approvalEvents ?? 0) + (summary.notificationEvents ?? 0);
 
   if (totalEvents === 0) {
     return "polling";
-  }
-
-  if (runtimeSignals > 0 && workspaceSignals > 0) {
-    return "websocket";
   }
 
   if ((summary.logEvents ?? 0) > 0 || totalEvents >= 3) {
@@ -29,15 +23,6 @@ function resolveTransportMode(summary) {
 }
 
 function buildReconnectPolicy(transportMode) {
-  if (transportMode === "websocket") {
-    return {
-      strategy: "exponential-backoff",
-      retryable: true,
-      initialDelayMs: 1000,
-      maxDelayMs: 10000,
-    };
-  }
-
   if (transportMode === "sse") {
     return {
       strategy: "linear-retry",
@@ -75,7 +60,12 @@ export function createLiveUpdateTransportLayer({
   const topics = buildSubscriptionTopics(summary);
   const totalEvents = summary.totalEvents ?? 0;
   const normalizedProjectId = typeof projectId === "string" && projectId.length > 0 ? projectId : null;
-  const serverTransport = transportMode === "polling" ? "polling" : "sse";
+  const serverTransport = transportMode;
+  const deliveryEndpoint = normalizedProjectId
+    ? transportMode === "polling"
+      ? `/api/projects/${normalizedProjectId}/live-state`
+      : `/api/projects/${normalizedProjectId}/live-events`
+    : null;
 
   return {
     liveUpdateChannel: {
@@ -85,12 +75,12 @@ export function createLiveUpdateTransportLayer({
       serverTransport,
       deliveryState: totalEvents > 0 ? "live" : "idle",
       refreshStrategy: transportMode === "polling" ? "scheduled-refresh" : "push",
-      deliveryEndpoint: normalizedProjectId ? `/api/projects/${normalizedProjectId}/live-events` : null,
+      deliveryEndpoint,
       requiresManualRefresh: false,
       reconnectPolicy: buildReconnectPolicy(transportMode),
       buffering: {
         enabled: transportMode !== "polling",
-        maxBufferedEvents: transportMode === "websocket" ? 100 : 25,
+        maxBufferedEvents: transportMode === "sse" ? 25 : 0,
       },
       subscriptions: {
         topics,

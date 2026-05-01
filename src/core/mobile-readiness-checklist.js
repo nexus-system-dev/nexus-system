@@ -2,10 +2,17 @@ function normalizeScreenContract(screenContract) {
   return screenContract && typeof screenContract === "object" ? screenContract : {};
 }
 
+function resolveBooleanFlag(value, fallback = false) {
+  return typeof value === "boolean" ? value : fallback;
+}
+
 function buildChecklistItems(screenContract) {
   const normalizedScreenContract = normalizeScreenContract(screenContract);
   const layout = normalizedScreenContract.layout ?? {};
   const stateSupport = normalizedScreenContract.stateSupport ?? {};
+  const interactionModel = normalizedScreenContract.interactionModel ?? {};
+  const primaryActionRequired = resolveBooleanFlag(interactionModel.primaryActionRequired, true);
+  const hasStateCoverage = Boolean(stateSupport.loading || stateSupport.error || stateSupport.success);
 
   return [
     {
@@ -17,14 +24,14 @@ function buildChecklistItems(screenContract) {
     {
       key: "primary-action-access",
       label: "הפעולה הראשית חייבת להישאר נגישה ונראית במסך קטן",
-      required: normalizedScreenContract.interactionModel?.primaryActionRequired !== false,
-      status: normalizedScreenContract.interactionModel?.primaryActionRequired === false ? "optional" : "required",
+      required: primaryActionRequired,
+      status: primaryActionRequired ? "required" : "optional",
     },
     {
       key: "state-coverage",
       label: "מצבי loading, error ו-success חייבים להישאר קריאים וברורים במובייל",
-      required: Boolean(stateSupport.loading || stateSupport.error || stateSupport.success),
-      status: "required",
+      required: hasStateCoverage,
+      status: hasStateCoverage ? "required" : "optional",
     },
     {
       key: "touch-targets",
@@ -74,6 +81,7 @@ export function createMobileReadinessChecklist({
   const normalizedScreenContract = normalizeScreenContract(screenContract);
   const checklistItems = buildChecklistItems(normalizedScreenContract);
   const requiredItems = checklistItems.filter((item) => item.required).length;
+  const supportsMobile = resolveBooleanFlag(normalizedScreenContract.interactionModel?.supportsMobile, true);
 
   return {
     mobileChecklist: {
@@ -81,13 +89,13 @@ export function createMobileReadinessChecklist({
       screenId: screenId ?? null,
       title: title ?? normalizedScreenContract.screenType ?? "Untitled Screen",
       screenType: normalizedScreenContract.screenType ?? "detail",
-      supportsMobile: normalizedScreenContract.interactionModel?.supportsMobile !== false,
+      supportsMobile,
       checklistItems,
       warnings: buildWarnings(normalizedScreenContract),
       summary: {
         totalItems: checklistItems.length,
         requiredItems,
-        mobileReadyByContract: normalizedScreenContract.interactionModel?.supportsMobile !== false,
+        mobileReadyByContract: supportsMobile,
       },
     },
   };

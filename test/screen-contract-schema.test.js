@@ -22,3 +22,23 @@ test("screen contract schema falls back to detail contract", () => {
   assert.equal(screenContract.layout.layout, "detail");
   assert.equal(screenContract.interactionModel.supportsMobile, true);
 });
+
+test("screen contract schema normalizes unknown screen types to canonical detail", () => {
+  const { screenContract } = defineScreenContractSchema({
+    screenType: "modal",
+  });
+
+  assert.equal(screenContract.screenType, "detail");
+  assert.equal(screenContract.layout.layout, "detail");
+  assert.equal(screenContract.stateSupport.success, true);
+});
+
+test("screen contract schema normalizes case and whitespace for canonical screen types", () => {
+  const { screenContract } = defineScreenContractSchema({
+    screenType: "  WORKSPACE  ",
+  });
+
+  assert.equal(screenContract.screenType, "workspace");
+  assert.equal(screenContract.layout.layout, "workspace");
+  assert.equal(screenContract.stateSupport.empty, true);
+});

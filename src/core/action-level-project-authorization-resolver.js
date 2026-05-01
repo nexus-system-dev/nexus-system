@@ -2,6 +2,10 @@ function normalizeActorType(actorType) {
   return typeof actorType === "string" && actorType.trim() ? actorType.trim().toLowerCase() : "viewer";
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function normalizeProjectAction(projectAction) {
   if (typeof projectAction === "string" && projectAction.trim()) {
     return projectAction.trim().toLowerCase();
@@ -66,7 +70,9 @@ function mapActionToCapability(projectAction) {
 
 function resolveRoleEntry(roleCapabilityMatrix, role) {
   const entries = Array.isArray(roleCapabilityMatrix.roles) ? roleCapabilityMatrix.roles : [];
-  return entries.find((entry) => entry?.role === role) ?? entries.find((entry) => entry?.role === "viewer") ?? null;
+  return entries.find((entry) => normalizeString(entry?.role, "")?.toLowerCase() === role)
+    ?? entries.find((entry) => normalizeString(entry?.role, "")?.toLowerCase() === "viewer")
+    ?? null;
 }
 
 function buildChecks(projectAction, capabilityKey, capabilities, policyDecision) {
@@ -142,10 +148,10 @@ export function createActionLevelProjectAuthorizationResolver({
       checks,
       reason:
         decision === "blocked"
-          ? normalizedPolicyDecision.reason
+          ? normalizeString(normalizedPolicyDecision.reason, null)
             ?? `Role ${effectiveRole} cannot perform ${normalizedProjectAction}`
           : decision === "requires-approval"
-            ? normalizedPolicyDecision.reason ?? `${normalizedProjectAction} requires approval by policy`
+            ? normalizeString(normalizedPolicyDecision.reason, `${normalizedProjectAction} requires approval by policy`)
             : `Role ${effectiveRole} can perform ${normalizedProjectAction}`,
     },
   };

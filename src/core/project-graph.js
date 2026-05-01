@@ -4,24 +4,28 @@ function dependenciesSatisfied(task, completedTaskIds) {
   return task.dependencies.every((dependency) => completedTaskIds.has(dependency));
 }
 
-function mapTaskStatus(task, { completedTaskIds, activeTaskIds, failedTaskIds }) {
+function mapTaskState(task, { completedTaskIds, activeTaskIds, failedTaskIds }) {
   if (completedTaskIds.has(task.id)) {
-    return TaskStatus.DONE;
+    return { status: TaskStatus.DONE, statusReason: null };
   }
 
   if (activeTaskIds.has(task.id)) {
-    return TaskStatus.ASSIGNED;
+    return { status: TaskStatus.ASSIGNED, statusReason: null };
   }
 
   if (failedTaskIds.has(task.id)) {
-    return TaskStatus.BLOCKED;
+    return { status: TaskStatus.BLOCKED, statusReason: "runtime-failed" };
   }
 
-  if (dependenciesSatisfied(task, completedTaskIds)) {
-    return task.status === TaskStatus.BLOCKED ? TaskStatus.BLOCKED : TaskStatus.READY;
+  if (!dependenciesSatisfied(task, completedTaskIds)) {
+    return { status: TaskStatus.BLOCKED, statusReason: "dependency" };
   }
 
-  return TaskStatus.BLOCKED;
+  if (task.status === TaskStatus.BLOCKED && task.statusReason && task.statusReason !== "dependency") {
+    return { status: TaskStatus.BLOCKED, statusReason: task.statusReason };
+  }
+
+  return { status: TaskStatus.READY, statusReason: null };
 }
 
 export function reconcileRoadmap(tasks, options = {}) {
@@ -29,14 +33,19 @@ export function reconcileRoadmap(tasks, options = {}) {
   const activeTaskIds = options.activeTaskIds ?? new Set();
   const failedTaskIds = options.failedTaskIds ?? new Set();
 
-  return tasks.map((task) => ({
-    ...task,
-    status: mapTaskStatus(task, {
+  return tasks.map((task) => {
+    const nextState = mapTaskState(task, {
       completedTaskIds,
       activeTaskIds,
       failedTaskIds,
-    }),
-  }));
+    });
+
+    return {
+      ...task,
+      status: nextState.status,
+      statusReason: nextState.statusReason,
+    };
+  });
 }
 
 export function buildExecutionGraph(tasks, options = {}) {

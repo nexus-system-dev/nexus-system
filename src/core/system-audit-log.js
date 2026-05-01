@@ -10,6 +10,10 @@ function normalizeMetadata(metadata) {
   return metadata && typeof metadata === "object" ? metadata : {};
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function resolveCategory(actionType) {
   const normalized = `${actionType ?? ""}`.toLowerCase();
 
@@ -40,26 +44,26 @@ export function createAuditLogForSystemActions({
 } = {}) {
   const normalizedAction = normalizeSystemAction(systemAction);
   const normalizedActor = normalizeActorContext(actorContext);
-  const actionType = normalizedAction.actionType ?? "system.observed";
+  const actionType = normalizeString(normalizedAction.actionType, "system.observed");
   const category = resolveCategory(actionType);
   const auditLogRecord = {
     auditLogId: `audit-log-${Date.now()}`,
     actionType,
     category,
-    status: normalizedAction.status ?? "recorded",
-    projectId: normalizedAction.projectId ?? normalizedActor.projectId ?? null,
-    workspaceId: normalizedActor.workspaceId ?? null,
-    actorId: normalizedActor.actorId ?? normalizedAction.actorId ?? "system",
-    actorType: normalizedActor.actorType ?? "system",
-    actorRole: normalizedActor.actorRole ?? null,
-    targetId: normalizedAction.targetId ?? null,
-    targetType: normalizedAction.targetType ?? null,
-    summary: normalizedAction.summary ?? actionType,
-    reason: normalizedAction.reason ?? null,
-    riskLevel: normalizedAction.riskLevel ?? "low",
-    source: normalizedAction.source ?? normalizedActor.source ?? "nexus-runtime",
-    traceId: normalizedAction.traceId ?? normalizedActor.traceId ?? null,
-    timestamp: normalizedAction.timestamp ?? new Date().toISOString(),
+    status: normalizeString(normalizedAction.status, "recorded"),
+    projectId: normalizeString(normalizedAction.projectId, normalizeString(normalizedActor.projectId, null)),
+    workspaceId: normalizeString(normalizedActor.workspaceId, null),
+    actorId: normalizeString(normalizedActor.actorId, normalizeString(normalizedAction.actorId, "system")),
+    actorType: normalizeString(normalizedActor.actorType, "system"),
+    actorRole: normalizeString(normalizedActor.actorRole, null),
+    targetId: normalizeString(normalizedAction.targetId, null),
+    targetType: normalizeString(normalizedAction.targetType, null),
+    summary: normalizeString(normalizedAction.summary, actionType),
+    reason: normalizeString(normalizedAction.reason, null),
+    riskLevel: normalizeString(normalizedAction.riskLevel, "low"),
+    source: normalizeString(normalizedAction.source, normalizeString(normalizedActor.source, "nexus-runtime")),
+    traceId: normalizeString(normalizedAction.traceId, normalizeString(normalizedActor.traceId, null)),
+    timestamp: normalizeString(normalizedAction.timestamp, new Date().toISOString()),
     metadata: normalizeMetadata(normalizedAction.metadata),
   };
   const storedAuditLogRecord = auditLogStore && typeof auditLogStore.append === "function"

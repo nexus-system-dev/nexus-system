@@ -26,3 +26,18 @@ test("createWorkflowTemplate falls back safely when schema is missing", () => {
   assert.equal(workflowTemplate.sections.footerActions.enabled, false);
   assert.equal(workflowTemplate.summary.enabledSections, 0);
 });
+
+test("createWorkflowTemplate normalizes invalid template identity and regions", () => {
+  const { workflowTemplate } = createWorkflowTemplate({
+    screenTemplateSchema: {
+      templateId: { bad: true },
+      regions: [" topbar ", null, "footer-actions", { nope: true }, ""],
+    },
+  });
+
+  assert.equal(workflowTemplate.templateId, "workflow-template:wizard");
+  assert.equal(workflowTemplate.baseTemplateId, null);
+  assert.equal(workflowTemplate.sections.topbar.enabled, true);
+  assert.equal(workflowTemplate.sections.footerActions.enabled, true);
+  assert.equal(workflowTemplate.summary.enabledSections, 2);
+});

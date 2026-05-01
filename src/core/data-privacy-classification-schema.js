@@ -88,12 +88,12 @@ function normalizeStorageContext(storageContext = null) {
   return {
     projectId: normalizeString(normalized.projectId, "unknown-project"),
     workspaceId: normalizeString(normalized.workspaceId, null),
-    storageScope: normalizeString(normalized.storageScope, "project"),
-    storageDriver: normalizeString(normalized.storageDriver, "filesystem"),
+    storageScope: normalizeString(normalized.storageScope, "project")?.toLowerCase(),
+    storageDriver: normalizeString(normalized.storageDriver, "filesystem")?.toLowerCase(),
     retentionPolicy: normalizeRetentionPolicy(normalized.retentionPolicy),
-    tenantBoundary: normalizeString(normalized.tenantBoundary, "workspace"),
-    workspaceVisibility: normalizeString(normalized.workspaceVisibility, "private"),
-    tenantSensitivity: normalizeString(normalized.tenantSensitivity, "medium"),
+    tenantBoundary: normalizeString(normalized.tenantBoundary, "workspace")?.toLowerCase(),
+    workspaceVisibility: normalizeString(normalized.workspaceVisibility, "private")?.toLowerCase(),
+    tenantSensitivity: normalizeString(normalized.tenantSensitivity, "medium")?.toLowerCase(),
   };
 }
 

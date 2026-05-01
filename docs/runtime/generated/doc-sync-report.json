@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-04-16T20:28:19.809Z",
+  "passed": false,
+  "mismatchCount": 5,
+  "warningCount": 0,
+  "noteCount": 1,
+  "mismatches": [
+    {
+      "file": "docs/v2-wave2-execution-plan.md",
+      "type": "TASK_COUNT_MISMATCH",
+      "message": "Execution plan states 259 total tasks but canonical state has 281",
+      "canonicalValue": 281,
+      "docValue": 259
+    },
+    {
+      "file": "docs/v2-wave2-execution-plan.md",
+      "type": "COLOR_MISMATCH",
+      "execution_order": 38,
+      "taskName": "Create cross-project pattern disclosure panel",
+      "canonicalState": "blocked",
+      "expectedColor": "🔴",
+      "foundColor": "🟢",
+      "message": "Task \"Create cross-project pattern disclosure panel\" (order 38) has canonical state \"blocked\" (expected 🔴) but line shows 🟢",
+      "lineContent": "5. `Create cross-project pattern disclosure panel`  | סטטוס: 🟢 בוצע"
+    },
+    {
+      "file": "docs/v2-wave2-execution-plan.md",
+      "type": "COLOR_MISMATCH",
+      "execution_order": 53,
+      "taskName": "Create AI companion workspace template",
+      "canonicalState": "blocked",
+      "expectedColor": "🔴",
+      "foundColor": "🟢",
+      "message": "Task \"Create AI companion workspace template\" (order 53) has canonical state \"blocked\" (expected 🔴) but line shows 🟢",
+      "lineContent": "9. `Create AI companion workspace template`  | סטטוס: 🟢 בוצע"
+    },
+    {
+      "file": "docs/backlog-unified-status-and-order.md",
+      "type": "COLOR_MISMATCH",
+      "execution_order": 38,
+      "taskName": "Create cross-project pattern disclosure panel",
+      "canonicalState": "blocked",
+      "expectedColor": "🔴",
+      "foundColor": "🟢",
+      "message": "Task \"Create cross-project pattern disclosure panel\" (order 38) has canonical state \"blocked\" (expected 🔴) but line shows 🟢",
+      "lineContent": "5. `Create cross-project pattern disclosure panel`  | סטטוס: 🟢 בוצע"
+    },
+    {
+      "file": "docs/backlog-unified-status-and-order.md",
+      "type": "COLOR_MISMATCH",
+      "execution_order": 53,
+      "taskName": "Create AI companion workspace template",
+      "canonicalState": "blocked",
+      "expectedColor": "🔴",
+      "foundColor": "🟢",
+      "message": "Task \"Create AI companion workspace template\" (order 53) has canonical state \"blocked\" (expected 🔴) but line shows 🟢",
+      "lineContent": "9. `Create AI companion workspace template`  | סטטוס: 🟢 בוצע"
+    }
+  ],
+  "warnings": [],
+  "notes": [
+    {
+      "file": "docs/backlog-unified-status-and-order.md",
+      "type": "GREEN_COUNT_OK",
+      "message": "Backlog has 799 🟢 indicators vs canonical 145 trueGreen tasks (backlog may cover multiple waves)."
+    }
+  ],
+  "canonicalTaskCount": 281,
+  "files": {
+    "canonicalState": "docs/wave2-canonical-state.json",
+    "executionPlan": {
+      "path": "docs/v2-wave2-execution-plan.md",
+      "readable": true
+    },
+    "backlog": {
+      "path": "docs/backlog-unified-status-and-order.md",
+      "readable": true
+    }
+  }
+}

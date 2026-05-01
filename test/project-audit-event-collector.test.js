@@ -44,3 +44,28 @@ test("project audit event collector falls back safely without event payload", ()
   assert.equal(projectAuditRecord.category, "project");
   assert.equal(Array.isArray(projectAuditRecord.auditTrail), true);
 });
+
+test("project audit event collector normalizes malformed audit record fields", () => {
+  const { projectAuditRecord } = createProjectAuditEventCollector({
+    projectAuditEvent: {
+      projectAuditEventId: " project-audit:giftwallet:1 ",
+      projectId: " giftwallet ",
+      workspaceId: " workspace-1 ",
+      actionType: " project.deploy.requested ",
+      category: " deploy ",
+      status: " queued ",
+      actor: {
+        actorId: " user-1 ",
+      },
+      summary: " Deployment queued ",
+      traceId: " trace-1 ",
+      source: " ui ",
+    },
+  });
+
+  assert.equal(projectAuditRecord.projectAuditRecordId, "project-audit-record:project-audit:giftwallet:1");
+  assert.equal(projectAuditRecord.projectId, "giftwallet");
+  assert.equal(projectAuditRecord.actionType, "project.deploy.requested");
+  assert.equal(projectAuditRecord.category, "deploy");
+  assert.equal(projectAuditRecord.auditTrail[0].actorId, "user-1");
+});

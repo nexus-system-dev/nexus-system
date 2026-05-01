@@ -8,11 +8,17 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function resolveState({ learningInsights, decisionIntelligence, notificationPayload }) {
   const insights = normalizeArray(learningInsights.items);
   const decisionSummary = normalizeObject(decisionIntelligence.summary);
+  const notificationType = normalizeString(notificationPayload.type, "unknown").toLowerCase();
+  const notificationStatus = normalizeString(notificationPayload.status, null);
 
-  if (notificationPayload.type === "failure" || notificationPayload.requiresApproval === true) {
+  if (notificationType === "failure" || notificationPayload.requiresApproval === true) {
     return "warning";
   }
 
@@ -24,11 +30,11 @@ function resolveState({ learningInsights, decisionIntelligence, notificationPayl
     return "recommending";
   }
 
-  if (decisionSummary.hasUncertainty || notificationPayload.status === "unknown") {
+  if (decisionSummary.hasUncertainty || notificationStatus === "unknown") {
     return "analyzing";
   }
 
-  if (notificationPayload.type === "success") {
+  if (notificationType === "success") {
     return "waiting";
   }
 
@@ -39,13 +45,21 @@ function buildReasons({ state, learningInsights, decisionIntelligence, notificat
   const reasons = [];
   const insights = normalizeArray(learningInsights.items);
   const decisionSummary = normalizeObject(decisionIntelligence.summary);
+  const notificationMessage = normalizeString(
+    notificationPayload.message,
+    "Execution requires attention before the AI companion can continue.",
+  );
+  const learningSummary = normalizeString(
+    learningInsights.summary,
+    "Learning insights are strong enough to support a recommendation.",
+  );
 
   if (state === "warning") {
-    reasons.push(notificationPayload.message ?? "Execution requires attention before the AI companion can continue.");
+    reasons.push(notificationMessage);
   }
 
   if (state === "recommending") {
-    reasons.push(learningInsights.summary ?? "Learning insights are strong enough to support a recommendation.");
+    reasons.push(learningSummary);
   }
 
   if (state === "analyzing") {
@@ -66,6 +80,7 @@ function buildReasons({ state, learningInsights, decisionIntelligence, notificat
 function buildSummary({ state, learningInsights, decisionIntelligence, notificationPayload }) {
   const insights = normalizeArray(learningInsights.items);
   const decisionSummary = normalizeObject(decisionIntelligence.summary);
+  const notificationType = normalizeString(notificationPayload.type, "unknown").toLowerCase();
 
   return {
     state,
@@ -75,7 +90,7 @@ function buildSummary({ state, learningInsights, decisionIntelligence, notificat
     isPassive: state === "observing" || state === "waiting",
     canAutoExecute: decisionSummary.canAutoExecute === true,
     hasUncertainty: decisionSummary.hasUncertainty === true,
-    latestNotificationType: notificationPayload.type ?? "unknown",
+    latestNotificationType: notificationType,
   };
 }
 
@@ -95,7 +110,7 @@ export function createCompanionStateModel({
 
   return {
     companionState: {
-      stateId: `companion-state:${normalizedNotificationPayload.taskId ?? "project"}`,
+      stateId: `companion-state:${normalizeString(normalizedNotificationPayload.taskId, "project")}`,
       state,
       mode: state,
       reasons: buildReasons({
@@ -108,7 +123,7 @@ export function createCompanionStateModel({
         insightCount: normalizeArray(normalizedLearningInsights.items).length,
         requiresApproval: normalizedDecisionIntelligence.summary?.requiresApproval === true,
         hasUncertainty: normalizedDecisionIntelligence.summary?.hasUncertainty === true,
-        notificationType: normalizedNotificationPayload.type ?? "unknown",
+        notificationType: normalizeString(normalizedNotificationPayload.type, "unknown").toLowerCase(),
       },
       summary: buildSummary({
         state,

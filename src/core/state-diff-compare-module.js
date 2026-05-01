@@ -6,6 +6,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function compareScalar(label, before, after) {
   return {
     label,
@@ -62,9 +66,9 @@ export function createStateDiffAndCompareModule({
 
   return {
     stateDiff: {
-      stateDiffId: `state-diff:${normalizedSnapshotRecord.snapshotRecordId ?? "unknown-snapshot"}`,
-      snapshotRecordId: normalizedSnapshotRecord.snapshotRecordId ?? null,
-      comparisonTargetId: normalizedComparisonTarget.comparisonTargetId ?? null,
+      stateDiffId: `state-diff:${normalizeString(normalizedSnapshotRecord.snapshotRecordId, "unknown-snapshot")}`,
+      snapshotRecordId: normalizeString(normalizedSnapshotRecord.snapshotRecordId, null),
+      comparisonTargetId: normalizeString(normalizedComparisonTarget.comparisonTargetId, null),
       stateChanges,
       graphChanges,
       artifactChanges,

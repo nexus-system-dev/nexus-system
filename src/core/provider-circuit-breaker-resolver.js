@@ -8,9 +8,18 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : fallback;
+}
+
 function matchesProviderDependency(providerType, dependency) {
-  const name = String(dependency?.name ?? dependency?.dependencyId ?? "").toLowerCase();
-  const normalizedProviderType = String(providerType ?? "generic").toLowerCase();
+  const name = normalizeString(dependency?.name ?? dependency?.dependencyId, "")?.toLowerCase() ?? "";
+  const normalizedProviderType = normalizeString(providerType, "generic")?.toLowerCase() ?? "generic";
 
   return (
     name.includes(normalizedProviderType)
@@ -26,16 +35,17 @@ function collectProviderDependencySignals(providerType, runtimeHealthSignals) {
 }
 
 function resolveCircuitState({ degradationState, dependencySignals, runtimeHealthSignals }) {
-  const health = degradationState.health ?? "unknown";
+  const health = normalizeString(degradationState.health, "unknown");
   const consecutiveFailures = degradationState.consecutiveFailures ?? 0;
   const incidentActive = degradationState.summary?.hasIncidentSignal === true;
   const providerDown = dependencySignals.some((dependency) =>
-    ["down", "failed", "blocked"].includes(dependency?.status),
+    ["down", "failed", "blocked"].includes(normalizeString(dependency?.status, "unknown")),
   );
   const providerDegraded = dependencySignals.some((dependency) =>
-    ["degraded", "down", "failed", "blocked"].includes(dependency?.status),
+    ["degraded", "down", "failed", "blocked"].includes(normalizeString(dependency?.status, "unknown")),
   );
-  const runtimeDegraded = runtimeHealthSignals.status === "degraded" || runtimeHealthSignals.isHealthy === false;
+  const runtimeDegraded = normalizeString(runtimeHealthSignals.status, "unknown") === "degraded"
+    || runtimeHealthSignals.isHealthy === false;
 
   if (health === "outage" || providerDown || (incidentActive && consecutiveFailures >= 3)) {
     return "open";
@@ -62,11 +72,11 @@ function resolveDecision(circuitState) {
 
 function resolveReason({ circuitState, degradationState, dependencySignals, runtimeHealthSignals }) {
   if (circuitState === "open") {
-    if (degradationState.health === "outage") {
+    if (normalizeString(degradationState.health, "unknown") === "outage") {
       return "Provider is in outage state and should fail fast until cooldown expires";
     }
 
-    if (dependencySignals.some((dependency) => ["down", "failed", "blocked"].includes(dependency?.status))) {
+    if (dependencySignals.some((dependency) => ["down", "failed", "blocked"].includes(normalizeString(dependency?.status, "unknown")))) {
       return "Provider dependency is down, failed or blocked and the circuit must stay open";
     }
 
@@ -74,11 +84,11 @@ function resolveReason({ circuitState, degradationState, dependencySignals, runt
   }
 
   if (circuitState === "half-open") {
-    if (degradationState.health === "degraded") {
+    if (normalizeString(degradationState.health, "unknown") === "degraded") {
       return "Provider is degraded, so retries should be controlled instead of fully blocking execution";
     }
 
-    if (runtimeHealthSignals.status === "degraded" || runtimeHealthSignals.isHealthy === false) {
+    if (normalizeString(runtimeHealthSignals.status, "unknown") === "degraded" || runtimeHealthSignals.isHealthy === false) {
       return "Runtime health is degraded, so provider retries should stay limited";
     }
 
@@ -94,7 +104,7 @@ export function createProviderCircuitBreakerResolver({
 } = {}) {
   const normalizedDegradationState = normalizeObject(providerDegradationState);
   const normalizedRuntimeHealthSignals = normalizeObject(runtimeHealthSignals);
-  const providerType = normalizedDegradationState.providerType ?? "generic";
+  const providerType = normalizeString(normalizedDegradationState.providerType, "generic");
   const dependencySignals = collectProviderDependencySignals(providerType, normalizedRuntimeHealthSignals);
   const circuitState = resolveCircuitState({
     degradationState: normalizedDegradationState,
@@ -123,9 +133,9 @@ export function createProviderCircuitBreakerResolver({
       failureThreshold: 2,
       consecutiveFailures: normalizedDegradationState.consecutiveFailures ?? 0,
       dependencySignals: dependencySignals.map((dependency) => ({
-        name: dependency?.name ?? dependency?.dependencyId ?? "unknown-dependency",
-        status: dependency?.status ?? "unknown",
-        readiness: dependency?.readiness ?? "unknown",
+        name: normalizeString(dependency?.name ?? dependency?.dependencyId, "unknown-dependency"),
+        status: normalizeString(dependency?.status, "unknown"),
+        readiness: normalizeString(dependency?.readiness, "unknown"),
         critical: dependency?.critical === true,
       })),
       summary: {

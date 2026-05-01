@@ -1,4 +1,7 @@
 function normalizeDependency(dependency, index) {
+  const normalizeString = (value, fallback = null) =>
+    typeof value === "string" && value.trim() ? value.trim() : fallback;
+
   if (!dependency || typeof dependency !== "object") {
     return {
       dependencyId: `dependency-${index + 1}`,
@@ -11,17 +14,18 @@ function normalizeDependency(dependency, index) {
   }
 
   const status = dependency.status ?? "unknown";
-  const readiness = dependency.readiness ?? (
-    ["ready", "healthy", "completed"].includes(status) ? "ready" : "unknown"
+  const normalizedStatus = normalizeString(status, "unknown").toLowerCase();
+  const readiness = normalizeString(dependency.readiness, null) ?? (
+    ["ready", "healthy", "completed"].includes(normalizedStatus) ? "ready" : "unknown"
   );
 
   return {
-    dependencyId: dependency.dependencyId ?? dependency.name ?? `dependency-${index + 1}`,
-    name: dependency.name ?? dependency.dependencyId ?? `dependency-${index + 1}`,
-    status,
-    readiness,
+    dependencyId: normalizeString(dependency.dependencyId, normalizeString(dependency.name, `dependency-${index + 1}`)),
+    name: normalizeString(dependency.name, normalizeString(dependency.dependencyId, `dependency-${index + 1}`)),
+    status: normalizedStatus,
+    readiness: readiness.toLowerCase(),
     critical: dependency.critical === true,
-    details: Array.isArray(dependency.details) ? dependency.details : [],
+    details: Array.isArray(dependency.details) ? dependency.details.map((entry) => normalizeString(entry, null)).filter(Boolean) : [],
   };
 }
 
@@ -78,12 +82,18 @@ function summarizeReadiness(dependencies, startupSteps) {
 export function createHealthCheckAndReadinessEndpoints({
   runtimeHealthSignals = {},
 } = {}) {
-  const checkedAt = runtimeHealthSignals.checkedAt ?? new Date().toISOString();
+  const checkedAt =
+    typeof runtimeHealthSignals.checkedAt === "string" && runtimeHealthSignals.checkedAt.trim()
+      ? runtimeHealthSignals.checkedAt.trim()
+      : new Date().toISOString();
   const dependencies = Array.isArray(runtimeHealthSignals.dependencies)
     ? runtimeHealthSignals.dependencies.map(normalizeDependency)
     : [];
   const startupSteps = Array.isArray(runtimeHealthSignals.startupSteps) ? runtimeHealthSignals.startupSteps : [];
-  const runtimeId = runtimeHealthSignals.runtimeId ?? null;
+  const runtimeId =
+    typeof runtimeHealthSignals.runtimeId === "string" && runtimeHealthSignals.runtimeId.trim()
+      ? runtimeHealthSignals.runtimeId.trim()
+      : null;
 
   const healthSummary = summarizeHealth(dependencies);
   const readinessSummary = summarizeReadiness(dependencies, startupSteps);

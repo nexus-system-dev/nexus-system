@@ -38,3 +38,30 @@ test("snapshot backup scheduling module falls back safely to defaults", () => {
   assert.equal(snapshotSchedule.preChangeTriggers.includes("bootstrap"), true);
   assert.equal(snapshotSchedule.summary.supportsIntervalBackups, true);
 });
+
+test("snapshot backup scheduling module normalizes malformed ids and trigger fields", () => {
+  const now = new Date("2026-03-30T12:00:00.000Z");
+  const { snapshotSchedule } = createSnapshotBackupSchedulingModule({
+    backupStrategy: {
+      backupStrategyId: " backup-strategy:giftwallet ",
+      backupMode: " state-and-artifacts ",
+    },
+    projectState: {
+      projectId: " giftwallet ",
+    },
+    previousSchedule: {
+      snapshotScheduleId: " snapshot-schedule:giftwallet ",
+      lastRunAt: " 2026-03-30T11:45:00.000Z ",
+    },
+    scheduleInput: {
+      preChangeTriggers: [" deploy ", " migration "],
+    },
+    now,
+  });
+
+  assert.equal(snapshotSchedule.snapshotScheduleId, "snapshot-schedule:giftwallet");
+  assert.equal(snapshotSchedule.projectId, "giftwallet");
+  assert.equal(snapshotSchedule.backupStrategyId, "backup-strategy:giftwallet");
+  assert.deepEqual(snapshotSchedule.preChangeTriggers, ["deploy", "migration"]);
+  assert.equal(snapshotSchedule.execution.lastRunAt, "2026-03-30T11:45:00.000Z");
+});

@@ -48,3 +48,29 @@ test("project state snapshot schema falls back safely", () => {
   assert.equal(Array.isArray(projectStateSnapshot.restoreMetadata.restoreScope), true);
   assert.equal(typeof projectStateSnapshot.summary.isRestorable, "boolean");
 });
+
+test("project state snapshot schema normalizes malformed identifiers and metadata strings", () => {
+  const { projectStateSnapshot } = defineProjectStateSnapshotSchema({
+    projectState: {
+      projectId: "  ",
+      workspaceId: "  ",
+      workspaceArea: " release-workspace ",
+      workspaceVisibility: " private ",
+      lifecyclePhase: "execution",
+      updatedAt: " 2026-04-20T12:00:00.000Z ",
+      outputPaths: [" dist/build-output ", "   "],
+      packageFormat: " static-bundle ",
+      verificationStatus: " verified ",
+    },
+  });
+
+  assert.equal(projectStateSnapshot.snapshotId, "project-state-snapshot:unknown-project:v1");
+  assert.equal(projectStateSnapshot.projectId, "unknown-project");
+  assert.equal(projectStateSnapshot.workspaceReference.workspaceId, null);
+  assert.equal(projectStateSnapshot.workspaceReference.workspaceArea, "release-workspace");
+  assert.equal(projectStateSnapshot.workspaceReference.workspaceVisibility, "private");
+  assert.equal(projectStateSnapshot.stateSummary.updatedAt, "2026-04-20T12:00:00.000Z");
+  assert.deepEqual(projectStateSnapshot.artifactSummary.outputPaths, ["dist/build-output"]);
+  assert.equal(projectStateSnapshot.artifactSummary.packageFormat, "static-bundle");
+  assert.equal(projectStateSnapshot.artifactSummary.verificationStatus, "verified");
+});

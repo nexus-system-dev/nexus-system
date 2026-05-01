@@ -89,6 +89,7 @@ test("dispatcher assigns only tasks whose dependencies are satisfied", () => {
   );
   assert.equal(result.assignments[0].memory.projectId, "project-beta");
   assert.equal(result.assignments[0].memory.task.id, "build-auth");
+  assert.equal(result.assignments[0].memory.task.taskType, "backend");
 });
 
 test("dispatcher respects active locks", () => {
@@ -151,6 +152,7 @@ test("orchestrator emits the core event stream", () => {
     ["state.updated", "roadmap.generated", "task.assigned", "task.assigned"],
   );
   assert.equal(eventBus.getEvents().length, 4);
+  assert.equal(eventBus.getEvents().filter((event) => event.type === "task.assigned").every((event) => typeof event.payload.task.taskType === "string"), true);
 });
 
 test("agent runtime consumes assignments and emits completions", () => {
@@ -184,6 +186,138 @@ test("agent runtime consumes assignments and emits completions", () => {
   assert.deepEqual(
     eventBus.getEvents().slice(-2).map((event) => event.type),
     ["task.completed", "task.completed"],
+  );
+});
+
+test("agent runtime emits task.retried before the final outcome when the same task reruns after a failure", () => {
+  const eventBus = createTestEventBus();
+  let attempts = 0;
+  const runtime = new AgentRuntime({
+    eventBus,
+    workers: [{
+      canHandle: () => true,
+      execute: () => {
+        attempts += 1;
+        if (attempts === 1) {
+          throw new Error("first-attempt-failed");
+        }
+
+        return { summary: "second-attempt-succeeded" };
+      },
+    }],
+  });
+
+  eventBus.emit("task.assigned", {
+    projectId: "project-runtime",
+    agentId: "dev-agent",
+    task: { id: "task-1", taskType: "backend" },
+  });
+
+  const firstResults = runtime.processPendingAssignments({ projectId: "project-runtime" });
+
+  assert.deepEqual(firstResults.map((event) => event.type), ["task.failed"]);
+
+  eventBus.emit("task.assigned", {
+    projectId: "project-runtime",
+    agentId: "dev-agent",
+    task: { id: "task-1", taskType: "backend" },
+  });
+
+  const secondResults = runtime.processPendingAssignments({ projectId: "project-runtime" });
+
+  assert.deepEqual(secondResults.map((event) => event.type), ["task.retried", "task.completed"]);
+  assert.deepEqual(secondResults.map((event) => event.payload.taskType), ["backend", "backend"]);
+  assert.equal(secondResults[0].payload.taskId, "task-1");
+  assert.equal(secondResults[0].payload.assignmentEventId != null, true);
+});
+
+test("orchestrator prioritizes maintenance tasks ahead of planner tasks when incident backlog is active", () => {
+  const orchestrator = new NexusOrchestrator({ eventBus: createTestEventBus() });
+
+  const result = orchestrator.runCycle({
+    projectId: "project-maintenance-priority",
+    projectState: {
+      businessGoal: "Grow paid users",
+      product: {
+        hasAuth: false,
+        hasStagingEnvironment: false,
+        hasLandingPage: false,
+        hasPaymentIntegration: false,
+      },
+      analytics: {
+        hasBaselineCampaign: false,
+      },
+      maintenanceBacklog: {
+        maintenanceBacklogId: "maintenance-backlog:test",
+        status: "ready",
+        items: [
+          {
+            maintenanceTaskId: "maintenance-backlog:test:stabilize",
+            taskType: "ops",
+            lane: "maintenance",
+            summary: "Stabilize incident",
+            requiredCapabilities: ["devops"],
+            priority: 100,
+            successCriteria: ["stabilize"],
+            dependencies: [],
+            lockKey: "maintenance-stabilize:test",
+          },
+        ],
+      },
+    },
+    agents: [
+      { id: "dev-agent", capabilities: ["devops", "backend", "security", "payments"] },
+    ],
+  });
+
+  assert.equal(result.assignments[0].taskId, "maintenance-backlog:test:stabilize");
+});
+
+test("orchestrator promotes pending maintenance follow-up to ready once dependency is completed", () => {
+  const orchestrator = new NexusOrchestrator({ eventBus: createTestEventBus() });
+
+  const result = orchestrator.runCycle({
+    projectId: "project-maintenance-unblock",
+    projectState: {
+      businessGoal: "Stabilize runtime",
+      maintenanceBacklog: {
+        maintenanceBacklogId: "maintenance-backlog:test",
+        status: "ready",
+        items: [
+          {
+            maintenanceTaskId: "maintenance-backlog:test:stabilize",
+            taskType: "ops",
+            lane: "maintenance",
+            summary: "Stabilize incident",
+            requiredCapabilities: ["devops"],
+            priority: 100,
+            successCriteria: ["stabilize"],
+            dependencies: [],
+            lockKey: "maintenance-stabilize:test",
+          },
+          {
+            maintenanceTaskId: "maintenance-backlog:test:root-cause",
+            taskType: "analysis",
+            lane: "maintenance",
+            summary: "Investigate root cause",
+            requiredCapabilities: ["devops"],
+            priority: 80,
+            successCriteria: ["analyze"],
+            dependencies: ["maintenance-backlog:test:stabilize"],
+            lockKey: "maintenance-root-cause:test",
+          },
+        ],
+      },
+    },
+    completedTaskIds: new Set(["maintenance-backlog:test:stabilize"]),
+    agents: [
+      { id: "dev-agent", capabilities: ["devops", "backend", "security", "payments"] },
+    ],
+  });
+
+  assert.equal(
+    result.roadmap.some((task) => task.id === "maintenance-backlog:test:root-cause" && task.status === "assigned"),
+    true,
   );
 });
 

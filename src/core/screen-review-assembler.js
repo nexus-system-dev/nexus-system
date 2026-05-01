@@ -4,13 +4,42 @@ function createEmptyCollection(collection, key = "screens") {
     : { [key]: [], summary: {} };
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 function indexByScreenId(collection) {
   const screens = Array.isArray(collection.screens) ? collection.screens : [];
-  return new Map(screens.map((screen) => [screen.screenId, screen]));
+  return new Map(
+    screens
+      .filter((screen) => screen && typeof screen === "object")
+      .map((screen) => {
+        const screenId = normalizeString(screen.screenId);
+        if (!screenId) {
+          return null;
+        }
+
+        return [
+          screenId,
+          {
+            ...screen,
+            screenId,
+            screenType: normalizeString(screen.screenType),
+          },
+        ];
+      })
+      .filter(Boolean),
+  );
 }
 
 function extractBlockingIssues(...collections) {
-  return collections.flatMap((entry) => (Array.isArray(entry?.blockingIssues) ? entry.blockingIssues : []));
+  return [...new Set(
+    collections.flatMap((entry) =>
+      (Array.isArray(entry?.blockingIssues) ? entry.blockingIssues : [])
+        .filter((issue) => typeof issue === "string" && issue.trim())
+        .map((issue) => issue.trim()),
+    ),
+  )];
 }
 
 export function createScreenReviewAssembler({

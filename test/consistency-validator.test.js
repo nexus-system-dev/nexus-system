@@ -59,3 +59,35 @@ test("createConsistencyValidator reports missing components and token families",
     "missing-component:badge",
   ]);
 });
+
+test("createConsistencyValidator normalizes malformed identifiers and component entries", () => {
+  const { consistencyValidation } = createConsistencyValidator({
+    screenId: {},
+    screenTemplate: {
+      templateType: " management ",
+      sections: {
+        sidePanel: { enabled: true },
+      },
+      composition: {
+        primaryComponents: [" table ", null, "badge", { bad: true }],
+      },
+    },
+    designTokens: {
+      colors: { accent: "#0f766e", border: "#d6d3d1" },
+      spacing: { md: 12, lg: 20 },
+    },
+    componentLibrary: {
+      components: [
+        { componentType: "table" },
+        { componentType: " badge " },
+        null,
+      ],
+    },
+  });
+
+  assert.equal(consistencyValidation.validationId, "consistency-validation:management");
+  assert.equal(consistencyValidation.screenId, null);
+  assert.equal(consistencyValidation.templateType, "management");
+  assert.deepEqual(consistencyValidation.summary.missingComponents, []);
+  assert.equal(consistencyValidation.summary.isConsistent, true);
+});

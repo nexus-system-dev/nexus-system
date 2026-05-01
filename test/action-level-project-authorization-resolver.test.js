@@ -120,3 +120,40 @@ test("action-level project authorization resolver blocks action when role capabi
   assert.equal(projectAuthorizationDecision.requiredCapability, "edit");
   assert.equal(projectAuthorizationDecision.checks.includes("role-capability-missing"), true);
 });
+
+test("action-level project authorization resolver normalizes malformed actor and action strings", () => {
+  const { projectAuthorizationDecision } = createActionLevelProjectAuthorizationResolver({
+    actorType: " OPERATOR ",
+    projectAction: {
+      actionType: " DEPLOY ",
+    },
+    roleCapabilityMatrix: {
+      roles: [
+        {
+          role: " operator ",
+          capabilities: {
+            view: true,
+            deploy: true,
+          },
+          allowedActions: ["deploy"],
+        },
+        {
+          role: " viewer ",
+          capabilities: {
+            view: true,
+          },
+          allowedActions: ["view"],
+        },
+      ],
+    },
+    policyDecision: {
+      reason: "  ",
+    },
+  });
+
+  assert.equal(projectAuthorizationDecision.authorizationDecisionId, "project-authorization:operator:deploy");
+  assert.equal(projectAuthorizationDecision.effectiveRole, "operator");
+  assert.equal(projectAuthorizationDecision.decision, "allowed");
+  assert.equal(projectAuthorizationDecision.requiredCapability, "deploy");
+  assert.equal(projectAuthorizationDecision.reason, "Role operator can perform deploy");
+});

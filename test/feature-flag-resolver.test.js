@@ -208,3 +208,36 @@ test("feature flag resolver returns blocked routes and enabled capabilities", ()
   assert.equal(decision.enabledCapabilities.includes("provider-runtime-execution"), true);
   assert.equal(decision.blockedRoutes.some((entry) => entry.flagId === "emergency-execution-stop"), true);
 });
+
+test("feature flag resolver normalizes malformed identifiers and request fields", () => {
+  const decision = buildDecision({
+    featureDefinitions: [
+      {
+        flagId: " provider-runtime-execution ",
+        enabled: true,
+        rolloutScope: "workspace",
+        workspaceTargets: [" giftwallet "],
+        userTargets: [" user-1 "],
+        environmentTargets: ["production"],
+        defaultFallback: "disabled",
+      },
+    ],
+    requestContext: {
+      workspaceId: " giftwallet ",
+      actorId: " user-1 ",
+      routeId: " /api/projects/giftwallet/accounts/link ",
+      environment: " PROD ",
+      riskFlags: [" deployment-impact "],
+    },
+  });
+
+  const flag = decision.flagResults.find(
+    (entry) => entry.flagId === "provider-runtime-execution" && entry.rolloutScope === "workspace",
+  );
+  assert.equal(decision.environment, "production");
+  assert.equal(decision.userId, "user-1");
+  assert.equal(decision.workspaceId, "giftwallet");
+  assert.equal(decision.routeId, "/api/projects/giftwallet/accounts/link");
+  assert.equal(flag.enabled, true);
+  assert.equal(decision.summary.riskLevel, "high");
+});

@@ -60,3 +60,31 @@ test("project state restore resolver blocks restore when snapshot is not restora
   assert.equal(restoreDecision.canRestore, false);
   assert.equal(typeof restoreDecision.blockedReason, "string");
 });
+
+test("project state restore resolver normalizes malformed identifiers", () => {
+  const { restoreDecision } = createProjectStateRestoreResolver({
+    snapshotRecord: {
+      snapshotRecordId: "  ",
+      restoreMetadata: {
+        canRestoreFull: true,
+        canRestorePartial: true,
+        restoreScope: ["project-state"],
+      },
+    },
+    rollbackPlan: {
+      rollbackPlanId: " rollback-plan:project-1 ",
+      summary: {
+        hasExternalEffects: false,
+        hasStateRollback: true,
+      },
+      scope: {
+        state: [{ targetId: "project-1" }],
+      },
+    },
+  });
+
+  assert.equal(restoreDecision.restoreDecisionId, "restore-decision:unknown-snapshot");
+  assert.equal(restoreDecision.snapshotRecordId, null);
+  assert.equal(restoreDecision.rollbackPlanId, "rollback-plan:project-1");
+  assert.equal(restoreDecision.restoreMode, "full");
+});

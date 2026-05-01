@@ -93,3 +93,27 @@ test("disaster recovery checklist reports missing prerequisites when strategy is
   );
   assert.equal(disasterRecoveryChecklist.steps[1].ready, false);
 });
+
+test("disaster recovery checklist normalizes malformed project and worker evidence fields", () => {
+  const { disasterRecoveryChecklist } = createDisasterRecoveryChecklist({
+    backupStrategy: {
+      backupStrategyId: " backup-strategy:giftwallet ",
+      projectId: " giftwallet ",
+    },
+    restorePlan: {
+      restorePlanId: " restore-plan:giftwallet ",
+      projectId: " giftwallet ",
+    },
+    snapshotBackupWorker: {
+      workerId: " snapshot-worker:giftwallet ",
+      enabled: true,
+    },
+  });
+
+  assert.equal(disasterRecoveryChecklist.checklistId, "disaster-recovery:giftwallet");
+  assert.equal(disasterRecoveryChecklist.projectId, "giftwallet");
+  assert.equal(
+    disasterRecoveryChecklist.prerequisites.find((item) => item.key === "snapshot-worker")?.evidence,
+    "snapshot-worker:giftwallet",
+  );
+});

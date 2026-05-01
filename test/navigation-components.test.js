@@ -39,3 +39,40 @@ test("createNavigationComponents falls back safely without explicit mappings", (
   assert.deepEqual(navigationComponents.components[2].preview.items, ["Project", "Developer", "Execution"]);
   assert.equal(navigationComponents.summary.supportsWorkspaceNavigation, true);
 });
+
+test("createNavigationComponents normalizes invalid mapping payloads to canonical flow and step lists", () => {
+  const { navigationComponents } = createNavigationComponents({
+    screenFlowMap: {
+      mappings: [
+        {
+          flowType: " execution ",
+          stepId: " workbench ",
+        },
+        {
+          flowType: 42,
+          stepId: {},
+        },
+        "bad",
+        null,
+      ],
+    },
+  });
+
+  assert.deepEqual(navigationComponents.components[0].navigationRules.supportsFlowTypes, ["execution"]);
+  assert.deepEqual(navigationComponents.components[2].navigationRules.supportsStepIds, ["workbench"]);
+  assert.deepEqual(navigationComponents.components[4].navigationRules.supportsStepIds, ["workbench"]);
+  assert.equal(navigationComponents.navigationComponentLibraryId, "navigation-components:2");
+  assert.equal(navigationComponents.summary.totalFlowTypes, 1);
+});
+
+test("createNavigationComponents ignores non-object screen flow maps", () => {
+  const { navigationComponents } = createNavigationComponents({
+    screenFlowMap: {
+      mappings: "invalid",
+    },
+  });
+
+  assert.equal(navigationComponents.navigationComponentLibraryId, "navigation-components:nexus");
+  assert.deepEqual(navigationComponents.components[0].navigationRules.supportsFlowTypes, []);
+  assert.deepEqual(navigationComponents.components[4].navigationRules.supportsStepIds, []);
+});

@@ -8,12 +8,17 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function countConsecutiveFailures(providerSession, incidentAlert) {
-  const providerStatus = providerSession.status ?? "connected";
+  const providerStatus = normalizeString(providerSession.status, "unknown").toLowerCase();
+  const providerType = normalizeString(providerSession.providerType, "generic");
   const incidents = normalizeArray(incidentAlert.incidents);
   const providerIncidents = incidents.filter((incident) =>
     normalizeArray(incident.affectedComponents).some((component) =>
-      String(component).includes(providerSession.providerType ?? "generic"),
+      String(component).includes(providerType),
     ),
   );
 
@@ -26,15 +31,18 @@ function countConsecutiveFailures(providerSession, incidentAlert) {
 }
 
 function resolveHealth(providerSession, incidentAlert, failureCount) {
-  if (incidentAlert.status === "active" && failureCount >= 3) {
+  const providerStatus = normalizeString(providerSession.status, "unknown").toLowerCase();
+  const incidentStatus = normalizeString(incidentAlert.status, "clear").toLowerCase();
+
+  if (incidentStatus === "active" && failureCount >= 3) {
     return "outage";
   }
 
-  if (failureCount >= 2 || providerSession.status === "degraded") {
+  if (failureCount >= 2 || providerStatus === "degraded") {
     return "degraded";
   }
 
-  if (providerSession.status === "connected" || providerSession.status === "verified") {
+  if (providerStatus === "connected" || providerStatus === "verified") {
     return "healthy";
   }
 
@@ -77,14 +85,14 @@ export function defineProviderDegradationSchema({
   const probeState = resolveProbeState(health, cooldownWindowMs);
   const degradedServiceFlags = [
     health !== "healthy" ? "provider-health-degraded" : null,
-    normalizedIncidentAlert.status === "active" ? "incident-active" : null,
+    normalizeString(normalizedIncidentAlert.status, "clear").toLowerCase() === "active" ? "incident-active" : null,
     cooldownWindowMs > 0 ? "cooldown-active" : null,
   ].filter(Boolean);
 
   return {
     providerDegradationState: {
-      degradationStateId: `provider-degradation:${normalizedProviderSession.providerType ?? "generic"}`,
-      providerType: normalizedProviderSession.providerType ?? "generic",
+      degradationStateId: `provider-degradation:${normalizeString(normalizedProviderSession.providerType, "generic")}`,
+      providerType: normalizeString(normalizedProviderSession.providerType, "generic"),
       health,
       consecutiveFailures,
       cooldownWindowMs,
@@ -93,7 +101,7 @@ export function defineProviderDegradationSchema({
       summary: {
         isDegraded: health === "degraded" || health === "outage",
         requiresCircuitBreaker: consecutiveFailures >= 2 || health === "outage",
-        hasIncidentSignal: normalizedIncidentAlert.status === "active",
+        hasIncidentSignal: normalizeString(normalizedIncidentAlert.status, "clear").toLowerCase() === "active",
       },
     },
   };

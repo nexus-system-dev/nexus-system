@@ -90,3 +90,25 @@ test("session security controls keep valid sessions allowed", () => {
   assert.equal(sessionSecurityDecision.isBlocked, false);
   assert.equal(sessionSecurityDecision.requiresRotation, false);
 });
+
+test("session security controls normalizes custom revoke and rotation reasons", () => {
+  const revoked = createSessionSecurityControls({
+    sessionState: {
+      isRevoked: true,
+      revocationReason: " Manual revoke ",
+    },
+    securitySignals: {},
+  }).sessionSecurityDecision;
+
+  const rotation = createSessionSecurityControls({
+    sessionState: {
+      issuedAt: "2025-01-01T00:00:00.000Z",
+      now: "2025-01-01T12:30:00.000Z",
+      rotationReason: " Age threshold exceeded ",
+    },
+    securitySignals: {},
+  }).sessionSecurityDecision;
+
+  assert.equal(revoked.reason, "Manual revoke");
+  assert.equal(rotation.reason, "Age threshold exceeded");
+});

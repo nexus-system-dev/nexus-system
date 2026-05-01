@@ -6,6 +6,22 @@ function normalizeMobileChecklist(mobileChecklist) {
   return mobileChecklist && typeof mobileChecklist === "object" ? mobileChecklist : {};
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function normalizeSections(sections) {
+  return sections && typeof sections === "object" ? sections : {};
+}
+
+function normalizeChecklistItems(checklistItems) {
+  if (!Array.isArray(checklistItems)) {
+    return [];
+  }
+
+  return checklistItems.filter((item) => item && typeof item === "object");
+}
+
 function resolveResponsiveZone(sections) {
   if (sections.sidebar?.enabled) {
     return "sidebar";
@@ -33,23 +49,24 @@ export function createMobileUsabilityValidator({
 } = {}) {
   const normalizedScreenTemplate = normalizeScreenTemplate(screenTemplate);
   const normalizedMobileChecklist = normalizeMobileChecklist(mobileChecklist);
-  const checklistItems = Array.isArray(normalizedMobileChecklist.checklistItems)
-    ? normalizedMobileChecklist.checklistItems
-    : [];
+  const normalizedScreenId = normalizeString(screenId);
+  const normalizedScreenType = normalizeString(normalizedMobileChecklist.screenType);
+  const normalizedTemplateType = normalizeString(normalizedScreenTemplate.templateType);
+  const checklistItems = normalizeChecklistItems(normalizedMobileChecklist.checklistItems);
   const requiredItems = checklistItems.filter((item) => item.required);
-  const sections = normalizedScreenTemplate.sections ?? {};
+  const sections = normalizeSections(normalizedScreenTemplate.sections);
   const responsiveZone = resolveResponsiveZone(sections);
   const supportsMobile = normalizedMobileChecklist.supportsMobile !== false;
   const hasRequiredChecklist = requiredItems.length > 0;
-  const handlesDenseRegions = responsiveZone !== null || normalizedScreenTemplate.templateType === "detail";
+  const handlesDenseRegions = responsiveZone !== null || normalizedTemplateType === "detail";
   const isUsable = supportsMobile && hasRequiredChecklist && handlesDenseRegions;
 
   return {
     mobileValidation: {
-      validationId: `mobile-validation:${screenId ?? normalizedMobileChecklist.screenType ?? "unknown"}`,
-      screenId: screenId ?? null,
-      screenType: normalizedMobileChecklist.screenType ?? null,
-      templateType: normalizedScreenTemplate.templateType ?? null,
+      validationId: `mobile-validation:${normalizedScreenId ?? normalizedScreenType ?? "unknown"}`,
+      screenId: normalizedScreenId,
+      screenType: normalizedScreenType,
+      templateType: normalizedTemplateType,
       responsiveZone,
       summary: {
         supportsMobile,

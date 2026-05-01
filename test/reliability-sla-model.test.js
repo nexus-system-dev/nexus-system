@@ -97,3 +97,24 @@ test("canonical reliability model moves continuity planner to ready status", () 
   assert.equal(continuityPlan.summary.planStatus, "ready");
   assert.equal(continuityPlan.decisionTrace.reliabilityInputStatus, "canonical");
 });
+
+test("reliability SLA schema normalizes malformed tier and notify role strings", () => {
+  const { reliabilitySlaModel } = defineReliabilityAndSlaSchema({
+    serviceTierDefinitions: {
+      serviceTier: " standard ",
+      ownerEscalationPolicy: {
+        notifyRoles: [" owner ", " operator "],
+      },
+    },
+    runtimeCapabilities: {
+      snapshotRestore: true,
+      automaticRecovery: true,
+      supportsProviderFallback: true,
+    },
+    projectId: " giftwallet ",
+  });
+
+  assert.equal(reliabilitySlaModel.reliabilityModelId, "reliability-sla:giftwallet:standard");
+  assert.equal(reliabilitySlaModel.projectId, "giftwallet");
+  assert.deepEqual(reliabilitySlaModel.ownerEscalationPolicy.notifyRoles, ["owner", "operator"]);
+});

@@ -8,12 +8,21 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : fallback;
+}
+
 function normalizeSensitivity(riskLevel) {
-  if (riskLevel === "high") {
+  if (normalizeString(riskLevel, "low") === "high") {
     return "high";
   }
 
-  if (riskLevel === "medium") {
+  if (normalizeString(riskLevel, "low") === "medium") {
     return "medium";
   }
 
@@ -21,15 +30,15 @@ function normalizeSensitivity(riskLevel) {
 }
 
 function matchesFilters(actorActionTrace, filters) {
-  if (filters.actorId && actorActionTrace.actor?.actorId !== filters.actorId) {
+  if (normalizeString(filters.actorId, null) && normalizeString(actorActionTrace.actor?.actorId, null) !== normalizeString(filters.actorId, null)) {
     return false;
   }
 
-  if (filters.actionType && actorActionTrace.action?.actionType !== filters.actionType) {
+  if (normalizeString(filters.actionType, null) && normalizeString(actorActionTrace.action?.actionType, null) !== normalizeString(filters.actionType, null)) {
     return false;
   }
 
-  if (filters.sensitivity && normalizeSensitivity(actorActionTrace.action?.riskLevel ?? actorActionTrace.riskLevel) !== filters.sensitivity) {
+  if (normalizeString(filters.sensitivity, null) && normalizeSensitivity(actorActionTrace.action?.riskLevel ?? actorActionTrace.riskLevel) !== normalizeString(filters.sensitivity, null)) {
     return false;
   }
 
@@ -46,17 +55,17 @@ function buildViewerEntry(actorActionTrace = {}) {
   const sensitivity = normalizeSensitivity(action.riskLevel ?? actorActionTrace.riskLevel);
 
   return {
-    entryId: actorActionTrace.actorActionTraceId ?? "actor-action-trace:unknown",
-    actorId: actor.actorId ?? null,
-    actorLabel: actor.actorId ?? actor.actorType ?? "system",
-    actorType: actor.actorType ?? "system",
-    actionType: action.actionType ?? "project.observed",
-    category: action.category ?? "project",
-    headline: action.summary ?? action.actionType ?? "Project action observed",
-    outcomeStatus: outcome.status ?? "recorded",
-    timestamp: actorActionTrace.timestamp ?? actorActionTrace.capturedAt ?? null,
+    entryId: normalizeString(actorActionTrace.actorActionTraceId, "actor-action-trace:unknown"),
+    actorId: normalizeString(actor.actorId, null),
+    actorLabel: normalizeString(actor.actorId ?? actor.actorType, "system"),
+    actorType: normalizeString(actor.actorType, "system"),
+    actionType: normalizeString(action.actionType, "project.observed"),
+    category: normalizeString(action.category, "project"),
+    headline: normalizeString(action.summary ?? action.actionType, "Project action observed"),
+    outcomeStatus: normalizeString(outcome.status, "recorded"),
+    timestamp: normalizeString(actorActionTrace.timestamp ?? actorActionTrace.capturedAt, null),
     sensitivity,
-    traceId: traceLinks.traceId ?? null,
+    traceId: normalizeString(traceLinks.traceId, null),
     resource: normalizeObject(traceLinks.resource),
     providerSideEffects,
     affectedArtifacts,
@@ -80,12 +89,12 @@ export function createProjectAuditApiAndViewerModel({
 
   return {
     projectAuditPayload: {
-      projectAuditPayloadId: `project-audit-payload:${normalizedTrace.projectId ?? "unknown-project"}`,
-      projectId: normalizedTrace.projectId ?? null,
+      projectAuditPayloadId: `project-audit-payload:${normalizeString(normalizedTrace.projectId, "unknown-project")}`,
+      projectId: normalizeString(normalizedTrace.projectId, null),
       filters: {
-        actorId: normalizedFilters.actorId ?? null,
-        actionType: normalizedFilters.actionType ?? null,
-        sensitivity: normalizedFilters.sensitivity ?? null,
+        actorId: normalizeString(normalizedFilters.actorId, null),
+        actionType: normalizeString(normalizedFilters.actionType, null),
+        sensitivity: normalizeString(normalizedFilters.sensitivity, null),
       },
       entries,
       viewerModel: {
@@ -95,7 +104,11 @@ export function createProjectAuditApiAndViewerModel({
       },
       summary: {
         totalEntries: entries.length,
-        filtered: Boolean(normalizedFilters.actorId || normalizedFilters.actionType || normalizedFilters.sensitivity),
+        filtered: Boolean(
+          normalizeString(normalizedFilters.actorId, null)
+          || normalizeString(normalizedFilters.actionType, null)
+          || normalizeString(normalizedFilters.sensitivity, null)
+        ),
         latestEntryId: entries[0]?.entryId ?? null,
       },
     },

@@ -2,58 +2,79 @@ function normalizeDesignTokens(designTokens) {
   return designTokens && typeof designTokens === "object" ? designTokens : {};
 }
 
+function normalizeTokenSetId(tokenSetId) {
+  return typeof tokenSetId === "string" && tokenSetId.trim() ? tokenSetId.trim() : "nexus";
+}
+
+function normalizeTokenGroup(tokenGroup) {
+  return tokenGroup && typeof tokenGroup === "object" ? tokenGroup : {};
+}
+
+function normalizeColorToken(colorToken, fallback) {
+  return typeof colorToken === "string" && colorToken.trim() ? colorToken : fallback;
+}
+
+function normalizeBorderWidth(borderWidth, fallback) {
+  return Number.isFinite(borderWidth) && borderWidth > 0 ? borderWidth : fallback;
+}
+
+function normalizeShadowToken(shadowToken, fallback) {
+  return typeof shadowToken === "string" && shadowToken.trim() ? shadowToken : fallback;
+}
+
 export function createInteractionStatesSystem({
   designTokens,
 } = {}) {
   const normalizedDesignTokens = normalizeDesignTokens(designTokens);
-  const colors = normalizedDesignTokens.colors ?? {};
-  const borders = normalizedDesignTokens.borders ?? {};
-  const shadows = normalizedDesignTokens.shadows ?? {};
+  const normalizedTokenSetId = normalizeTokenSetId(normalizedDesignTokens.tokenSetId);
+  const colors = normalizeTokenGroup(normalizedDesignTokens.colors);
+  const borders = normalizeTokenGroup(normalizedDesignTokens.borders);
+  const shadows = normalizeTokenGroup(normalizedDesignTokens.shadows);
 
   return {
     interactionStateSystem: {
-      interactionStateSystemId: `interaction-states:${normalizedDesignTokens.tokenSetId ?? "nexus"}`,
+      interactionStateSystemId: `interaction-states:${normalizedTokenSetId}`,
       states: {
         hover: {
-          emphasisColor: colors.accentStrong ?? "#115e59",
-          borderWidth: borders.strong ?? 2,
-          shadow: shadows.soft ?? "0 8px 24px rgba(15, 23, 42, 0.08)",
+          emphasisColor: normalizeColorToken(colors.accentStrong, "#115e59"),
+          borderWidth: normalizeBorderWidth(borders.strong, 2),
+          shadow: normalizeShadowToken(shadows.soft, "0 8px 24px rgba(15, 23, 42, 0.08)"),
           usage: "surface lift and stronger accent feedback on hoverable controls",
         },
         active: {
-          emphasisColor: colors.accentStrong ?? "#115e59",
-          borderWidth: borders.strong ?? 2,
-          shadow: shadows.medium ?? "0 12px 32px rgba(15, 23, 42, 0.12)",
+          emphasisColor: normalizeColorToken(colors.accentStrong, "#115e59"),
+          borderWidth: normalizeBorderWidth(borders.strong, 2),
+          shadow: normalizeShadowToken(shadows.medium, "0 12px 32px rgba(15, 23, 42, 0.12)"),
           usage: "pressed buttons, selected tabs and currently engaged actions",
         },
         focus: {
-          emphasisColor: colors.accent ?? "#0f766e",
-          borderWidth: borders.focus ?? 3,
-          shadow: shadows.focus ?? "0 0 0 3px rgba(15, 118, 110, 0.18)",
+          emphasisColor: normalizeColorToken(colors.accent, "#0f766e"),
+          borderWidth: normalizeBorderWidth(borders.focus, 3),
+          shadow: normalizeShadowToken(shadows.focus, "0 0 0 3px rgba(15, 118, 110, 0.18)"),
           usage: "keyboard navigation, focused inputs and accessible interaction rings",
         },
         disabled: {
-          emphasisColor: colors.muted ?? "#6b7280",
-          borderWidth: borders.subtle ?? 1,
+          emphasisColor: normalizeColorToken(colors.muted, "#6b7280"),
+          borderWidth: normalizeBorderWidth(borders.subtle, 1),
           shadow: "none",
           usage: "inactive controls that remain visible but cannot be triggered",
         },
         destructive: {
-          emphasisColor: colors.danger ?? "#b91c1c",
-          borderWidth: borders.strong ?? 2,
-          shadow: shadows.soft ?? "0 8px 24px rgba(15, 23, 42, 0.08)",
+          emphasisColor: normalizeColorToken(colors.danger, "#b91c1c"),
+          borderWidth: normalizeBorderWidth(borders.strong, 2),
+          shadow: normalizeShadowToken(shadows.soft, "0 8px 24px rgba(15, 23, 42, 0.08)"),
           usage: "delete, revoke or irreversible actions that need strong caution cues",
         },
         success: {
-          emphasisColor: colors.success ?? "#15803d",
-          borderWidth: borders.subtle ?? 1,
-          shadow: shadows.soft ?? "0 8px 24px rgba(15, 23, 42, 0.08)",
+          emphasisColor: normalizeColorToken(colors.success, "#15803d"),
+          borderWidth: normalizeBorderWidth(borders.subtle, 1),
+          shadow: normalizeShadowToken(shadows.soft, "0 8px 24px rgba(15, 23, 42, 0.08)"),
           usage: "completed actions, confirmations and healthy state indicators",
         },
         warning: {
-          emphasisColor: colors.warning ?? "#b45309",
-          borderWidth: borders.strong ?? 2,
-          shadow: shadows.soft ?? "0 8px 24px rgba(15, 23, 42, 0.08)",
+          emphasisColor: normalizeColorToken(colors.warning, "#b45309"),
+          borderWidth: normalizeBorderWidth(borders.strong, 2),
+          shadow: normalizeShadowToken(shadows.soft, "0 8px 24px rgba(15, 23, 42, 0.08)"),
           usage: "cautionary actions, pending confirmations and elevated risk messaging",
         },
       },

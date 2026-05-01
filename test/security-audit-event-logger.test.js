@@ -99,3 +99,27 @@ test("security audit event logger returns null when no security event is provide
 
   assert.equal(securityAuditRecord, null);
 });
+
+test("security audit event logger normalizes malformed event metadata fields", () => {
+  const { securityAuditRecord } = createSecurityAuditEventLogger({
+    securityEvent: {
+      eventType: " policy_violation ",
+      summary: " Policy violated ",
+      projectId: " giftwallet ",
+      workspaceId: " workspace-1 ",
+      source: " security-runtime ",
+      traceId: " trace-1 ",
+      timestamp: " 2026-04-21T10:00:00.000Z ",
+    },
+    actorContext: {
+      actorId: "user-1",
+    },
+  });
+
+  assert.equal(securityAuditRecord.eventType, "policy_violation");
+  assert.equal(securityAuditRecord.projectId, "giftwallet");
+  assert.equal(securityAuditRecord.workspaceId, "workspace-1");
+  assert.equal(securityAuditRecord.source, "security-runtime");
+  assert.equal(securityAuditRecord.traceId, "trace-1");
+  assert.equal(securityAuditRecord.timestamp, "2026-04-21T10:00:00.000Z");
+});

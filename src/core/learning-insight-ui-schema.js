@@ -8,6 +8,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 function toConfidenceScore(value) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return Math.max(0, Math.min(1, value));
@@ -46,10 +50,13 @@ function normalizeTraceSteps(learningTrace) {
   return traceSteps.map((step, index) => {
     const normalizedStep = normalizeObject(step);
     return {
-      stepId: normalizedStep.stepId ?? `learning-trace-step-${index + 1}`,
-      title: normalizedStep.title ?? normalizedStep.pattern ?? `Trace step ${index + 1}`,
-      reasoning: normalizedStep.reasoning ?? normalizedStep.summary ?? null,
-      source: normalizedStep.source ?? normalizedStep.kind ?? "learning-trace",
+      stepId: normalizeString(normalizedStep.stepId) ?? `learning-trace-step-${index + 1}`,
+      title:
+        normalizeString(normalizedStep.title)
+        ?? normalizeString(normalizedStep.pattern)
+        ?? `Trace step ${index + 1}`,
+      reasoning: normalizeString(normalizedStep.reasoning) ?? normalizeString(normalizedStep.summary),
+      source: normalizeString(normalizedStep.source) ?? normalizeString(normalizedStep.kind) ?? "learning-trace",
     };
   });
 }
@@ -66,17 +73,24 @@ function buildInsightItems(learningInsights, traceSteps) {
       );
 
       return {
-        insightId: normalizedItem.id ?? `learning-insight-${index + 1}`,
-        title: normalizedItem.title ?? normalizedItem.pattern ?? `Learning insight ${index + 1}`,
-        pattern: normalizedItem.pattern ?? normalizedItem.title ?? "Unclassified pattern",
-        summary: normalizedItem.summary ?? normalizedItem.description ?? null,
+        insightId: normalizeString(normalizedItem.id) ?? `learning-insight-${index + 1}`,
+        title:
+          normalizeString(normalizedItem.title)
+          ?? normalizeString(normalizedItem.pattern)
+          ?? `Learning insight ${index + 1}`,
+        pattern:
+          normalizeString(normalizedItem.pattern)
+          ?? normalizeString(normalizedItem.title)
+          ?? "Unclassified pattern",
+        summary: normalizeString(normalizedItem.summary) ?? normalizeString(normalizedItem.description),
         confidenceScore,
         confidenceBand: toConfidenceBand(confidenceScore),
-        recommendationReasoning: normalizedItem.recommendationReasoning
-          ?? normalizedItem.reasoning
+        recommendationReasoning:
+          normalizeString(normalizedItem.recommendationReasoning)
+          ?? normalizeString(normalizedItem.reasoning)
           ?? traceSteps[0]?.reasoning
           ?? null,
-        evidence: normalizeArray(normalizedItem.evidence),
+        evidence: normalizeArray(normalizedItem.evidence).filter((entry) => entry !== undefined),
       };
     });
   }
@@ -108,7 +122,7 @@ function buildRecommendationReasoning(learningInsights, learningTrace, traceStep
 
   return {
     summary: normalizedTrace.recommendationReasoning
-      ?? normalizedInsights.summary
+      ?? normalizeString(normalizedInsights.summary)
       ?? insightItems[0]?.recommendationReasoning
       ?? "No learning recommendation reasoning available yet",
     traceSteps,
@@ -135,9 +149,9 @@ export function defineLearningInsightUiSchema({
 
   return {
     learningInsightViewModel: {
-      viewModelId: `learning-insight-view:${normalizedInsights.insightSetId ?? "nexus"}`,
+      viewModelId: `learning-insight-view:${normalizeString(normalizedInsights.insightSetId) ?? "nexus"}`,
       summary: {
-        headline: normalizedInsights.summary ?? "No learning insights are visible yet",
+        headline: normalizeString(normalizedInsights.summary) ?? "No learning insights are visible yet",
         totalInsights: insightItems.length,
         patternCount: patterns.length,
         highConfidenceInsights: insightItems.filter((item) => item.confidenceBand === "high").length,

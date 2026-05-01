@@ -8,8 +8,17 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : fallback;
+}
+
 function resolveProbeStatus(circuitBreakerDecision) {
-  const circuitState = circuitBreakerDecision.circuitState ?? "closed";
+  const circuitState = normalizeString(circuitBreakerDecision.circuitState, "closed");
 
   if (circuitState === "open") {
     return "scheduled";
@@ -23,7 +32,7 @@ function resolveProbeStatus(circuitBreakerDecision) {
 }
 
 function resolveProbeAction(circuitBreakerDecision) {
-  const circuitState = circuitBreakerDecision.circuitState ?? "closed";
+  const circuitState = normalizeString(circuitBreakerDecision.circuitState, "closed");
 
   if (circuitState === "open") {
     return "schedule-probe";
@@ -39,15 +48,19 @@ function resolveProbeAction(circuitBreakerDecision) {
 function resolveSchedule({ circuitBreakerDecision, providerSession }) {
   const cooldownWindowMs = circuitBreakerDecision.cooldownWindowMs ?? 0;
   const retryAfterMs = circuitBreakerDecision.retryAfterMs ?? 0;
-  const supportsPolling = normalizeArray(providerSession.operationTypes).includes("poll");
-  const scheduledInMs = circuitBreakerDecision.circuitState === "open"
+  const supportsPolling = normalizeArray(providerSession.operationTypes)
+    .map((operationType) => normalizeString(operationType, null))
+    .filter(Boolean)
+    .includes("poll");
+  const circuitState = normalizeString(circuitBreakerDecision.circuitState, "closed");
+  const scheduledInMs = circuitState === "open"
     ? Math.max(cooldownWindowMs, retryAfterMs, 30000)
-    : circuitBreakerDecision.circuitState === "half-open"
+    : circuitState === "half-open"
       ? Math.max(retryAfterMs, 15000)
       : 0;
 
   return {
-    trigger: circuitBreakerDecision.circuitState === "open" ? "worker-scheduled" : "inline-controlled",
+    trigger: circuitState === "open" ? "worker-scheduled" : "inline-controlled",
     scheduledInMs,
     pollOperation: supportsPolling ? "poll" : "status-check",
     mode: supportsPolling ? "status-poll" : "lightweight-health-check",
@@ -55,11 +68,13 @@ function resolveSchedule({ circuitBreakerDecision, providerSession }) {
 }
 
 function resolveReopenDecision(circuitBreakerDecision) {
-  if (circuitBreakerDecision.circuitState === "half-open") {
+  const circuitState = normalizeString(circuitBreakerDecision.circuitState, "closed");
+
+  if (circuitState === "half-open") {
     return "controlled-reopen";
   }
 
-  if (circuitBreakerDecision.circuitState === "open") {
+  if (circuitState === "open") {
     return "hold-closed";
   }
 
@@ -71,7 +86,7 @@ function buildWorkerJob({ providerSession, schedule }) {
     jobType: "provider-recovery-probe",
     schedule: schedule.trigger === "worker-scheduled" ? "delayed" : "on-demand",
     payload: {
-      providerType: providerSession.providerType ?? "generic",
+      providerType: normalizeString(providerSession.providerType, "generic"),
       probeMode: schedule.mode,
       pollOperation: schedule.pollOperation,
     },
@@ -95,8 +110,8 @@ export function createProviderRecoveryProbeFlow({
 
   return {
     providerRecoveryProbe: {
-      providerRecoveryProbeId: `provider-recovery-probe:${normalizedProviderSession.providerType ?? "generic"}`,
-      providerType: normalizedProviderSession.providerType ?? "generic",
+      providerRecoveryProbeId: `provider-recovery-probe:${normalizeString(normalizedProviderSession.providerType, "generic")}`,
+      providerType: normalizeString(normalizedProviderSession.providerType, "generic"),
       status: probeStatus,
       probeAction,
       reopenDecision,

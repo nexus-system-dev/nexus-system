@@ -46,3 +46,35 @@ test("createPrimaryActionValidator reports missing action when screen contract i
   assert.equal(primaryActionValidation.summary.isValid, false);
   assert.deepEqual(primaryActionValidation.blockingIssues, ["missing-primary-action"]);
 });
+
+test("createPrimaryActionValidator normalizes malformed identifiers and action payloads", () => {
+  const { primaryActionValidation } = createPrimaryActionValidator({
+    screenId: { bad: true },
+    screenContract: {
+      screenType: " detail ",
+      primaryAction: {
+        actionId: " save-detail ",
+        label: " שמור ",
+        intent: 42,
+      },
+    },
+    screenTemplate: {
+      templateType: " detail ",
+      sections: {
+        footerActions: { enabled: true },
+      },
+    },
+  });
+
+  assert.equal(primaryActionValidation.validationId, "primary-action-validation:detail");
+  assert.equal(primaryActionValidation.screenId, null);
+  assert.equal(primaryActionValidation.screenType, "detail");
+  assert.equal(primaryActionValidation.templateType, "detail");
+  assert.deepEqual(primaryActionValidation.primaryAction, {
+    actionId: "save-detail",
+    label: "שמור",
+    intent: "primary",
+  });
+  assert.equal(primaryActionValidation.actionZone, "footerActions");
+  assert.equal(primaryActionValidation.summary.isValid, true);
+});

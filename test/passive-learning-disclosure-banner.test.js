@@ -24,3 +24,17 @@ test("passive learning disclosure banner falls back safely when no insights exis
   assert.equal(learningDisclosure.visible, false);
   assert.equal(learningDisclosure.summary.hasLearningInsights, false);
 });
+
+test("passive learning disclosure banner normalizes malformed identifiers and summary strings", () => {
+  const { learningDisclosure } = createPassiveLearningDisclosureBanner({
+    learningInsights: {
+      insightSetId: {},
+      summary: " summary ",
+      items: [],
+    },
+  });
+
+  assert.equal(learningDisclosure.bannerId, "learning-disclosure:nexus");
+  assert.equal(learningDisclosure.visible, true);
+  assert.equal(learningDisclosure.summary.hasLearningInsights, true);
+});

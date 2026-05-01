@@ -4,9 +4,14 @@ function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function resolveSeverity(eventType, providedSeverity) {
-  if (providedSeverity) {
-    return providedSeverity;
+  const normalizedProvidedSeverity = normalizeString(providedSeverity, null);
+  if (normalizedProvidedSeverity) {
+    return normalizedProvidedSeverity;
   }
 
   if (eventType === "policy_violation") {
@@ -22,8 +27,9 @@ function resolveSeverity(eventType, providedSeverity) {
 }
 
 function resolveThreatLevel(eventType, providedThreatLevel) {
-  if (providedThreatLevel) {
-    return providedThreatLevel;
+  const normalizedProvidedThreatLevel = normalizeString(providedThreatLevel, null);
+  if (normalizedProvidedThreatLevel) {
+    return normalizedProvidedThreatLevel;
   }
 
   if (eventType === "policy_violation") {
@@ -75,21 +81,21 @@ export function createSecurityAuditEventLogger({
   const severity = resolveSeverity(normalizedSecurityEvent.eventType, normalizedSecurityEvent.severity);
   const threatLevel = resolveThreatLevel(normalizedSecurityEvent.eventType, normalizedSecurityEvent.threatLevel);
   const requiresAlert = shouldAlert(normalizedSecurityEvent.eventType);
-  const timestamp = normalizedSecurityEvent.timestamp ?? new Date().toISOString();
+  const timestamp = normalizeString(normalizedSecurityEvent.timestamp, new Date().toISOString());
   const securityAuditRecord = {
     securityAuditId: `security-audit-${Date.now()}`,
-    eventType: normalizedSecurityEvent.eventType,
+    eventType: normalizeString(normalizedSecurityEvent.eventType, "unknown-security-event"),
     severity,
     threatLevel,
     requiresAlert,
-    projectId: normalizedSecurityEvent.projectId,
-    workspaceId: normalizedSecurityEvent.workspaceId,
+    projectId: normalizeString(normalizedSecurityEvent.projectId, null),
+    workspaceId: normalizeString(normalizedSecurityEvent.workspaceId, null),
     actor: normalizedActorContext,
     affectedResource: normalizedSecurityEvent.affectedResource,
-    summary: normalizedSecurityEvent.summary,
+    summary: normalizeString(normalizedSecurityEvent.summary, "Security event recorded"),
     timestamp,
-    source: normalizedSecurityEvent.source,
-    traceId: normalizedSecurityEvent.traceId ?? `${normalizedSecurityEvent.eventType}:${Date.now()}`,
+    source: normalizeString(normalizedSecurityEvent.source, "nexus-runtime"),
+    traceId: normalizeString(normalizedSecurityEvent.traceId, null) ?? `${normalizeString(normalizedSecurityEvent.eventType, "unknown-security-event")}:${Date.now()}`,
     metadata: normalizedSecurityEvent.metadata,
   };
 

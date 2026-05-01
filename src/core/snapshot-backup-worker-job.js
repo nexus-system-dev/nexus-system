@@ -4,6 +4,10 @@ function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function resolveEnabled(workerInput = {}, previousWorker = null) {
   if (typeof workerInput.enabled === "boolean") {
     return workerInput.enabled;
@@ -22,7 +26,7 @@ function buildSummary(snapshotBackupWorker = {}) {
     workerStatus: normalized.enabled ? "enabled" : "disabled",
     runCount: Number(normalized.runCount ?? 0),
     errorCount: Number(normalized.errorCount ?? 0),
-    lastExecutionStatus: normalized.lastExecutionStatus ?? "not-run",
+    lastExecutionStatus: normalizeString(normalized.lastExecutionStatus, "not-run"),
   };
 }
 
@@ -48,11 +52,12 @@ export function createSnapshotBackupWorkerJob({
   const nextRunAt = enabled && Number.isFinite(intervalMs) && intervalMs > 0
     ? new Date(nowDate.getTime() + intervalMs).toISOString()
     : null;
-  const workerJobId = previous.workerJobId ?? `snapshot-backup-worker:${projectId ?? "unknown-project"}`;
+  const normalizedProjectId = normalizeString(projectId ?? previous.projectId, null);
+  const workerJobId = normalizeString(previous.workerJobId, null) ?? `snapshot-backup-worker:${normalizedProjectId ?? "unknown-project"}`;
 
   const snapshotBackupWorker = {
     workerJobId,
-    projectId: projectId ?? previous.projectId ?? null,
+    projectId: normalizedProjectId,
     enabled,
     jobType: "snapshot-backup",
     intervalSeconds: Number.isFinite(intervalSeconds) && intervalSeconds > 0
@@ -62,25 +67,25 @@ export function createSnapshotBackupWorkerJob({
     runCount: Number(previous.runCount ?? 0),
     errorCount: Number(previous.errorCount ?? 0),
     status: enabled ? "idle" : "paused",
-    lastRunAt: previous.lastRunAt ?? null,
+    lastRunAt: normalizeString(previous.lastRunAt, null),
     nextRunAt,
-    lastExecutionStatus: previous.lastExecutionStatus ?? "not-run",
-    lastError: previous.lastError ?? null,
+    lastExecutionStatus: normalizeString(previous.lastExecutionStatus, "not-run"),
+    lastError: normalizeString(previous.lastError, null),
     updatedAt: nowIso,
   };
 
   const { workerRuntime, jobState } = createBackgroundWorkerRuntime({
     jobDefinition: {
-      jobId: previousJob.jobId ?? `snapshot-job:${projectId ?? "unknown-project"}`,
+      jobId: normalizeString(previousJob.jobId, null) ?? `snapshot-job:${normalizedProjectId ?? "unknown-project"}`,
       jobType: "snapshot-backup",
       enabled,
-      schedule: schedule.summary?.scheduleStatus ?? "interval",
+      schedule: normalizeString(schedule.summary?.scheduleStatus, "interval"),
       attempts: previousJob.attempts ?? previous.errorCount ?? 0,
       nextRunAt,
       payload: {
-        projectId: projectId ?? previous.projectId ?? null,
-        snapshotScheduleId: schedule.snapshotScheduleId ?? null,
-        retentionPolicyId: retentionDecision.retentionPolicyId ?? null,
+        projectId: normalizedProjectId,
+        snapshotScheduleId: normalizeString(schedule.snapshotScheduleId, null),
+        retentionPolicyId: normalizeString(retentionDecision.retentionPolicyId, null),
         triggerTypes: schedule.supportedTriggerTypes ?? [],
       },
     },
@@ -94,15 +99,15 @@ export function createSnapshotBackupWorkerJob({
 
   const snapshotJobState = {
     ...jobState,
-    jobId: previousJob.jobId ?? `snapshot-job:${projectId ?? "unknown-project"}`,
+    jobId: normalizeString(previousJob.jobId, null) ?? `snapshot-job:${normalizedProjectId ?? "unknown-project"}`,
     jobType: "snapshot-backup",
     workerRuntimeId: workerRuntime.workerId,
     workerJobId,
-    projectId: projectId ?? previous.projectId ?? null,
+    projectId: normalizedProjectId,
     status: enabled ? "queued" : "idle",
     enabled,
-    lastExecutionStatus: previous.lastExecutionStatus ?? previousJob.lastExecutionStatus ?? "not-run",
-    lastRunAt: previous.lastRunAt ?? previousJob.lastRunAt ?? null,
+    lastExecutionStatus: normalizeString(previous.lastExecutionStatus ?? previousJob.lastExecutionStatus, "not-run"),
+    lastRunAt: normalizeString(previous.lastRunAt ?? previousJob.lastRunAt, null),
     nextRunAt,
     attempts: previousJob.attempts ?? previous.errorCount ?? 0,
     triggerTypes: schedule.supportedTriggerTypes ?? [],
@@ -114,7 +119,7 @@ export function createSnapshotBackupWorkerJob({
       queueName: workerRuntime.queueName,
       runtimeStatus: workerRuntime.status,
       workerEnabled: enabled,
-      lastExecutionStatus: previous.lastExecutionStatus ?? previousJob.lastExecutionStatus ?? "not-run",
+      lastExecutionStatus: normalizeString(previous.lastExecutionStatus ?? previousJob.lastExecutionStatus, "not-run"),
     },
     updatedAt: nowIso,
   };

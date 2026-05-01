@@ -69,3 +69,37 @@ test("system bottleneck detector stays clear without pressure signals", () => {
   assert.equal(systemBottleneckSummary.bottleneckType, "none");
   assert.equal(systemBottleneckSummary.signals.length, 0);
 });
+
+test("system bottleneck detector normalizes malformed trace and component strings", () => {
+  const { systemBottleneckSummary } = createSystemBottleneckDetector({
+    platformTrace: {
+      traceId: " trace-1 ",
+      steps: [
+        { source: " github-connector ", status: "failed", message: "timeout" },
+      ],
+      logs: [
+        { message: "queue stall detected on nexus-background" },
+      ],
+    },
+    healthStatus: {
+      status: "degraded",
+      dependencyStatus: [
+        { name: " api-runtime ", status: "down" },
+      ],
+      blockers: [" dependency:api-runtime ", "   "],
+      incidentAlert: {
+        affectedComponents: [" github-connector "],
+      },
+    },
+    queueObservability: {
+      queueName: " nexus-background ",
+      lagSeconds: 180,
+    },
+  });
+
+  assert.equal(systemBottleneckSummary.bottleneckSummaryId, "system-bottleneck:trace-1");
+  assert.equal(systemBottleneckSummary.traceId, "trace-1");
+  assert.equal(systemBottleneckSummary.queueObservability.queueName, "nexus-background");
+  assert.equal(systemBottleneckSummary.runtimePressure.degradedDependencies.includes("api-runtime"), true);
+  assert.equal(systemBottleneckSummary.providerFailures.affectedProviders.includes("github-connector"), true);
+});

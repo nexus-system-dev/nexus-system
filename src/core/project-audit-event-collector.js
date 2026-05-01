@@ -8,14 +8,23 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : fallback;
+}
+
 function buildAuditTrail(event) {
   return [
     {
       eventType: "project-audit.captured",
-      status: event.status ?? "recorded",
-      actorId: event.actor?.actorId ?? "system",
-      summary: event.summary ?? event.actionType ?? "project audit captured",
-      timestamp: event.timestamp ?? new Date().toISOString(),
+      status: normalizeString(event.status, "recorded"),
+      actorId: normalizeString(event.actor?.actorId, "system"),
+      summary: normalizeString(event.summary ?? event.actionType, "project audit captured"),
+      timestamp: normalizeString(event.timestamp, new Date().toISOString()),
     },
   ];
 }
@@ -29,19 +38,19 @@ export function createProjectAuditEventCollector({
 
   return {
     projectAuditRecord: {
-      projectAuditRecordId: `project-audit-record:${event.projectAuditEventId ?? "unknown-event"}`,
-      projectAuditEventId: event.projectAuditEventId ?? null,
-      projectId: event.projectId ?? null,
-      workspaceId: event.workspaceId ?? null,
-      actionType: event.actionType ?? "project.observed",
-      category: event.category ?? "project",
-      status: event.status ?? "recorded",
+      projectAuditRecordId: `project-audit-record:${normalizeString(event.projectAuditEventId, "unknown-event")}`,
+      projectAuditEventId: normalizeString(event.projectAuditEventId, null),
+      projectId: normalizeString(event.projectId, null),
+      workspaceId: normalizeString(event.workspaceId, null),
+      actionType: normalizeString(event.actionType, "project.observed"),
+      category: normalizeString(event.category, "project"),
+      status: normalizeString(event.status, "recorded"),
       actor: normalizeObject(event.actor),
       resource: normalizeObject(event.resource),
-      summary: event.summary ?? event.actionType ?? "project audit record",
-      reason: event.reason ?? null,
-      traceId: event.traceId ?? null,
-      source: event.source ?? "nexus-runtime",
+      summary: normalizeString(event.summary ?? event.actionType, "project audit record"),
+      reason: normalizeString(event.reason, null),
+      traceId: normalizeString(event.traceId, null),
+      source: normalizeString(event.source, "nexus-runtime"),
       capturedAt: new Date().toISOString(),
       impactedAreas,
       attachments,

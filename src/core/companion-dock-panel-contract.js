@@ -4,23 +4,30 @@ function normalizeObject(value) {
     : {};
 }
 
+function normalizeString(value, fallback) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function buildDock(companionPresence, companionMessagePriority) {
   const normalizedPresence = normalizeObject(companionPresence);
   const normalizedPriority = normalizeObject(companionMessagePriority);
+  const priority = normalizeString(normalizedPriority.priority, "advisory");
+  const visualMode = normalizeString(normalizedPresence.visualMode, "ambient");
+  const tone = normalizeString(normalizedPresence.tone, "calm");
 
   return {
-    dockId: `companion-dock:${normalizedPresence.presenceId ?? "project"}`,
+    dockId: `companion-dock:${normalizeString(normalizedPresence.presenceId, "project")}`,
     visible: normalizedPresence.visible === true,
-    visualMode: normalizedPresence.visualMode ?? "ambient",
-    tone: normalizedPresence.tone ?? "calm",
-    priority: normalizedPriority.priority ?? "advisory",
+    visualMode,
+    tone,
+    priority,
     summary: {
       headline:
-        normalizedPriority.priority === "critical"
+        priority === "critical"
           ? "The AI companion needs your attention now."
-          : normalizedPriority.priority === "warning"
+          : priority === "warning"
             ? "The AI companion is holding a warning for you."
-            : normalizedPriority.priority === "recommendation"
+            : priority === "recommendation"
               ? "The AI companion has a recommendation ready."
               : "The AI companion is available if you need help.",
       prefersBadge: normalizedPresence.visibilityRules?.showAsDockBadge === true,
@@ -32,38 +39,43 @@ function buildDock(companionPresence, companionMessagePriority) {
 function buildPanel(companionPresence, companionMessagePriority) {
   const normalizedPresence = normalizeObject(companionPresence);
   const normalizedPriority = normalizeObject(companionMessagePriority);
+  const priority = normalizeString(normalizedPriority.priority, "advisory");
+  const visualMode = normalizeString(normalizedPresence.visualMode, "ambient");
+  const reasons = Array.isArray(normalizedPriority.reasons)
+    ? normalizedPriority.reasons.map((reason) => normalizeString(reason, null)).filter(Boolean)
+    : [];
 
   return {
-    panelId: `companion-panel:${normalizedPresence.presenceId ?? "project"}`,
+    panelId: `companion-panel:${normalizeString(normalizedPresence.presenceId, "project")}`,
     visible: normalizedPresence.visible === true,
     sections: {
       summary: {
         enabled: true,
-        priority: normalizedPriority.priority ?? "advisory",
+        priority,
       },
       suggestions: {
-        enabled: normalizedPriority.priority === "recommendation"
-          || normalizedPriority.priority === "warning"
-          || normalizedPriority.priority === "critical",
-        items: normalizedPriority.reasons ?? [],
+        enabled: priority === "recommendation"
+          || priority === "warning"
+          || priority === "critical",
+        items: reasons,
       },
       nextActions: {
-        enabled: normalizedPriority.priority !== "advisory",
+        enabled: priority !== "advisory",
         items: [
-          normalizedPriority.priority === "critical"
+          priority === "critical"
             ? "resolve-critical-state"
-            : normalizedPriority.priority === "warning"
+            : priority === "warning"
               ? "review-warning"
-              : normalizedPriority.priority === "recommendation"
+              : priority === "recommendation"
                 ? "review-recommendation"
                 : "open-companion",
         ],
       },
     },
     summary: {
-      hasSuggestions: Array.isArray(normalizedPriority.reasons) && normalizedPriority.reasons.length > 0,
-      showsNextActions: normalizedPriority.priority !== "advisory",
-      visibilityMode: normalizedPresence.visualMode ?? "ambient",
+      hasSuggestions: reasons.length > 0,
+      showsNextActions: priority !== "advisory",
+      visibilityMode: visualMode,
     },
   };
 }

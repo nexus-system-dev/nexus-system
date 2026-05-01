@@ -8,8 +8,17 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : fallback;
+}
+
 function resolveCategory(actionType) {
-  const normalized = String(actionType ?? "").toLowerCase();
+  const normalized = normalizeString(actionType, "")?.toLowerCase() ?? "";
 
   if (normalized.startsWith("project.edit") || normalized.includes("diff")) {
     return "edit";
@@ -41,8 +50,8 @@ function resolveCategory(actionType) {
 function resolveResource(projectAction, category) {
   if (projectAction.targetType || projectAction.targetId) {
     return {
-      targetType: projectAction.targetType ?? category,
-      targetId: projectAction.targetId ?? null,
+      targetType: normalizeString(projectAction.targetType, category),
+      targetId: normalizeString(projectAction.targetId, null),
     };
   }
 
@@ -58,39 +67,41 @@ export function defineProjectAuditEventSchema({
 } = {}) {
   const normalizedProjectAction = normalizeObject(projectAction);
   const normalizedActorContext = normalizeObject(actorContext);
-  const actionType = normalizedProjectAction.actionType ?? "project.observed";
+  const actionType = normalizeString(normalizedProjectAction.actionType, "project.observed");
   const category = resolveCategory(actionType);
   const resource = resolveResource(normalizedProjectAction, category);
-  const impactedAreas = normalizeArray(normalizedProjectAction.impactedAreas);
+  const impactedAreas = normalizeArray(normalizedProjectAction.impactedAreas)
+    .map((area) => normalizeString(area, null))
+    .filter(Boolean);
   const attachments = normalizeArray(normalizedProjectAction.attachments);
 
   return {
     projectAuditEvent: {
-      projectAuditEventId: `project-audit:${normalizedProjectAction.projectId ?? normalizedActorContext.projectId ?? "unknown"}:${Date.now()}`,
-      projectId: normalizedProjectAction.projectId ?? normalizedActorContext.projectId ?? null,
-      workspaceId: normalizedActorContext.workspaceId ?? null,
+      projectAuditEventId: `project-audit:${normalizeString(normalizedProjectAction.projectId ?? normalizedActorContext.projectId, "unknown")}:${Date.now()}`,
+      projectId: normalizeString(normalizedProjectAction.projectId ?? normalizedActorContext.projectId, null),
+      workspaceId: normalizeString(normalizedActorContext.workspaceId, null),
       actionType,
       category,
-      status: normalizedProjectAction.status ?? "recorded",
+      status: normalizeString(normalizedProjectAction.status, "recorded"),
       actor: {
-        actorId: normalizedActorContext.actorId ?? normalizedProjectAction.actorId ?? "system",
-        actorType: normalizedActorContext.actorType ?? "system",
-        actorRole: normalizedActorContext.actorRole ?? null,
+        actorId: normalizeString(normalizedActorContext.actorId ?? normalizedProjectAction.actorId, "system"),
+        actorType: normalizeString(normalizedActorContext.actorType, "system"),
+        actorRole: normalizeString(normalizedActorContext.actorRole, null),
       },
       resource,
-      summary: normalizedProjectAction.summary ?? actionType,
-      reason: normalizedProjectAction.reason ?? null,
-      riskLevel: normalizedProjectAction.riskLevel ?? "low",
-      source: normalizedProjectAction.source ?? normalizedActorContext.source ?? "nexus-runtime",
-      traceId: normalizedProjectAction.traceId ?? normalizedActorContext.traceId ?? null,
-      timestamp: normalizedProjectAction.timestamp ?? new Date().toISOString(),
+      summary: normalizeString(normalizedProjectAction.summary, actionType),
+      reason: normalizeString(normalizedProjectAction.reason, null),
+      riskLevel: normalizeString(normalizedProjectAction.riskLevel, "low"),
+      source: normalizeString(normalizedProjectAction.source ?? normalizedActorContext.source, "nexus-runtime"),
+      traceId: normalizeString(normalizedProjectAction.traceId ?? normalizedActorContext.traceId, null),
+      timestamp: normalizeString(normalizedProjectAction.timestamp, new Date().toISOString()),
       impactedAreas,
       attachments,
       metadata: normalizedProjectAction.metadata ?? {},
       summaryFlags: {
         hasAttachments: attachments.length > 0,
         hasImpact: impactedAreas.length > 0,
-        isHighRisk: (normalizedProjectAction.riskLevel ?? "low") === "high",
+        isHighRisk: normalizeString(normalizedProjectAction.riskLevel, "low") === "high",
       },
     },
   };

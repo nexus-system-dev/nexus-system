@@ -40,3 +40,25 @@ test("provider degradation schema falls back to healthy generic provider", () =>
   assert.equal(typeof providerDegradationState.cooldownWindowMs, "number");
   assert.equal(Array.isArray(providerDegradationState.degradedServiceFlags), true);
 });
+
+test("provider degradation schema normalizes malformed provider identifiers and statuses", () => {
+  const { providerDegradationState } = defineProviderDegradationSchema({
+    providerSession: {
+      providerType: " hosting ",
+      status: " DEGRADED ",
+    },
+    incidentAlert: {
+      status: " ACTIVE ",
+      incidents: [
+        {
+          affectedComponents: ["hosting-connector"],
+        },
+      ],
+    },
+  });
+
+  assert.equal(providerDegradationState.degradationStateId, "provider-degradation:hosting");
+  assert.equal(providerDegradationState.providerType, "hosting");
+  assert.equal(providerDegradationState.health, "degraded");
+  assert.equal(providerDegradationState.degradedServiceFlags.includes("incident-active"), true);
+});

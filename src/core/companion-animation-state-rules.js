@@ -4,11 +4,18 @@ function normalizeObject(value) {
     : {};
 }
 
+function normalizeString(value, fallback) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function resolveMotionLevel(companionState, companionTriggerDecision) {
   const normalizedCompanionState = normalizeObject(companionState);
   const normalizedTriggerDecision = normalizeObject(companionTriggerDecision);
-  const state = normalizedCompanionState.state ?? normalizedCompanionState.mode ?? "observing";
-  const decisionType = normalizedTriggerDecision.decisionType ?? "stay-quiet";
+  const state = normalizeString(
+    normalizedCompanionState.state,
+    normalizeString(normalizedCompanionState.mode, "observing"),
+  ).toLowerCase();
+  const decisionType = normalizeString(normalizedTriggerDecision.decisionType, "stay-quiet").toLowerCase();
 
   if (decisionType === "interrupt" || state === "warning") {
     return "noticeable";
@@ -24,8 +31,11 @@ function resolveMotionLevel(companionState, companionTriggerDecision) {
 function resolveAnimationMode(companionState, companionTriggerDecision) {
   const normalizedCompanionState = normalizeObject(companionState);
   const normalizedTriggerDecision = normalizeObject(companionTriggerDecision);
-  const state = normalizedCompanionState.state ?? normalizedCompanionState.mode ?? "observing";
-  const decisionType = normalizedTriggerDecision.decisionType ?? "stay-quiet";
+  const state = normalizeString(
+    normalizedCompanionState.state,
+    normalizeString(normalizedCompanionState.mode, "observing"),
+  ).toLowerCase();
+  const decisionType = normalizeString(normalizedTriggerDecision.decisionType, "stay-quiet").toLowerCase();
 
   if (decisionType === "stay-quiet") {
     return "still";
@@ -69,7 +79,7 @@ export function createCompanionAnimationStateRules({
 
   return {
     animationStateRules: {
-      animationRulesId: `companion-animation:${normalizedCompanionState.stateId ?? "project"}`,
+      animationRulesId: `companion-animation:${normalizeString(normalizedCompanionState.stateId, "project")}`,
       animationMode,
       motionLevel,
       loop: animationMode !== "still",

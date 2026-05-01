@@ -39,3 +39,48 @@ test("createFeedbackComponents falls back safely without explicit interaction sy
   assert.equal(feedbackComponents.components[2].preview.actionLabel, "נסה שוב");
   assert.equal(feedbackComponents.summary.coversInlineFeedback, true);
 });
+
+test("createFeedbackComponents normalizes invalid interaction identity and token payloads", () => {
+  const { feedbackComponents } = createFeedbackComponents({
+    interactionStateSystem: {
+      interactionStateSystemId: { invalid: true },
+      states: {
+        hover: { emphasisColor: 42, shadow: {} },
+        active: { emphasisColor: null },
+        focus: { emphasisColor: false, shadow: [] },
+        disabled: { emphasisColor: "", shadow: 11 },
+        destructive: { emphasisColor: {}, shadow: 7 },
+        success: { emphasisColor: [] },
+        warning: { emphasisColor: 0 },
+      },
+    },
+  });
+
+  assert.equal(feedbackComponents.feedbackComponentLibraryId, "feedback-components:nexus");
+  assert.equal(feedbackComponents.components[0].tokens.emphasisColor, "#0f766e");
+  assert.equal(feedbackComponents.components[0].tokens.shadow, "0 0 0 3px rgba(15, 118, 110, 0.18)");
+  assert.equal(feedbackComponents.components[1].tokens.emphasisColor, "#6b7280");
+  assert.equal(feedbackComponents.components[2].tokens.emphasisColor, "#b91c1c");
+  assert.equal(feedbackComponents.components[2].tokens.shadow, "0 8px 24px rgba(15, 23, 42, 0.08)");
+  assert.equal(feedbackComponents.components[3].tokens.successColor, "#15803d");
+  assert.equal(feedbackComponents.components[5].tokens.activeColor, "#115e59");
+  assert.equal(feedbackComponents.components[6].tokens.shimmerColor, "#115e59");
+});
+
+test("createFeedbackComponents ignores non-object state payloads and emits safe defaults", () => {
+  const { feedbackComponents } = createFeedbackComponents({
+    interactionStateSystem: {
+      interactionStateSystemId: "interaction-states:design-tokens:nexus",
+      states: "invalid",
+    },
+  });
+
+  assert.equal(
+    feedbackComponents.feedbackComponentLibraryId,
+    "feedback-components:interaction-states:design-tokens:nexus",
+  );
+  assert.equal(feedbackComponents.components[0].tokens.emphasisColor, "#0f766e");
+  assert.equal(feedbackComponents.components[1].tokens.shadow, "none");
+  assert.equal(feedbackComponents.components[3].tokens.warningColor, "#b45309");
+  assert.equal(feedbackComponents.components[6].tokens.shadow, "0 8px 24px rgba(15, 23, 42, 0.08)");
+});

@@ -34,3 +34,42 @@ test("typography system falls back safely without explicit tokens", () => {
   assert.equal(typeof typographySystem.typeScale.meta.fontSize, "number");
   assert.equal(typographySystem.summary.optimizedForDesktop, true);
 });
+
+test("typography system normalizes invalid token identity and font families", () => {
+  const { typographySystem } = createTypographySystem({
+    designTokens: {
+      tokenSetId: { nested: true },
+      typography: {
+        familyDisplay: false,
+        familyBody: "",
+      },
+    },
+  });
+
+  assert.equal(typographySystem.typographySystemId, "typography-system:nexus");
+  assert.equal(typographySystem.displayFontFamily, "\"Avenir Next\", \"Helvetica Neue\", sans-serif");
+  assert.equal(typographySystem.baseFontFamily, "\"IBM Plex Sans\", \"Helvetica Neue\", sans-serif");
+});
+
+test("typography system ignores invalid size tokens", () => {
+  const { typographySystem } = createTypographySystem({
+    designTokens: {
+      tokenSetId: "design-tokens:nexus",
+      typography: {
+        sizeDisplay: "40",
+        sizeXl: -10,
+        sizeLg: null,
+        sizeMd: Number.NaN,
+        sizeSm: 0,
+        sizeXs: Infinity,
+      },
+    },
+  });
+
+  assert.equal(typographySystem.typeScale.display.fontSize, 40);
+  assert.equal(typographySystem.typeScale.h1.fontSize, 28);
+  assert.equal(typographySystem.typeScale.h2.fontSize, 20);
+  assert.equal(typographySystem.typeScale.body.fontSize, 16);
+  assert.equal(typographySystem.typeScale.label.fontSize, 14);
+  assert.equal(typographySystem.typeScale.meta.fontSize, 12);
+});

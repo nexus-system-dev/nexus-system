@@ -6,19 +6,23 @@ function normalizeRequestContext(requestContext) {
   return requestContext && typeof requestContext === "object" ? requestContext : {};
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function resolveResourceMatch(resources, requestContext) {
-  const resourceId = requestContext.resourceId ?? null;
-  const resourceType = requestContext.resourceType ?? null;
+  const resourceId = normalizeString(requestContext.resourceId, null);
+  const resourceType = normalizeString(requestContext.resourceType, null);
 
   if (resourceId) {
-    const byId = resources.find((resource) => resource?.resourceId === resourceId);
+    const byId = resources.find((resource) => normalizeString(resource?.resourceId, null) === resourceId);
     if (byId) {
       return byId;
     }
   }
 
   if (resourceType) {
-    return resources.find((resource) => resource?.resourceType === resourceType) ?? null;
+    return resources.find((resource) => normalizeString(resource?.resourceType, null) === resourceType) ?? null;
   }
 
   return resources[0] ?? null;
@@ -66,9 +70,9 @@ export function createWorkspaceIsolationGuard({
     ? normalizedTenantIsolationSchema.isolatedResources
     : [];
   const resource = resolveResourceMatch(isolatedResources, normalizedRequestContext);
-  const schemaWorkspaceId = normalizedTenantIsolationSchema.workspaceId ?? null;
-  const requestWorkspaceId = normalizedRequestContext.workspaceId ?? schemaWorkspaceId;
-  const resourceWorkspaceId = resource?.workspaceId ?? requestWorkspaceId;
+  const schemaWorkspaceId = normalizeString(normalizedTenantIsolationSchema.workspaceId, null);
+  const requestWorkspaceId = normalizeString(normalizedRequestContext.workspaceId, schemaWorkspaceId);
+  const resourceWorkspaceId = normalizeString(resource?.workspaceId, requestWorkspaceId);
   const crossTenantAccessAllowed = resource?.crossTenantAccessAllowed === true;
 
   const requestWorkspaceMismatch = Boolean(
@@ -101,13 +105,13 @@ export function createWorkspaceIsolationGuard({
 
   return {
     workspaceIsolationDecision: {
-      workspaceIsolationDecisionId: `workspace-isolation:${requestWorkspaceId ?? "workspace"}:${normalizedRequestContext.actionType ?? "access"}`,
+      workspaceIsolationDecisionId: `workspace-isolation:${requestWorkspaceId ?? "workspace"}:${normalizeString(normalizedRequestContext.actionType, "access")}`,
       workspaceId: schemaWorkspaceId,
       requestWorkspaceId,
       resourceWorkspaceId,
-      resourceId: resource?.resourceId ?? normalizedRequestContext.resourceId ?? null,
-      resourceType: resource?.resourceType ?? normalizedRequestContext.resourceType ?? "resource",
-      actionType: normalizedRequestContext.actionType ?? "read",
+      resourceId: normalizeString(resource?.resourceId, normalizeString(normalizedRequestContext.resourceId, null)),
+      resourceType: normalizeString(resource?.resourceType, normalizeString(normalizedRequestContext.resourceType, "resource")),
+      actionType: normalizeString(normalizedRequestContext.actionType, "read"),
       decision,
       isAllowed: decision === "allowed",
       isBlocked: decision === "blocked",

@@ -155,7 +155,7 @@ function collectSignals({ platformTrace, healthStatus }) {
     });
   }
 
-  if (healthStatus.status === "not-ready" || healthStatus.isReady === false) {
+  if (healthStatus.status === "not-ready" || healthStatus.status === "blocked" || healthStatus.isReady === false) {
     incidents.push({
       type: "readiness-blocker",
       severity: "high",

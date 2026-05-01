@@ -8,6 +8,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 function clamp(value, min = 0, max = 1) {
   if (!Number.isFinite(value)) {
     return min;
@@ -23,6 +27,11 @@ function scoreProjectState(projectState) {
   const progressState = normalizeObject(normalizedProjectState.progressState);
   const approvals = normalizeArray(normalizedProjectState.approvals);
   const events = normalizeArray(normalizedProjectState.events);
+  const progressStatus = normalizeString(progressState.status) ?? "idle";
+  const projectSourceId =
+    normalizeString(normalizedProjectState.id)
+    ?? normalizeString(normalizedProjectState.projectId)
+    ?? "project";
 
   const relevance = clamp(
     0.35
@@ -32,7 +41,7 @@ function scoreProjectState(projectState) {
   );
   const priority = clamp(
     0.3
-      + ((progressState.status ?? "idle") === "blocked" ? 0.3 : 0)
+      + (progressStatus === "blocked" ? 0.3 : 0)
       + ((screenReviewReport.summary?.blockedScreens ?? 0) > 0 ? 0.2 : 0)
       + (approvals.length > 0 ? 0.1 : 0),
   );
@@ -44,7 +53,7 @@ function scoreProjectState(projectState) {
 
   return {
     source: "project-state",
-    sourceId: normalizedProjectState.id ?? normalizedProjectState.projectId ?? "project",
+    sourceId: projectSourceId,
     relevanceScore: Number(relevance.toFixed(2)),
     priorityScore: Number(priority.toFixed(2)),
     freshnessScore: Number(freshness.toFixed(2)),
@@ -53,17 +62,26 @@ function scoreProjectState(projectState) {
       screenReviewReport.summary?.blockedScreens > 0 ? "screen-review-has-blockers" : null,
       activeBottleneck.bottleneckId ? "active-bottleneck-present" : null,
       approvals.length > 0 ? "approval-pressure-present" : null,
-      progressState.status ? `progress-status:${progressState.status}` : null,
+      progressStatus ? `progress-status:${progressStatus}` : null,
     ].filter(Boolean),
   };
 }
 
 function scoreInteractionContext(interactionContext) {
   const normalizedInteractionContext = normalizeObject(interactionContext);
-  const currentSurface = normalizedInteractionContext.currentSurface ?? normalizedInteractionContext.surface ?? "workspace";
-  const urgency = normalizedInteractionContext.urgency ?? "normal";
-  const currentTask = normalizedInteractionContext.currentTask ?? normalizedInteractionContext.taskId ?? null;
+  const currentSurface =
+    normalizeString(normalizedInteractionContext.currentSurface)
+    ?? normalizeString(normalizedInteractionContext.surface)
+    ?? "workspace";
+  const urgency = normalizeString(normalizedInteractionContext.urgency) ?? "normal";
+  const currentTask =
+    normalizeString(normalizedInteractionContext.currentTask)
+    ?? normalizeString(normalizedInteractionContext.taskId);
   const visible = normalizedInteractionContext.visible !== false;
+  const interactionSourceId =
+    normalizeString(normalizedInteractionContext.sessionId)
+    ?? normalizeString(normalizedInteractionContext.projectId)
+    ?? currentSurface;
 
   const relevance = clamp(
     0.4
@@ -80,7 +98,7 @@ function scoreInteractionContext(interactionContext) {
 
   return {
     source: "interaction-context",
-    sourceId: normalizedInteractionContext.sessionId ?? normalizedInteractionContext.projectId ?? currentSurface,
+    sourceId: interactionSourceId,
     relevanceScore: Number(relevance.toFixed(2)),
     priorityScore: Number(priority.toFixed(2)),
     freshnessScore: Number(freshness.toFixed(2)),
@@ -165,13 +183,17 @@ export function defineContextRelevanceSchema({
     scoreProjectState(normalizedProjectState),
     scoreInteractionContext(normalizedInteractionContext),
   ]);
+  const schemaSourceId =
+    normalizeString(normalizedProjectState.id)
+    ?? normalizeString(normalizedProjectState.projectId)
+    ?? "project";
 
   const overallPriority = Math.max(...scoredEntries.map((entry) => entry.priorityScore));
   const overallFreshness = Math.max(...scoredEntries.map((entry) => entry.freshnessScore));
 
   return {
     contextRelevanceSchema: {
-      schemaId: `context-relevance:${normalizedProjectState.id ?? normalizedProjectState.projectId ?? "project"}`,
+      schemaId: `context-relevance:${schemaSourceId}`,
       dimensions: ["relevance", "priority", "freshness", "tokenWeight"],
       contextEntries: scoredEntries,
       ordering: buildOrdering(scoredEntries),

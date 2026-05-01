@@ -1,7 +1,19 @@
+const SUPPORTED_SCREEN_TYPES = new Set([
+  "workspace",
+  "dashboard",
+  "wizard",
+  "tracking",
+  "management",
+  "detail",
+]);
+
 function normalizeScreenType(screenType) {
-  return typeof screenType === "string" && screenType.trim()
-    ? screenType.trim()
-    : "workspace";
+  if (typeof screenType !== "string" || !screenType.trim()) {
+    return "workspace";
+  }
+
+  const normalizedScreenType = screenType.trim().toLowerCase();
+  return SUPPORTED_SCREEN_TYPES.has(normalizedScreenType) ? normalizedScreenType : "workspace";
 }
 
 function buildRegions(screenType) {

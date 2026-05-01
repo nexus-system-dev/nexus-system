@@ -14,9 +14,9 @@ function normalizeClassification(dataPrivacyClassification = null) {
   const normalized = normalizeObject(dataPrivacyClassification);
   return {
     classificationId: normalizeString(normalized.classificationId, null),
-    exposureLevel: normalizeString(normalized.exposureLevel, "internal"),
-    personalData: normalizeString(normalized.personalData, "none"),
-    learningSafety: normalizeString(normalized.learningSafety, "restricted"),
+    exposureLevel: normalizeString(normalized.exposureLevel, "internal")?.toLowerCase(),
+    personalData: normalizeString(normalized.personalData, "none")?.toLowerCase(),
+    learningSafety: normalizeString(normalized.learningSafety, "restricted")?.toLowerCase(),
     storageBinding: normalizeObject(normalized.storageBinding),
   };
 }
@@ -38,16 +38,16 @@ function normalizeRetentionPolicy(retentionPolicy = null) {
   const policyId = normalizeString(normalized.policyId ?? normalized.id, "privacy-fallback-policy");
   return {
     policyId,
-    source: normalizeString(normalized.source, "direct-input"),
-    retentionAction: normalizeString(normalized.retentionAction, null),
+    source: normalizeString(normalized.source, "direct-input")?.toLowerCase(),
+    retentionAction: normalizeString(normalized.retentionAction, null)?.toLowerCase() ?? null,
     window: normalizeObject(normalized.window),
-    deletionMode: normalizeString(normalized.deletionMode, null),
+    deletionMode: normalizeString(normalized.deletionMode, null)?.toLowerCase() ?? null,
     backupAllowed: typeof normalized.backupAllowed === "boolean" ? normalized.backupAllowed : null,
     backupConstraints: Object.keys(normalizeObject(normalized.backupConstraints)).length > 0
       ? normalizeObject(normalized.backupConstraints)
       : null,
     protectsArtifacts: normalizeBoolean(normalized.protectsArtifacts, false),
-    storageDriver: normalizeString(normalized.storageDriver, null),
+    storageDriver: normalizeString(normalized.storageDriver, null)?.toLowerCase() ?? null,
   };
 }
 

@@ -29,3 +29,21 @@ test("ai learning workspace template falls back safely without explicit schema",
   assert.equal(typeof aiLearningWorkspaceTemplate.sections.topbar.enabled, "boolean");
   assert.equal(aiLearningWorkspaceTemplate.composition.insightCount, 0);
 });
+
+test("ai learning workspace template normalizes malformed identifiers regions and insight items", () => {
+  const { aiLearningWorkspaceTemplate } = createAiLearningWorkspaceTemplate({
+    screenTemplateSchema: {
+      templateId: {},
+      regions: [" topbar ", "content-grid", null, {}],
+    },
+    learningInsightViewModel: {
+      insights: [{ insightId: "one" }, null, "bad"],
+    },
+  });
+
+  assert.equal(aiLearningWorkspaceTemplate.templateId, "ai-learning-workspace:workspace");
+  assert.equal(aiLearningWorkspaceTemplate.baseTemplateId, null);
+  assert.equal(aiLearningWorkspaceTemplate.sections.topbar.enabled, true);
+  assert.equal(aiLearningWorkspaceTemplate.sections.workspacePanels.enabled, true);
+  assert.equal(aiLearningWorkspaceTemplate.composition.insightCount, 1);
+});

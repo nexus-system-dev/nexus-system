@@ -125,16 +125,44 @@ function queryElements(doc) {
     syncCasinoButton: doc.querySelector("#sync-casino-button"),
     analyzeButton: doc.querySelector("#analyze-button"),
     runCycleButton: doc.querySelector("#run-cycle-button"),
+    heroActions: doc.querySelector(".hero-actions"),
+    screenCreate: doc.querySelector("#screen-create"),
+    screenOnboarding: doc.querySelector("#screen-onboarding"),
+    screenWorkspace: doc.querySelector("#screen-workspace"),
+    workspaceTopShell: doc.querySelector(".workspace-top-shell"),
     workspaceBoard: doc.querySelector("#workspace-board"),
+    flowFeedbackBanner: doc.querySelector("#flow-feedback-banner"),
+    flowFeedbackTitle: doc.querySelector("#flow-feedback-title"),
+    flowFeedbackMessage: doc.querySelector("#flow-feedback-message"),
+    createNewProjectButton: doc.querySelector("#create-new-project-button"),
+    reopenOnboardingButton: doc.querySelector("#reopen-onboarding-button"),
     emptyAppState: doc.querySelector("#empty-app-state"),
     emptyProjectMessage: doc.querySelector("#empty-project-message"),
     emptyProjectStatus: doc.querySelector("#empty-project-status"),
+    projectCreateStage: doc.querySelector("#project-create-stage"),
+    onboardingStage: doc.querySelector("#onboarding-stage"),
+    onboardingScreenMessage: doc.querySelector("#onboarding-screen-message"),
+    onboardingScreenStatus: doc.querySelector("#onboarding-screen-status"),
+    onboardingStageTitle: doc.querySelector("#onboarding-stage-title"),
+    onboardingStageDescription: doc.querySelector("#onboarding-stage-description"),
+    onboardingProgressPill: doc.querySelector("#onboarding-progress-pill"),
+    onboardingBackButton: doc.querySelector("#onboarding-back-button"),
+    onboardingForwardButton: doc.querySelector("#onboarding-forward-button"),
+    onboardingNotesList: doc.querySelector("#onboarding-notes-list"),
+    onboardingChatThread: doc.querySelector("#onboarding-chat-thread"),
+    onboardingCurrentQuestionTitle: doc.querySelector("#onboarding-current-question-title"),
+    onboardingCurrentQuestionBody: doc.querySelector("#onboarding-current-question-body"),
+    onboardingAnswerInput: doc.querySelector("#onboarding-answer-input"),
+    onboardingNextButton: doc.querySelector("#onboarding-next-button"),
+    onboardingMaterialStage: doc.querySelector("#onboarding-material-stage"),
+    onboardingFormStage: doc.querySelector("#onboarding-form-stage"),
     createProjectNameInput: doc.querySelector("#create-project-name-input"),
     createProjectVisionInput: doc.querySelector("#create-project-vision-input"),
     createProjectLinkInput: doc.querySelector("#create-project-link-input"),
     createProjectFileNameInput: doc.querySelector("#create-project-file-name-input"),
     createProjectFileContentInput: doc.querySelector("#create-project-file-content-input"),
     createProjectButton: doc.querySelector("#create-project-button"),
+    finishOnboardingButton: doc.querySelector("#finish-onboarding-button"),
     developerTab: doc.querySelector("#tab-developer"),
     projectBrainTab: doc.querySelector("#tab-project-brain"),
     releaseTab: doc.querySelector("#tab-release"),
@@ -210,6 +238,29 @@ function queryElements(doc) {
 }
 
 const workspaceKeys = ["developer", "project-brain", "release", "growth"];
+const onboardingQuestionFlow = [
+  {
+    id: "target-user",
+    title: "למי הפרויקט הזה מיועד?",
+    body: "ענה בקצרה מי המשתמש המרכזי כדי שנבין עבור מי בונים את ה־workspace הראשון.",
+    noteLabel: "קהל יעד",
+    placeholder: "לדוגמה: מנהלי מוצר, צוותי פיתוח, בעלי קזינו או צוותי support.",
+  },
+  {
+    id: "core-flow",
+    title: "מה הפעולה הראשונה שהמשתמש חייב לבצע?",
+    body: "תאר את הצעד הראשון הקריטי של המשתמש בתוך המוצר, בלי לפרט עדיין את כל המערכת.",
+    noteLabel: "פעולת ליבה ראשונה",
+    placeholder: "לדוגמה: לפתוח פרויקט, לאשר proposal, או להשלים onboarding קצר.",
+  },
+  {
+    id: "success-outcome",
+    title: "איך תדע שהגרסה הראשונה באמת נותנת ערך?",
+    body: "תאר מה המשתמש צריך לקבל או להרגיש כדי שנוכל להגדיר מהו first value אמיתי.",
+    noteLabel: "תוצאת ערך ראשונה",
+    placeholder: "לדוגמה: לראות next task ברור, recommendation, או project state usable.",
+  },
+];
 
 function workspaceTabHtml(title, metaItems = []) {
   return `
@@ -352,50 +403,63 @@ export function applyDesignSystem(doc, project) {
 function renderTop(elements, project) {
   const blockedTasks = normalizeArray(project.cycle?.roadmap).filter((task) => task.status === "blocked");
   const activeTasks = normalizeArray(project.cycle?.roadmap).filter((task) => task.status === "assigned");
-  const activeAgents = normalizeArray(project.agents).filter((agent) => agent.status === "working").length;
   const firstValueOutput = normalizeObject(project.firstValueOutput ?? project.state?.firstValueOutput);
   const firstValueSummary = normalizeObject(project.firstValueSummary ?? project.state?.firstValueSummary);
-  const firstValueItems = firstValueOutput.outputId
-    ? [
-        {
-          title: firstValueOutput.preview?.headline ?? "First value is ready",
-          body:
-            firstValueOutput.preview?.detail
-            ?? firstValueSummary.message
-            ?? normalizeArray(firstValueOutput.userVisibleArtifacts).join(" | "),
-        },
-      ]
-    : [];
+  const bottleneck = project.overview?.bottleneck ?? "לא זוהה";
+  const projectStatus = t(project.status ?? "idle");
+  const currentStateSummary = activeTasks.length > 0
+    ? `הפרויקט נמצא עכשיו בשלב ${projectStatus}, וכבר יש צעד עבודה פעיל שמחכה לבדיקה.`
+    : `הפרויקט נמצא עכשיו בשלב ${projectStatus}, וה־workspace מוכן לצעד הבא.`;
+  const firstValueHeadline = firstValueOutput.preview?.headline ?? firstValueSummary.message ?? null;
+  const firstValueDetail =
+    firstValueOutput.preview?.detail
+    ?? normalizeArray(firstValueOutput.userVisibleArtifacts).join(" | ")
+    ?? null;
 
   elements.heroProjectName.textContent = project.name ?? "Project";
   elements.heroGoal.textContent = project.goal ?? "המטרה תופיע כאן";
   elements.casinoBaseUrlInput.value = project.source?.baseUrl ?? "http://localhost:4101";
 
   elements.now.innerHTML = `
-    <div class="big-status ${escapeHtml(project.status ?? "idle")}">
-      <span>${escapeHtml(t(project.status ?? "idle"))}</span>
+    <div class="workspace-top-summary">
+      <div class="big-status ${escapeHtml(project.status ?? "idle")}">
+        <span>${escapeHtml(t(project.status ?? "idle"))}</span>
+      </div>
+      <div class="workspace-top-copy">
+        <strong>המצב הנוכחי</strong>
+        <p>${escapeHtml(currentStateSummary)}</p>
+        ${firstValueHeadline ? `<p class="workspace-top-support">כרגע כבר רואים התחלה של ערך: ${escapeHtml(firstValueHeadline)}.</p>` : ""}
+        ${firstValueDetail ? `<p class="workspace-top-support subtle">${escapeHtml(firstValueDetail)}</p>` : ""}
+      </div>
     </div>
-    ${metricHtml([
-      { label: "חסם מרכזי", value: project.overview?.bottleneck ?? "לא זוהה" },
-      { label: "משימות פעילות", value: String(activeTasks.length) },
-      { label: "משימות חסומות", value: String(blockedTasks.length) },
-      { label: "סוכנים עובדים", value: String(activeAgents) },
-    ])}
-    ${stackHtml("First value", firstValueItems, "עדיין אין first value זמין להצגה.")}
+    <div class="workspace-priority-line">
+      <span class="mini-label">החסם המרכזי כרגע</span>
+      <strong>${escapeHtml(bottleneck)}</strong>
+      <span>${escapeHtml(blockedTasks.length > 0 ? "זה הדבר הראשון שכדאי לפתור לפני הרחבה נוספת." : "אין כרגע חסימה קשה, אבל זה עדיין הנקודה שדורשת הכי הרבה תשומת לב.")}</span>
+    </div>
   `;
 }
 
 function renderCritical(elements, project) {
   const firstApproval = normalizeArray(project.approvals)[0];
   const blockedTask = normalizeArray(project.cycle?.roadmap).find((task) => task.status === "blocked");
-  const title = firstApproval ?? blockedTask?.summary ?? "כרגע אין פעולה דחופה";
+  const assignedTask = normalizeArray(project.cycle?.roadmap).find((task) => task.status === "assigned");
+  const title = firstApproval ?? assignedTask?.summary ?? blockedTask?.summary ?? "כרגע אין פעולה דחופה";
   const reason = blockedTask
     ? `זה תקוע בגלל: ${normalizeArray(blockedTask.dependencies).join(", ") || "חסר מידע"}`
-    : "כרגע אין חסם גדול, אפשר להמשיך לסנכרן או לנתח.";
+    : firstApproval
+      ? "זאת הנקודה היחידה שמחזיקה את ההתקדמות לפני הרצה נוספת."
+      : "זה הצעד הכי ישיר לקדם עכשיו כדי לשמור על מומנטום.";
+  const blocker = project.overview?.bottleneck ?? blockedTask?.summary ?? "לא זוהה חסם מרכזי";
 
   elements.critical.innerHTML = `
+    <div class="critical-kicker-line">הפעולה הבאה</div>
     <div class="critical-main">${escapeHtml(title)}</div>
     <p class="critical-sub">${escapeHtml(reason)}</p>
+    <div class="critical-single-blocker">
+      <span class="mini-label">הדבר שמעכב אותך עכשיו</span>
+      <strong>${escapeHtml(blocker)}</strong>
+    </div>
   `;
 }
 
@@ -428,12 +492,21 @@ function renderMissing(elements, project) {
 function renderExisting(elements, project) {
   const scan = normalizeObject(project.scan);
   const external = normalizeObject(project.externalSnapshot);
+  const repositoryDiagnosis = normalizeObject(
+    project.repositoryImportAndCodebaseDiagnosis ?? project.state?.repositoryImportAndCodebaseDiagnosis,
+  );
   const items = [];
 
   if (scan.findings?.hasBackend) items.push({ title: "יש backend" });
   if (scan.findings?.hasAuth) items.push({ title: "יש auth" });
   if (scan.findings?.hasEnvExample) items.push({ title: "יש env לדוגמה" });
   if (external.features?.hasAuth) items.push({ title: "ה־API של הקזינו מדווח ש־auth קיים" });
+  if (repositoryDiagnosis.status === "ready") {
+    items.push({
+      title: `Diagnosis ready: ${repositoryDiagnosis.repository?.fullName ?? "connected-repository"}`,
+      body: repositoryDiagnosis.summary?.architectureSummary ?? repositoryDiagnosis.summary?.codebaseSummary ?? "",
+    });
+  }
 
   elements.existing.innerHTML = listHtml(items, "עדיין אין מספיק מידע חיובי להציג.");
 }
@@ -523,6 +596,12 @@ function renderDecision(elements, project) {
 
 function renderProposalReview(elements, project) {
   const state = normalizeObject(project.state);
+  const aiControlCenterSurface = normalizeObject(project.aiControlCenterSurface ?? state.aiControlCenterSurface);
+  const aiDesignRequest = normalizeObject(project.aiDesignRequest ?? state.aiDesignRequest);
+  const aiDesignProposal = normalizeObject(project.aiDesignProposal ?? state.aiDesignProposal);
+  const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
+  const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
+  const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
   const editableProposal = normalizeObject(project.editableProposal ?? state.editableProposal);
   const editedProposal = normalizeObject(project.editedProposal ?? state.editedProposal);
   const activeProposal = editedProposal.revisionId ? editedProposal : editableProposal;
@@ -591,6 +670,46 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const generatedPreviewItems = aiControlCenterSurface.aiControlCenterSurfaceId
+    ? [
+        {
+          title: aiControlCenterSurface.generatedSurfacePreview?.screenId ?? "generated-preview",
+          body: `delivery: ${aiControlCenterSurface.summary?.deliveryStatus ?? "unknown"}`,
+        },
+        {
+          title: "Preview regions",
+          body: String(aiControlCenterSurface.generatedSurfacePreview?.regionCount ?? 0),
+        },
+        {
+          title: "CTA anchors",
+          body: aiControlCenterSurface.generatedSurfacePreview?.hasCtaAnchors ? "yes" : "no",
+        },
+        {
+          title: "Live binding",
+          body: aiControlCenterSurface.liveRuntimeBinding?.activeScreenId ?? "not-bound",
+        },
+      ]
+    : [];
+  const aiDesignItems = aiDesignRequest.requestId
+    ? [
+        {
+          title: aiDesignRequest.screen?.screenId ?? "screen",
+          body: aiDesignRequest.selectedTask?.summary ?? "No selected task summary",
+        },
+        {
+          title: aiDesignProposal.proposalId ?? "proposal",
+          body: `regions ${normalizeArray(aiDesignProposal.regions).length} | provider ${aiDesignProposal.reasoning?.source ?? "unknown"}`,
+        },
+        {
+          title: "Validation",
+          body: `${designProposalValidation.status ?? "unknown"} | review ${designProposalReviewState.status ?? "unknown"}`,
+        },
+        {
+          title: "Apply",
+          body: proposalApplyDecision.status ?? "unknown",
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -620,6 +739,8 @@ function renderProposalReview(elements, project) {
         { label: "Partial status", value: partialAcceptanceDecision.status ?? "not-run" },
       ])}
       ${stackHtml("Current proposal scope", reviewScope, "עדיין אין scope זמין לעריכה.")}
+      ${stackHtml("AI design chain", aiDesignItems, "עדיין אין שרשרת AI Design קנונית זמינה.")}
+      ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}
     `;
@@ -1575,7 +1696,28 @@ function renderGrowth(elements, project) {
 }
 
 function renderExternal(elements, project) {
-  if (!project.externalSnapshot && !project.gitSnapshot && !project.runtimeSnapshot) {
+  const repositoryDiagnosis = normalizeObject(
+    project.repositoryImportAndCodebaseDiagnosis ?? project.state?.repositoryImportAndCodebaseDiagnosis,
+  );
+  const liveWebsiteDiagnosis = normalizeObject(
+    project.liveWebsiteIngestionAndFunnelDiagnosis ?? project.state?.liveWebsiteIngestionAndFunnelDiagnosis,
+  );
+  const importedAnalyticsNormalization = normalizeObject(
+    project.importedAnalyticsNormalization ?? project.state?.importedAnalyticsNormalization,
+  );
+  const importedAssetTaskExtraction = normalizeObject(
+    project.importedAssetTaskExtraction ?? project.state?.importedAssetTaskExtraction,
+  );
+
+  if (
+    !project.externalSnapshot
+    && !project.gitSnapshot
+    && !project.runtimeSnapshot
+    && !repositoryDiagnosis.status
+    && !liveWebsiteDiagnosis.status
+    && !importedAnalyticsNormalization.status
+    && !importedAssetTaskExtraction.status
+  ) {
     elements.external.innerHTML = `<p class="empty">עדיין לא בוצע חיבור חיצוני.</p>`;
     return;
   }
@@ -1615,6 +1757,84 @@ function renderExternal(elements, project) {
       {
         title: "Commit אחרון",
         body: project.gitSnapshot.commits?.[0]?.title ?? "אין commits זמינים",
+      },
+    );
+  }
+
+  if (repositoryDiagnosis.status === "ready") {
+    items.push(
+      {
+        title: `Repository diagnosis: ${repositoryDiagnosis.summary?.diagnosisStatus ?? "ready"}`,
+        body: repositoryDiagnosis.summary?.codebaseSummary ?? "Codebase diagnosis available",
+      },
+      {
+        title: "Architecture / gaps",
+        body: `${repositoryDiagnosis.summary?.architectureSummary ?? "No architecture summary"} | ${(normalizeArray(repositoryDiagnosis.diagnosisReadout?.blockingGaps).slice(0, 2).join(" | ") || "No blocking gaps")}`,
+      },
+      {
+        title: "Next import action",
+        body: repositoryDiagnosis.summary?.nextAction ?? "Review repository diagnosis findings",
+      },
+    );
+  }
+
+  if (liveWebsiteDiagnosis.status === "ready") {
+    items.push(
+      {
+        title: `Website diagnosis: ${liveWebsiteDiagnosis.summary?.diagnosisStatus ?? "ready"}`,
+        body: liveWebsiteDiagnosis.summary?.websiteSummary ?? "Live website diagnosis available",
+      },
+      {
+        title: "Funnel / blockers",
+        body:
+          `${liveWebsiteDiagnosis.summary?.funnelSummary ?? "No funnel summary"} | ${(
+            normalizeArray(liveWebsiteDiagnosis.funnelDiagnosis?.criticalDependencies).slice(0, 2).join(" | ")
+            || "No critical dependencies"
+          )}`,
+      },
+      {
+        title: "Next website action",
+        body: liveWebsiteDiagnosis.summary?.nextAction ?? "Review live website diagnosis findings",
+      },
+    );
+  }
+
+  if (importedAnalyticsNormalization.status === "ready") {
+    items.push(
+      {
+        title: `Imported analytics: ${importedAnalyticsNormalization.summary?.normalizationStatus ?? "ready"}`,
+        body: `${importedAnalyticsNormalization.summary?.importedAssetCount ?? 0} imported assets | ${importedAnalyticsNormalization.summary?.providerCount ?? 0} providers`,
+      },
+      {
+        title: "Analytics evidence",
+        body:
+          normalizeArray(importedAnalyticsNormalization.evidenceSources?.providers).join(" | ")
+          || "Imported analytics evidence available",
+      },
+      {
+        title: "Next analytics action",
+        body: importedAnalyticsNormalization.summary?.nextAction ?? "Review normalized imported analytics",
+      },
+    );
+  }
+
+  if (importedAssetTaskExtraction.status === "ready") {
+    items.push(
+      {
+        title: `Imported tasks: ${importedAssetTaskExtraction.summary?.totalExtractedTasks ?? 0}`,
+        body: `${importedAssetTaskExtraction.summary?.highPriorityCount ?? 0} high priority | ${normalizeArray(importedAssetTaskExtraction.summary?.sourceCoverage).join(" | ")}`,
+      },
+      {
+        title: "Next extracted action",
+        body: importedAssetTaskExtraction.summary?.nextAction ?? "Review extracted imported tasks",
+      },
+      {
+        title: "Extraction coverage",
+        body:
+          normalizeArray(importedAssetTaskExtraction.extractedTasks)
+            .slice(0, 2)
+            .map((task) => task.title)
+            .join(" | ") || "Imported task extraction available",
       },
     );
   }
@@ -1751,6 +1971,7 @@ export function createCockpitApp({
   let liveEventSource = null;
   let activeWorkspace = "developer";
   let onboardingFlow = null;
+  let onboardingConversation = null;
   let currentProjectAuditPayload = null;
   const presenceParticipantId = `presence-${Math.random().toString(36).slice(2, 10)}`;
   const appStorage = storageImpl && typeof storageImpl.getItem === "function" && typeof storageImpl.setItem === "function"
@@ -1762,6 +1983,59 @@ export function createCockpitApp({
         setItem() {},
         removeItem() {},
       };
+  const locationHost = globalThis.location?.hostname ?? "";
+
+  function resolveDevFlowControlsEnabled() {
+    if (locationHost === "127.0.0.1" || locationHost === "localhost") {
+      return true;
+    }
+
+    return globalThis.location === undefined;
+  }
+
+  function readStoredFlowState() {
+    try {
+      const raw = appStorage.getItem("nexus.flowState");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeStoredFlowState(flowState) {
+    try {
+      appStorage.setItem("nexus.flowState", JSON.stringify(flowState));
+    } catch {}
+  }
+
+  function captureDraftInputs() {
+    return {
+      projectName: elements.createProjectNameInput?.value ?? "",
+      visionText: elements.createProjectVisionInput?.value ?? "",
+      supportingLink: elements.createProjectLinkInput?.value ?? "",
+      fileName: elements.createProjectFileNameInput?.value ?? "",
+      fileContent: elements.createProjectFileContentInput?.value ?? "",
+    };
+  }
+
+  function applyDraftInputs(draftInputs = {}) {
+    if (elements.createProjectNameInput) elements.createProjectNameInput.value = draftInputs.projectName ?? "";
+    if (elements.createProjectVisionInput) elements.createProjectVisionInput.value = draftInputs.visionText ?? "";
+    if (elements.createProjectLinkInput) elements.createProjectLinkInput.value = draftInputs.supportingLink ?? "";
+    if (elements.createProjectFileNameInput) elements.createProjectFileNameInput.value = draftInputs.fileName ?? "";
+    if (elements.createProjectFileContentInput) elements.createProjectFileContentInput.value = draftInputs.fileContent ?? "";
+  }
+
+  function persistFlowState(screen) {
+    writeStoredFlowState({
+      screen,
+      currentProjectId,
+      activeWorkspace,
+      onboardingFlow,
+      onboardingConversation,
+      draftInputs: captureDraftInputs(),
+    });
+  }
 
   async function fetchJson(url, options) {
     const response = await fetchImpl(url, options);
@@ -1772,21 +2046,209 @@ export function createCockpitApp({
     return response.json();
   }
 
-  async function loadProject(projectId) {
-    const project = await fetchJson(`/api/projects/${projectId}`);
+  function setFlowButtonState({
+    target = "create",
+    disabled = false,
+    label = null,
+  } = {}) {
+    const button = target === "finish" ? elements.finishOnboardingButton : elements.createProjectButton;
+    if (!button) {
+      return;
+    }
+
+    button.disabled = disabled;
+    button.textContent = label ?? (target === "finish" ? "סיים Onboarding" : "צור פרויקט");
+  }
+
+  function createOnboardingConversationState() {
+    return {
+      currentIndex: 0,
+      answers: {},
+      draftAnswer: "",
+      pendingAdvance: false,
+      pendingAnswer: "",
+      advanceTimer: null,
+    };
+  }
+
+  function buildWorkspaceLandingFeedback({ projectName = "", answers = {} } = {}) {
+    const resolvedProjectName = projectName.trim() || "הפרויקט שלך";
+    const targetUser = typeof answers["target-user"] === "string" ? answers["target-user"].trim() : "";
+    const coreFlow = typeof answers["core-flow"] === "string" ? answers["core-flow"].trim() : "";
+    const successOutcome = typeof answers["success-outcome"] === "string" ? answers["success-outcome"].trim() : "";
+
+    const title = "הפרויקט שלך מוכן";
+    const messageParts = [`נכנסת עכשיו ל־workspace של ${resolvedProjectName}.`];
+
+    if (targetUser && coreFlow) {
+      messageParts.push(`בנינו פתיחה שמכוונת ל־${targetUser} סביב ${coreFlow}.`);
+    } else if (successOutcome) {
+      messageParts.push(`הצעד הבא כאן בנוי כדי להביא אותך מהר ל־${successOutcome}.`);
+    } else {
+      messageParts.push("עכשיו אפשר להתחיל לעבוד מתוך המרחב הראשי של הפרויקט.");
+    }
+
+    return {
+      title,
+      message: messageParts.join(" "),
+    };
+  }
+
+  function buildWorkspaceContinuitySnapshot(project) {
+    const normalizedProject = normalizeObject(project);
+    const status = t(normalizedProject.status ?? "idle");
+    const bottleneck = normalizedProject.overview?.bottleneck ?? "לא זוהה";
+    const nextAction = normalizedProject.developerWorkspace?.contextSummary?.nextAction
+      ?? normalizeArray(normalizedProject.cycle?.roadmap).find((task) => task.status === "assigned")?.summary
+      ?? "לא הוגדרה פעולה";
+
+    return {
+      status,
+      bottleneck,
+      nextAction,
+    };
+  }
+
+  function resetCreateProjectInputs() {
+    if (elements.createProjectNameInput) elements.createProjectNameInput.value = "";
+    if (elements.createProjectVisionInput) elements.createProjectVisionInput.value = "";
+    if (elements.createProjectLinkInput) elements.createProjectLinkInput.value = "";
+    if (elements.createProjectFileNameInput) elements.createProjectFileNameInput.value = "";
+    if (elements.createProjectFileContentInput) elements.createProjectFileContentInput.value = "";
+  }
+
+  function enterCreateProjectScreen() {
+    closeLiveUpdates();
+    currentProjectId = null;
+    currentProject = null;
+    currentProjectAuditPayload = null;
+    onboardingFlow = null;
+    onboardingConversation = null;
+    resetCreateProjectInputs();
+    renderEmptyAppState({
+      mode: "create",
+      message: "צור פרויקט חדש",
+      status: "אפשר להתחיל flow חדש בלי לאבד את ההפרדה בין Create Project, Onboarding ו־Workspace.",
+    });
+    persistFlowState("create");
+  }
+
+  function buildRunCycleFeedback(previousProject, nextProject) {
+    const before = buildWorkspaceContinuitySnapshot(previousProject);
+    const after = buildWorkspaceContinuitySnapshot(nextProject);
+    const changedParts = [];
+
+    if (before.status !== after.status) {
+      changedParts.push(`המצב עבר ל־${after.status}`);
+    }
+    if (before.bottleneck !== after.bottleneck) {
+      changedParts.push(`החסם המרכזי עכשיו הוא ${after.bottleneck}`);
+    }
+    if (before.nextAction !== after.nextAction) {
+      changedParts.push(`הפעולה הבאה עודכנה ל־${after.nextAction}`);
+    }
+
+    if (changedParts.length > 0) {
+      return {
+        title: "הפרויקט התקדם",
+        message: changedParts.join(" · "),
+      };
+    }
+
+    return {
+      title: "ה־workspace עודכן",
+      message: "אתה עדיין באותו פרויקט. רעננו את המצב בלי לאפס את ההקשר שלך.",
+    };
+  }
+
+  function pulseWorkspaceContinuity() {
+    if (!elements.workspaceTopShell?.classList) {
+      return;
+    }
+
+    elements.workspaceTopShell.classList.remove("continuity-refresh");
+    elements.workspaceTopShell.classList.add("continuity-refresh");
+    setTimeoutImpl(() => {
+      elements.workspaceTopShell?.classList?.remove("continuity-refresh");
+    }, 520);
+  }
+
+  function clearFlowFeedback() {
+    if (elements.flowFeedbackBanner) {
+      elements.flowFeedbackBanner.hidden = true;
+    }
+    if (elements.flowFeedbackTitle) {
+      elements.flowFeedbackTitle.textContent = "";
+    }
+    if (elements.flowFeedbackMessage) {
+      elements.flowFeedbackMessage.textContent = "";
+    }
+  }
+
+  function showFlowFeedback({ title = "", message = "" } = {}) {
+    if (elements.flowFeedbackTitle) {
+      elements.flowFeedbackTitle.textContent = title;
+    }
+    if (elements.flowFeedbackMessage) {
+      elements.flowFeedbackMessage.textContent = message;
+    }
+    if (elements.flowFeedbackBanner) {
+      elements.flowFeedbackBanner.hidden = false;
+    }
+  }
+
+  function setAppScreen(screen) {
+    const normalizedScreen = screen === "workspace" || screen === "onboarding" ? screen : "create";
+
+    if (elements.screenCreate) {
+      elements.screenCreate.hidden = normalizedScreen !== "create";
+    }
+    if (elements.screenOnboarding) {
+      elements.screenOnboarding.hidden = normalizedScreen !== "onboarding";
+    }
+    if (elements.screenWorkspace) {
+      elements.screenWorkspace.hidden = normalizedScreen !== "workspace";
+    }
+    if (elements.emptyAppState) {
+      elements.emptyAppState.hidden = normalizedScreen !== "create";
+    }
+    if (elements.onboardingStage) {
+      elements.onboardingStage.hidden = normalizedScreen !== "onboarding";
+    }
+    if (elements.workspaceBoard) {
+      elements.workspaceBoard.hidden = normalizedScreen !== "workspace";
+    }
+    if (elements.heroActions) {
+      elements.heroActions.hidden = normalizedScreen !== "workspace";
+    }
+    if (normalizedScreen !== "workspace") {
+      clearFlowFeedback();
+    }
+    persistFlowState(normalizedScreen);
+  }
+
+  async function loadProject(projectId, transitionFeedback = null, preloadedProject = null) {
+    const project = preloadedProject ?? await fetchJson(`/api/projects/${projectId}`);
     currentProjectId = projectId;
     currentProject = project;
     currentProjectAuditPayload = project.projectAuditPayload ?? project.state?.projectAuditPayload ?? null;
     onboardingFlow = null;
     applyDesignSystem(doc, project);
     renderProject(elements, project);
-    if (elements.emptyAppState) {
-      elements.emptyAppState.hidden = true;
+    setAppScreen("workspace");
+    if (transitionFeedback?.title || transitionFeedback?.message) {
+      showFlowFeedback({
+        title: transitionFeedback.title ?? "ה־workspace נטען",
+        message: transitionFeedback.message ?? "הפרויקט מוכן לעבודה.",
+      });
+    } else {
+      clearFlowFeedback();
     }
-    if (elements.workspaceBoard) {
-      elements.workspaceBoard.hidden = false;
+    if (transitionFeedback?.pulseWorkspace === true) {
+      pulseWorkspaceContinuity();
     }
     setActiveWorkspace(elements, activeWorkspace);
+    persistFlowState("workspace");
     updatePresence().catch(() => {});
     connectLiveUpdates();
     return project;
@@ -1850,6 +2312,44 @@ export function createCockpitApp({
     return `שם הפרויקט: ${normalizedName}\n${normalizedVision}`.trim();
   }
 
+  function reopenOnboardingFromWorkspace() {
+    if (currentProject) {
+      if (elements.createProjectNameInput) {
+        elements.createProjectNameInput.value = currentProject.name ?? elements.createProjectNameInput.value ?? "";
+      }
+      if (elements.createProjectVisionInput && !elements.createProjectVisionInput.value.trim()) {
+        elements.createProjectVisionInput.value = currentProject.goal ?? "";
+      }
+    }
+    onboardingConversation = createOnboardingConversationState();
+
+    renderEmptyAppState({
+      mode: "onboarding",
+      message: "פתחת מחדש את מסך ה־Onboarding",
+      status: "זה מצב בדיקה מתוך ה־workspace כדי לעבוד על ה־UI של ה־onboarding בלי ליצור פרויקט חדש.",
+    });
+    persistFlowState("onboarding");
+  }
+
+  async function exitOnboardingScreen() {
+    if (currentProjectId) {
+      onboardingConversation = null;
+      await loadProject(currentProjectId, {
+        title: "חזרת ל־workspace שלך",
+        message: "יצאת ממסך ה־Onboarding וחזרת לאותו פרויקט בלי לאבד את ההקשר.",
+      });
+      return;
+    }
+
+    onboardingFlow = null;
+    onboardingConversation = null;
+    renderEmptyAppState({
+      mode: "create",
+      message: "חזרת ליצירת הפרויקט",
+      status: "אפשר לעדכן את שם הפרויקט או התיאור, ואז להמשיך שוב ל־Onboarding.",
+    });
+  }
+
   function buildOnboardingUploadedFiles() {
     const fileName = elements.createProjectFileNameInput?.value?.trim() ?? "";
     const fileContent = elements.createProjectFileContentInput?.value ?? "";
@@ -1867,31 +2367,451 @@ export function createCockpitApp({
     ];
   }
 
+  function getOnboardingAnswer(questionId) {
+    const answer = onboardingConversation?.answers?.[questionId];
+    return typeof answer === "string" ? answer.trim() : "";
+  }
+
+  function buildOnboardingLeadSummary() {
+    const audience = getOnboardingAnswer("target-user");
+    const flow = getOnboardingAnswer("core-flow");
+    const outcome = getOnboardingAnswer("success-outcome");
+
+    if (audience && flow && outcome) {
+      return `כרגע אני מבין שאנחנו בונים עבור ${audience}, כשהפעולה הראשונה שחייבת לעבוד היא ${flow}, והערך הראשוני יימדד לפי ${outcome}.`;
+    }
+
+    if (audience && flow) {
+      return `יש כבר תמונה ראשונית: הפרויקט מכוון ל־${audience}, והצעד הראשון שחייב לעבוד הוא ${flow}.`;
+    }
+
+    if (audience) {
+      return `הבנתי שהפרויקט מכוון קודם כל ל־${audience}. עכשיו נחדד את הזרימה הראשונית שהמשתמש הזה חייב לעבור.`;
+    }
+
+    return "ברגע שתענה על השאלות, ה־AI יסכם כאן בצורה חיה מה כבר הובן על הפרויקט.";
+  }
+
+  function buildOnboardingWorkingMemory() {
+    const projectName = elements.createProjectNameInput?.value?.trim() ?? "";
+    const visionText = elements.createProjectVisionInput?.value?.trim() ?? "";
+    const supportingLink = elements.createProjectLinkInput?.value?.trim() ?? "";
+    const uploadedFiles = buildOnboardingUploadedFiles();
+    const audience = getOnboardingAnswer("target-user");
+    const flow = getOnboardingAnswer("core-flow");
+    const outcome = getOnboardingAnswer("success-outcome");
+    const understood = [];
+    const missing = [];
+    const refining = [];
+
+    if (projectName) {
+      understood.push(`שם הפרויקט כבר נעול סביב ${projectName}.`);
+    }
+
+    if (visionText) {
+      understood.push(`כבר יש מיקוד ראשוני: ${visionText}.`);
+    }
+
+    if (audience) {
+      understood.push(`ה־AI כבר מבין שהמשתמש המרכזי הוא ${audience}.`);
+    } else {
+      missing.push("עדיין חסר מי המשתמש המרכזי שעבורו בונים את החוויה הראשונה.");
+    }
+
+    if (flow) {
+      understood.push(`הפעולה הראשונה שחייבת לעבוד הוגדרה כ־${flow}.`);
+    } else {
+      missing.push("עדיין לא ברור מה הפעולה הראשונה שהמשתמש חייב לבצע בתוך המוצר.");
+    }
+
+    if (outcome) {
+      understood.push(`מדד הערך הראשוני מתבהר סביב ${outcome}.`);
+    } else {
+      missing.push("עדיין חסר איך נראה רגע הערך הראשון שהמשתמש אמור לקבל.");
+    }
+
+    if (audience && !flow) {
+      refining.push(`עכשיו כשהקהל הוא ${audience}, ה־AI מחדד את הזרימה הראשונית שהקהל הזה חייב לעבור.`);
+    }
+
+    if (audience && flow && !outcome) {
+      refining.push(`ה־AI מחבר בין ${audience} לבין הצעד הראשון ${flow}, ומחדד מה צריך להיות רגע הערך הראשון.`);
+    }
+
+    if (audience && flow && outcome) {
+      refining.push(buildOnboardingLeadSummary());
+    }
+
+    if (supportingLink) {
+      refining.push("כבר הוזן קישור תומך, כך שאפשר יהיה לחבר את ההבנה הזו גם לחומר חיצוני.");
+    }
+
+    if (uploadedFiles.length > 0) {
+      refining.push(`נוסף גם מסמך תומך ידני (${uploadedFiles[0].name}) שיכול לחזק את ההקשר של השיחה.`);
+    }
+
+    if (!understood.length && !missing.length && !refining.length) {
+      missing.push("עדיין לא נאסף מספיק מידע. ה־AI מחכה לתשובה הראשונה כדי להתחיל לבנות תמונת מצב אמיתית.");
+    }
+
+    return {
+      understood,
+      missing,
+      refining,
+    };
+  }
+
+  function renderOnboardingNotes() {
+    if (!elements.onboardingNotesList) {
+      return;
+    }
+
+    const memory = buildOnboardingWorkingMemory();
+    const sections = [
+      {
+        title: "מה הובן",
+        key: "understood",
+        items: memory.understood,
+      },
+      {
+        title: "מה עדיין חסר",
+        key: "missing",
+        items: memory.missing,
+      },
+      {
+        title: "מה מתחדד עכשיו",
+        key: "refining",
+        items: memory.refining,
+      },
+    ];
+
+    elements.onboardingNotesList.innerHTML = sections
+      .map((section) => {
+        const body = section.items.length
+          ? section.items.map((item) => `<p>${escapeHtml(item)}</p>`).join("")
+          : `<p>כרגע אין עדכון חדש באזור הזה.</p>`;
+
+        return `
+          <section class="onboarding-memory-section ${escapeHtml(section.key)}">
+            <strong>${escapeHtml(section.title)}</strong>
+            <div class="onboarding-memory-body">
+              ${body}
+            </div>
+          </section>
+        `;
+      })
+      .join("");
+  }
+
+  function buildOnboardingCurrentPrompt() {
+    const currentQuestion = onboardingQuestionFlow[onboardingConversation?.currentIndex ?? 0] ?? null;
+    const audience = getOnboardingAnswer("target-user");
+    const flow = getOnboardingAnswer("core-flow");
+
+    if (!currentQuestion) {
+      return {
+        title: "השיחה הושלמה",
+        body: "יש לנו תמונה ראשונית טובה. עכשיו אפשר להוסיף חומר תומך ידני לפני סיום onboarding.",
+      };
+    }
+
+    if (currentQuestion.id === "core-flow" && audience) {
+      return {
+        title: "מעולה, עכשיו נחדד את הפעולה הראשונה",
+        body: `אם המשתמש המרכזי הוא ${audience}, מה בדיוק הוא חייב לעשות ראשון כדי להרגיש שהמערכת באמת מתחילה לעבוד עבורו?`,
+      };
+    }
+
+    if (currentQuestion.id === "success-outcome" && audience && flow) {
+      return {
+        title: "יש לי כבר תמונה כמעט שלמה",
+        body: `אז אנחנו מכוונים ל־${audience}, והצעד הראשון הוא ${flow}. עכשיו נשאר לחדד איך נראה רגע הערך הראשון שהמשתמש אמור לקבל.`,
+      };
+    }
+
+    return {
+      title: currentQuestion.title,
+      body: currentQuestion.body,
+    };
+  }
+
+  function focusOnboardingAnswerInput() {
+    if (typeof elements.onboardingAnswerInput?.focus === "function" && !elements.onboardingAnswerInput.hidden) {
+      elements.onboardingAnswerInput.focus();
+    }
+  }
+
+  function resolveOnboardingDraftAnswer(currentQuestion) {
+    if (!currentQuestion) {
+      return "";
+    }
+
+    if (typeof onboardingConversation?.draftAnswer === "string" && onboardingConversation.draftAnswer.length > 0) {
+      return onboardingConversation.draftAnswer;
+    }
+
+    return onboardingConversation?.answers?.[currentQuestion.id] ?? elements.onboardingAnswerInput?.value ?? "";
+  }
+
+  function resolveOnboardingComposerValue(currentQuestion) {
+    if (!currentQuestion) {
+      return "";
+    }
+
+    if (typeof onboardingConversation?.draftAnswer === "string" && onboardingConversation.draftAnswer.length > 0) {
+      return onboardingConversation.draftAnswer;
+    }
+
+    return "";
+  }
+
+  function renderOnboardingConversation() {
+    onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
+    const currentQuestion = onboardingQuestionFlow[onboardingConversation.currentIndex] ?? null;
+    const isComplete = onboardingConversation.currentIndex >= onboardingQuestionFlow.length;
+    const currentPrompt = buildOnboardingCurrentPrompt();
+    const isAwaitingAiReply = onboardingConversation.pendingAdvance === true;
+
+    if (elements.onboardingProgressPill) {
+      elements.onboardingProgressPill.textContent = isComplete
+        ? "השיחה הושלמה"
+        : `שאלה ${onboardingConversation.currentIndex + 1} מתוך ${onboardingQuestionFlow.length}`;
+    }
+
+    if (elements.onboardingChatThread) {
+      const transcript = [];
+
+      for (const question of onboardingQuestionFlow.slice(0, onboardingConversation.currentIndex)) {
+        transcript.push(`
+          <article class="onboarding-chat-bubble ai">
+            <span class="mini-label">AI</span>
+            <strong>${escapeHtml(question.title)}</strong>
+            <p>${escapeHtml(question.body)}</p>
+          </article>
+        `);
+
+        const answer = onboardingConversation.answers[question.id];
+        if (typeof answer === "string" && answer.trim()) {
+          transcript.push(`
+            <article class="onboarding-chat-bubble user">
+              <span class="mini-label">אתה</span>
+              <p>${escapeHtml(answer.trim())}</p>
+            </article>
+          `);
+        }
+      }
+
+      if (isComplete) {
+        transcript.push(`
+          <article class="onboarding-chat-bubble ai">
+            <span class="mini-label">AI</span>
+            <strong>יש מספיק הקשר כדי לסיים onboarding</strong>
+            <p>עכשיו אפשר לצרף חומר תומך ידני ולפתוח את ה־workspace.</p>
+          </article>
+        `);
+      } else if (isAwaitingAiReply) {
+        transcript.push(`
+          <article class="onboarding-chat-bubble user entering">
+            <span class="mini-label">אתה</span>
+            <p>${escapeHtml(onboardingConversation.pendingAnswer)}</p>
+          </article>
+          <article class="onboarding-chat-bubble ai typing entering">
+            <span class="mini-label">AI</span>
+            <strong>מעבד את מה שכתבת</strong>
+            <p>מנסח את השאלה הבאה ומעדכן את ההבנה שלו על הפרויקט.</p>
+          </article>
+        `);
+      } else {
+        transcript.push(`
+          <article class="onboarding-chat-bubble ai entering">
+            <span class="mini-label">AI</span>
+            <strong>${escapeHtml(currentPrompt.title)}</strong>
+            <p>${escapeHtml(currentPrompt.body)}</p>
+          </article>
+        `);
+      }
+
+      elements.onboardingChatThread.innerHTML = transcript.join("");
+    }
+
+    if (elements.onboardingCurrentQuestionTitle) {
+      elements.onboardingCurrentQuestionTitle.textContent = isAwaitingAiReply ? "ה־AI מגיב למה שכתבת" : currentPrompt.title;
+    }
+    if (elements.onboardingCurrentQuestionBody) {
+      elements.onboardingCurrentQuestionBody.textContent = isAwaitingAiReply
+        ? "עוד רגע מופיעה השאלה הבאה. אפשר להמשיך מיד כשהתגובה תעלה."
+        : currentPrompt.body;
+    }
+    if (elements.onboardingAnswerInput) {
+      elements.onboardingAnswerInput.hidden = isComplete || isAwaitingAiReply;
+      elements.onboardingAnswerInput.placeholder = currentQuestion?.placeholder ?? "";
+      elements.onboardingAnswerInput.value = isComplete || isAwaitingAiReply
+        ? ""
+        : resolveOnboardingComposerValue(currentQuestion);
+    }
+    if (elements.onboardingNextButton) {
+      elements.onboardingNextButton.hidden = isComplete || isAwaitingAiReply;
+      elements.onboardingNextButton.textContent = onboardingConversation.currentIndex === onboardingQuestionFlow.length - 1
+        ? "שלח תשובה אחרונה"
+        : "שלח והמשך";
+    }
+    if (elements.onboardingBackButton) {
+      elements.onboardingBackButton.textContent = currentProjectId ? "חזור ל־Workspace" : "חזור ליצירת הפרויקט";
+      elements.onboardingBackButton.disabled = isAwaitingAiReply;
+    }
+    if (elements.onboardingForwardButton) {
+      elements.onboardingForwardButton.disabled = isAwaitingAiReply;
+      elements.onboardingForwardButton.textContent = isComplete ? "סיים Onboarding" : "קדימה";
+    }
+    if (elements.onboardingMaterialStage) {
+      elements.onboardingMaterialStage.hidden = !isComplete;
+    }
+    if (elements.onboardingFormStage) {
+      elements.onboardingFormStage.hidden = !isComplete;
+    }
+    if (elements.finishOnboardingButton) {
+      elements.finishOnboardingButton.hidden = !isComplete;
+    }
+    focusOnboardingAnswerInput();
+  }
+
+  function advanceOnboardingConversation() {
+    onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
+    if (onboardingConversation.pendingAdvance) {
+      return;
+    }
+    const currentQuestion = onboardingQuestionFlow[onboardingConversation.currentIndex];
+    if (!currentQuestion) {
+      renderOnboardingConversation();
+      return;
+    }
+
+    const answer = resolveOnboardingDraftAnswer(currentQuestion).trim();
+    if (!answer) {
+      if (elements.onboardingScreenStatus) {
+        elements.onboardingScreenStatus.textContent = "כדי להתקדם בשיחה צריך לענות על השאלה הנוכחית.";
+      }
+      return;
+    }
+
+    onboardingConversation.answers[currentQuestion.id] = answer;
+    onboardingConversation.pendingAnswer = answer;
+    onboardingConversation.draftAnswer = "";
+    onboardingConversation.pendingAdvance = true;
+
+    if (elements.onboardingScreenStatus) {
+      elements.onboardingScreenStatus.textContent = "ה־AI מעבד את מה שכתבת וממשיך את השיחה.";
+    }
+
+    renderOnboardingNotes();
+    renderOnboardingConversation();
+    persistFlowState("onboarding");
+
+    if (onboardingConversation.advanceTimer) {
+      clearTimeoutImpl(onboardingConversation.advanceTimer);
+    }
+
+    onboardingConversation.advanceTimer = setTimeoutImpl(() => {
+      onboardingConversation.pendingAdvance = false;
+      onboardingConversation.pendingAnswer = "";
+      onboardingConversation.currentIndex += 1;
+      if (elements.onboardingScreenStatus) {
+        elements.onboardingScreenStatus.textContent = onboardingConversation.currentIndex >= onboardingQuestionFlow.length
+          ? "השיחה הושלמה. עכשיו אפשר להוסיף חומר תומך ולסיים onboarding."
+          : "מעולה. ה־AI עדכן את ההבנה שלו על הפרויקט וממשיך להוביל את השיחה.";
+      }
+      renderOnboardingNotes();
+      renderOnboardingConversation();
+      persistFlowState("onboarding");
+    }, 420);
+  }
+
+  function formatOnboardingBlockedStatus(finished = {}) {
+    const completionDecision = normalizeObject(finished.onboardingCompletionDecision);
+    const clarificationPrompts = normalizeArray(completionDecision.clarificationPrompts)
+      .filter((value) => typeof value === "string" && value.trim())
+      .map((value) => value.trim());
+    const missingInputs = normalizeArray(completionDecision.missingInputs)
+      .filter((value) => typeof value === "string" && value.trim())
+      .map((value) => value.trim());
+
+    if (clarificationPrompts.length > 0) {
+      return `Onboarding נחסם עד להשלמת: ${clarificationPrompts.join(" | ")}`;
+    }
+
+    if (missingInputs.length > 0) {
+      return `Onboarding נחסם כי חסרים שדות חובה: ${missingInputs.join(", ")}`;
+    }
+
+    return finished.error ?? "Onboarding עדיין לא מוכן לבניית פרויקט usable.";
+  }
+
   function renderEmptyAppState({
     mode = "create",
     message = "אין פרויקטים",
     status = "כדי להתחיל צריך ליצור פרויקט ראשון ולעבור onboarding קצר.",
   } = {}) {
-    if (elements.emptyAppState) {
-      elements.emptyAppState.hidden = false;
+    clearFlowFeedback();
+    setAppScreen(mode === "onboarding" ? "onboarding" : "create");
+    if (mode === "onboarding") {
+      if (elements.onboardingScreenMessage) {
+        elements.onboardingScreenMessage.textContent = message;
+      }
+      if (elements.onboardingScreenStatus) {
+        elements.onboardingScreenStatus.textContent = status;
+      }
+    } else {
+      if (elements.emptyProjectMessage) {
+        elements.emptyProjectMessage.textContent = message;
+      }
+      if (elements.emptyProjectStatus) {
+        elements.emptyProjectStatus.textContent = status;
+      }
     }
-    if (elements.workspaceBoard) {
-      elements.workspaceBoard.hidden = true;
-    }
-    if (elements.emptyProjectMessage) {
+    if (elements.emptyProjectMessage && mode !== "onboarding") {
       elements.emptyProjectMessage.textContent = message;
     }
-    if (elements.emptyProjectStatus) {
+    if (elements.emptyProjectStatus && mode !== "onboarding") {
       elements.emptyProjectStatus.textContent = status;
     }
-    if (elements.createProjectButton) {
-      elements.createProjectButton.textContent = mode === "onboarding" ? "סיים Onboarding" : "צור פרויקט";
+    if (elements.emptyAppState) {
+      elements.emptyAppState.dataset.mode = "create";
     }
+    if (elements.projectCreateStage) {
+      elements.projectCreateStage.hidden = false;
+    }
+    if (mode === "onboarding") {
+      onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
+      if (elements.onboardingStageTitle) {
+        elements.onboardingStageTitle.textContent = "עכשיו מחדדים את הפרויקט עם onboarding";
+      }
+      if (elements.onboardingStageDescription) {
+        elements.onboardingStageDescription.textContent =
+          "זה שלב נפרד מיצירת הפרויקט הראשונית. כאן מבהירים למערכת מה אתה בונה, למה זה חשוב, ואיזה חומרים תומכים כבר יש.";
+      }
+      if (elements.onboardingNotesList) {
+        renderOnboardingNotes();
+      }
+      renderOnboardingConversation();
+    }
+    setFlowButtonState({
+      target: "create",
+      disabled: false,
+      label: "צור פרויקט",
+    });
+    setFlowButtonState({
+      target: "finish",
+      disabled: false,
+      label: "סיים Onboarding",
+    });
     if (elements.heroProjectName && !currentProject) {
       elements.heroProjectName.textContent = "אין פרויקטים";
     }
     if (elements.heroGoal && !currentProject) {
-      elements.heroGoal.textContent = "צריך ליצור פרויקט ראשון כדי להיכנס ל־workspace.";
+      elements.heroGoal.textContent =
+        mode === "onboarding"
+          ? "השלב הבא הוא להשלים onboarding ורק אז לפתוח את ה־workspace."
+          : "צריך ליצור פרויקט ראשון כדי להיכנס ל־workspace.";
     }
     if (elements.now && !currentProject) {
       elements.now.innerHTML = `<p class="empty">אין פרויקטים פעילים כרגע.</p>`;
@@ -1899,6 +2819,7 @@ export function createCockpitApp({
     if (elements.critical && !currentProject) {
       elements.critical.innerHTML = `<p class="empty">הפעולה הבאה היא ליצור פרויקט ראשון.</p>`;
     }
+    persistFlowState(mode === "onboarding" ? "onboarding" : "create");
   }
 
   async function ensureAppUser() {
@@ -1997,16 +2918,40 @@ export function createCockpitApp({
       sessionId: session.onboardingSession?.sessionId ?? null,
       projectDraftId: draftResult.projectDraftId,
     };
+    onboardingConversation = createOnboardingConversationState();
 
     renderEmptyAppState({
       mode: "onboarding",
-      message: "ממשיכים ל־onboarding",
-      status: "הוסף קישור תומך או קובץ תומך ואז סיים onboarding כדי לפתוח את ה־workspace.",
+      message: "עברנו ל־onboarding של הפרויקט",
+      status: "זה שלב נפרד מיצירת הפרויקט. עכשיו מוסיפים הקשר וחומר תומך לפני פתיחת ה־workspace.",
     });
+    persistFlowState("onboarding");
   }
 
   async function finishFirstProjectOnboarding() {
     if (!onboardingFlow?.sessionId) {
+      if (currentProjectId) {
+        await loadProject(currentProjectId, {
+          title: "חזרת ל־workspace שלך",
+          message: "מסך ה־Onboarding נפתח במצב בדיקה מתוך ה־workspace, אז החזרנו אותך לאותו פרויקט בלי לפתוח flow חדש.",
+        });
+        return;
+      }
+
+      renderEmptyAppState({
+        mode: "onboarding",
+        message: "אי אפשר לסיים onboarding עדיין",
+        status: "אין כרגע session פעיל ל־onboarding, ולכן אי אפשר לבנות workspace חדש מהשלב הזה.",
+      });
+      return;
+    }
+
+    if ((onboardingConversation?.currentIndex ?? 0) < onboardingQuestionFlow.length) {
+      renderEmptyAppState({
+        mode: "onboarding",
+        message: "ממשיכים ל־onboarding",
+        status: "לפני שסוגרים את השלב הזה צריך לענות על כל 3 שאלות ה־AI.",
+      });
       return;
     }
 
@@ -2024,40 +2969,69 @@ export function createCockpitApp({
       return;
     }
 
-    await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/intake`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        visionText: formatVisionText(projectName, visionText),
-        uploadedFiles: [],
-        externalLinks: supportingLink ? [supportingLink] : [],
-      }),
+    setFlowButtonState({
+      target: "finish",
+      disabled: true,
+      label: "מסיים Onboarding...",
+    });
+    renderEmptyAppState({
+      mode: "onboarding",
+      message: "מסיימים onboarding",
+      status: "הבקשה נשלחה. בודק readiness, משלים intake וטוען workspace ברגע שהפרויקט מוכן.",
+    });
+    setFlowButtonState({
+      target: "finish",
+      disabled: true,
+      label: "מסיים Onboarding...",
     });
 
-    if (uploadedFiles.length > 0) {
-      await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/files`, {
-        method: "POST",
+    try {
+      await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/intake`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          uploadedFiles,
+          visionText: formatVisionText(projectName, visionText),
+          uploadedFiles: [],
+          externalLinks: supportingLink ? [supportingLink] : [],
         }),
       });
-    }
 
-    const finished = await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/finish`, {
-      method: "POST",
-    });
+      if (uploadedFiles.length > 0) {
+        await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/files`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            uploadedFiles,
+          }),
+        });
+      }
 
-    if (finished.blocked || !finished.project?.id) {
+      const finished = await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/finish`, {
+        method: "POST",
+      });
+
+      if (finished.blocked || !finished.project?.id) {
+        renderEmptyAppState({
+          mode: "onboarding",
+          message: "Onboarding דורש השלמה",
+          status: formatOnboardingBlockedStatus(finished),
+        });
+        return;
+      }
+
+      await loadProject(finished.project.id, {
+        ...buildWorkspaceLandingFeedback({
+          projectName,
+          answers: onboardingConversation?.answers ?? {},
+        }),
+      });
+    } catch {
       renderEmptyAppState({
         mode: "onboarding",
-        message: "ממשיכים ל־onboarding",
-        status: finished.error ?? "Onboarding עדיין לא מוכן לבניית פרויקט usable.",
+        message: "סיום onboarding נכשל",
+        status: "לא הצלחנו לסיים onboarding כרגע. נסה שוב או השלם את שדות החובה.",
       });
-      return;
     }
-
-    await loadProject(finished.project.id);
   }
 
   async function submitProposalEditsFromUi() {
@@ -2418,10 +3392,6 @@ async function runSnapshotWorkerTickFromUi() {
     const reconnectPolicy = normalizeObject(normalizedChannel.reconnectPolicy);
     const mode = normalizedChannel.transportMode ?? "polling";
 
-    if (mode === "websocket") {
-      return reconnectPolicy.initialDelayMs ?? 1000;
-    }
-
     if (mode === "sse") {
       return reconnectPolicy.initialDelayMs ?? 1500;
     }
@@ -2495,18 +3465,41 @@ async function runSnapshotWorkerTickFromUi() {
   }
 
   async function loadProjects() {
+    const storedFlowState = readStoredFlowState();
     const { projects } = await fetchJson("/api/projects");
     elements.projectSelect.innerHTML = normalizeArray(projects)
       .map((project) => `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`)
       .join("");
 
-    if (projects?.[0]) {
-      if (elements.emptyAppState) {
-        elements.emptyAppState.hidden = true;
-      }
-      if (elements.workspaceBoard) {
-        elements.workspaceBoard.hidden = false;
-      }
+    if (storedFlowState?.activeWorkspace) {
+      activeWorkspace = workspaceKeys.includes(storedFlowState.activeWorkspace)
+        ? storedFlowState.activeWorkspace
+        : activeWorkspace;
+    }
+
+    if (storedFlowState?.draftInputs) {
+      applyDraftInputs(storedFlowState.draftInputs);
+    }
+
+    if (storedFlowState?.onboardingFlow && typeof storedFlowState.onboardingFlow === "object") {
+      onboardingFlow = storedFlowState.onboardingFlow;
+    }
+
+    if (storedFlowState?.onboardingConversation && typeof storedFlowState.onboardingConversation === "object") {
+      onboardingConversation = storedFlowState.onboardingConversation;
+    }
+
+    if (storedFlowState?.screen === "workspace" && storedFlowState.currentProjectId) {
+      await loadProject(storedFlowState.currentProjectId);
+    } else if (storedFlowState?.screen === "onboarding") {
+      currentProjectId = storedFlowState.currentProjectId ?? null;
+      currentProject = null;
+      renderEmptyAppState({
+        mode: "onboarding",
+        message: "חזרת ל־Onboarding",
+        status: "המשכנו בדיוק מהמקום שבו היית לפני הרענון.",
+      });
+    } else if (projects?.[0]) {
       await loadProject(projects[0].id);
     } else {
       currentProjectId = null;
@@ -2519,6 +3512,10 @@ async function runSnapshotWorkerTickFromUi() {
 
   elements.projectSelect?.addEventListener("change", async (event) => {
     await loadProject(event.target.value);
+  });
+
+  elements.createNewProjectButton?.addEventListener("click", () => {
+    enterCreateProjectScreen();
   });
 
   elements.developerTab?.addEventListener("click", () => {
@@ -2547,8 +3544,14 @@ async function runSnapshotWorkerTickFromUi() {
 
   elements.runCycleButton?.addEventListener("click", async () => {
     if (!currentProjectId) return;
+    const previousProject = currentProject;
     await fetchJson(`/api/projects/${currentProjectId}/run-cycle`, { method: "POST" });
-    await loadProject(currentProjectId);
+    const nextProject = await fetchJson(`/api/projects/${currentProjectId}`);
+    const refreshedProject = await loadProject(currentProjectId, {
+      ...buildRunCycleFeedback(previousProject, nextProject),
+      pulseWorkspace: true,
+    }, nextProject);
+    currentProject = refreshedProject;
   });
 
   elements.analyzeButton?.addEventListener("click", async () => {
@@ -2578,13 +3581,75 @@ async function runSnapshotWorkerTickFromUi() {
   });
 
   elements.createProjectButton?.addEventListener("click", async () => {
-    if (onboardingFlow?.mode === "onboarding") {
+    await createFirstProjectFlow();
+  });
+
+  elements.finishOnboardingButton?.addEventListener("click", async () => {
+    await finishFirstProjectOnboarding();
+  });
+
+  elements.onboardingNextButton?.addEventListener("click", () => {
+    advanceOnboardingConversation();
+  });
+
+  elements.onboardingBackButton?.addEventListener("click", async () => {
+    await exitOnboardingScreen();
+  });
+
+  elements.onboardingForwardButton?.addEventListener("click", async () => {
+    const isComplete = (onboardingConversation?.currentIndex ?? 0) >= onboardingQuestionFlow.length;
+    if (isComplete) {
       await finishFirstProjectOnboarding();
       return;
     }
-
-    await createFirstProjectFlow();
+    advanceOnboardingConversation();
   });
+
+  elements.onboardingAnswerInput?.addEventListener("input", () => {
+    onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
+    onboardingConversation.draftAnswer = elements.onboardingAnswerInput?.value ?? "";
+    persistFlowState("onboarding");
+  });
+
+  elements.onboardingAnswerInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault?.();
+      advanceOnboardingConversation();
+    }
+  });
+
+  elements.reopenOnboardingButton?.addEventListener("click", () => {
+    reopenOnboardingFromWorkspace();
+  });
+
+  elements.createProjectNameInput?.addEventListener("input", () => {
+    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  });
+
+  elements.createProjectVisionInput?.addEventListener("input", () => {
+    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  });
+
+  elements.createProjectLinkInput?.addEventListener("input", () => {
+    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  });
+
+  elements.createProjectFileNameInput?.addEventListener("input", () => {
+    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  });
+
+  elements.createProjectFileContentInput?.addEventListener("input", () => {
+    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  });
+
+  if (!resolveDevFlowControlsEnabled()) {
+    if (elements.reopenOnboardingButton) {
+      elements.reopenOnboardingButton.hidden = true;
+    }
+    if (elements.createNewProjectButton) {
+      elements.createNewProjectButton.hidden = true;
+    }
+  }
 
   elements.proposalEditButton?.addEventListener("click", async () => {
     await submitProposalEditsFromUi();

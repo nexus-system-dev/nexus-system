@@ -1,7 +1,15 @@
 function normalizeScreenInventory(screenInventory) {
   return screenInventory && typeof screenInventory === "object"
-    ? { screens: Array.isArray(screenInventory.screens) ? screenInventory.screens : [] }
+    ? {
+        screens: Array.isArray(screenInventory.screens)
+          ? screenInventory.screens.filter((screen) => screen && typeof screen === "object")
+          : [],
+      }
     : { screens: [] };
+}
+
+function normalizeScreenType(screenType) {
+  return typeof screenType === "string" && screenType.trim() ? screenType.trim() : null;
 }
 
 function createDisplayComponent({
@@ -27,7 +35,9 @@ export function createDataDisplayComponents({
   screenInventory,
 } = {}) {
   const normalizedScreenInventory = normalizeScreenInventory(screenInventory);
-  const screenTypes = [...new Set(normalizedScreenInventory.screens.map((screen) => screen.screenType).filter(Boolean))];
+  const screenTypes = [
+    ...new Set(normalizedScreenInventory.screens.map((screen) => normalizeScreenType(screen.screenType)).filter(Boolean)),
+  ];
 
   const components = [
     createDisplayComponent({

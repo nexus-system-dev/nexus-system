@@ -8,16 +8,26 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 function sanitizePattern(pattern, index) {
   const normalizedPattern = normalizeObject(pattern);
 
   return {
-    patternId: normalizedPattern.patternId ?? `cross-project-pattern-${index + 1}`,
-    label: normalizedPattern.label ?? normalizedPattern.category ?? `Pattern ${index + 1}`,
-    summary: normalizedPattern.summary ?? normalizedPattern.reason ?? null,
-    confidenceBand: normalizedPattern.confidenceBand ?? "medium",
-    scope: normalizedPattern.scope ?? "anonymized-cross-project",
-    evidenceCount: typeof normalizedPattern.evidenceCount === "number" ? normalizedPattern.evidenceCount : 0,
+    patternId: normalizeString(normalizedPattern.patternId) ?? `cross-project-pattern-${index + 1}`,
+    label:
+      normalizeString(normalizedPattern.label)
+      ?? normalizeString(normalizedPattern.category)
+      ?? `Pattern ${index + 1}`,
+    summary: normalizeString(normalizedPattern.summary) ?? normalizeString(normalizedPattern.reason),
+    confidenceBand: normalizeString(normalizedPattern.confidenceBand) ?? "medium",
+    scope: normalizeString(normalizedPattern.scope) ?? "anonymized-cross-project",
+    evidenceCount:
+      typeof normalizedPattern.evidenceCount === "number" && Number.isFinite(normalizedPattern.evidenceCount)
+        ? Math.max(0, normalizedPattern.evidenceCount)
+        : 0,
   };
 }
 
@@ -25,9 +35,12 @@ function sanitizeHint(hint, index) {
   const normalizedHint = normalizeObject(hint);
 
   return {
-    hintId: normalizedHint.hintId ?? `cross-project-hint-${index + 1}`,
-    label: normalizedHint.label ?? normalizedHint.title ?? `Recommendation hint ${index + 1}`,
-    explanation: normalizedHint.explanation ?? normalizedHint.reason ?? null,
+    hintId: normalizeString(normalizedHint.hintId) ?? `cross-project-hint-${index + 1}`,
+    label:
+      normalizeString(normalizedHint.label)
+      ?? normalizeString(normalizedHint.title)
+      ?? `Recommendation hint ${index + 1}`,
+    explanation: normalizeString(normalizedHint.explanation) ?? normalizeString(normalizedHint.reason),
   };
 }
 
@@ -41,7 +54,7 @@ export function createCrossProjectPatternDisclosurePanel({
 
   return {
     crossProjectPatternPanel: {
-      panelId: `cross-project-pattern-panel:${normalizedMemory.registryId ?? "nexus"}`,
+      panelId: `cross-project-pattern-panel:${normalizeString(normalizedMemory.registryId) ?? "nexus"}`,
       patterns,
       recommendationHints: hints,
       disclosure: {

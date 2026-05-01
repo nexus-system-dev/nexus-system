@@ -31,3 +31,31 @@ test("AI companion presence schema falls back safely for passive observation", (
   assert.equal(companionPresence.urgency, "low");
   assert.equal(typeof companionPresence.visibilityRules.showInWorkspace, "boolean");
 });
+
+test("AI companion presence schema normalizes malformed identifiers and interaction strings", () => {
+  const { companionPresence } = defineAiCompanionPresenceSchema({
+    assistantState: {
+      state: "  WARNING  ",
+    },
+    interactionContext: {
+      projectId: "   ",
+      tone: "  Supportive  ",
+      urgency: "  CRITICAL ",
+      currentSurface: "   ",
+      surface: " background ",
+      currentTask: "   ",
+      executionMode: "   ",
+    },
+  });
+
+  assert.equal(companionPresence.presenceId, "companion-presence:nexus");
+  assert.equal(companionPresence.state, "warning");
+  assert.equal(companionPresence.tone, "supportive");
+  assert.equal(companionPresence.urgency, "critical");
+  assert.equal(companionPresence.visible, false);
+  assert.equal(companionPresence.visualMode, "ambient");
+  assert.equal(companionPresence.visibilityRules.currentSurface, "background");
+  assert.equal(companionPresence.visibilityRules.currentTask, null);
+  assert.equal(companionPresence.visibilityRules.staysQuietDuringCriticalExecution, false);
+  assert.equal(companionPresence.summary.prefersDockPresence, true);
+});

@@ -55,3 +55,61 @@ test("editable proposal schema falls back safely", () => {
   assert.equal(Array.isArray(editableProposal.copy), true);
   assert.equal(typeof editableProposal.nextAction.label, "string");
 });
+
+test("editable proposal schema normalizes malformed identifiers and text payloads", () => {
+  const { editableProposal } = defineEditableProposalSchema({
+    proposalType: " workspace-recommendation ",
+    proposalPayload: {
+      sourceId: {},
+      status: " pending ",
+      sections: [
+        {
+          sectionId: {},
+          sectionType: {},
+          label: " Overview ",
+          status: " proposed ",
+          contentSummary: " Summary ",
+        },
+      ],
+      components: [
+        {
+          componentId: {},
+          sectionId: {},
+          componentType: {},
+          status: " proposed ",
+          value: " Proposed value ",
+        },
+      ],
+      copy: [
+        {
+          copyId: {},
+          sectionId: {},
+          field: {},
+          label: " Headline ",
+          text: " Updated headline ",
+        },
+      ],
+      nextAction: {
+        actionId: {},
+        label: " Review proposal ",
+        intent: {},
+      },
+    },
+  });
+
+  assert.equal(editableProposal.proposalId, "editable-proposal:workspace-recommendation:unknown");
+  assert.equal(editableProposal.status, "pending");
+  assert.equal(editableProposal.sections[0].sectionId, "section-1");
+  assert.equal(editableProposal.sections[0].sectionType, "custom");
+  assert.equal(editableProposal.sections[0].label, "Overview");
+  assert.equal(editableProposal.components[0].componentId, "component-1");
+  assert.equal(editableProposal.components[0].sectionId, "section-1");
+  assert.equal(editableProposal.components[0].componentType, "panel");
+  assert.equal(editableProposal.copy[0].copyId, "copy-1");
+  assert.equal(editableProposal.copy[0].sectionId, "section-1");
+  assert.equal(editableProposal.copy[0].field, "body");
+  assert.equal(editableProposal.copy[0].proposedText, "Updated headline");
+  assert.equal(editableProposal.nextAction.actionId, "review-proposal");
+  assert.equal(editableProposal.nextAction.label, "Review proposal");
+  assert.equal(editableProposal.nextAction.intent, "review");
+});

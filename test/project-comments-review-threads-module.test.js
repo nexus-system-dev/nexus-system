@@ -109,3 +109,42 @@ test("project comments and review threads module merges persisted discussion thr
   assert.equal(reviewThreadState.threads[0].messages[1].body, "Check the changed copy before merge");
   assert.equal(reviewThreadState.summary.openThreads, 1);
 });
+
+test("project comments and review threads module normalizes malformed identifiers and statuses", () => {
+  const { reviewThreadState } = createProjectCommentsAndReviewThreadsModule({
+    collaborationEvent: {
+      eventId: " collaboration-event:project-1:shared-review ",
+      eventType: " shared-review ",
+      actor: {
+        actorId: " reviewer-1 ",
+        displayName: " Reviewer ",
+      },
+      target: {
+        projectId: "  ",
+        resourceId: " diff-1 ",
+        workspaceArea: " release-workspace ",
+      },
+      payload: {
+        message: " Review this diff ",
+        reviewStatus: " open ",
+        mentions: [" user-2 ", "   "],
+      },
+    },
+    branchDiffActivityPanel: {
+      diffs: {
+        headline: " 2 files changed ",
+        executionRequestId: " exec-1 ",
+        totalChanges: 2,
+      },
+    },
+  });
+
+  assert.equal(reviewThreadState.threadStateId, "review-thread-state:project");
+  assert.equal(reviewThreadState.threads[0].threadId, "thread:collaboration-event:project-1:shared-review");
+  assert.equal(reviewThreadState.threads[0].threadType, "review-thread");
+  assert.equal(reviewThreadState.threads[0].title, "Review this diff");
+  assert.equal(reviewThreadState.threads[0].messages[0].authorId, "reviewer-1");
+  assert.deepEqual(reviewThreadState.threads[0].messages[0].mentions, ["user-2"]);
+  assert.equal(reviewThreadState.threads[0].messages[0].status, "open");
+  assert.equal(reviewThreadState.summary.openThreads >= 1, true);
+});

@@ -149,3 +149,25 @@ test("privacy resolver returns backup constraints as decision facets", () => {
   assert.equal(privacyPolicyDecision.backupConstraints.encryptionRequired, true);
   assert.equal(privacyPolicyDecision.backupConstraints.restoreScope, "authorized-only");
 });
+
+test("privacy resolver normalizes malformed classification and policy strings", () => {
+  const { privacyPolicyDecision } = createPrivacyRetentionAndDeletionPolicyResolver({
+    dataPrivacyClassification: buildClassification({
+      classificationId: " data-privacy:giftwallet:asset-1 ",
+      exposureLevel: " SECRET ",
+      personalData: " Sensitive-Personal ",
+      learningSafety: " PROHIBITED ",
+    }),
+    retentionPolicy: {
+      policyId: "secret-purge",
+      source: " DIRECT-INPUT ",
+      retentionAction: " DELETE-REQUIRED ",
+      deletionMode: " EXPLICIT-PURGE ",
+      storageDriver: " VAULT ",
+    },
+  });
+
+  assert.equal(privacyPolicyDecision.retentionAction, "delete-required");
+  assert.equal(privacyPolicyDecision.deletionMode, "explicit-purge");
+  assert.equal(privacyPolicyDecision.backupAllowed, false);
+});

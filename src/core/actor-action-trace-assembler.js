@@ -8,11 +8,20 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : fallback;
+}
+
 function normalizeArtifactEntry(artifact) {
   if (typeof artifact === "string") {
     return {
-      artifactId: artifact,
-      name: artifact,
+      artifactId: normalizeString(artifact, null),
+      name: normalizeString(artifact, null),
       path: null,
       status: "produced",
     };
@@ -20,10 +29,10 @@ function normalizeArtifactEntry(artifact) {
 
   if (artifact && typeof artifact === "object") {
     return {
-      artifactId: artifact.artifactId ?? artifact.id ?? artifact.name ?? artifact.path ?? null,
-      name: artifact.name ?? artifact.artifactId ?? artifact.id ?? null,
-      path: artifact.path ?? null,
-      status: artifact.status ?? "produced",
+      artifactId: normalizeString(artifact.artifactId ?? artifact.id ?? artifact.name ?? artifact.path, null),
+      name: normalizeString(artifact.name ?? artifact.artifactId ?? artifact.id, null),
+      path: normalizeString(artifact.path, null),
+      status: normalizeString(artifact.status, "produced"),
     };
   }
 
@@ -32,7 +41,9 @@ function normalizeArtifactEntry(artifact) {
 
 function buildProviderSideEffects(executionResult) {
   const metadata = normalizeObject(executionResult.metadata);
-  const surfaces = normalizeArray(metadata.surfaces);
+  const surfaces = normalizeArray(metadata.surfaces)
+    .map((surface) => normalizeString(surface, null))
+    .filter(Boolean);
 
   return surfaces.map((surface, index) => ({
     effectId: `provider-side-effect:${index + 1}`,
@@ -55,25 +66,25 @@ export function createActorActionTraceAssembler({
 
   return {
     actorActionTrace: {
-      actorActionTraceId: `actor-action-trace:${auditRecord.projectAuditRecordId ?? "unknown-record"}`,
-      projectAuditRecordId: auditRecord.projectAuditRecordId ?? null,
-      projectId: auditRecord.projectId ?? null,
+      actorActionTraceId: `actor-action-trace:${normalizeString(auditRecord.projectAuditRecordId, "unknown-record")}`,
+      projectAuditRecordId: normalizeString(auditRecord.projectAuditRecordId, null),
+      projectId: normalizeString(auditRecord.projectId, null),
       actor: normalizeObject(auditRecord.actor),
       action: {
-        actionType: auditRecord.actionType ?? "project.observed",
-        category: auditRecord.category ?? "project",
-        summary: auditRecord.summary ?? "project audit trace",
+        actionType: normalizeString(auditRecord.actionType, "project.observed"),
+        category: normalizeString(auditRecord.category, "project"),
+        summary: normalizeString(auditRecord.summary, "project audit trace"),
       },
       outcome: {
-        status: normalizedExecutionResult.status ?? auditRecord.status ?? "recorded",
-        reason: normalizedExecutionResult.reason ?? auditRecord.reason ?? null,
+        status: normalizeString(normalizedExecutionResult.status ?? auditRecord.status, "recorded"),
+        reason: normalizeString(normalizedExecutionResult.reason ?? auditRecord.reason, null),
         totalRuns: normalizedExecutionResult.metadata?.totalRuns ?? 0,
         totalCommands: normalizedExecutionResult.metadata?.totalCommands ?? 0,
       },
       providerSideEffects,
       affectedArtifacts,
       traceLinks: {
-        traceId: auditRecord.traceId ?? normalizedExecutionResult.traceId ?? null,
+        traceId: normalizeString(auditRecord.traceId ?? normalizedExecutionResult.traceId, null),
         resource: normalizeObject(auditRecord.resource),
       },
       summary: {

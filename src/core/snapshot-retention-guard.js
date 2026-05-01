@@ -6,6 +6,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function normalizeMaxSnapshots(retentionPolicy = {}, snapshotSchedule = {}) {
   const policyMax = Number(retentionPolicy.maxSnapshots);
   if (Number.isFinite(policyMax) && policyMax >= 1) {
@@ -54,14 +58,14 @@ export function createSnapshotRetentionGuard({
   const excessCount = retentionEnabled ? Math.max(0, totalSnapshots - maxSnapshots) : 0;
   const recordsToDelete = excessCount > 0 ? records.slice(0, excessCount) : [];
   const deletedSnapshotRecordIds = recordsToDelete
-    .map((record) => record.snapshotRecordId)
-    .filter((value) => typeof value === "string" && value.length > 0);
+    .map((record) => normalizeString(record.snapshotRecordId, null))
+    .filter(Boolean);
   const nowIso = now instanceof Date ? now.toISOString() : new Date().toISOString();
 
   return {
     snapshotRetentionDecision: {
-      snapshotRetentionDecisionId: `snapshot-retention-decision:${normalizedSnapshotRecord.snapshotRecordId ?? "snapshot-store"}:${Date.now()}`,
-      triggerType,
+      snapshotRetentionDecisionId: `snapshot-retention-decision:${normalizeString(normalizedSnapshotRecord.snapshotRecordId, "snapshot-store")}:${Date.now()}`,
+      triggerType: normalizeString(triggerType, "manual-cleanup"),
       retentionEnabled,
       maxSnapshots,
       totalSnapshots,
@@ -69,8 +73,8 @@ export function createSnapshotRetentionGuard({
       deletedSnapshotRecordIds,
       retainedSnapshotRecordIds: records
         .slice(Math.max(0, totalSnapshots - maxSnapshots))
-        .map((record) => record.snapshotRecordId)
-        .filter((value) => typeof value === "string" && value.length > 0),
+        .map((record) => normalizeString(record.snapshotRecordId, null))
+        .filter(Boolean),
       summary: {
         pruneCount: deletedSnapshotRecordIds.length,
         totalAfterCleanup: retentionEnabled

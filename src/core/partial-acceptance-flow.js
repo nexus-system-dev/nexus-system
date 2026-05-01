@@ -103,15 +103,15 @@ export function createPartialAcceptanceFlow({
   const normalizedProposal = normalizeObject(editedProposal);
   const normalizedOutcome = normalizeObject(approvalOutcome);
   const sectionDecisions = toDecisionSet(
-    normalizedOutcome.sectionOutcomes ?? normalizedOutcome.sections,
+    normalizedOutcome.sectionOutcomes,
     "sectionId",
   );
   const componentDecisions = toDecisionSet(
-    normalizedOutcome.componentOutcomes ?? normalizedOutcome.components,
+    normalizedOutcome.componentOutcomes,
     "componentId",
   );
   const copyDecisions = toDecisionSet(
-    normalizedOutcome.copyOutcomes ?? normalizedOutcome.copy,
+    normalizedOutcome.copyOutcomes,
     "copyId",
   );
 
@@ -139,6 +139,7 @@ export function createPartialAcceptanceFlow({
       decisionId: `partial-acceptance:${normalizedProposal.revisionId ?? normalizedProposal.proposalId ?? "unknown"}`,
       proposalId: normalizedProposal.proposalId ?? null,
       revisionId: normalizedProposal.revisionId ?? null,
+      approvalOutcomeId: normalizedOutcome.approvalOutcomeId ?? null,
       status:
         totalRemaining === 0
           ? "fully-accepted"
@@ -158,6 +159,7 @@ export function createPartialAcceptanceFlow({
             ? "regenerate-rejected-scope"
             : "review-full-proposal",
       summary: {
+        approvalOutcomeStatus: normalizedOutcome.status ?? "pending",
         approvedCount: totalApproved,
         remainingCount: totalRemaining,
         canProceed: totalRemaining === 0,

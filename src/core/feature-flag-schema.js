@@ -40,13 +40,13 @@ function normalizeEnvironmentConfig(environmentConfig = null) {
     ?? null;
 
   return {
-    projectId: config.projectId ?? null,
+    projectId: typeof config.projectId === "string" && config.projectId.trim().length > 0 ? config.projectId.trim() : null,
     environment: normalizeEnvironmentName(sourceEnvironment),
     executionModes: Array.isArray(config.executionModes) ? config.executionModes : [],
-    defaultMode: config.defaultMode ?? null,
-    provider: config.provider ?? null,
-    target: config.target ?? null,
-    runtimeSource: config.runtimeSource ?? null,
+    defaultMode: typeof config.defaultMode === "string" && config.defaultMode.trim().length > 0 ? config.defaultMode.trim() : null,
+    provider: typeof config.provider === "string" && config.provider.trim().length > 0 ? config.provider.trim() : null,
+    target: typeof config.target === "string" && config.target.trim().length > 0 ? config.target.trim() : null,
+    runtimeSource: typeof config.runtimeSource === "string" && config.runtimeSource.trim().length > 0 ? config.runtimeSource.trim() : null,
   };
 }
 
@@ -81,7 +81,7 @@ export function defineFeatureFlagSchema({
     const enabled = isKillSwitch ? false : requestedEnabled;
     return {
       flagId: definition.flagId,
-      description: definition.description ?? "Feature flag",
+      description: typeof definition.description === "string" && definition.description.trim().length > 0 ? definition.description.trim() : "Feature flag",
       enabled,
       requestedEnabled,
       rolloutScope: normalizeRolloutScope(definition.rolloutScope),
@@ -91,7 +91,7 @@ export function defineFeatureFlagSchema({
       userTargets: normalizeTargets(definition.userTargets),
       riskSensitive: definition.riskSensitive === true,
       isKillSwitch,
-      defaultFallback: definition.defaultFallback ?? "disabled",
+      defaultFallback: typeof definition.defaultFallback === "string" && definition.defaultFallback.trim().length > 0 ? definition.defaultFallback.trim() : "disabled",
     };
   });
 

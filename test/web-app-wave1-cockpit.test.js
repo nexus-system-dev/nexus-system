@@ -20,6 +20,8 @@ function createElement() {
     textContent: "",
     value: "",
     hidden: false,
+    disabled: false,
+    dataset: {},
     ariaSelected: "false",
     listeners: {},
     classNames: new Set(),
@@ -32,22 +34,72 @@ function createElement() {
   };
 }
 
+function createShortDelayTimers() {
+  const timers = new Set();
+  return {
+    setTimeoutImpl(callback, delay = 0) {
+      if (delay <= 500) {
+        const timer = setTimeout(() => {
+          timers.delete(timer);
+          callback();
+        }, 0);
+        timers.add(timer);
+        return timer;
+      }
+      return 0;
+    },
+    clearTimeoutImpl(timer) {
+      if (timer && timers.has(timer)) {
+        clearTimeout(timer);
+        timers.delete(timer);
+      }
+    },
+  };
+}
+
 function createFakeDocument() {
   const selectors = [
+    ".hero-actions",
     "#project-select",
     "#sync-casino-button",
     "#analyze-button",
     "#run-cycle-button",
+    "#screen-create",
+    "#screen-onboarding",
+    "#screen-workspace",
     "#workspace-board",
+    "#flow-feedback-banner",
+    "#flow-feedback-title",
+    "#flow-feedback-message",
+    "#create-new-project-button",
+    "#reopen-onboarding-button",
     "#empty-app-state",
     "#empty-project-message",
     "#empty-project-status",
+    "#project-create-stage",
+    "#onboarding-stage",
+    "#onboarding-screen-message",
+    "#onboarding-screen-status",
+    "#onboarding-stage-title",
+    "#onboarding-stage-description",
+    "#onboarding-progress-pill",
+    "#onboarding-back-button",
+    "#onboarding-forward-button",
+    "#onboarding-notes-list",
+    "#onboarding-chat-thread",
+    "#onboarding-current-question-title",
+    "#onboarding-current-question-body",
+    "#onboarding-answer-input",
+    "#onboarding-next-button",
+    "#onboarding-material-stage",
+    "#onboarding-form-stage",
     "#create-project-name-input",
     "#create-project-vision-input",
     "#create-project-link-input",
     "#create-project-file-name-input",
     "#create-project-file-content-input",
     "#create-project-button",
+    "#finish-onboarding-button",
     "#tab-developer",
     "#tab-project-brain",
     "#tab-release",
@@ -753,6 +805,65 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
         filtered: false,
       },
     },
+    repositoryImportAndCodebaseDiagnosis: {
+      diagnosisId: "repository-import-diagnosis:giftwallet",
+      status: "ready",
+      repository: {
+        fullName: "openai/giftwallet",
+      },
+      summary: {
+        diagnosisStatus: "ready",
+        codebaseSummary: "backend: Express, frontend: React, database/data: PostgreSQL, יש בדיקות.",
+        architectureSummary: "Layered architecture, MVC-style routing",
+        nextAction: "Audit the existing repository test coverage before import continuation.",
+      },
+      diagnosisReadout: {
+        blockingGaps: ["לא זוהתה שכבת CI או workflow אוטומטי"],
+      },
+    },
+    liveWebsiteIngestionAndFunnelDiagnosis: {
+      diagnosisId: "live-website-diagnosis:giftwallet",
+      status: "ready",
+      website: {
+        hostname: "giftwallet.app",
+      },
+      summary: {
+        diagnosisStatus: "ready",
+        websiteSummary: "giftwallet.app | health: degraded",
+        funnelSummary: "registration: onboarding CTA missing",
+        nextAction: "Unblock the live-site flow: registration: onboarding CTA missing.",
+      },
+      funnelDiagnosis: {
+        criticalDependencies: ["analytics instrumentation"],
+      },
+    },
+    importedAnalyticsNormalization: {
+      normalizationId: "imported-analytics:giftwallet",
+      status: "ready",
+      summary: {
+        normalizationStatus: "ready",
+        importedAssetCount: 1,
+        providerCount: 2,
+        nextAction: "Map imported analytics export ga-export.csv into canonical growth signals.",
+      },
+      evidenceSources: {
+        providers: ["google-analytics", "runtime-analytics"],
+      },
+    },
+    importedAssetTaskExtraction: {
+      extractionId: "imported-asset-task-extraction:giftwallet",
+      status: "ready",
+      summary: {
+        totalExtractedTasks: 6,
+        highPriorityCount: 2,
+        sourceCoverage: ["repository", "website", "analytics", "documents"],
+        nextAction: "Resolve repository gap: missing CI workflow",
+      },
+      extractedTasks: [
+        { title: "Resolve repository gap: missing CI workflow" },
+        { title: "Unblock website flow: registration: onboarding CTA missing" },
+      ],
+    },
   };
 
   async function fetchImpl(url) {
@@ -806,6 +917,14 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#project-audit-content").innerHTML, /approval.granted/);
   assert.match(fakeDocument.elements.get("#access-isolation-content").innerHTML, /Guard decisions/);
   assert.match(fakeDocument.elements.get("#growth-content").innerHTML, /Draft Wave 2 teaser/);
+  assert.match(fakeDocument.elements.get("#existing-content").innerHTML, /Diagnosis ready: openai\/giftwallet/);
+  assert.match(fakeDocument.elements.get("#external-content").innerHTML, /Repository diagnosis: ready/);
+  assert.match(fakeDocument.elements.get("#external-content").innerHTML, /Website diagnosis: ready/);
+  assert.match(fakeDocument.elements.get("#external-content").innerHTML, /Imported analytics: ready/);
+  assert.match(fakeDocument.elements.get("#external-content").innerHTML, /Imported tasks: 6/);
+  assert.match(fakeDocument.elements.get("#external-content").innerHTML, /Resolve repository gap/);
+  assert.match(fakeDocument.elements.get("#external-content").innerHTML, /google-analytics/);
+  assert.match(fakeDocument.elements.get("#external-content").innerHTML, /giftwallet\.app/);
   assert.match(fakeDocument.elements.get("#developer-workspace-summary").innerHTML, /36%/);
   assert.match(fakeDocument.elements.get("#project-brain-summary").innerHTML, /saas/);
   assert.match(fakeDocument.elements.get("#decision-content").innerHTML, /Approve deploy/);
@@ -1006,6 +1125,7 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
   const fakeDocument = createFakeDocument();
   const storage = new Map();
   const requests = [];
+  const timers = createShortDelayTimers();
   const projectPayload = {
     id: "launch-app",
     name: "Launch App",
@@ -1307,15 +1427,15 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
         storage.delete(key);
       },
     },
-    setTimeoutImpl() {
-      return 0;
-    },
-    clearTimeoutImpl() {},
+    setTimeoutImpl: timers.setTimeoutImpl,
+    clearTimeoutImpl: timers.clearTimeoutImpl,
   });
 
   await app.ready;
 
-  assert.equal(fakeDocument.elements.get("#empty-app-state").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
   assert.equal(fakeDocument.elements.get("#workspace-board").hidden, true);
   assert.equal(fakeDocument.elements.get("#create-project-button").textContent, "צור פרויקט");
 
@@ -1326,18 +1446,62 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
 
   await fakeDocument.elements.get("#create-project-button").listeners.click();
 
-  assert.equal(fakeDocument.elements.get("#create-project-button").textContent, "סיים Onboarding");
-  assert.match(fakeDocument.elements.get("#empty-project-status").textContent, /קישור תומך או קובץ תומך/i);
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+  assert.equal(fakeDocument.elements.get("#onboarding-stage").hidden, false);
+  assert.equal(fakeDocument.elements.get("#onboarding-material-stage").hidden, true);
+  assert.equal(fakeDocument.elements.get("#finish-onboarding-button").hidden, true);
+  assert.equal(fakeDocument.elements.get("#onboarding-next-button").hidden, false);
+  assert.match(fakeDocument.elements.get("#onboarding-screen-message").textContent, /עברנו ל־onboarding/);
+  assert.match(fakeDocument.elements.get("#onboarding-screen-status").textContent, /שלב נפרד מיצירת הפרויקט/);
+  assert.match(fakeDocument.elements.get("#onboarding-stage-title").textContent, /מחדדים את הפרויקט/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /מה הובן/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /מה עדיין חסר/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /מה מתחדד עכשיו/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /Launch App/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /עדיין חסר מי המשתמש המרכזי/);
+  assert.match(fakeDocument.elements.get("#onboarding-current-question-title").textContent, /למי הפרויקט הזה מיועד/);
 
-  await fakeDocument.elements.get("#create-project-button").listeners.click();
+  fakeDocument.elements.get("#onboarding-answer-input").value = "מנהלי מוצר וצוותי פיתוח";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  assert.equal(fakeDocument.elements.get("#onboarding-answer-input").value, "");
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.equal(fakeDocument.elements.get("#onboarding-answer-input").value, "");
+  assert.match(fakeDocument.elements.get("#onboarding-current-question-title").textContent, /מעולה, עכשיו נחדד/);
+  assert.match(fakeDocument.elements.get("#onboarding-current-question-body").textContent, /מנהלי מוצר וצוותי פיתוח/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /ה־AI כבר מבין שהמשתמש המרכזי הוא מנהלי מוצר וצוותי פיתוח/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /עדיין לא ברור מה הפעולה הראשונה/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /ה־AI מחדד את הזרימה הראשונית/);
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לפתוח פרויקט ולקבל next task";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.match(fakeDocument.elements.get("#onboarding-current-question-title").textContent, /יש לי כבר תמונה כמעט שלמה/);
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לראות project state usable";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
 
-  assert.equal(fakeDocument.elements.get("#empty-app-state").hidden, true);
+  assert.equal(fakeDocument.elements.get("#onboarding-material-stage").hidden, false);
+  assert.equal(fakeDocument.elements.get("#finish-onboarding-button").hidden, false);
+  assert.match(fakeDocument.elements.get("#onboarding-progress-pill").textContent, /השיחה הושלמה/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /מדד הערך הראשוני מתבהר/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /כרגע אני מבין שאנחנו בונים עבור/);
+
+  await fakeDocument.elements.get("#finish-onboarding-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, false);
   assert.equal(fakeDocument.elements.get("#workspace-board").hidden, false);
   assert.equal(fakeDocument.elements.get("#hero-project-name").textContent, "Launch App");
   assert.match(fakeDocument.elements.get("#developer-workspace-summary").innerHTML, /18%/);
   assert.match(fakeDocument.elements.get("#now-content").innerHTML, /Your starter app is ready/);
   assert.match(fakeDocument.elements.get("#graph-content").innerHTML, /Review bootstrap output/);
   assert.match(fakeDocument.elements.get("#decision-content").innerHTML, /Review bootstrap output/);
+  assert.equal(fakeDocument.elements.get("#flow-feedback-banner").hidden, false);
+  assert.match(fakeDocument.elements.get("#flow-feedback-title").textContent, /הפרויקט שלך מוכן/);
+  assert.match(fakeDocument.elements.get("#flow-feedback-message").textContent, /נכנסת עכשיו ל־workspace של Launch App/);
+  assert.match(fakeDocument.elements.get("#flow-feedback-message").textContent, /מנהלי מוצר וצוותי פיתוח/);
   assert.equal(requests.some((request) => request.url === "/api/project-drafts" && request.method === "POST"), true);
   assert.equal(requests.some((request) => request.url === "/api/onboarding/sessions/onboarding-launch-app/files" && request.method === "POST"), true);
   assert.equal(requests.some((request) => request.url === "/api/onboarding/sessions/onboarding-launch-app/finish" && request.method === "POST"), true);
@@ -1346,6 +1510,1259 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
   await fakeDocument.elements.get("#run-cycle-button").listeners.click();
   assert.equal(requests.some((request) => request.url === "/api/projects/launch-app/run-cycle" && request.method === "POST"), true);
   assert.equal(requests.filter((request) => request.url === "/api/projects/launch-app" && request.method === "GET").length >= 2, true);
+  assert.match(fakeDocument.elements.get("#flow-feedback-title").textContent, /ה־workspace עודכן|הפרויקט התקדם/);
+  assert.match(fakeDocument.elements.get("#flow-feedback-message").textContent, /אותו פרויקט|החסם המרכזי עכשיו הוא|הפעולה הבאה עודכנה|המצב עבר ל־/);
+});
+
+test("cockpit explains blocked onboarding finish instead of appearing stuck", async () => {
+  const fakeDocument = createFakeDocument();
+  const requests = [];
+  const timers = createShortDelayTimers();
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl: async (url, options = {}) => {
+      requests.push({ url, method: options.method ?? "GET", body: options.body ?? null });
+
+      if (url === "/api/projects") {
+        return {
+          ok: true,
+          async json() {
+            return { projects: [] };
+          },
+        };
+      }
+
+      if (url === "/api/auth/signup") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              authPayload: {
+                userIdentity: {
+                  userId: "user-blocked",
+                  email: "blocked@example.com",
+                },
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/project-drafts") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projectDraftId: "blocked-app",
+              projectCreationRedirect: {
+                target: "onboarding",
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              onboardingSession: {
+                sessionId: "onboarding-blocked-app",
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions/onboarding-blocked-app/intake") {
+        return {
+          ok: true,
+          async json() {
+            return { updatedSession: { sessionId: "onboarding-blocked-app" } };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions/onboarding-blocked-app/files") {
+        return {
+          ok: true,
+          async json() {
+            return { updatedSession: { sessionId: "onboarding-blocked-app" } };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions/onboarding-blocked-app/finish") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              blocked: true,
+              error: "Onboarding is not ready to build project state",
+              onboardingCompletionDecision: {
+                readinessLevel: "blocked",
+                missingInputs: ["supporting-material"],
+                clarificationPrompts: ["העלה איפיון, קבצים או קישור חיצוני"],
+              },
+            };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+    setTimeoutImpl: timers.setTimeoutImpl,
+    clearTimeoutImpl: timers.clearTimeoutImpl,
+  });
+
+  await app.ready;
+
+  fakeDocument.elements.get("#create-project-name-input").value = "Blocked App";
+  fakeDocument.elements.get("#create-project-vision-input").value = "אפליקציה כללית";
+  fakeDocument.elements.get("#create-project-file-name-input").value = "brief.md";
+  fakeDocument.elements.get("#create-project-file-content-input").value = "# Brief";
+
+  await fakeDocument.elements.get("#create-project-button").listeners.click();
+  fakeDocument.elements.get("#onboarding-answer-input").value = "צוותי מוצר";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לפתוח פרויקט";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לקבל first value";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  await fakeDocument.elements.get("#finish-onboarding-button").listeners.click();
+
+  assert.equal(requests.some((request) => request.url === "/api/onboarding/sessions/onboarding-blocked-app/finish" && request.method === "POST"), true);
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+  assert.equal(fakeDocument.elements.get("#workspace-board").hidden, true);
+  assert.match(fakeDocument.elements.get("#onboarding-screen-message").textContent, /דורש השלמה/i);
+  assert.match(fakeDocument.elements.get("#onboarding-screen-status").textContent, /העלה איפיון, קבצים או קישור חיצוני/);
+});
+
+test("cockpit disables finish button and shows visible loading state while onboarding finish is pending", async () => {
+  const fakeDocument = createFakeDocument();
+  const requests = [];
+  const timers = createShortDelayTimers();
+  let resolveFinish;
+  const finishPromise = new Promise((resolve) => {
+    resolveFinish = resolve;
+  });
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl: async (url, options = {}) => {
+      requests.push({ url, method: options.method ?? "GET", body: options.body ?? null });
+
+      if (url === "/api/projects") {
+        return {
+          ok: true,
+          async json() {
+            return { projects: [] };
+          },
+        };
+      }
+
+      if (url === "/api/auth/signup") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              authPayload: {
+                userIdentity: {
+                  userId: "user-loading",
+                  email: "loading@example.com",
+                },
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/project-drafts") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projectDraftId: "loading-app",
+              projectCreationRedirect: {
+                target: "onboarding",
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              onboardingSession: {
+                sessionId: "onboarding-loading-app",
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions/onboarding-loading-app/intake") {
+        return {
+          ok: true,
+          async json() {
+            return { updatedSession: { sessionId: "onboarding-loading-app" } };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions/onboarding-loading-app/files") {
+        return {
+          ok: true,
+          async json() {
+            return { updatedSession: { sessionId: "onboarding-loading-app" } };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions/onboarding-loading-app/finish") {
+        await finishPromise;
+        return {
+          ok: true,
+          async json() {
+            return {
+              blocked: false,
+              project: {
+                id: "loading-app",
+                name: "Loading App",
+                goal: "טוען workspace",
+                cycle: { roadmap: [] },
+                agents: [],
+                events: [],
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/projects/loading-app") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              id: "loading-app",
+              name: "Loading App",
+              goal: "טוען workspace",
+              cycle: { roadmap: [] },
+              agents: [],
+              events: [],
+            };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+    setTimeoutImpl: timers.setTimeoutImpl,
+    clearTimeoutImpl: timers.clearTimeoutImpl,
+  });
+
+  await app.ready;
+
+  fakeDocument.elements.get("#create-project-name-input").value = "Loading App";
+  fakeDocument.elements.get("#create-project-vision-input").value = "אפליקציה כללית";
+  fakeDocument.elements.get("#create-project-file-name-input").value = "brief.md";
+  fakeDocument.elements.get("#create-project-file-content-input").value = "# Brief";
+
+  await fakeDocument.elements.get("#create-project-button").listeners.click();
+  fakeDocument.elements.get("#onboarding-answer-input").value = "צוותי מוצר";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לפתוח פרויקט";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לקבל first value";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  const clickPromise = fakeDocument.elements.get("#finish-onboarding-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#finish-onboarding-button").disabled, true);
+  assert.match(fakeDocument.elements.get("#finish-onboarding-button").textContent, /מסיים Onboarding/);
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+  assert.match(fakeDocument.elements.get("#onboarding-screen-message").textContent, /מסיימים onboarding/);
+  assert.match(fakeDocument.elements.get("#onboarding-screen-status").textContent, /הבקשה נשלחה/);
+
+  resolveFinish();
+  await clickPromise;
+});
+
+test("cockpit can reopen onboarding screen from the workspace for live UI checks", async () => {
+  const fakeDocument = createFakeDocument();
+  const requests = [];
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl: async (url, options = {}) => {
+      requests.push({ url, method: options.method ?? "GET", body: options.body ?? null });
+
+      if (url === "/api/projects") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projects: [{ id: "giftwallet", name: "GiftWallet" }],
+            };
+          },
+        };
+      }
+
+      if (url === "/api/projects/giftwallet") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              id: "giftwallet",
+              name: "GiftWallet",
+              goal: "מחדדים את מסך ה-onboarding",
+              status: "active",
+              source: { baseUrl: "http://localhost:4101" },
+              overview: { bottleneck: "Need clearer onboarding" },
+              cycle: { roadmap: [] },
+              agents: [],
+              approvals: [],
+              events: [],
+              developerWorkspace: { contextSummary: { progressPercent: 10, progressStatus: "working", nextAction: "Refine onboarding", incidentStatus: "clear" } },
+              projectBrainWorkspace: { overview: { domain: "saas", currentPhase: "setup" }, summary: { blockerCount: 0, requiresApproval: false } },
+              releaseWorkspace: { releaseTarget: "staging", buildAndDeploy: { currentStage: "planned" }, validation: { status: "clear" }, summary: { isBlocked: false } },
+              growthWorkspace: { summary: { totalPillars: 0, totalChannels: 0, totalKpis: 0, hasGrowthPlan: false } },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/projects/giftwallet/presence") {
+        return {
+          ok: true,
+          async json() {
+            return { ok: true };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await app.ready;
+
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
+
+  fakeDocument.elements.get("#reopen-onboarding-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, false);
+  assert.match(fakeDocument.elements.get("#onboarding-screen-message").textContent, /פתחת מחדש את מסך ה־Onboarding/);
+  assert.match(fakeDocument.elements.get("#onboarding-screen-status").textContent, /מצב בדיקה מתוך ה־workspace/);
+  assert.equal(fakeDocument.elements.get("#create-project-name-input").value, "GiftWallet");
+});
+
+test("cockpit does not get stuck when finishing dev-only onboarding reopened from the workspace", async () => {
+  const fakeDocument = createFakeDocument();
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl: async (url) => {
+      if (url === "/api/projects") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projects: [{ id: "giftwallet", name: "GiftWallet" }],
+            };
+          },
+        };
+      }
+
+      if (url === "/api/projects/giftwallet") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              id: "giftwallet",
+              name: "GiftWallet",
+              goal: "Validate onboarding return path",
+              status: "active",
+              source: { baseUrl: "http://localhost:4101" },
+              overview: { bottleneck: "Need a safe finish fallback" },
+              cycle: { roadmap: [] },
+              agents: [],
+              approvals: [],
+              events: [],
+              developerWorkspace: { contextSummary: { progressPercent: 10, progressStatus: "working", nextAction: "Continue in workspace", incidentStatus: "clear" } },
+              projectBrainWorkspace: { overview: { domain: "saas", currentPhase: "setup" }, summary: { blockerCount: 0, requiresApproval: false } },
+              releaseWorkspace: { releaseTarget: "staging", buildAndDeploy: { currentStage: "planned" }, validation: { status: "clear" }, summary: { isBlocked: false } },
+              growthWorkspace: { summary: { totalPillars: 0, totalChannels: 0, totalKpis: 0, hasGrowthPlan: false } },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/projects/giftwallet/presence") {
+        return {
+          ok: true,
+          async json() {
+            return { ok: true };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await app.ready;
+
+  fakeDocument.elements.get("#reopen-onboarding-button").listeners.click();
+  fakeDocument.elements.get("#create-project-link-input").value = "https://example.com/spec";
+  fakeDocument.elements.get("#onboarding-answer-input").value = "מנהלי מוצר";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לפתוח פרויקט";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לקבל next task";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+
+  await fakeDocument.elements.get("#finish-onboarding-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, false);
+  assert.match(fakeDocument.elements.get("#flow-feedback-title").textContent, /חזרת ל־workspace שלך/);
+});
+
+test("cockpit can return from workspace to a clean create-project screen", async () => {
+  const fakeDocument = createFakeDocument();
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl: async (url) => {
+      if (url === "/api/projects") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projects: [{ id: "giftwallet", name: "GiftWallet" }],
+            };
+          },
+        };
+      }
+
+      if (url === "/api/projects/giftwallet") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              id: "giftwallet",
+              name: "GiftWallet",
+              goal: "Return to create-project",
+              status: "active",
+              source: { baseUrl: "http://localhost:4101" },
+              overview: { bottleneck: "Need a new project entry path" },
+              cycle: { roadmap: [] },
+              agents: [],
+              approvals: [],
+              events: [],
+              developerWorkspace: { contextSummary: { progressPercent: 10, progressStatus: "working", nextAction: "Create another project", incidentStatus: "clear" } },
+              projectBrainWorkspace: { overview: { domain: "saas", currentPhase: "setup" }, summary: { blockerCount: 0, requiresApproval: false } },
+              releaseWorkspace: { releaseTarget: "staging", buildAndDeploy: { currentStage: "planned" }, validation: { status: "clear" }, summary: { isBlocked: false } },
+              growthWorkspace: { summary: { totalPillars: 0, totalChannels: 0, totalKpis: 0, hasGrowthPlan: false } },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/projects/giftwallet/presence") {
+        return {
+          ok: true,
+          async json() {
+            return { ok: true };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await app.ready;
+
+  fakeDocument.elements.get("#create-project-name-input").value = "Old project";
+  fakeDocument.elements.get("#create-project-vision-input").value = "Old vision";
+  fakeDocument.elements.get("#create-project-link-input").value = "https://example.com";
+  fakeDocument.elements.get("#create-project-file-name-input").value = "brief.md";
+  fakeDocument.elements.get("#create-project-file-content-input").value = "# Brief";
+
+  fakeDocument.elements.get("#create-new-project-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+  assert.equal(fakeDocument.elements.get("#workspace-board").hidden, true);
+  assert.match(fakeDocument.elements.get("#empty-project-message").textContent, /צור פרויקט חדש/);
+  assert.equal(fakeDocument.elements.get("#create-project-name-input").value, "");
+  assert.equal(fakeDocument.elements.get("#create-project-vision-input").value, "");
+  assert.equal(fakeDocument.elements.get("#create-project-link-input").value, "");
+  assert.equal(fakeDocument.elements.get("#create-project-file-name-input").value, "");
+  assert.equal(fakeDocument.elements.get("#create-project-file-content-input").value, "");
+});
+
+test("cockpit can exit real onboarding back to the create-project screen", async () => {
+  const fakeDocument = createFakeDocument();
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl: async (url) => {
+      if (url === "/api/projects") {
+        return {
+          ok: true,
+          async json() {
+            return { projects: [] };
+          },
+        };
+      }
+
+      if (url === "/api/auth/signup") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              authPayload: {
+                userIdentity: {
+                  userId: "user-back",
+                  email: "back@example.com",
+                },
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/project-drafts") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projectDraftId: "back-project",
+              projectCreationRedirect: {
+                target: "onboarding",
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              onboardingSession: {
+                sessionId: "onboarding-back-project",
+              },
+            };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+  });
+
+  await app.ready;
+
+  fakeDocument.elements.get("#create-project-name-input").value = "Back Project";
+  fakeDocument.elements.get("#create-project-vision-input").value = "Need a clear back path";
+  await fakeDocument.elements.get("#create-project-button").listeners.click();
+  await fakeDocument.elements.get("#onboarding-back-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+  assert.match(fakeDocument.elements.get("#empty-project-message").textContent, /חזרת ליצירת הפרויקט/);
+});
+
+test("cockpit restores onboarding screen after refresh using local app state", async () => {
+  const storage = new Map();
+
+  const createFetch = async (url, options = {}) => {
+    if (url === "/api/projects") {
+      return {
+        ok: true,
+        async json() {
+          return { projects: [] };
+        },
+      };
+    }
+
+    if (url === "/api/auth/signup") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            authPayload: {
+              userIdentity: {
+                userId: "restore-user",
+                email: "restore@example.com",
+              },
+            },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/project-drafts") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            projectDraftId: "restore-project",
+            projectCreationRedirect: {
+              target: "onboarding",
+            },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/onboarding/sessions") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            onboardingSession: {
+              sessionId: "onboarding-restore-project",
+            },
+          };
+        },
+      };
+    }
+
+    throw new Error(`Unexpected fetch ${url}`);
+  };
+
+  const firstDocument = createFakeDocument();
+  const firstApp = createCockpitApp({
+    doc: firstDocument,
+    fetchImpl: createFetch,
+    storageImpl: {
+      getItem(key) {
+        return storage.get(key) ?? null;
+      },
+      setItem(key, value) {
+        storage.set(key, value);
+      },
+      removeItem(key) {
+        storage.delete(key);
+      },
+    },
+  });
+
+  await firstApp.ready;
+  firstDocument.elements.get("#create-project-name-input").value = "Restore Flow";
+  firstDocument.elements.get("#create-project-vision-input").value = "Validate onboarding restore";
+  await firstDocument.elements.get("#create-project-button").listeners.click();
+  firstDocument.elements.get("#onboarding-answer-input").value = "מנהלי מוצר";
+  firstDocument.elements.get("#onboarding-answer-input").listeners.input();
+
+  const secondDocument = createFakeDocument();
+  const secondApp = createCockpitApp({
+    doc: secondDocument,
+    fetchImpl: createFetch,
+    storageImpl: {
+      getItem(key) {
+        return storage.get(key) ?? null;
+      },
+      setItem(key, value) {
+        storage.set(key, value);
+      },
+      removeItem(key) {
+        storage.delete(key);
+      },
+    },
+  });
+
+  await secondApp.ready;
+
+  assert.equal(secondDocument.elements.get("#screen-create").hidden, true);
+  assert.equal(secondDocument.elements.get("#screen-onboarding").hidden, false);
+  assert.equal(secondDocument.elements.get("#screen-workspace").hidden, true);
+  assert.match(secondDocument.elements.get("#onboarding-screen-message").textContent, /חזרת ל־Onboarding/);
+  assert.equal(secondDocument.elements.get("#create-project-name-input").value, "Restore Flow");
+  assert.equal(secondDocument.elements.get("#create-project-vision-input").value, "Validate onboarding restore");
+  assert.equal(secondDocument.elements.get("#onboarding-answer-input").value, "מנהלי מוצר");
+});
+
+test("cockpit restores workspace after refresh using local app state", async () => {
+  const storage = new Map();
+
+  const fetchWorkspace = async (url) => {
+    if (url === "/api/projects") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            projects: [{ id: "giftwallet", name: "GiftWallet" }],
+          };
+        },
+      };
+    }
+
+    if (url === "/api/projects/giftwallet") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            id: "giftwallet",
+            name: "GiftWallet",
+            goal: "Return to workspace after refresh",
+            status: "active",
+            source: { baseUrl: "http://localhost:4101" },
+            overview: { bottleneck: "Need workspace persistence" },
+            cycle: { roadmap: [] },
+            agents: [],
+            approvals: [],
+            events: [],
+            developerWorkspace: { contextSummary: { progressPercent: 12, progressStatus: "working", nextAction: "Continue in workspace", incidentStatus: "clear" } },
+            projectBrainWorkspace: { overview: { domain: "saas", currentPhase: "setup" }, summary: { blockerCount: 0, requiresApproval: false } },
+            releaseWorkspace: { releaseTarget: "staging", buildAndDeploy: { currentStage: "planned" }, validation: { status: "clear" }, summary: { isBlocked: false } },
+            growthWorkspace: { summary: { totalPillars: 0, totalChannels: 0, totalKpis: 0, hasGrowthPlan: false } },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/projects/giftwallet/presence") {
+      return {
+        ok: true,
+        async json() {
+          return { ok: true };
+        },
+      };
+    }
+
+    throw new Error(`Unexpected fetch ${url}`);
+  };
+
+  const firstDocument = createFakeDocument();
+  const firstApp = createCockpitApp({
+    doc: firstDocument,
+    fetchImpl: fetchWorkspace,
+    storageImpl: {
+      getItem(key) {
+        return storage.get(key) ?? null;
+      },
+      setItem(key, value) {
+        storage.set(key, value);
+      },
+      removeItem(key) {
+        storage.delete(key);
+      },
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await firstApp.ready;
+
+  const secondDocument = createFakeDocument();
+  const secondApp = createCockpitApp({
+    doc: secondDocument,
+    fetchImpl: fetchWorkspace,
+    storageImpl: {
+      getItem(key) {
+        return storage.get(key) ?? null;
+      },
+      setItem(key, value) {
+        storage.set(key, value);
+      },
+      removeItem(key) {
+        storage.delete(key);
+      },
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await secondApp.ready;
+
+  assert.equal(secondDocument.elements.get("#screen-create").hidden, true);
+  assert.equal(secondDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(secondDocument.elements.get("#screen-workspace").hidden, false);
+  assert.equal(secondDocument.elements.get("#workspace-board").hidden, false);
+  assert.equal(secondDocument.elements.get("#hero-project-name").textContent, "GiftWallet");
+});
+
+test("cockpit restores reopened onboarding after refresh and can exit back to workspace", async () => {
+  const storage = new Map();
+
+  const fetchWorkspace = async (url) => {
+    if (url === "/api/projects") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            projects: [{ id: "giftwallet", name: "GiftWallet" }],
+          };
+        },
+      };
+    }
+
+    if (url === "/api/projects/giftwallet") {
+      return {
+        ok: true,
+        async json() {
+          return {
+            id: "giftwallet",
+            name: "GiftWallet",
+            goal: "Return safely from reopened onboarding",
+            status: "active",
+            source: { baseUrl: "http://localhost:4101" },
+            overview: { bottleneck: "Need safe exit after refresh" },
+            cycle: { roadmap: [] },
+            agents: [],
+            approvals: [],
+            events: [],
+            developerWorkspace: { contextSummary: { progressPercent: 12, progressStatus: "working", nextAction: "Continue in workspace", incidentStatus: "clear" } },
+            projectBrainWorkspace: { overview: { domain: "saas", currentPhase: "setup" }, summary: { blockerCount: 0, requiresApproval: false } },
+            releaseWorkspace: { releaseTarget: "staging", buildAndDeploy: { currentStage: "planned" }, validation: { status: "clear" }, summary: { isBlocked: false } },
+            growthWorkspace: { summary: { totalPillars: 0, totalChannels: 0, totalKpis: 0, hasGrowthPlan: false } },
+          };
+        },
+      };
+    }
+
+    if (url === "/api/projects/giftwallet/presence") {
+      return {
+        ok: true,
+        async json() {
+          return { ok: true };
+        },
+      };
+    }
+
+    throw new Error(`Unexpected fetch ${url}`);
+  };
+
+  const firstDocument = createFakeDocument();
+  const firstApp = createCockpitApp({
+    doc: firstDocument,
+    fetchImpl: fetchWorkspace,
+    storageImpl: {
+      getItem(key) {
+        return storage.get(key) ?? null;
+      },
+      setItem(key, value) {
+        storage.set(key, value);
+      },
+      removeItem(key) {
+        storage.delete(key);
+      },
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await firstApp.ready;
+  firstDocument.elements.get("#reopen-onboarding-button").listeners.click();
+
+  const secondDocument = createFakeDocument();
+  const secondApp = createCockpitApp({
+    doc: secondDocument,
+    fetchImpl: fetchWorkspace,
+    storageImpl: {
+      getItem(key) {
+        return storage.get(key) ?? null;
+      },
+      setItem(key, value) {
+        storage.set(key, value);
+      },
+      removeItem(key) {
+        storage.delete(key);
+      },
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await secondApp.ready;
+
+  assert.equal(secondDocument.elements.get("#screen-onboarding").hidden, false);
+  assert.equal(secondDocument.elements.get("#screen-workspace").hidden, true);
+
+  secondDocument.elements.get("#create-project-link-input").value = "https://example.com/spec";
+  secondDocument.elements.get("#onboarding-answer-input").value = "מנהלי מוצר";
+  secondDocument.elements.get("#onboarding-next-button").listeners.click();
+  secondDocument.elements.get("#onboarding-answer-input").value = "לפתוח פרויקט";
+  secondDocument.elements.get("#onboarding-next-button").listeners.click();
+  secondDocument.elements.get("#onboarding-answer-input").value = "לקבל next task";
+  secondDocument.elements.get("#onboarding-next-button").listeners.click();
+
+  await secondDocument.elements.get("#finish-onboarding-button").listeners.click();
+
+  assert.equal(secondDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(secondDocument.elements.get("#screen-workspace").hidden, false);
+  assert.match(secondDocument.elements.get("#flow-feedback-title").textContent, /חזרת ל־workspace שלך/);
+});
+
+test("cockpit exposes explicit onboarding navigation controls", async () => {
+  const fakeDocument = createFakeDocument();
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl: async (url) => {
+      if (url === "/api/projects") {
+        return {
+          ok: true,
+          async json() {
+            return { projects: [] };
+          },
+        };
+      }
+
+      if (url === "/api/auth/signup") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              authPayload: {
+                userIdentity: {
+                  userId: "user-nav",
+                  email: "nav@example.com",
+                },
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/project-drafts") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projectDraftId: "nav-project",
+              projectCreationRedirect: {
+                target: "onboarding",
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              onboardingSession: {
+                sessionId: "onboarding-nav-project",
+              },
+            };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+  });
+
+  await app.ready;
+
+  fakeDocument.elements.get("#create-project-name-input").value = "Nav Project";
+  fakeDocument.elements.get("#create-project-vision-input").value = "Need explicit controls";
+  await fakeDocument.elements.get("#create-project-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#onboarding-back-button").hidden, false);
+  assert.equal(fakeDocument.elements.get("#onboarding-forward-button").hidden, false);
+  assert.match(fakeDocument.elements.get("#onboarding-back-button").textContent, /חזור ליצירת הפרויקט/);
+  assert.match(fakeDocument.elements.get("#onboarding-forward-button").textContent, /קדימה/);
+});
+
+test("product flow invariants keep create, onboarding, and workspace as exclusive screens", async () => {
+  const fakeDocument = createFakeDocument();
+  const requests = [];
+  const timers = createShortDelayTimers();
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl: async (url, options = {}) => {
+      requests.push({ url, method: options.method ?? "GET", body: options.body ?? null });
+
+      if (url === "/api/projects") {
+        return {
+          ok: true,
+          async json() {
+            return { projects: [] };
+          },
+        };
+      }
+
+      if (url === "/api/auth/signup") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              authPayload: {
+                userIdentity: {
+                  userId: "user-invariants",
+                  email: "invariants@example.com",
+                },
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/project-drafts") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projectDraftId: "flow-invariants",
+              projectCreationRedirect: {
+                target: "onboarding",
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              onboardingSession: {
+                sessionId: "onboarding-flow-invariants",
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions/onboarding-flow-invariants/intake") {
+        return {
+          ok: true,
+          async json() {
+            return { updatedSession: { sessionId: "onboarding-flow-invariants" } };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions/onboarding-flow-invariants/files") {
+        return {
+          ok: true,
+          async json() {
+            return { updatedSession: { sessionId: "onboarding-flow-invariants" } };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions/onboarding-flow-invariants/finish") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              blocked: false,
+              project: {
+                id: "flow-invariants",
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/projects/flow-invariants") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              id: "flow-invariants",
+              name: "Flow Invariants",
+              goal: "Validate product flow contract",
+              status: "active",
+              source: { baseUrl: "http://localhost:4101" },
+              overview: { bottleneck: "Need contract coverage" },
+              cycle: { roadmap: [] },
+              agents: [],
+              approvals: [],
+              events: [],
+              developerWorkspace: {
+                contextSummary: {
+                  progressPercent: 20,
+                  progressStatus: "working",
+                  nextAction: "Review contract",
+                  incidentStatus: "clear",
+                },
+              },
+              projectBrainWorkspace: {
+                overview: { domain: "saas", currentPhase: "setup" },
+                summary: { blockerCount: 0, requiresApproval: false },
+              },
+              releaseWorkspace: {
+                releaseTarget: "staging",
+                buildAndDeploy: { currentStage: "planned" },
+                validation: { status: "clear" },
+                summary: { isBlocked: false },
+              },
+              growthWorkspace: {
+                summary: {
+                  totalPillars: 0,
+                  totalChannels: 0,
+                  totalKpis: 0,
+                  hasGrowthPlan: false,
+                },
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/projects/flow-invariants/presence") {
+        return {
+          ok: true,
+          async json() {
+            return { ok: true };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+    setTimeoutImpl: timers.setTimeoutImpl,
+    clearTimeoutImpl: timers.clearTimeoutImpl,
+  });
+
+  await app.ready;
+
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+
+  fakeDocument.elements.get("#create-project-name-input").value = "Flow Invariants";
+  fakeDocument.elements.get("#create-project-vision-input").value = "בדיקת חוזה flow";
+  fakeDocument.elements.get("#create-project-file-name-input").value = "brief.md";
+  fakeDocument.elements.get("#create-project-file-content-input").value = "# Brief";
+
+  await fakeDocument.elements.get("#create-project-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+  assert.equal(fakeDocument.elements.get("#workspace-board").hidden, true);
+
+  fakeDocument.elements.get("#onboarding-answer-input").value = "מנהלי מוצר";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לפתוח פרויקט";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  fakeDocument.elements.get("#onboarding-answer-input").value = "לקבל next task";
+  fakeDocument.elements.get("#onboarding-next-button").listeners.click();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+
+  await fakeDocument.elements.get("#finish-onboarding-button").listeners.click();
+
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, false);
+  assert.equal(fakeDocument.elements.get("#workspace-board").hidden, false);
+  assert.equal(fakeDocument.elements.get("#tab-developer").ariaSelected, "true");
+  assert.equal(requests.some((request) => request.url === "/api/onboarding/sessions/onboarding-flow-invariants/finish" && request.method === "POST"), true);
 });
 
 test("cockpit supports proposal editing and partial acceptance through the release workspace", async () => {
@@ -1459,6 +2876,8 @@ test("cockpit supports proposal editing and partial acceptance through the relea
   app.setActiveWorkspace("release");
 
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Current proposal scope/);
+  assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /AI design chain/);
+  assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Generated preview/);
 
   fakeDocument.elements.get("#proposal-section-title-input").value = "Approval Handoff";
   fakeDocument.elements.get("#proposal-section-summary-input").value = "להבהיר מה עובר אישור ומה נשלח ל־regeneration.";
@@ -1486,6 +2905,7 @@ test("cockpit supports proposal editing and partial acceptance through the relea
   assert.equal(Array.isArray(partialProject.state.remainingProposalScope.componentsNeedingRegeneration), true);
   assert.equal(partialProject.state.remainingProposalScope.componentsNeedingRegeneration.length >= 1, true);
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /regenerate-rejected-scope/);
+  assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /ready-for-state-integration/);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/proposal-edits` && request.method === "POST"), true);
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/partial-acceptance` && request.method === "POST"), true);
 });

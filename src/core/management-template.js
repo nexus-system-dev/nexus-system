@@ -2,19 +2,34 @@ function normalizeScreenTemplateSchema(screenTemplateSchema) {
   return screenTemplateSchema && typeof screenTemplateSchema === "object" ? screenTemplateSchema : {};
 }
 
+function normalizeTemplateId(templateId, fallbackId) {
+  return typeof templateId === "string" && templateId.trim() ? templateId.trim() : fallbackId;
+}
+
+function normalizeRegions(regions) {
+  if (!Array.isArray(regions)) {
+    return [];
+  }
+
+  return regions.filter((region) => typeof region === "string" && region.trim()).map((region) => region.trim());
+}
+
 export function createManagementTemplate({
   screenTemplateSchema,
 } = {}) {
   const normalizedScreenTemplateSchema = normalizeScreenTemplateSchema(screenTemplateSchema);
-  const regions = Array.isArray(normalizedScreenTemplateSchema.regions)
-    ? normalizedScreenTemplateSchema.regions
-    : [];
+  const baseTemplateId =
+    typeof normalizedScreenTemplateSchema.templateId === "string" && normalizedScreenTemplateSchema.templateId.trim()
+      ? normalizedScreenTemplateSchema.templateId.trim()
+      : null;
+  const regions = normalizeRegions(normalizedScreenTemplateSchema.regions);
+  const normalizedTemplateId = normalizeTemplateId(baseTemplateId, "management");
 
   return {
     managementTemplate: {
-      templateId: `management-template:${normalizedScreenTemplateSchema.templateId ?? "management"}`,
+      templateId: `management-template:${normalizedTemplateId}`,
       templateType: "management",
-      baseTemplateId: normalizedScreenTemplateSchema.templateId ?? null,
+      baseTemplateId,
       sections: {
         topbar: {
           enabled: regions.includes("topbar"),

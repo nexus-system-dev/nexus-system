@@ -10,6 +10,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function buildId() {
   return `kill-switch:${Date.now()}:${crypto.randomBytes(4).toString("hex")}`;
 }
@@ -19,17 +23,28 @@ function dedupe(values = []) {
 }
 
 function deriveIncidentPaths(incidentAlert, registry) {
-  if (incidentAlert.status !== "active" || incidentAlert.severity !== "critical") {
+  const status = normalizeString(incidentAlert.status, null)?.toLowerCase();
+  const severity = normalizeString(incidentAlert.severity, null)?.toLowerCase();
+  if (status !== "active" || severity !== "critical") {
     return [];
   }
-  const incidentTypePaths = registry.incidentPathRegistry[incidentAlert.incidentType] ?? [];
-  const componentPaths = registry.mapAffectedComponents(incidentAlert.affectedComponents ?? []);
+  const incidentType = normalizeString(incidentAlert.incidentType, null);
+  const incidentTypePaths = registry.incidentPathRegistry[incidentType] ?? [];
+  const componentPaths = registry.mapAffectedComponents(
+    normalizeArray(incidentAlert.affectedComponents).map((component) => normalizeString(component, null)),
+  );
   return dedupe([...incidentTypePaths, ...componentPaths]);
 }
 
 function deriveFlagPaths(featureFlagDecision, registry) {
   const flagResults = normalizeArray(featureFlagDecision.flagResults);
-  const triggeredFlags = flagResults.filter((flag) => flag.reason === "kill-switch");
+  const triggeredFlags = flagResults
+    .map((flag) => ({
+      ...normalizeObject(flag),
+      flagId: normalizeString(flag?.flagId, "unknown-flag"),
+      reason: normalizeString(flag?.reason, null)?.toLowerCase(),
+    }))
+    .filter((flag) => flag.reason === "kill-switch");
   const paths = triggeredFlags.flatMap((flag) => registry.featureFlagKillSwitchRegistry[flag.flagId] ?? []);
   return {
     triggeredFlags,
@@ -67,8 +82,8 @@ export function createEmergencyKillSwitchGuard({
       killedPaths,
       triggeredBy,
       triggerSources: {
-        incidentType: hasIncidentTrigger ? normalizedIncidentAlert.incidentType ?? null : null,
-        incidentSeverity: hasIncidentTrigger ? normalizedIncidentAlert.severity ?? null : null,
+        incidentType: hasIncidentTrigger ? normalizeString(normalizedIncidentAlert.incidentType, null) : null,
+        incidentSeverity: hasIncidentTrigger ? normalizeString(normalizedIncidentAlert.severity, null)?.toLowerCase() ?? null : null,
         featureFlags: triggeredFlags.map((flag) => flag.flagId),
       },
       cooldownMs: hasIncidentTrigger ? 300000 : hasFlagTrigger ? 600000 : 0,
@@ -78,7 +93,7 @@ export function createEmergencyKillSwitchGuard({
         : hasIncidentTrigger && hasFlagTrigger
           ? "Critical incident and kill switch flag both require blocking"
           : hasIncidentTrigger
-            ? `Critical incident ${normalizedIncidentAlert.incidentType ?? "incident"} requires blocking`
+            ? `Critical incident ${normalizeString(normalizedIncidentAlert.incidentType, "incident")} requires blocking`
             : `Feature flag kill switch ${triggeredFlags[0]?.flagId ?? "unknown-flag"} requires blocking`,
       summary: {
         totalKilledPaths: killedPaths.length,

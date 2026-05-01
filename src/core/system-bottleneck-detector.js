@@ -6,6 +6,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function extractQueueLagSeconds(queueObservability) {
   if (typeof queueObservability.lagSeconds === "number") {
     return queueObservability.lagSeconds;
@@ -29,7 +33,7 @@ function buildQueueSignals(queueObservability, platformTrace) {
   const retryPressure = normalizedQueue.retryPressure ?? normalizedQueue.attempt ?? normalizedQueue.attempts ?? 0;
   const deadLetterCount = normalizedQueue.deadLetterCount ?? 0;
   const queueDepth = normalizedQueue.queueDepth ?? normalizedQueue.pendingJobs ?? 0;
-  const queueName = normalizedQueue.queueName ?? normalizedQueue.queueId ?? "nexus-background";
+  const queueName = normalizeString(normalizedQueue.queueName, normalizeString(normalizedQueue.queueId, "nexus-background"));
   const stuckLogs = logs.filter((entry) => {
     const message = `${entry?.message ?? ""}`.toLowerCase();
     return message.includes("queue") && (message.includes("stall") || message.includes("stuck") || message.includes("blocked"));
@@ -107,7 +111,7 @@ function buildRuntimeSignals(platformTrace, healthStatus) {
       severity: degradedDependencies.length >= 2 ? "critical" : "high",
       score: degradedDependencies.length >= 2 ? 1 : 0.8,
       reason: "Runtime health is degraded",
-      affectedComponents: degradedDependencies.map((dependency) => dependency.name),
+      affectedComponents: degradedDependencies.map((dependency) => normalizeString(dependency.name, null)).filter(Boolean),
     });
   }
 
@@ -117,7 +121,7 @@ function buildRuntimeSignals(platformTrace, healthStatus) {
       severity: "high",
       score: 0.8,
       reason: "Runtime readiness is blocked",
-      affectedComponents: normalizeArray(normalizedHealth.blockers),
+      affectedComponents: normalizeArray(normalizedHealth.blockers).map((entry) => normalizeString(entry, null)).filter(Boolean),
     });
   }
 
@@ -127,12 +131,12 @@ function buildRuntimeSignals(platformTrace, healthStatus) {
       severity: runtimeFailures.length >= 2 ? "critical" : "high",
       score: runtimeFailures.length >= 2 ? 1 : 0.7,
       reason: runtimeFailures[0].message ?? "Runtime execution lane is failing",
-      affectedComponents: [...new Set(runtimeFailures.map((step) => step.source ?? "runtime"))],
+      affectedComponents: [...new Set(runtimeFailures.map((step) => normalizeString(step.source, "runtime")))],
     });
   }
 
   return {
-    degradedDependencies: degradedDependencies.map((dependency) => dependency.name),
+    degradedDependencies: degradedDependencies.map((dependency) => normalizeString(dependency.name, null)).filter(Boolean),
     failedLaneCount: runtimeFailures.length,
     signals,
   };
@@ -146,9 +150,12 @@ function buildProviderSignals(platformTrace, healthStatus) {
     const source = `${step?.source ?? ""}`.toLowerCase();
     return source.includes("provider") || source.includes("connector");
   }).filter((step) => ["failed", "blocked"].includes(step?.status));
-  const incidentProviderComponents = normalizeArray(incidentAlert.affectedComponents).filter((component) =>
-    `${component}`.toLowerCase().includes("provider") || `${component}`.toLowerCase().includes("connector"),
-  );
+  const incidentProviderComponents = normalizeArray(incidentAlert.affectedComponents)
+    .map((component) => normalizeString(component, null))
+    .filter(Boolean)
+    .filter((component) =>
+      component.toLowerCase().includes("provider") || component.toLowerCase().includes("connector"),
+    );
   const signals = [];
 
   if (providerFailures.length > 0) {
@@ -157,7 +164,7 @@ function buildProviderSignals(platformTrace, healthStatus) {
       severity: providerFailures.length >= 2 ? "critical" : "high",
       score: providerFailures.length >= 2 ? 1 : 0.75,
       reason: providerFailures[0].message ?? "Provider failures detected",
-      affectedComponents: [...new Set(providerFailures.map((step) => step.source ?? "provider"))],
+      affectedComponents: [...new Set(providerFailures.map((step) => normalizeString(step.source, "provider")))],
     });
   }
 
@@ -173,7 +180,7 @@ function buildProviderSignals(platformTrace, healthStatus) {
 
   return {
     affectedProviders: [...new Set([
-      ...providerFailures.map((step) => step.source ?? "provider"),
+      ...providerFailures.map((step) => normalizeString(step.source, "provider")),
       ...incidentProviderComponents,
     ])],
     signals,
@@ -222,7 +229,7 @@ export function createSystemBottleneckDetector({
 
   return {
     systemBottleneckSummary: {
-      bottleneckSummaryId: `system-bottleneck:${normalizedTrace.traceId ?? "runtime"}`,
+      bottleneckSummaryId: `system-bottleneck:${normalizeString(normalizedTrace.traceId, "runtime")}`,
       status: strongestSignal ? "blocked" : "clear",
       severity: severityBand(bottleneckScore),
       bottleneckScore,
@@ -246,7 +253,7 @@ export function createSystemBottleneckDetector({
         failureCount: providerSignals.signals.length,
       },
       signals: allSignals,
-      traceId: normalizedTrace.traceId ?? null,
+      traceId: normalizeString(normalizedTrace.traceId, null),
       checkedAt: new Date().toISOString(),
     },
   };

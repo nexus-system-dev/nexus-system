@@ -47,6 +47,7 @@ function buildCasinoRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "casino-db-migrations",
+        taskType: "backend",
         lane: "build",
         summary: "להקים מיגרציות וסכמת בסיס נתונים",
         requiredCapabilities: ["backend", "database"],
@@ -69,6 +70,7 @@ function buildCasinoRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "casino-auth-flow",
+        taskType: "frontend",
         lane: "build",
         summary: "לחבר את זרימת ההתחברות של ה-frontend ל-backend",
         requiredCapabilities: ["frontend", "backend"],
@@ -91,6 +93,7 @@ function buildCasinoRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "casino-wallet",
+        taskType: "backend",
         lane: "build",
         summary: "להקים את שכבת wallet ו-treasury",
         requiredCapabilities: ["backend", "payments"],
@@ -113,6 +116,7 @@ function buildCasinoRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "casino-bonus",
+        taskType: "growth",
         lane: "growth",
         summary: "להקים מודול bonuses בסיסי",
         requiredCapabilities: ["backend", "analytics"],
@@ -135,6 +139,7 @@ function buildCasinoRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "casino-games",
+        taskType: "frontend",
         lane: "build",
         summary: "להקים מודולי משחק וזרימת game launch",
         requiredCapabilities: ["backend", "frontend"],
@@ -186,6 +191,7 @@ function buildSaasRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "saas-auth",
+        taskType: "backend",
         lane: "build",
         summary: "להקים התחברות והרשמה למוצר ה-SaaS",
         requiredCapabilities: ["backend", "security"],
@@ -204,6 +210,7 @@ function buildSaasRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "saas-billing",
+        taskType: "backend",
         lane: "build",
         summary: "להקים מנוי, חיוב ותשלומים",
         requiredCapabilities: ["backend", "payments"],
@@ -223,6 +230,7 @@ function buildSaasRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "saas-onboarding",
+        taskType: "growth",
         lane: "growth",
         summary: "לבנות onboarding ו-activation flow",
         requiredCapabilities: ["frontend", "product"],
@@ -242,6 +250,7 @@ function buildSaasRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "saas-acquisition",
+        taskType: "growth",
         lane: "marketing",
         summary: "להקים משפך רכישת משתמשים ראשון",
         requiredCapabilities: ["marketing", "analytics", "frontend"],
@@ -278,6 +287,7 @@ function buildMobileAppRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "mobile-auth",
+        taskType: "mobile",
         lane: "build",
         summary: "להשלים זרימת התחברות והרשמה במובייל",
         requiredCapabilities: ["mobile", "backend"],
@@ -300,6 +310,7 @@ function buildMobileAppRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "mobile-api-integration",
+        taskType: "mobile",
         lane: "build",
         summary: "לחבר את האפליקציה ל-API ולסנכרון נתונים",
         requiredCapabilities: ["mobile", "backend"],
@@ -319,6 +330,7 @@ function buildMobileAppRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "mobile-notifications",
+        taskType: "mobile",
         lane: "growth",
         summary: "להקים שכבת notifications ו-engagement",
         requiredCapabilities: ["mobile", "analytics"],
@@ -342,6 +354,7 @@ function buildMobileAppRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "mobile-release",
+        taskType: "release",
         lane: "maintenance",
         summary: "להקים pipeline לשחרור גרסה וניטור קריסות",
         requiredCapabilities: ["mobile", "devops"],
@@ -374,6 +387,7 @@ function buildAgencySystemRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "agency-intake",
+        taskType: "frontend",
         lane: "growth",
         summary: "להקים intake מסודר ללידים ופרויקטים חדשים",
         requiredCapabilities: ["frontend", "operations"],
@@ -392,6 +406,7 @@ function buildAgencySystemRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "agency-allocation",
+        taskType: "ops",
         lane: "maintenance",
         summary: "לבנות שכבת שיבוץ משימות ומשאבים לצוות",
         requiredCapabilities: ["backend", "operations"],
@@ -411,6 +426,7 @@ function buildAgencySystemRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "agency-reporting",
+        taskType: "frontend",
         lane: "growth",
         summary: "להקים שקיפות דיווח ללקוח על מצב העבודה",
         requiredCapabilities: ["backend", "frontend"],
@@ -443,6 +459,7 @@ function buildGenericRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "build-auth",
+        taskType: "backend",
         lane: "build",
         summary: "להקים מערכת התחברות והרשמה",
         requiredCapabilities: ["backend", "security"],
@@ -465,6 +482,7 @@ function buildGenericRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "setup-staging",
+        taskType: "ops",
         lane: "maintenance",
         summary: "להקים סביבת Staging",
         requiredCapabilities: ["devops"],
@@ -486,6 +504,7 @@ function buildGenericRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "landing-page",
+        taskType: "frontend",
         lane: "marketing",
         summary: "ליצור עמוד נחיתה ממיר",
         requiredCapabilities: ["frontend", "copywriting"],
@@ -508,6 +527,7 @@ function buildGenericRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "payment-integration",
+        taskType: "backend",
         lane: "build",
         summary: "לחבר תשלומים ותהליך חיוב",
         requiredCapabilities: ["backend", "payments"],
@@ -533,6 +553,7 @@ function buildGenericRoadmap(projectState) {
     tasks.push(
       createTask({
         id: "campaign-plan",
+        taskType: "growth",
         lane: "growth",
         summary: "להכין ניסוי ראשון לרכישת משתמשים בתשלום",
         requiredCapabilities: ["marketing", "analytics"],

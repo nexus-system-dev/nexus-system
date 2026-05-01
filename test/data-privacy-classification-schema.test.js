@@ -177,3 +177,32 @@ test("data privacy classification binds storage context into storageBinding and 
     true,
   );
 });
+
+test("data privacy classification normalizes malformed storage context strings", () => {
+  const { dataPrivacyClassification } = defineDataPrivacyClassificationSchema({
+    dataAsset: {
+      projectId: " giftwallet ",
+      assetType: "knowledge-snippet",
+      scope: "project",
+      containsLearningMaterial: true,
+      source: " system ",
+    },
+    storageContext: {
+      projectId: " giftwallet ",
+      workspaceId: " workspace-7 ",
+      storageScope: " WORKSPACE ",
+      storageDriver: " DATABASE ",
+      tenantBoundary: " Workspace ",
+      workspaceVisibility: " Private ",
+      tenantSensitivity: " Medium ",
+      retentionPolicy: {
+        policyId: "learning-governance",
+        source: " storage-context ",
+      },
+    },
+  });
+
+  assert.equal(dataPrivacyClassification.classificationId, "data-privacy:giftwallet:giftwallet");
+  assert.equal(dataPrivacyClassification.storageBinding.storageScope, "workspace");
+  assert.equal(dataPrivacyClassification.storageBinding.storageDriver, "database");
+});

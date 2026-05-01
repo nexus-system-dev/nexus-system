@@ -63,3 +63,33 @@ test("project audit event schema classifies agent governance actions", () => {
   assert.equal(projectAuditEvent.category, "governance");
   assert.equal(projectAuditEvent.resource.targetType, "agent-governance");
 });
+
+test("project audit event schema normalizes malformed actor and action fields", () => {
+  const { projectAuditEvent } = defineProjectAuditEventSchema({
+    projectAction: {
+      actionType: " project.deploy.requested ",
+      status: " queued ",
+      projectId: " giftwallet ",
+      targetType: " deployment-request ",
+      targetId: " deploy-1 ",
+      summary: " Deployment queued ",
+      impactedAreas: [" deploy ", " release "],
+      riskLevel: " high ",
+      source: " ui ",
+      traceId: " trace-1 ",
+    },
+    actorContext: {
+      actorId: " user-1 ",
+      actorType: " user ",
+      actorRole: " owner ",
+      workspaceId: " workspace-1 ",
+    },
+  });
+
+  assert.equal(projectAuditEvent.projectId, "giftwallet");
+  assert.equal(projectAuditEvent.actionType, "project.deploy.requested");
+  assert.equal(projectAuditEvent.status, "queued");
+  assert.equal(projectAuditEvent.actor.actorId, "user-1");
+  assert.equal(projectAuditEvent.resource.targetId, "deploy-1");
+  assert.deepEqual(projectAuditEvent.impactedAreas, ["deploy", "release"]);
+});

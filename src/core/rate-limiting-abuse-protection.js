@@ -103,15 +103,16 @@ function observeResponse({ requestContext = {}, routeDefinition = {}, store, now
   const clientState = getClientState(store, identityKey);
   const responseStatusCode = Number(requestContext.responseStatusCode ?? 0);
   const routePath = normalizeString(routeDefinition.path, requestContext.pathName ?? "unknown-route");
+  const routeKind = normalizeString(routeDefinition.kind, null);
 
   clientState.authFailures = pruneWindow(clientState.authFailures, nowMs, 5 * 60_000);
   clientState.scannedRoutes = pruneEventWindow(clientState.scannedRoutes, nowMs, 60_000);
 
-  if (routeDefinition.kind === "auth" && responseStatusCode >= 400) {
+  if (routeKind === "auth" && responseStatusCode >= 400) {
     clientState.authFailures.push(nowMs);
   }
 
-  if (routeDefinition.kind === "unknown-api" && responseStatusCode === 404) {
+  if (routeKind === "unknown-api" && responseStatusCode === 404) {
     clientState.scannedRoutes.push({
       routePath,
       timestamp: nowMs,
@@ -173,7 +174,7 @@ export function createRateLimitingAndAbuseProtection({
   }
 
   const identity = resolveIdentity({ tier, requestContext: normalizedRequestContext });
-  const routeGroup = normalizeString(normalizedRouteDefinition.bucketKey, normalizedRouteDefinition.path ?? "unknown-route");
+  const routeGroup = normalizeString(normalizedRouteDefinition.bucketKey, normalizeString(normalizedRouteDefinition.path, "unknown-route"));
   const identityKey = `${tier}:${identity}`;
   const bucketKey = `${identityKey}:${routeGroup}`;
   const policy = getTierPolicy(tier);

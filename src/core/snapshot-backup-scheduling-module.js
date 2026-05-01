@@ -6,6 +6,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function normalizeIntervalSeconds(intervalSeconds, previousSchedule = null) {
   if (Number.isFinite(Number(intervalSeconds)) && Number(intervalSeconds) >= 30) {
     return Math.floor(Number(intervalSeconds));
@@ -62,19 +66,20 @@ export function createSnapshotBackupSchedulingModule({
   const preChangeTriggers = normalizeTriggers(normalizedScheduleInput, normalizedPreviousSchedule);
   const nowAt = now instanceof Date ? now : new Date();
   const nowIso = nowAt.toISOString();
-  const lastRunAt = normalizedPreviousSchedule.lastRunAt ?? null;
+  const lastRunAt = normalizeString(normalizedPreviousSchedule.lastRunAt, null);
   const runCount = Number.isFinite(Number(normalizedPreviousSchedule.runCount))
     ? Number(normalizedPreviousSchedule.runCount)
     : 0;
   const nextRunAt = enabled ? new Date(nowAt.getTime() + (intervalSeconds * 1000)).toISOString() : null;
-  const scheduleId = normalizedPreviousSchedule.snapshotScheduleId
-    ?? `snapshot-schedule:${normalizedProjectState.projectId ?? "unknown-project"}`;
+  const projectId = normalizeString(normalizedProjectState.projectId, null);
+  const scheduleId = normalizeString(normalizedPreviousSchedule.snapshotScheduleId, null)
+    ?? `snapshot-schedule:${projectId ?? "unknown-project"}`;
 
   return {
     snapshotSchedule: {
       snapshotScheduleId: scheduleId,
-      backupStrategyId: normalizedBackupStrategy.backupStrategyId ?? null,
-      projectId: normalizedProjectState.projectId ?? null,
+      backupStrategyId: normalizeString(normalizedBackupStrategy.backupStrategyId, null),
+      projectId,
       enabled,
       intervalSeconds,
       intervalMs: intervalSeconds * 1000,
@@ -90,7 +95,7 @@ export function createSnapshotBackupSchedulingModule({
         scheduleStatus: enabled ? "scheduled" : "paused",
         supportsPreChangeBackups: preChangeTriggers.length > 0,
         supportsIntervalBackups: true,
-        backupMode: normalizedBackupStrategy.backupMode ?? "state-only",
+        backupMode: normalizeString(normalizedBackupStrategy.backupMode, "state-only"),
       },
       updatedAt: nowIso,
     },

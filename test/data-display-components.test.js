@@ -32,3 +32,33 @@ test("createDataDisplayComponents falls back safely without explicit screen inve
   assert.equal(dataDisplayComponents.components[2].preview.items[0], "Owner approved deploy");
   assert.equal(dataDisplayComponents.summary.supportsOperationalDashboards, true);
 });
+
+test("createDataDisplayComponents normalizes invalid screen payloads to canonical screen type lists", () => {
+  const { dataDisplayComponents } = createDataDisplayComponents({
+    screenInventory: {
+      screens: [
+        { screenType: " dashboard " },
+        { screenType: 42 },
+        null,
+        "bad",
+      ],
+    },
+  });
+
+  assert.equal(dataDisplayComponents.dataDisplayLibraryId, "data-display-components:1");
+  assert.deepEqual(dataDisplayComponents.components[0].supportedScreenTypes, ["dashboard"]);
+  assert.deepEqual(dataDisplayComponents.components[5].supportedScreenTypes, ["dashboard"]);
+  assert.equal(dataDisplayComponents.summary.totalSupportedScreenTypes, 1);
+});
+
+test("createDataDisplayComponents ignores non-object screen inventories", () => {
+  const { dataDisplayComponents } = createDataDisplayComponents({
+    screenInventory: {
+      screens: "invalid",
+    },
+  });
+
+  assert.equal(dataDisplayComponents.dataDisplayLibraryId, "data-display-components:nexus");
+  assert.deepEqual(dataDisplayComponents.components[0].supportedScreenTypes, []);
+  assert.equal(dataDisplayComponents.summary.totalSupportedScreenTypes, 0);
+});

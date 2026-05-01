@@ -6,15 +6,19 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function resolveCriticalDatasets(entities = {}) {
   return Object.values(entities)
     .filter((entity) => entity && typeof entity === "object")
     .map((entity) => ({
-      entityName: entity.entityName ?? "unknown-entity",
-      retentionPolicy: entity.retentionPolicy ?? "default",
-      storageType: entity.storageType ?? "document",
+      entityName: normalizeString(entity.entityName, "unknown-entity"),
+      retentionPolicy: normalizeString(entity.retentionPolicy, "default"),
+      storageType: normalizeString(entity.storageType, "document"),
       criticality:
-        ["projects", "approvals", "users", "workspaces"].includes(entity.entityName)
+        ["projects", "approvals", "users", "workspaces"].includes(normalizeString(entity.entityName, "unknown-entity"))
           ? "critical"
           : "important",
     }));
@@ -22,16 +26,16 @@ function resolveCriticalDatasets(entities = {}) {
 
 function buildArtifactTargets(storageRecord = {}) {
   const artifacts = normalizeArray(storageRecord.artifacts).map((artifact) => ({
-    storageItemId: artifact.storageItemId ?? null,
-    kind: artifact.kind ?? "artifact",
-    path: artifact.path ?? null,
-    status: artifact.status ?? "stored",
+    storageItemId: normalizeString(artifact.storageItemId, null),
+    kind: normalizeString(artifact.kind, "artifact"),
+    path: normalizeString(artifact.path, null),
+    status: normalizeString(artifact.status, "stored"),
   }));
   const attachments = normalizeArray(storageRecord.attachments).map((attachment) => ({
-    storageItemId: attachment.storageItemId ?? null,
-    kind: attachment.kind ?? "attachment",
-    path: attachment.path ?? null,
-    status: attachment.status ?? "stored",
+    storageItemId: normalizeString(attachment.storageItemId, null),
+    kind: normalizeString(attachment.kind, "attachment"),
+    path: normalizeString(attachment.path, null),
+    status: normalizeString(attachment.status, "stored"),
   }));
 
   return [...artifacts, ...attachments];
@@ -46,8 +50,8 @@ export function createBackupAndRestoreStrategy({
   const criticalDatasets = resolveCriticalDatasets(normalizedSchema.entities ?? {});
   const artifactTargets = buildArtifactTargets(normalizedStorageRecord);
   const backupStrategy = {
-    backupStrategyId: `backup-strategy:${normalizedStorageRecord.projectId ?? "unknown-project"}`,
-    projectId: normalizedStorageRecord.projectId ?? null,
+    backupStrategyId: `backup-strategy:${normalizeString(normalizedStorageRecord.projectId, "unknown-project")}`,
+    projectId: normalizeString(normalizedStorageRecord.projectId, null),
     backupMode: artifactTargets.length > 0 ? "state-and-artifacts" : "state-only",
     cadence: {
       baseline: "daily",
@@ -56,9 +60,9 @@ export function createBackupAndRestoreStrategy({
     persistenceTargets: criticalDatasets,
     artifactTargets,
     storagePolicy: {
-      storageDriver: normalizedStorageRecord.storageDriver ?? "filesystem",
-      storagePath: normalizedStorageRecord.storagePath ?? null,
-      retentionPolicy: normalizedStorageRecord.retentionPolicy ?? "project-lifecycle",
+      storageDriver: normalizeString(normalizedStorageRecord.storageDriver, "filesystem"),
+      storagePath: normalizeString(normalizedStorageRecord.storagePath, null),
+      retentionPolicy: normalizeString(normalizedStorageRecord.retentionPolicy, "project-lifecycle"),
     },
     summary: {
       totalDatasets: criticalDatasets.length,
@@ -68,8 +72,8 @@ export function createBackupAndRestoreStrategy({
   };
 
   const restorePlan = {
-    restorePlanId: `restore-plan:${normalizedStorageRecord.projectId ?? "unknown-project"}`,
-    projectId: normalizedStorageRecord.projectId ?? null,
+    restorePlanId: `restore-plan:${normalizeString(normalizedStorageRecord.projectId, "unknown-project")}`,
+    projectId: normalizeString(normalizedStorageRecord.projectId, null),
     restoreOrder: [
       "persistence-schema",
       "core-project-records",

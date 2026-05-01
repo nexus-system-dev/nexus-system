@@ -111,6 +111,7 @@ test("lifecycle state model returns current phase and phase history", () => {
         payload: {
           projectId: "giftwallet",
           taskId: "task-1",
+          taskType: "backend",
           agentId: "dev-agent",
           assignmentEventId: "assign-1",
         },
@@ -228,6 +229,7 @@ test("task result ingestion returns canonical task results for lifecycle transit
         payload: {
           projectId: "giftwallet",
           taskId: "task-1",
+          taskType: "backend",
           agentId: "dev-agent",
           assignmentEventId: "assign-1",
           output: { summary: "done" },
@@ -240,6 +242,7 @@ test("task result ingestion returns canonical task results for lifecycle transit
         payload: {
           projectId: "giftwallet",
           taskId: "task-2",
+          taskType: "frontend",
           agentId: "qa-agent",
           assignmentEventId: "assign-2",
           reason: "failure",
@@ -250,6 +253,32 @@ test("task result ingestion returns canonical task results for lifecycle transit
 
   assert.equal(ingested.taskResults.length, 2);
   assert.equal(ingested.taskResults[0].status, "completed");
+  assert.equal(ingested.taskResults[0].taskType, "backend");
   assert.equal(ingested.taskResults[1].status, "failed");
+  assert.equal(ingested.taskResults[1].taskType, "frontend");
   assert.deepEqual(ingested.transitionEvents.map((event) => event.type), ["task.completed", "task.failed"]);
+});
+
+test("task result ingestion maps task.retried to canonical retried status", () => {
+  const ingested = ingestTaskResults({
+    runtimeResults: [
+      {
+        id: "evt-retry-1",
+        type: "task.retried",
+        timestamp: "2026-01-01T00:02:00.000Z",
+        payload: {
+          projectId: "giftwallet",
+          taskId: "task-1",
+          taskType: "backend",
+          agentId: "dev-agent",
+          assignmentEventId: "assign-3",
+        },
+      },
+    ],
+  });
+
+  assert.equal(ingested.taskResults.length, 1);
+  assert.equal(ingested.taskResults[0].status, "retried");
+  assert.equal(ingested.taskResults[0].taskType, "backend");
+  assert.deepEqual(ingested.transitionEvents.map((event) => event.type), ["task.retried"]);
 });

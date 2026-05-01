@@ -2,6 +2,28 @@ function normalizeInteractionStateSystem(interactionStateSystem) {
   return interactionStateSystem && typeof interactionStateSystem === "object" ? interactionStateSystem : {};
 }
 
+function normalizeInteractionStateSystemId(interactionStateSystemId) {
+  return typeof interactionStateSystemId === "string" && interactionStateSystemId.trim()
+    ? interactionStateSystemId.trim()
+    : "nexus";
+}
+
+function normalizeStates(states) {
+  return states && typeof states === "object" ? states : {};
+}
+
+function normalizeStateEntry(stateEntry) {
+  return stateEntry && typeof stateEntry === "object" ? stateEntry : {};
+}
+
+function normalizeColorToken(colorToken, fallback) {
+  return typeof colorToken === "string" && colorToken.trim() ? colorToken : fallback;
+}
+
+function normalizeShadowToken(shadowToken, fallback) {
+  return typeof shadowToken === "string" && shadowToken.trim() ? shadowToken : fallback;
+}
+
 function createFeedbackComponent({
   componentType,
   anatomy,
@@ -27,7 +49,17 @@ export function createFeedbackComponents({
   interactionStateSystem,
 } = {}) {
   const normalizedInteractionStateSystem = normalizeInteractionStateSystem(interactionStateSystem);
-  const states = normalizedInteractionStateSystem.states ?? {};
+  const normalizedInteractionStateSystemId = normalizeInteractionStateSystemId(
+    normalizedInteractionStateSystem.interactionStateSystemId,
+  );
+  const states = normalizeStates(normalizedInteractionStateSystem.states);
+  const hoverState = normalizeStateEntry(states.hover);
+  const activeState = normalizeStateEntry(states.active);
+  const focusState = normalizeStateEntry(states.focus);
+  const disabledState = normalizeStateEntry(states.disabled);
+  const destructiveState = normalizeStateEntry(states.destructive);
+  const successState = normalizeStateEntry(states.success);
+  const warningState = normalizeStateEntry(states.warning);
 
   const components = [
     createFeedbackComponent({
@@ -37,8 +69,8 @@ export function createFeedbackComponents({
       usage: "full-screen or panel-level loading feedback while Nexus prepares data or execution context",
       tone: "informative",
       tokens: {
-        emphasisColor: states.focus?.emphasisColor ?? "#0f766e",
-        shadow: states.focus?.shadow ?? "0 0 0 3px rgba(15, 118, 110, 0.18)",
+        emphasisColor: normalizeColorToken(focusState.emphasisColor, "#0f766e"),
+        shadow: normalizeShadowToken(focusState.shadow, "0 0 0 3px rgba(15, 118, 110, 0.18)"),
       },
       preview: {
         headline: "טוען את סביבת העבודה",
@@ -53,8 +85,8 @@ export function createFeedbackComponents({
       usage: "guides users when a workspace or panel has no content yet",
       tone: "guiding",
       tokens: {
-        emphasisColor: states.disabled?.emphasisColor ?? "#6b7280",
-        shadow: states.disabled?.shadow ?? "none",
+        emphasisColor: normalizeColorToken(disabledState.emphasisColor, "#6b7280"),
+        shadow: normalizeShadowToken(disabledState.shadow, "none"),
       },
       preview: {
         headline: "עדיין אין תוצאות",
@@ -69,8 +101,8 @@ export function createFeedbackComponents({
       usage: "explains blocking or failed conditions and points to the next recovery action",
       tone: "warning",
       tokens: {
-        emphasisColor: states.destructive?.emphasisColor ?? "#b91c1c",
-        shadow: states.destructive?.shadow ?? "0 8px 24px rgba(15, 23, 42, 0.08)",
+        emphasisColor: normalizeColorToken(destructiveState.emphasisColor, "#b91c1c"),
+        shadow: normalizeShadowToken(destructiveState.shadow, "0 8px 24px rgba(15, 23, 42, 0.08)"),
       },
       preview: {
         headline: "החיבור נכשל",
@@ -85,9 +117,9 @@ export function createFeedbackComponents({
       usage: "short-lived notifications for actions, completions and recoverable issues",
       tone: "ephemeral",
       tokens: {
-        successColor: states.success?.emphasisColor ?? "#15803d",
-        warningColor: states.warning?.emphasisColor ?? "#b45309",
-        dangerColor: states.destructive?.emphasisColor ?? "#b91c1c",
+        successColor: normalizeColorToken(successState.emphasisColor, "#15803d"),
+        warningColor: normalizeColorToken(warningState.emphasisColor, "#b45309"),
+        dangerColor: normalizeColorToken(destructiveState.emphasisColor, "#b91c1c"),
       },
       preview: {
         items: ["השינויים נשמרו", "Approval חסר", "הפריסה נכשלה"],
@@ -100,9 +132,9 @@ export function createFeedbackComponents({
       usage: "persistent contextual alerts inside dashboards and workspaces",
       tone: "persistent",
       tokens: {
-        warningColor: states.warning?.emphasisColor ?? "#b45309",
-        successColor: states.success?.emphasisColor ?? "#15803d",
-        dangerColor: states.destructive?.emphasisColor ?? "#b91c1c",
+        warningColor: normalizeColorToken(warningState.emphasisColor, "#b45309"),
+        successColor: normalizeColorToken(successState.emphasisColor, "#15803d"),
+        dangerColor: normalizeColorToken(destructiveState.emphasisColor, "#b91c1c"),
       },
       preview: {
         headline: "נדרשת פעולה לפני deploy",
@@ -116,9 +148,9 @@ export function createFeedbackComponents({
       usage: "communicates progress through onboarding, execution and long-running operations",
       tone: "progressive",
       tokens: {
-        activeColor: states.active?.emphasisColor ?? "#115e59",
-        successColor: states.success?.emphasisColor ?? "#15803d",
-        warningColor: states.warning?.emphasisColor ?? "#b45309",
+        activeColor: normalizeColorToken(activeState.emphasisColor, "#115e59"),
+        successColor: normalizeColorToken(successState.emphasisColor, "#15803d"),
+        warningColor: normalizeColorToken(warningState.emphasisColor, "#b45309"),
       },
       preview: {
         label: "Execution progress",
@@ -133,8 +165,8 @@ export function createFeedbackComponents({
       usage: "preserves layout while content is still being fetched or generated",
       tone: "neutral",
       tokens: {
-        shimmerColor: states.hover?.emphasisColor ?? "#115e59",
-        shadow: states.hover?.shadow ?? "0 8px 24px rgba(15, 23, 42, 0.08)",
+        shimmerColor: normalizeColorToken(hoverState.emphasisColor, "#115e59"),
+        shadow: normalizeShadowToken(hoverState.shadow, "0 8px 24px rgba(15, 23, 42, 0.08)"),
       },
       preview: {
         rows: 3,
@@ -144,7 +176,7 @@ export function createFeedbackComponents({
 
   return {
     feedbackComponents: {
-      feedbackComponentLibraryId: `feedback-components:${normalizedInteractionStateSystem.interactionStateSystemId ?? "nexus"}`,
+      feedbackComponentLibraryId: `feedback-components:${normalizedInteractionStateSystemId}`,
       components,
       summary: {
         totalComponents: components.length,

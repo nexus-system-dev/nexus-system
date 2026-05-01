@@ -1,0 +1,39 @@
+{
+  "wave2OrderedExecutionMap": [
+    {
+      "execution_order": 1,
+      "taskName": "Define primary user journeys",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": 2,
+      "taskName": "Create journey map for core flows",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": 3,
+      "taskName": "Define screen inventory",
+      "state": "in-progress",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": 4,
+      "taskName": "Create screen-to-flow mapping",
+      "state": "blocked",
+      "blocker": "Waiting for design approval",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": 5,
+      "taskName": "Define screen contract schema",
+      "state": "bridge-deferred",
+      "blocker": null,
+      "bridgeCondition": "AI design integration bridge"
+    }
+  ]
+}

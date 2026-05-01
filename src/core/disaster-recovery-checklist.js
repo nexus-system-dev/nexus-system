@@ -211,7 +211,7 @@ export function createDisasterRecoveryChecklist({
       reason: normalizedWorker.enabled === false
         ? "Backup worker is disabled."
         : "Backup worker can execute scheduled backups.",
-      evidence: normalizedWorker.workerId ?? null,
+      evidence: normalizeString(normalizedWorker.workerId, null),
       allowWarning: true,
     }),
     createPrerequisite({
@@ -265,8 +265,8 @@ export function createDisasterRecoveryChecklist({
 
   return {
     disasterRecoveryChecklist: {
-      checklistId: `disaster-recovery:${normalizedBackupStrategy.projectId ?? "unknown-project"}`,
-      projectId: normalizedBackupStrategy.projectId ?? normalizedRestorePlan.projectId ?? null,
+      checklistId: `disaster-recovery:${normalizeString(normalizedBackupStrategy.projectId ?? normalizedRestorePlan.projectId, "unknown-project")}`,
+      projectId: normalizeString(normalizedBackupStrategy.projectId ?? normalizedRestorePlan.projectId, null),
       incident: {
         status: normalizeString(normalizedIncidentAlert.status, "stable"),
         severity: resolveIncidentSeverity(normalizedIncidentAlert),

@@ -9,7 +9,19 @@ function normalizeTemplate(template, fallbackType) {
     };
   }
 
-  return template;
+  return {
+    templateId:
+      typeof template.templateId === "string" && template.templateId.trim()
+        ? template.templateId.trim()
+        : `${fallbackType}-template:unknown`,
+    templateType:
+      typeof template.templateType === "string" && template.templateType.trim()
+        ? template.templateType.trim()
+        : fallbackType,
+    sections: template.sections && typeof template.sections === "object" ? template.sections : {},
+    composition: template.composition && typeof template.composition === "object" ? template.composition : {},
+    summary: template.summary && typeof template.summary === "object" ? template.summary : {},
+  };
 }
 
 function normalizeScreenStates(screenStates) {
@@ -18,19 +30,36 @@ function normalizeScreenStates(screenStates) {
   }
 
   return {
-    screens: Array.isArray(screenStates.screens) ? screenStates.screens : [],
-    summary: screenStates.summary ?? {},
+    screens: Array.isArray(screenStates.screens)
+      ? screenStates.screens.filter((screenState) => screenState && typeof screenState === "object")
+      : [],
+    summary: screenStates.summary && typeof screenStates.summary === "object" ? screenStates.summary : {},
   };
 }
 
+function normalizeStateDefinition(stateDefinition) {
+  return stateDefinition && typeof stateDefinition === "object" ? stateDefinition : {};
+}
+
 function buildVariant(stateKey, stateDefinition, template) {
+  const normalizedStateDefinition = normalizeStateDefinition(stateDefinition);
+
   return {
     variantId: `${template.templateId}:${stateKey}`,
     stateKey,
-    enabled: Boolean(stateDefinition?.enabled),
-    headline: stateDefinition?.headline ?? null,
-    description: stateDefinition?.description ?? null,
-    tone: stateDefinition?.tone ?? "neutral",
+    enabled: Boolean(normalizedStateDefinition.enabled),
+    headline:
+      typeof normalizedStateDefinition.headline === "string" && normalizedStateDefinition.headline.trim()
+        ? normalizedStateDefinition.headline.trim()
+        : null,
+    description:
+      typeof normalizedStateDefinition.description === "string" && normalizedStateDefinition.description.trim()
+        ? normalizedStateDefinition.description.trim()
+        : null,
+    tone:
+      typeof normalizedStateDefinition.tone === "string" && normalizedStateDefinition.tone.trim()
+        ? normalizedStateDefinition.tone.trim()
+        : "neutral",
     templateId: template.templateId,
     templateType: template.templateType,
     preservesSections: Object.keys(template.sections ?? {}).filter(
@@ -48,7 +77,10 @@ function buildVariant(stateKey, stateDefinition, template) {
 }
 
 function buildTemplateVariantEntry(template, screenStateDefinition) {
-  const states = screenStateDefinition?.states ?? {};
+  const states =
+    screenStateDefinition?.states && typeof screenStateDefinition.states === "object"
+      ? screenStateDefinition.states
+      : {};
   const variantStates = ["loading", "empty", "error", "success"];
 
   return {
@@ -77,10 +109,15 @@ export function createStateDrivenTemplateVariants({
   };
 
   const stateIndex = new Map(
-    normalizedScreenStates.screens.map((screenStateDefinition) => [
-      screenStateDefinition.screenType,
-      screenStateDefinition,
-    ]),
+    normalizedScreenStates.screens
+      .filter(
+        (screenStateDefinition) =>
+          typeof screenStateDefinition.screenType === "string" && screenStateDefinition.screenType.trim(),
+      )
+      .map((screenStateDefinition) => [
+        screenStateDefinition.screenType.trim(),
+        screenStateDefinition,
+      ]),
   );
 
   const templates = Object.values(normalizedTemplates).map((template) =>

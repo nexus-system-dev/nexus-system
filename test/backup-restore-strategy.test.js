@@ -45,3 +45,30 @@ test("backup and restore strategy falls back safely without artifacts", () => {
   assert.equal(Array.isArray(restorePlan.restoreTargets.artifacts), true);
   assert.equal(restorePlan.summary.requiresSnapshotAlignment, true);
 });
+
+test("backup and restore strategy normalizes malformed storage and artifact fields", () => {
+  const { backupStrategy, restorePlan } = createBackupAndRestoreStrategy({
+    nexusPersistenceSchema: {
+      entities: {
+        projects: {
+          entityName: " projects ",
+          storageType: " document ",
+          retentionPolicy: " project-lifecycle ",
+        },
+      },
+    },
+    storageRecords: {
+      projectId: " giftwallet ",
+      storageDriver: " filesystem ",
+      storagePath: " storage/projects/giftwallet ",
+      retentionPolicy: " project-lifecycle ",
+      artifacts: [{ storageItemId: " artifact:1 ", path: " dist/app.js ", kind: " build-artifact ", status: " stored " }],
+    },
+  });
+
+  assert.equal(backupStrategy.backupStrategyId, "backup-strategy:giftwallet");
+  assert.equal(backupStrategy.projectId, "giftwallet");
+  assert.equal(backupStrategy.storagePolicy.storagePath, "storage/projects/giftwallet");
+  assert.equal(backupStrategy.artifactTargets[0].storageItemId, "artifact:1");
+  assert.equal(restorePlan.restorePlanId, "restore-plan:giftwallet");
+});

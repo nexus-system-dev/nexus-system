@@ -119,3 +119,51 @@ test("project snapshot store deletes snapshot records and rewrites persistent fi
   assert.equal(remaining.length, 1);
   assert.equal(remaining[0].snapshotRecordId, second.snapshotRecordId);
 });
+
+test("project snapshot store normalizes malformed snapshot identifiers and query filters", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "project-snapshot-store-normalize-"));
+  const filePath = path.join(tempDir, "project-snapshots.ndjson");
+  const snapshotStore = createPersistentProjectSnapshotStore({ filePath });
+
+  const { snapshotRecord } = createProjectSnapshotStore({
+    projectStateSnapshot: {
+      snapshotId: "  ",
+      projectId: "  ",
+      stateVersion: 4,
+      executionGraphVersion: 2,
+      workspaceReference: {
+        workspaceId: " workspace-9 ",
+        workspaceArea: " release-workspace ",
+        workspaceVisibility: " private ",
+      },
+      restoreMetadata: {
+        restoreScope: ["project-state"],
+      },
+      stateSummary: {
+        lifecyclePhase: " execution ",
+      },
+    },
+    recordOverrides: {
+      triggerType: " manual ",
+      reason: " manual-backup ",
+    },
+    snapshotStore,
+  });
+
+  const filtered = snapshotStore.query({
+    projectId: " unknown-project ",
+    workspaceId: " workspace-9 ",
+    triggerType: " manual ",
+    reason: " manual-backup ",
+  });
+
+  assert.equal(snapshotRecord.snapshotRecordId, "snapshot-record:project-state-snapshot:unknown-project:v1");
+  assert.equal(snapshotRecord.projectId, "unknown-project");
+  assert.equal(snapshotRecord.triggerType, "manual");
+  assert.equal(snapshotRecord.reason, "manual-backup");
+  assert.equal(snapshotRecord.workspaceReference.workspaceArea, "release-workspace");
+  assert.equal(snapshotRecord.workspaceReference.workspaceVisibility, "private");
+  assert.equal(snapshotRecord.storageMetadata.checksum, "unknown-project:4:2");
+  assert.equal(filtered.length, 1);
+  assert.equal(filtered[0].snapshotRecordId, snapshotRecord.snapshotRecordId);
+});

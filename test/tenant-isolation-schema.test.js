@@ -38,3 +38,31 @@ test("defineTenantIsolationSchema falls back safely without explicit resources",
   assert.equal(tenantIsolationSchema.accessRules.denyCrossTenantReadsByDefault, true);
   assert.equal(Array.isArray(tenantIsolationSchema.leakSignals), true);
 });
+
+test("defineTenantIsolationSchema normalizes malformed workspace and resource identifiers", () => {
+  const { tenantIsolationSchema } = defineTenantIsolationSchema({
+    workspaceModel: {
+      workspaceId: "  ",
+      visibility: " workspace ",
+    },
+    resourceDefinitions: [
+      {
+        resourceId: "  ",
+        resourceType: " linked-accounts ",
+        scope: " workspace ",
+        workspaceId: "  ",
+        tenantBoundary: " workspace ",
+        sensitivity: " critical ",
+      },
+    ],
+  });
+
+  assert.equal(tenantIsolationSchema.tenantIsolationSchemaId, "tenant-isolation:workspace");
+  assert.equal(tenantIsolationSchema.workspaceId, null);
+  assert.equal(tenantIsolationSchema.workspaceVisibility, "workspace");
+  assert.equal(tenantIsolationSchema.isolatedResources[0].resourceId, "tenant-resource:workspace:linked-accounts:1");
+  assert.equal(tenantIsolationSchema.isolatedResources[0].resourceType, "linked-accounts");
+  assert.equal(tenantIsolationSchema.isolatedResources[0].scope, "workspace");
+  assert.equal(tenantIsolationSchema.isolatedResources[0].tenantBoundary, "workspace");
+  assert.equal(tenantIsolationSchema.isolatedResources[0].sensitivity, "critical");
+});

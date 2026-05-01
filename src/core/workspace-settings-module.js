@@ -18,6 +18,9 @@ export function createOrganizationWorkspaceSettingsModule({
       workspaceId: normalizedWorkspaceModel.workspaceId ?? null,
       defaultProjectVisibility: normalizedSettingsInput.defaultProjectVisibility ?? "private",
       defaultExecutionMode: normalizedSettingsInput.defaultExecutionMode ?? "guided",
+      workspaceOperatingMode: Object.hasOwn(normalizedSettingsInput, "workspaceOperatingMode")
+        ? normalizedSettingsInput.workspaceOperatingMode
+        : undefined,
       defaultApprovalMode: normalizedSettingsInput.defaultApprovalMode ?? "required-for-sensitive-actions",
       policyProfile: normalizedSettingsInput.policyProfile ?? "balanced",
       teamPreferences: {

@@ -13,7 +13,13 @@ function requestJson(server, pathname, options = {}) {
     const request = new EventEmitter();
     request.method = options.method ?? "GET";
     request.url = pathname;
-    request.headers = options.headers ?? {};
+    const defaultHeaders = !options.disableDefaultProjectAuth && pathname.startsWith("/api/projects/")
+      ? { "x-user-id": "demo-user" }
+      : {};
+    request.headers = {
+      ...defaultHeaders,
+      ...(options.headers ?? {}),
+    };
     request.socket = {
       remoteAddress: options.ipAddress ?? "127.0.0.1",
     };
@@ -47,8 +53,12 @@ function requestJsonWithBody(server, method, pathname, payload, options = {}) {
     const request = new EventEmitter();
     request.method = method;
     request.url = pathname;
+    const defaultHeaders = !options.disableDefaultProjectAuth && pathname.startsWith("/api/projects/")
+      ? { "x-user-id": "demo-user" }
+      : {};
     request.headers = {
       "content-type": "application/json",
+      ...defaultHeaders,
       ...(options.headers ?? {}),
     };
     request.socket = {
@@ -195,6 +205,22 @@ test("server exposes project data privacy classification via GET project", async
     eventLogPath: path.join(directory, "events.ndjson"),
   });
   service.seedDemoProject();
+  const project = service.projects.get("giftwallet");
+  project.state = {
+    ...(project.state ?? {}),
+    featureFlagSchema: null,
+    incidentAlert: null,
+    context: {
+      ...(project.state?.context ?? {}),
+      featureFlagSchema: null,
+      incidentAlert: null,
+    },
+  };
+  project.context = {
+    ...(project.context ?? {}),
+    featureFlagSchema: null,
+    incidentAlert: null,
+  };
   const server = createServer(service);
 
   const response = await requestJson(server, "/api/projects/giftwallet");
@@ -234,6 +260,59 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.context?.subscriptionState?.subscriptionStateId, "string");
   assert.equal(typeof response.body.state?.subscriptionState?.subscriptionStateId, "string");
   assert.equal(typeof response.body.state?.subscriptionState?.status, "string");
+  assert.equal(
+    response.body.state?.subscriptionState?.source === "workspace-billing-state"
+      || response.body.state?.subscriptionState?.source === "billing-plan-schema"
+      || response.body.state?.subscriptionState?.source === "fallback-default",
+    true,
+  );
+  assert.equal(typeof response.body.state?.subscriptionState?.summary, "string");
+  assert.deepEqual(Object.keys(response.body.context?.workspaceMode ?? {}), ["type"]);
+  assert.deepEqual(Object.keys(response.body.state?.workspaceMode ?? {}), ["type"]);
+  assert.deepEqual(Object.keys(response.body.state?.workspaceModeDefinitions ?? {}), ["user-only", "hybrid", "autonomous"]);
+  assert.equal(typeof response.body.context?.reasonableUsagePolicy?.policyId, "string");
+  assert.equal(typeof response.body.state?.reasonableUsagePolicy?.policyId, "string");
+  assert.equal(typeof response.body.state?.reasonableUsagePolicy?.summary?.summaryStatus, "string");
+  assert.equal(typeof response.body.context?.workspaceBillingState?.workspaceBillingStateId, "string");
+  assert.equal(typeof response.body.state?.workspaceBillingState?.workspaceBillingStateId, "string");
+  assert.equal(typeof response.body.context?.payingUserMetrics?.payingUserMetricsId, "string");
+  assert.equal(typeof response.body.state?.payingUserMetrics?.payingUserMetricsId, "string");
+  assert.equal(typeof response.body.state?.payingUserMetrics?.payingUsers, "number");
+  assert.equal(typeof response.body.context?.revenueSummary?.revenueSummaryId, "string");
+  assert.equal(typeof response.body.state?.revenueSummary?.revenueSummaryId, "string");
+  assert.equal(typeof response.body.state?.revenueSummary?.paymentPosture, "string");
+  assert.equal(typeof response.body.context?.billingGuardDecision?.billingGuardDecisionId, "string");
+  assert.equal(typeof response.body.state?.billingGuardDecision?.billingGuardDecisionId, "string");
+  assert.equal(typeof response.body.state?.billingGuardDecision?.decision, "string");
+  assert.equal(Array.isArray(response.body.state?.billingGuardDecision?.guardChecks), true);
+  assert.equal(typeof response.body.state?.billingGuardDecision?.summary?.summaryStatus, "string");
+  assert.deepEqual(Object.keys(response.body.context?.billingSettingsModel ?? {}), [
+    "currentPlan",
+    "subscription",
+    "availableActions",
+    "history",
+  ]);
+  assert.deepEqual(Object.keys(response.body.state?.billingSettingsModel ?? {}), [
+    "currentPlan",
+    "subscription",
+    "availableActions",
+    "history",
+  ]);
+  assert.equal(Array.isArray(response.body.state?.billingSettingsModel?.availableActions), true);
+  assert.equal(Array.isArray(response.body.state?.billingSettingsModel?.history), true);
+  assert.equal(
+    response.body.state?.billingSettingsModel?.availableActions.some((action) => action.actionType === "renew"),
+    false,
+  );
+  assert.equal(Object.hasOwn(response.body.state?.billingSettingsModel ?? {}, "usage"), false);
+  assert.equal(Object.hasOwn(response.body.state?.billingSettingsModel ?? {}, "paymentMethod"), false);
+  assert.equal(Object.hasOwn(response.body.state?.billingSettingsModel ?? {}, "billingDetails"), false);
+  assert.equal(Object.hasOwn(response.body.state?.billingSettingsModel ?? {}, "invoices"), false);
+  assert.equal(
+    response.body.state?.billingApprovalRequest === null
+      || typeof response.body.state?.billingApprovalRequest?.requestType === "string",
+    true,
+  );
   assert.equal(typeof response.body.context?.aiUsageMetric?.aiUsageMetricId, "string");
   assert.equal(typeof response.body.state?.aiUsageMetric?.aiUsageMetricId, "string");
   assert.equal(typeof response.body.state?.aiUsageMetric?.usageType, "string");
@@ -250,6 +329,12 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.state?.costSummary?.costSummaryId, "string");
   assert.equal(typeof response.body.state?.costSummary?.summary?.summaryStatus, "string");
   assert.equal(response.body.state?.costSummary?.breakdown?.build?.unit, "build-minute");
+  assert.equal(Array.isArray(response.body.context?.normalizedBillingEvents), true);
+  assert.equal(Array.isArray(response.body.state?.normalizedBillingEvents), true);
+  assert.equal(response.body.state?.normalizedBillingEvents.every((event) => !Object.hasOwn(event, "providerPayload")), true);
+  assert.equal(typeof response.body.context?.billableUsage?.billableUsageId, "string");
+  assert.equal(typeof response.body.state?.billableUsage?.billableUsageId, "string");
+  assert.equal(Array.isArray(response.body.state?.billableUsage?.items), true);
   assert.equal(typeof response.body.context?.costVisibilityPayload?.costVisibilityPayloadId, "string");
   assert.equal(typeof response.body.state?.costVisibilityPayload?.costVisibilityPayloadId, "string");
   assert.equal(Array.isArray(response.body.state?.costVisibilityPayload?.topCostDrivers), true);
@@ -272,6 +357,169 @@ test("server exposes project data privacy classification via GET project", async
   assert.equal(typeof response.body.context?.complianceAuditSummary?.complianceAuditSummaryId, "string");
   assert.equal(typeof response.body.state?.complianceAuditSummary?.complianceAuditSummaryId, "string");
   assert.equal(Array.isArray(response.body.state.complianceAuditSummary.auditReferences), true);
+});
+
+test("server blocks unauthenticated project reads", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-auth-read-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  service.seedDemoProject();
+  const server = createServer(service);
+
+  const response = await requestJson(server, "/api/projects/giftwallet", {
+    disableDefaultProjectAuth: true,
+  });
+
+  assert.equal(response.statusCode, 401);
+  assert.equal(response.body.reason, "authentication-required");
+});
+
+test("server blocks unauthenticated project listing", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-list-auth-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  service.seedDemoProject();
+  const server = createServer(service);
+
+  const response = await requestJson(server, "/api/projects", {
+    disableDefaultProjectAuth: true,
+  });
+
+  assert.equal(response.statusCode, 401);
+  assert.equal(response.body.reason, "authentication-required");
+});
+
+test("server blocks project writes when action-level authorization is invalid", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-auth-write-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  service.seedDemoProject();
+  const server = createServer(service);
+
+  const response = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects/giftwallet/proposal-edits",
+    {
+      userEditInput: {
+        acceptedSections: ["proposal"],
+      },
+    },
+    {
+      headers: {
+        "x-user-id": "viewer-user",
+      },
+    },
+  );
+
+  assert.equal(response.statusCode, 403);
+  assert.equal(response.body.reason, "project-authorization-blocked");
+  assert.equal(response.body.projectAuthorizationDecision.decision, "blocked");
+});
+
+test("server blocks project reads that cross the workspace isolation boundary", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-isolation-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  service.seedDemoProject();
+  const server = createServer(service);
+
+  const response = await requestJson(server, "/api/projects/giftwallet", {
+    headers: {
+      "x-workspace-id": "workspace-other-tenant",
+    },
+  });
+
+  assert.equal(response.statusCode, 403);
+  assert.equal(response.body.reason, "workspace-isolation-blocked");
+  assert.equal(response.body.workspaceIsolationDecision.decision, "blocked");
+});
+
+test("server blocks project creation that crosses the workspace isolation boundary", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-create-isolation-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  const signedUp = service.signupUser({
+    userInput: {
+      email: "owner@example.com",
+      displayName: "Owner",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+  const server = createServer(service);
+
+  const response = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects",
+    {
+      id: "owner-console",
+      name: "Owner Console",
+      goal: "Create a managed workspace console",
+    },
+    {
+      headers: {
+        "x-user-id": signedUp.authPayload.userIdentity.userId,
+        "x-workspace-id": "workspace-other-tenant",
+      },
+    },
+  );
+
+  assert.equal(response.statusCode, 403);
+  assert.equal(response.body.reason, "workspace-isolation-blocked");
+  assert.equal(response.body.workspaceIsolationDecision.decision, "blocked");
+});
+
+test("server gates privileged project mutations when approval is unresolved", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-privileged-gate-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  service.seedDemoProject();
+  const project = service.getProject("giftwallet");
+  const server = createServer({
+    getProject: () => ({
+      id: "giftwallet",
+      userId: "demo-user",
+      state: {
+        workspaceModel: project.state.workspaceModel,
+        roleCapabilityMatrix: project.state.roleCapabilityMatrix,
+        tenantIsolationSchema: project.state.tenantIsolationSchema,
+        approvalStatus: project.state.approvalStatus,
+        deployPolicyDecision: project.state.deployPolicyDecision,
+        credentialPolicyDecision: project.state.credentialPolicyDecision,
+      },
+    }),
+    rotateCredential: () => ({
+      rotationResult: {
+        status: "completed",
+      },
+    }),
+  });
+
+  const response = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects/giftwallet/accounts/rotate",
+    {
+      credentialReference: "credref_giftwallet-generic-primary",
+      rotationRequest: {
+        newValue: "rotated-secret",
+        requestedBy: "demo-user",
+      },
+    },
+  );
+
+  assert.equal(response.statusCode, 403);
+  assert.equal(response.body.reason, "privileged-action-blocked");
+  assert.equal(response.body.privilegedAuthorityDecision.isBlocked, true);
 });
 
 test("server exposes credential rotation endpoint", async () => {
@@ -698,7 +946,12 @@ test("server exposes project live-state endpoint", async () => {
       progressState: { percent: 48, status: "running" },
       reactiveWorkspaceState: { progressBar: { percent: 48 } },
       realtimeEventStream: { streamId: "realtime-stream:giftwallet", events: [], summary: { totalEvents: 0 } },
-      liveUpdateChannel: { channelId: "live-channel:giftwallet", transportMode: "polling" },
+      liveUpdateChannel: {
+        channelId: "live-channel:giftwallet",
+        transportMode: "polling",
+        serverTransport: "polling",
+        deliveryEndpoint: "/api/projects/giftwallet/live-state",
+      },
       liveLogStream: {
         streamId: "live-log-stream:giftwallet",
         streams: { stdout: [{ logId: "log-1", message: "build started" }], stderr: [] },
@@ -719,6 +972,8 @@ test("server exposes project live-state endpoint", async () => {
   assert.equal(response.body.projectId, "giftwallet");
   assert.equal(response.body.progressState.percent, 48);
   assert.equal(response.body.liveUpdateChannel.transportMode, "polling");
+  assert.equal(response.body.liveUpdateChannel.serverTransport, "polling");
+  assert.equal(response.body.liveUpdateChannel.deliveryEndpoint, "/api/projects/giftwallet/live-state");
   assert.equal(response.body.liveLogStream.summary.totalEntries, 1);
   assert.equal(response.body.continuityPlan.continuityPlanId, "continuity-plan:giftwallet:runtime");
   assert.equal(response.body.disasterRecoveryChecklist.checklistId, "disaster-recovery:giftwallet");
@@ -810,6 +1065,37 @@ test("server exposes project draft creation endpoint", async () => {
         },
       },
       projectDraftId: "launch-studio",
+      projectCreationEvent: {
+        projectCreationEventId: "project-creation:launch-studio:2026-04-13T10:00:00.000Z",
+        userId: "user-1",
+        projectId: "launch-studio",
+        creationSource: "project-creation",
+        timestamp: "2026-04-13T10:00:00.000Z",
+      },
+      projectCreationEvents: [
+        {
+          projectCreationEventId: "project-creation:launch-studio:2026-04-13T10:00:00.000Z",
+          userId: "user-1",
+          projectId: "launch-studio",
+          creationSource: "project-creation",
+          timestamp: "2026-04-13T10:00:00.000Z",
+        },
+      ],
+      projectCreationMetric: {
+        totalProjectsCreated: 1,
+      },
+      projectCreationSummary: {
+        totalProjectsCreated: 1,
+        byDay: {
+          "2026-04-13": 1,
+        },
+        byUser: {
+          "user-1": 1,
+        },
+        byCreationSource: {
+          "project-creation": 1,
+        },
+      },
       projectCreationExperience: {
         experienceId: "project-creation:launch-studio",
       },
@@ -832,7 +1118,104 @@ test("server exposes project draft creation endpoint", async () => {
   assert.equal(response.statusCode, 201);
   assert.equal(response.body.projectDraftId, "launch-studio");
   assert.equal(response.body.projectDraft.owner.email, "draft-user@example.com");
+  assert.equal(response.body.projectCreationEvent.projectId, "launch-studio");
+  assert.equal(response.body.projectCreationEvent.creationSource, "project-creation");
+  assert.equal(Array.isArray(response.body.projectCreationEvents), true);
+  assert.equal(response.body.projectCreationEvents.length, 1);
+  assert.deepEqual(response.body.projectCreationMetric, {
+    totalProjectsCreated: 1,
+  });
+  assert.deepEqual(response.body.projectCreationSummary, {
+    totalProjectsCreated: 1,
+    byDay: {
+      "2026-04-13": 1,
+    },
+    byUser: {
+      "user-1": 1,
+    },
+    byCreationSource: {
+      "project-creation": 1,
+    },
+  });
   assert.equal(response.body.projectCreationRedirect.target, "onboarding");
+});
+
+test("server exposes project creation events and aggregation summary through GET project payload", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-creation-server-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+
+  const signedUp = service.signupUser({
+    userInput: {
+      email: "owner@example.com",
+      displayName: "Owner",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const firstDraft = service.createProjectDraft({
+    userInput: {
+      email: "owner@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Owner Console",
+      visionText: "מסך ניהול לבעלי workspace",
+    },
+  });
+
+  service.createProjectDraft({
+    userInput: {
+      email: "owner@example.com",
+    },
+    projectCreationInput: {
+      projectName: "Owner Console 2",
+      visionText: "פרויקט שני",
+    },
+  });
+
+  const session = service.createOnboardingSession({
+    userId: signedUp.authPayload.userIdentity.userId,
+    projectDraftId: firstDraft.projectDraftId,
+    initialInput: "",
+  });
+
+  service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: Owner Console\nאפליקציה עם onboarding ופרויקט",
+    uploadedFiles: [],
+    externalLinks: [],
+  });
+
+  service.uploadOnboardingFiles({
+    sessionId: session.sessionId,
+    uploadedFiles: [{ name: "spec.md", type: "markdown", content: "# Spec" }],
+  });
+
+  service.finishOnboardingSession(session.sessionId);
+  const server = createServer(service);
+
+  const response = await requestJson(server, `/api/projects/${firstDraft.projectDraftId}`, {
+    headers: {
+      "x-user-id": signedUp.authPayload.userIdentity.userId,
+    },
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(Array.isArray(response.body.projectCreationEvents), true);
+  assert.equal(response.body.projectCreationEvents.length, 2);
+  assert.equal(Array.isArray(response.body.context.projectCreationEvents), true);
+  assert.equal(response.body.context.projectCreationEvents.length, 2);
+  assert.equal(response.body.projectCreationSummary.totalProjectsCreated, 2);
+  assert.deepEqual(response.body.projectCreationSummary.byUser, {
+    [signedUp.authPayload.userIdentity.userId]: 2,
+  });
+  assert.deepEqual(response.body.projectCreationSummary.byCreationSource, {
+    "project-creation": 2,
+  });
+  assert.equal(response.body.state.projectCreationSummary.totalProjectsCreated, 2);
 });
 
 test("server exposes proposal edit mutation endpoint", async () => {

@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Static machine-readable invariant rules for Nexus Wave 2 local tooling. Read by check-core-invariants.mjs.",
+  "version": "1.0.0",
+
+  "canonicalOrderingImmutable": {
+    "rule": "canonical-ordering-immutable",
+    "description": "The execution_order values in wave2-canonical-state.json must never be reordered or renumbered across turns. Each task keeps its assigned execution_order for the lifetime of Wave 2.",
+    "enforcedBy": ["check-core-invariants.mjs"]
+  },
+
+  "canonicalStateSingleSourceOfTruth": {
+    "rule": "canonical-state-source-of-truth",
+    "description": "wave2-canonical-state.json is the sole authoritative source for task state, ordering, and blocking conditions. All other documents derive from it.",
+    "authoritativeFile": "docs/wave2-canonical-state.json",
+    "nonAuthoritativeFiles": [
+      "docs/v2-wave2-execution-plan.md",
+      "docs/backlog-unified-status-and-order.md"
+    ]
+  },
+
+  "validTaskStates": {
+    "rule": "valid-task-states",
+    "description": "A task's state field must be exactly one of the four permitted values. Any other value is an invariant violation.",
+    "allowedValues": ["trueGreen", "blocked", "bridge-deferred", "in-progress"]
+  },
+
+  "markdownMirrorConsistency": {
+    "rule": "markdown-mirror-consistency",
+    "description": "Markdown tracking documents must reflect the state recorded in canonical JSON. Color indicators in markdown must match the canonical state.",
+    "checkScript": "scripts/check-wave2-doc-sync.mjs"
+  },
+
+  "colorMapping": {
+    "rule": "color-mapping",
+    "description": "Each canonical state maps to a specific color indicator used in markdown mirrors.",
+    "mapping": {
+      "trueGreen": "🟢",
+      "blocked": "🔴",
+      "bridge-deferred": "🟡",
+      "in-progress": "🟡"
+    }
+  },
+
+  "activeTaskRule": {
+    "rule": "active-task-lowest-non-trueGreen",
+    "description": "The active task is the task with the lowest execution_order whose state is not trueGreen. Tasks with state 'blocked' or 'bridge-deferred' are still counted as not trueGreen unless an explicit override is present. The currentScanPoint in the state pack represents this value.",
+    "note": "If blocked/bridge-deferred tasks appear before the first actionable in-progress task, the implementation must use the lowest non-trueGreen entry and make that explicit."
+  },
+
+  "executionOrderTaskNameAlignment": {
+    "rule": "execution-order-taskname-aligned",
+    "description": "The execution_order and taskName for each entry must remain stable across turns. A task's execution_order may never be changed without explicit canonical state update, and a task's taskName must not silently diverge from the canonical entry."
+  },
+
+  "highRiskCoreFiles": {
+    "rule": "high-risk-core-files",
+    "description": "These files are considered high-risk. Changes to them require heavy impact classification and trigger full-repo rescan requirements.",
+    "files": [
+      "src/core/context-builder.js",
+      "src/core/project-service.js",
+      "src/server.js"
+    ]
+  },
+
+  "coreRuntimeOrchestrationFiles": {
+    "rule": "core-runtime-orchestration-files",
+    "description": "These runtime infrastructure files are also considered high-risk and trigger heavy impact classification.",
+    "files": [
+      "docs/runtime/core-invariants.json",
+      "docs/runtime/core-state-pack.schema.json"
+    ]
+  },
+
+  "fullRepoScanEscalationTriggers": {
+    "rule": "full-repo-scan-escalation",
+    "description": "These conditions require a full repository rescan. The impact analyzer will set requiresFullRepoRescan=true.",
+    "triggers": [
+      "Any high-risk core file was modified",
+      "core-invariants.json was modified",
+      "core-state-pack.schema.json was modified",
+      "canonical state (wave2-canonical-state.json) execution_order integrity violated",
+      "Impact classifier reports riskLevel=heavy"
+    ]
+  },
+
+  "revalidationTriggers": {
+    "rule": "revalidation-triggers",
+    "description": "These conditions require the previous task to be revalidated before proceeding.",
+    "triggers": [
+      "Impact report riskLevel is heavy",
+      "Any core file hash changed between state pack generations",
+      "Doc sync report shows mismatches in task state",
+      "postflight-report shows unexpectedTouchedFiles"
+    ]
+  },
+
+  "postflightRequiredChecks": {
+    "rule": "postflight-required-checks",
+    "description": "After any task run, these checks must be performed by postflight-verify.mjs.",
+    "checks": [
+      "Verify no forbidden files were touched",
+      "Verify canonical state is still readable and valid JSON",
+      "Verify doc sync still passes (no new mismatches introduced)",
+      "Verify allowed files list matches actual touched files",
+      "Identify any unexpected file changes"
+    ]
+  }
+}

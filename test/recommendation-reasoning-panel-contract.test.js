@@ -57,3 +57,45 @@ test("recommendation reasoning panel contract falls back safely with partial inp
   assert.equal(Array.isArray(reasoningPanel.policy.reasons), true);
   assert.equal(reasoningPanel.summary.hasImpactSignals, false);
 });
+
+test("recommendation reasoning panel contract normalizes malformed identifiers and reason payloads", () => {
+  const { reasoningPanel } = createRecommendationReasoningPanelContract({
+    impactSummary: {
+      totalChanges: 2,
+      codeImpact: "present",
+      affectedCodePaths: [" src/app.ts ", null],
+      affectedInfraAreas: [" deploy "],
+    },
+    learningTrace: {
+      recommendationReasoning: " because this keeps working ",
+      traceSteps: [
+        {
+          stepId: {},
+          title: " Learning step ",
+          reasoning: " traced ",
+          source: " memory ",
+        },
+      ],
+    },
+    policyTrace: {
+      actionType: " deploy ",
+      finalDecision: " blocked ",
+      blockingSources: [" deploy ", null],
+      traceSteps: [
+        {
+          step: " policy-step ",
+          decision: " requires-approval ",
+          reason: " approval needed ",
+        },
+      ],
+    },
+  });
+
+  assert.equal(reasoningPanel.panelId, "reasoning-panel:deploy");
+  assert.equal(reasoningPanel.learning.recommendationReasoning, "because this keeps working");
+  assert.equal(reasoningPanel.learning.reasons[0].reasonId, "learning-reason-1");
+  assert.equal(reasoningPanel.learning.reasons[0].source, "memory");
+  assert.equal(reasoningPanel.policy.finalDecision, "blocked");
+  assert.deepEqual(reasoningPanel.policy.blockingSources, ["deploy"]);
+  assert.equal(reasoningPanel.policy.reasons[0].label, "policy-step");
+});

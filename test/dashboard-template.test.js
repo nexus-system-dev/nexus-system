@@ -26,3 +26,33 @@ test("createDashboardTemplate falls back safely without explicit schema", () => 
   assert.equal(dashboardTemplate.sections.sidebar.enabled, false);
   assert.equal(dashboardTemplate.summary.supportsOperationalSummary, true);
 });
+
+test("createDashboardTemplate normalizes valid schema identity and string regions", () => {
+  const { dashboardTemplate } = createDashboardTemplate({
+    screenTemplateSchema: {
+      templateId: "  screen-template:dashboard  ",
+      regions: ["topbar", "sidebar", 12, null, "content-grid"],
+    },
+  });
+
+  assert.equal(dashboardTemplate.templateId, "dashboard-template:screen-template:dashboard");
+  assert.equal(dashboardTemplate.baseTemplateId, "screen-template:dashboard");
+  assert.equal(dashboardTemplate.sections.topbar.enabled, true);
+  assert.equal(dashboardTemplate.sections.sidebar.enabled, true);
+  assert.equal(dashboardTemplate.sections.feedbackZone.enabled, false);
+  assert.equal(dashboardTemplate.summary.enabledSections, 3);
+});
+
+test("createDashboardTemplate ignores invalid schema identity and non-array regions", () => {
+  const { dashboardTemplate } = createDashboardTemplate({
+    screenTemplateSchema: {
+      templateId: { invalid: true },
+      regions: "bad",
+    },
+  });
+
+  assert.equal(dashboardTemplate.templateId, "dashboard-template:dashboard");
+  assert.equal(dashboardTemplate.baseTemplateId, null);
+  assert.equal(dashboardTemplate.sections.contentGrid.enabled, false);
+  assert.equal(dashboardTemplate.summary.enabledSections, 0);
+});

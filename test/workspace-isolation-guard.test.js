@@ -57,3 +57,32 @@ test("createWorkspaceIsolationGuard blocks cross-workspace access by default", (
   assert.equal(workspaceIsolationDecision.triggeredLeakSignals.includes("workspace-id-mismatch"), true);
   assert.equal(workspaceIsolationDecision.checks.includes("resource-workspace-mismatch"), true);
 });
+
+test("createWorkspaceIsolationGuard normalizes malformed request and resource identifiers", () => {
+  const { workspaceIsolationDecision } = createWorkspaceIsolationGuard({
+    tenantIsolationSchema: {
+      workspaceId: "workspace-alpha",
+      isolatedResources: [
+        {
+          resourceId: " resource:artifacts ",
+          resourceType: " artifacts ",
+          workspaceId: " workspace-alpha ",
+          tenantBoundary: "workspace",
+          crossTenantAccessAllowed: false,
+        },
+      ],
+      leakSignals: ["workspace-id-mismatch", "resource-owner-mismatch"],
+    },
+    requestContext: {
+      workspaceId: " workspace-alpha ",
+      resourceType: " artifacts ",
+      actionType: " read ",
+    },
+  });
+
+  assert.equal(workspaceIsolationDecision.workspaceIsolationDecisionId, "workspace-isolation:workspace-alpha:read");
+  assert.equal(workspaceIsolationDecision.resourceId, "resource:artifacts");
+  assert.equal(workspaceIsolationDecision.resourceType, "artifacts");
+  assert.equal(workspaceIsolationDecision.actionType, "read");
+  assert.equal(workspaceIsolationDecision.decision, "allowed");
+});

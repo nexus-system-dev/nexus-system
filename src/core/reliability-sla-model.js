@@ -239,6 +239,8 @@ export function defineReliabilityAndSlaSchema({
       ),
       notifyRoles: Array.isArray(normalizedDefinitions.ownerEscalationPolicy?.notifyRoles)
         ? normalizedDefinitions.ownerEscalationPolicy.notifyRoles
+          .map((role) => normalizeString(role, null))
+          .filter(Boolean)
         : defaults.ownerEscalationPolicy.notifyRoles,
     },
     serviceGuarantees: {

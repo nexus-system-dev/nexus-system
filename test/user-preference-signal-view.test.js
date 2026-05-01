@@ -40,3 +40,34 @@ test("user preference signal view falls back safely when preference inputs are m
   assert.equal(userPreferenceSignals.summary.totalSignals, 0);
   assert.equal(userPreferenceSignals.summary.hasStablePreference, false);
 });
+
+test("user preference signal view normalizes malformed profile and approval payloads", () => {
+  const { userPreferenceSignals } = createUserPreferenceSignalView({
+    userPreferenceProfile: {
+      profileId: {},
+      preferences: [
+        {
+          preferenceId: {},
+          label: " Explicit approvals ",
+          influence: " keep them visible ",
+          strength: "high",
+        },
+      ],
+    },
+    approvalFeedbackMemory: [
+      {
+        approvalRecordId: {},
+        actionType: " deploy ",
+        status: "approved",
+        summary: " works well ",
+      },
+    ],
+  });
+
+  assert.equal(userPreferenceSignals.signalViewId, "user-preference-signals:nexus");
+  assert.equal(userPreferenceSignals.signals[0].signalId, "user-preference-1");
+  assert.equal(userPreferenceSignals.signals[0].label, "Explicit approvals");
+  assert.equal(userPreferenceSignals.signals[0].influence, "keep them visible");
+  assert.equal(userPreferenceSignals.signals[1].label, "Past deploy decision");
+  assert.equal(userPreferenceSignals.signals[1].influence, "works well");
+});

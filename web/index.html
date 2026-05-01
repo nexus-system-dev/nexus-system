@@ -23,48 +23,99 @@
       </header>
 
       <main class="main-grid">
-        <section id="empty-app-state" class="hero-card empty-app-state" hidden>
-          <span class="card-kicker">First Project</span>
-          <div class="empty-app-copy">
-            <h2 id="empty-project-message">אין פרויקטים</h2>
-            <p id="empty-project-status" class="empty">כדי להתחיל צריך ליצור פרויקט ראשון ולעבור onboarding קצר.</p>
-          </div>
-          <div class="empty-app-form">
-            <label class="empty-app-field">
-              <span class="mini-label">שם הפרויקט</span>
-              <input id="create-project-name-input" type="text" placeholder="Launch App" />
-            </label>
-            <label class="empty-app-field">
-              <span class="mini-label">מה אתה בונה</span>
-              <textarea id="create-project-vision-input" rows="4" placeholder="אפליקציה עם התחברות, workbench ו־approval flow"></textarea>
-            </label>
-            <label class="empty-app-field">
-              <span class="mini-label">קישור תומך ל־onboarding</span>
-              <input id="create-project-link-input" type="text" placeholder="https://github.com/example/project" />
-            </label>
-            <label class="empty-app-field">
-              <span class="mini-label">שם קובץ תומך (אופציונלי)</span>
-              <input id="create-project-file-name-input" type="text" placeholder="brief.md" />
-            </label>
-            <label class="empty-app-field">
-              <span class="mini-label">תוכן קובץ תומך (אופציונלי)</span>
-              <textarea id="create-project-file-content-input" rows="4" placeholder="# Brief&#10;Main flow, constraints, notes"></textarea>
-            </label>
-            <button id="create-project-button" type="button">צור פרויקט</button>
-          </div>
+        <section id="screen-create" class="app-screen app-screen-create" hidden>
+          <section id="empty-app-state" class="hero-card empty-app-state">
+            <span class="card-kicker">First Project</span>
+            <div class="empty-app-copy">
+              <h2 id="empty-project-message">אין פרויקטים</h2>
+              <p id="empty-project-status" class="empty empty-flow-status">כדי להתחיל צריך ליצור פרויקט ראשון ולעבור onboarding קצר.</p>
+            </div>
+            <div id="project-create-stage" class="empty-app-form">
+              <label class="empty-app-field">
+                <span class="mini-label">שם הפרויקט</span>
+                <input id="create-project-name-input" type="text" placeholder="Launch App" />
+              </label>
+              <label class="empty-app-field">
+                <span class="mini-label">מה אתה בונה</span>
+                <textarea id="create-project-vision-input" rows="4" placeholder="אפליקציה עם התחברות, workbench ו־approval flow"></textarea>
+              </label>
+              <button id="create-project-button" type="button">צור פרויקט</button>
+            </div>
+          </section>
         </section>
 
-        <section class="hero-card now">
-          <span class="card-kicker">מה המצב עכשיו</span>
-          <div id="now-content"></div>
+        <section id="screen-onboarding" class="app-screen app-screen-onboarding" hidden>
+          <section class="hero-card empty-app-state onboarding-screen-shell">
+            <span class="card-kicker">Onboarding</span>
+            <div class="empty-app-copy">
+              <h2 id="onboarding-screen-message">ממשיכים ל־onboarding</h2>
+              <p id="onboarding-screen-status" class="empty empty-flow-status">זה מסך נפרד מיצירת הפרויקט. כאן מחדדים את הפרויקט לפני פתיחת ה־workspace.</p>
+            </div>
+            <section id="onboarding-stage" class="onboarding-stage">
+              <div class="onboarding-stage-card">
+                <p class="mini-label">Onboarding Stage</p>
+                <h3 id="onboarding-stage-title">מגדירים את הפרויקט</h3>
+                <p id="onboarding-stage-description">
+                  אחרי יצירת הפרויקט הראשוני, עוברים למסך onboarding שבו מחדדים את הפרויקט לפני פתיחת ה־workspace.
+                </p>
+                <div id="onboarding-progress-pill" class="onboarding-progress-pill">שאלה 1 מתוך 3</div>
+                <div class="onboarding-nav-actions">
+                  <button id="onboarding-back-button" class="secondary-action-button" type="button">אחורה</button>
+                  <button id="onboarding-forward-button" type="button">קדימה</button>
+                </div>
+              </div>
+              <div class="onboarding-notes-card">
+                <p class="mini-label">AI Working Memory</p>
+                <div id="onboarding-notes-list" class="simple-list"></div>
+              </div>
+              <div class="onboarding-chat-card">
+                <p class="mini-label">שיחה עם ה־AI</p>
+                <div id="onboarding-chat-thread" class="onboarding-chat-thread"></div>
+                <div class="onboarding-chat-composer">
+                  <div class="onboarding-question-meta">
+                    <strong id="onboarding-current-question-title">למי הפרויקט הזה מיועד?</strong>
+                    <p id="onboarding-current-question-body">ענה בקצרה כדי שנוכל לבנות תמונת מצב טובה יותר של הפרויקט.</p>
+                  </div>
+                  <div class="onboarding-chat-input-shell">
+                    <textarea id="onboarding-answer-input" rows="4" placeholder="לדוגמה: למנהלי מוצר וצוותי פיתוח שצריכים לעבור מהר משלב הרעיון לשלב ה־workspace"></textarea>
+                    <div class="onboarding-chat-actions">
+                      <span class="onboarding-chat-hint">`Enter` לשליחה, `Shift+Enter` לשורה חדשה</span>
+                      <button id="onboarding-next-button" type="button">שלח והמשך</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="onboarding-material-stage" class="onboarding-material-stage">
+                <div class="onboarding-material-card">
+                  <p class="mini-label">חומר תומך לשלב onboarding</p>
+                  <h3>עכשיו מוסיפים הקשר ותוכן תומך</h3>
+                  <p>זה השלב שבו מצרפים קישור תומך או מסמך תומך ידני לפני פתיחת ה־workspace.</p>
+                </div>
+                <div class="onboarding-material-card">
+                  <p class="mini-label">הזנה ידנית</p>
+                  <p class="empty-upload-note">כרגע אין העלאת קבצים מהמחשב במסך הזה. אפשר רק להקליד שם ותוכן של מסמך תומך.</p>
+                </div>
+              </div>
+              <div id="onboarding-form-stage" class="onboarding-form-stage">
+                <label class="empty-app-field">
+                  <span class="mini-label">קישור תומך ל־onboarding</span>
+                  <input id="create-project-link-input" type="text" placeholder="https://github.com/example/project" />
+                </label>
+                <label class="empty-app-field">
+                  <span class="mini-label">שם מסמך תומך (הזנה ידנית, אופציונלי)</span>
+                  <input id="create-project-file-name-input" type="text" placeholder="brief.md" />
+                </label>
+                <label class="empty-app-field">
+                  <span class="mini-label">תוכן מסמך תומך (הזנה ידנית, אופציונלי)</span>
+                  <textarea id="create-project-file-content-input" rows="4" placeholder="# Brief&#10;Main flow, constraints, notes"></textarea>
+                </label>
+                <button id="finish-onboarding-button" type="button">סיים Onboarding</button>
+              </div>
+            </section>
+          </section>
         </section>
 
-        <section class="hero-card action">
-          <span class="card-kicker">מה צריך לעשות עכשיו</span>
-          <div id="critical-content"></div>
-        </section>
-
-        <section id="workspace-board" class="workspace-board">
+        <section id="screen-workspace" class="app-screen app-screen-workspace" hidden>
           <nav class="workspace-tabs" aria-label="Workspace navigation">
             <button id="tab-developer" class="workspace-tab active" type="button" data-workspace="developer">Developer</button>
             <button id="tab-project-brain" class="workspace-tab" type="button" data-workspace="project-brain">Project Brain</button>
@@ -72,6 +123,30 @@
             <button id="tab-growth" class="workspace-tab" type="button" data-workspace="growth">Growth</button>
           </nav>
 
+          <section class="workspace-top-shell" aria-label="Workspace overview">
+            <div class="workspace-top-actions">
+              <button id="create-new-project-button" class="secondary-action-button" type="button">צור פרויקט חדש</button>
+              <button id="reopen-onboarding-button" class="secondary-action-button" type="button">פתח מחדש את ה־Onboarding</button>
+            </div>
+
+            <section id="flow-feedback-banner" class="flow-feedback-banner" hidden>
+              <strong id="flow-feedback-title">ה־workspace נטען</strong>
+              <p id="flow-feedback-message">הפרויקט מוכן לעבודה.</p>
+            </section>
+
+            <div class="workspace-overview-grid">
+              <section class="hero-card now">
+                <span class="card-kicker">מה המצב עכשיו</span>
+                <div id="now-content"></div>
+              </section>
+
+              <section class="hero-card action">
+                <span class="card-kicker">מה צריך לעשות עכשיו</span>
+                <div id="critical-content"></div>
+              </section>
+            </div>
+          </section>
+          <section id="workspace-board" class="workspace-board">
           <div id="workspace-developer" class="workspace-shell workspace-panel active">
             <header class="workspace-header">
               <p class="workspace-kicker">Workspace</p>
@@ -349,6 +424,7 @@
               </section>
             </div>
           </div>
+          </section>
         </section>
       </main>
     </div>

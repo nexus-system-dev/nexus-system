@@ -59,3 +59,26 @@ test("failover continuity planner builds provider fallback route", () => {
   assert.equal(continuityPlan.fallbackActions.includes("switch-provider-route"), true);
   assert.equal(continuityPlan.recoveryDirection.nextCheckpoint, "stabilize-degraded-services");
 });
+
+test("failover continuity planner normalizes malformed incident identifiers", () => {
+  const { continuityPlan } = createFailoverAndContinuityPlanner({
+    reliabilitySlaModel: {
+      reliabilityModelId: " reliability:giftwallet ",
+      serviceTier: " enterprise ",
+      runtimeCapabilities: {
+        supportsRuntimeFailover: true,
+      },
+    },
+    incidentAlert: {
+      projectId: " giftwallet ",
+      incidentType: " runtime-outage ",
+      severity: " critical ",
+      summary: " Runtime unavailable ",
+    },
+  });
+
+  assert.equal(continuityPlan.continuityPlanId, "continuity-plan:giftwallet:runtime");
+  assert.equal(continuityPlan.projectId, "giftwallet");
+  assert.equal(continuityPlan.severity, "critical");
+  assert.equal(continuityPlan.decisionTrace.reason, "Runtime unavailable");
+});

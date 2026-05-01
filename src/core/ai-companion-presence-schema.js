@@ -14,9 +14,13 @@ function normalizeState(state) {
   return "observing";
 }
 
+function normalizeString(value, fallback) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function normalizeTone(state, interactionContext) {
   const normalizedContext = normalizeObject(interactionContext);
-  const explicitTone = typeof normalizedContext.tone === "string" ? normalizedContext.tone.trim().toLowerCase() : "";
+  const explicitTone = normalizeString(normalizedContext.tone, "").toLowerCase();
 
   if (explicitTone) {
     return explicitTone;
@@ -43,9 +47,7 @@ function normalizeTone(state, interactionContext) {
 
 function normalizeUrgency(state, interactionContext) {
   const normalizedContext = normalizeObject(interactionContext);
-  const explicitUrgency = typeof normalizedContext.urgency === "string"
-    ? normalizedContext.urgency.trim().toLowerCase()
-    : "";
+  const explicitUrgency = normalizeString(normalizedContext.urgency, "").toLowerCase();
 
   if (["low", "medium", "high", "critical"].includes(explicitUrgency)) {
     return explicitUrgency;
@@ -70,7 +72,7 @@ function resolveVisibility(state, urgency, interactionContext) {
     return explicitVisible;
   }
 
-  if (normalizedContext.surface === "background") {
+  if (normalizeString(normalizedContext.surface, "") === "background") {
     return false;
   }
 
@@ -79,9 +81,12 @@ function resolveVisibility(state, urgency, interactionContext) {
 
 function buildVisibilityRules(state, urgency, interactionContext) {
   const normalizedContext = normalizeObject(interactionContext);
-  const currentSurface = normalizedContext.currentSurface ?? normalizedContext.surface ?? "workspace";
-  const executionMode = normalizedContext.executionMode ?? "interactive";
-  const currentTask = normalizedContext.currentTask ?? null;
+  const currentSurface = normalizeString(
+    normalizedContext.currentSurface,
+    normalizeString(normalizedContext.surface, "workspace"),
+  );
+  const executionMode = normalizeString(normalizedContext.executionMode, "interactive");
+  const currentTask = normalizeString(normalizedContext.currentTask, null);
 
   return {
     showInWorkspace: currentSurface !== "background",
@@ -121,10 +126,11 @@ export function defineAiCompanionPresenceSchema({
   const urgency = normalizeUrgency(state, normalizedInteractionContext);
   const visible = resolveVisibility(state, urgency, normalizedInteractionContext);
   const visibilityRules = buildVisibilityRules(state, urgency, normalizedInteractionContext);
+  const projectId = normalizeString(normalizedInteractionContext.projectId, "nexus");
 
   return {
     companionPresence: {
-      presenceId: `companion-presence:${normalizedInteractionContext.projectId ?? "nexus"}`,
+      presenceId: `companion-presence:${projectId}`,
       state,
       tone,
       urgency,

@@ -10,6 +10,12 @@ import {
 } from "./core/rate-limiting-abuse-protection.js";
 import { createFeatureFlagResolver } from "./core/feature-flag-resolver.js";
 import { createEmergencyKillSwitchGuard } from "./core/emergency-kill-switch-guard.js";
+import { createActionLevelProjectAuthorizationResolver } from "./core/action-level-project-authorization-resolver.js";
+import { createPrivilegedActionAuthorityResolver } from "./core/privileged-action-authority-resolver.js";
+import { defineProjectPermissionSchema } from "./core/project-permission-schema.js";
+import { createProjectRoleCapabilityMatrix } from "./core/project-role-capability-matrix.js";
+import { defineTenantIsolationSchema } from "./core/tenant-isolation-schema.js";
+import { createWorkspaceIsolationGuard } from "./core/workspace-isolation-guard.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,7 +86,15 @@ function getObservabilityTransport(projectService) {
 
 function resolveWorkspaceId(urlPathname) {
   const segments = urlPathname.split("/");
-  return segments[1] === "api" && segments[2] === "projects" ? segments[3] ?? null : null;
+  if (segments[1] !== "api") {
+    return null;
+  }
+
+  if (segments[2] === "projects" || segments[2] === "workspaces") {
+    return segments[3] ?? null;
+  }
+
+  return null;
 }
 
 function resolveIpAddress(request) {
@@ -95,6 +109,30 @@ function resolveIpAddress(request) {
 function resolveRequestUserId(request) {
   const headerValue = request.headers?.["x-user-id"];
   return typeof headerValue === "string" && headerValue.trim().length > 0 ? headerValue.trim() : null;
+}
+
+function resolveRequestActorType(request, project = null, userId = null) {
+  const headerValue = request.headers?.["x-actor-type"];
+  if (typeof headerValue === "string" && headerValue.trim().length > 0) {
+    return headerValue.trim().toLowerCase();
+  }
+
+  if (!userId) {
+    return "viewer";
+  }
+
+  const ownerUserId =
+    project?.state?.workspaceModel?.ownerUserId
+    ?? project?.context?.workspaceModel?.ownerUserId
+    ?? project?.userId
+    ?? null;
+
+  return ownerUserId && ownerUserId === userId ? "owner" : "viewer";
+}
+
+function resolveRequestWorkspaceHeader(request, fallback = null) {
+  const headerValue = request.headers?.["x-workspace-id"];
+  return typeof headerValue === "string" && headerValue.trim().length > 0 ? headerValue.trim() : fallback;
 }
 
 function resolveRequestEnvironment(request, fallback = null) {
@@ -221,6 +259,17 @@ function resolveRouteDefinition(method, pathname) {
     };
   }
 
+  if (route.startsWith("/api/workspaces/")) {
+    return {
+      method: verb,
+      path: route,
+      tier: "standard",
+      kind: "workspace-billing-api",
+      bucketKey: "/api/workspaces/*/billing/*",
+      isKnownRoute: true,
+    };
+  }
+
   if (route === "/api/audit-logs" || route === "/api/security-audit-logs" || route === "/api/project-snapshots") {
     return {
       method: verb,
@@ -283,6 +332,245 @@ function writeSseEvent(response, eventName, payload) {
   response.write(`data: ${JSON.stringify(payload)}\n\n`);
 }
 
+function normalizeProjectRouteSuffix(pathname) {
+  return pathname.split("/").slice(4).join("/");
+}
+
+function resolveProjectRouteAction(method, pathname) {
+  const normalizedMethod = typeof method === "string" ? method.toUpperCase() : "GET";
+  const suffix = normalizeProjectRouteSuffix(pathname);
+
+  if (normalizedMethod === "GET") {
+    if (!suffix || suffix === "events" || suffix === "live-state" || suffix === "live-events" || suffix === "audit" || suffix === "review-threads" || suffix === "scan" || suffix === "analysis" || suffix === "external" || suffix === "git" || suffix === "runtime" || suffix === "notion" || suffix === "release-tracking" || suffix === "diff-preview" || suffix === "policy" || suffix === "approvals" || suffix === "business-continuity" || suffix === "continuity-plan" || suffix === "disaster-recovery-checklist") {
+      return "view";
+    }
+  }
+
+  if (normalizedMethod === "POST") {
+    if (suffix === "proposal-edits" || suffix === "presence" || suffix === "review-threads" || suffix === "privacy-rights-requests") {
+      return "edit";
+    }
+
+    if (suffix === "partial-acceptance" || suffix === "approvals/approve" || suffix === "approvals/reject" || suffix === "approvals/revoke") {
+      return "approve";
+    }
+
+    if (suffix === "rollback-executions" || suffix === "snapshot-backup-schedule" || suffix === "snapshot-backups/run" || suffix === "snapshot-backup-worker" || suffix === "snapshot-backup-worker/run" || suffix === "snapshot-retention-policy" || suffix === "snapshot-retention-cleanup" || suffix === "business-continuity/actions" || suffix === "run-cycle" || suffix === "scan" || suffix === "analyze" || suffix === "sync-casino" || suffix === "connect-git" || suffix === "sync-runtime" || suffix === "sync-notion") {
+      return "deploy";
+    }
+
+    if (suffix === "accounts/link") {
+      return "connect-account";
+    }
+
+    if (suffix === "accounts/rotate") {
+      return "manage-credentials";
+    }
+
+    if (suffix === "accounts/verify") {
+      return "inspect";
+    }
+  }
+
+  if (normalizedMethod === "DELETE" && suffix.startsWith("accounts/")) {
+    return "manage-credentials";
+  }
+
+  return normalizedMethod === "GET" ? "view" : "edit";
+}
+
+function resolveProjectRouteResourceType(pathname) {
+  const suffix = normalizeProjectRouteSuffix(pathname);
+
+  if (!suffix || suffix === "events" || suffix === "audit" || suffix === "live-state" || suffix === "live-events") {
+    return "project-state";
+  }
+
+  if (suffix.startsWith("accounts/") || suffix === "accounts") {
+    return "linked-accounts";
+  }
+
+  if (suffix.includes("snapshot") || suffix.includes("rollback")) {
+    return "artifacts";
+  }
+
+  if (suffix.includes("log") || suffix === "runtime" || suffix === "analysis" || suffix === "scan") {
+    return "logs";
+  }
+
+  return "project-state";
+}
+
+function buildProjectAccessEnforcement({ request, pathname, project = null, userId = null } = {}) {
+  if (!project?.state?.roleCapabilityMatrix || !project?.state?.tenantIsolationSchema) {
+    return null;
+  }
+
+  if (!userId) {
+    return {
+      httpStatus: 401,
+      payload: {
+        error: "Authentication required",
+        reason: "authentication-required",
+      },
+    };
+  }
+
+  const actorType = resolveRequestActorType(request, project, userId);
+  const projectAction = resolveProjectRouteAction(request.method, pathname);
+  const resourceType = resolveProjectRouteResourceType(pathname);
+  const policyDecision =
+    projectAction === "deploy" || projectAction === "run" || projectAction === "approve"
+      ? project.state.policyDecision ?? null
+      : null;
+  const requestedWorkspaceId = resolveRequestWorkspaceHeader(
+    request,
+    project?.state?.workspaceModel?.workspaceId
+      ?? project?.context?.workspaceModel?.workspaceId
+      ?? null,
+  );
+
+  const { projectAuthorizationDecision } = createActionLevelProjectAuthorizationResolver({
+    actorType,
+    projectAction,
+    roleCapabilityMatrix: project.state.roleCapabilityMatrix ?? null,
+    policyDecision,
+  });
+  const { workspaceIsolationDecision } = createWorkspaceIsolationGuard({
+    tenantIsolationSchema: project.state.tenantIsolationSchema ?? null,
+    requestContext: {
+      workspaceId: requestedWorkspaceId,
+      resourceType,
+      resourceId: `project-route:${pathname}`,
+      actionType: projectAction,
+    },
+  });
+
+  if (workspaceIsolationDecision.isBlocked === true || workspaceIsolationDecision.requiresScopedReview === true) {
+    return {
+      httpStatus: 403,
+      payload: {
+        error: "Workspace isolation violation",
+        reason: "workspace-isolation-blocked",
+        workspaceIsolationDecision,
+      },
+    };
+  }
+
+  if (projectAuthorizationDecision.isBlocked === true) {
+    return {
+      httpStatus: 403,
+      payload: {
+        error: "Forbidden",
+        reason: "project-authorization-blocked",
+        projectAuthorizationDecision,
+        workspaceIsolationDecision,
+      },
+    };
+  }
+
+  if (projectAuthorizationDecision.requiresApproval === true) {
+    return {
+      httpStatus: 403,
+      payload: {
+        error: "Approval required",
+        reason: "project-authorization-requires-approval",
+        projectAuthorizationDecision,
+        workspaceIsolationDecision,
+      },
+    };
+  }
+
+  const { privilegedAuthorityDecision } = createPrivilegedActionAuthorityResolver({
+    projectAuthorizationDecision,
+    approvalStatus: project.state.approvalStatus ?? null,
+    deployPolicyDecision: project.state.deployPolicyDecision ?? null,
+    credentialPolicyDecision: project.state.credentialPolicyDecision ?? null,
+  });
+
+  if (
+    privilegedAuthorityDecision.isPrivilegedAction === true
+    && (privilegedAuthorityDecision.isBlocked === true || privilegedAuthorityDecision.requiresApproval === true)
+  ) {
+    return {
+      httpStatus: 403,
+      payload: {
+        error: privilegedAuthorityDecision.requiresApproval === true ? "Privileged approval required" : "Privileged action blocked",
+        reason: privilegedAuthorityDecision.requiresApproval === true
+          ? "privileged-approval-required"
+          : "privileged-action-blocked",
+        projectAuthorizationDecision,
+        workspaceIsolationDecision,
+        privilegedAuthorityDecision,
+      },
+    };
+  }
+
+  return null;
+}
+
+function buildProjectCollectionAccessEnforcement({
+  request,
+  pathname,
+  projectService = null,
+  userId = null,
+} = {}) {
+  if (!userId) {
+    return {
+      httpStatus: 401,
+      payload: {
+        error: "Authentication required",
+        reason: "authentication-required",
+      },
+    };
+  }
+
+  const authPayload = typeof projectService?.getUserAuthPayload === "function"
+    ? projectService.getUserAuthPayload(userId)
+    : null;
+  const workspaceModel = authPayload?.workspaceModel ?? null;
+  if (!workspaceModel) {
+    return {
+      httpStatus: 401,
+      payload: {
+        error: "Authentication required",
+        reason: "authentication-required",
+      },
+    };
+  }
+
+  const { projectPermissionSchema } = defineProjectPermissionSchema({
+    workspaceModel,
+    projectType: "generic",
+  });
+  const { roleCapabilityMatrix } = createProjectRoleCapabilityMatrix({
+    projectPermissionSchema,
+  });
+  const { tenantIsolationSchema } = defineTenantIsolationSchema({
+    workspaceModel,
+  });
+
+  return buildProjectAccessEnforcement({
+    request,
+    pathname,
+    userId,
+    project: {
+      userId,
+      state: {
+        workspaceModel,
+        roleCapabilityMatrix,
+        tenantIsolationSchema,
+        approvalStatus: null,
+        deployPolicyDecision: null,
+        credentialPolicyDecision: null,
+      },
+      context: {
+        workspaceModel,
+      },
+    },
+  });
+}
+
 export function createServer(projectService, runtimeStatus = {}) {
   const rateLimitStore = runtimeStatus.rateLimitStore ?? createInMemoryRateLimitStore();
   return http.createServer(async (request, response) => {
@@ -333,8 +621,16 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
-    const routedProject = workspaceId && typeof projectService?.getProject === "function"
-      ? projectService.getProject(workspaceId)
+    const routedProject = workspaceId
+      ? (
+          url.pathname.startsWith("/api/workspaces/")
+            ? (typeof projectService?.getProjectByWorkspaceId === "function"
+                ? projectService.getProjectByWorkspaceId(workspaceId)
+                : null)
+            : (typeof projectService?.getProject === "function"
+                ? projectService.getProject(workspaceId)
+                : null)
+        )
       : null;
     const featureFlagSchema = routedProject?.state?.featureFlagSchema ?? routedProject?.context?.featureFlagSchema ?? null;
     const incidentAlert = routedProject?.state?.incidentAlert ?? routedProject?.context?.incidentAlert ?? null;
@@ -387,6 +683,46 @@ export function createServer(projectService, runtimeStatus = {}) {
         killSwitchDecision,
       });
       return;
+    }
+    if (url.pathname === "/api/projects" && (request.method === "GET" || request.method === "POST")) {
+      const enforcement = buildProjectCollectionAccessEnforcement({
+        request,
+        pathname: url.pathname,
+        projectService,
+        userId: resolvedUserId,
+      });
+      if (enforcement) {
+        observabilityTransport?.finishHttpRequest({
+          traceId: requestTrace?.traceId ?? requestId,
+          route: url.pathname,
+          method: request.method,
+          statusCode: enforcement.httpStatus,
+          durationMs: Date.now() - requestStartedAt,
+          service: runtimeStatus.runtimeId ?? "http-server",
+        });
+        sendJson(response, enforcement.httpStatus, enforcement.payload);
+        return;
+      }
+    }
+    if (routeDefinition.kind === "project-api" && workspaceId) {
+      const enforcement = buildProjectAccessEnforcement({
+        request,
+        pathname: url.pathname,
+        project: routedProject,
+        userId: resolvedUserId,
+      });
+      if (enforcement) {
+        observabilityTransport?.finishHttpRequest({
+          traceId: requestTrace?.traceId ?? requestId,
+          route: url.pathname,
+          method: request.method,
+          statusCode: enforcement.httpStatus,
+          durationMs: Date.now() - requestStartedAt,
+          service: runtimeStatus.runtimeId ?? "http-server",
+        });
+        sendJson(response, enforcement.httpStatus, enforcement.payload);
+        return;
+      }
     }
     const originalEnd = response.end.bind(response);
     response.end = (body) => {
@@ -618,6 +954,42 @@ export function createServer(projectService, runtimeStatus = {}) {
         approvalOutcome: body.approvalOutcome,
       });
       sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (
+      request.method === "POST"
+      && url.pathname.startsWith("/api/workspaces/")
+      && url.pathname.includes("/billing/")
+    ) {
+      const workspaceId = segments[3];
+      const actionType = segments[5];
+      if (!resolveRequestUserId(request)) {
+        sendJson(response, 401, { error: "Authentication required" });
+        return;
+      }
+
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.performWorkspaceBillingAction === "function"
+        ? projectService.performWorkspaceBillingAction({
+            workspaceId,
+            actionType,
+            billingInput: body,
+            userId: resolveRequestUserId(request),
+          })
+        : null;
+
+      if (!result) {
+        sendJson(response, 404, { error: "Workspace not found" });
+        return;
+      }
+
+      if (result.error) {
+        sendJson(response, result.httpStatus ?? 400, { error: result.error });
+        return;
+      }
+
+      sendJson(response, result.httpStatus ?? 200, result.billingPayload);
       return;
     }
 

@@ -45,18 +45,22 @@ function matchesTarget(targets = [], value = null) {
   if (!Array.isArray(targets) || targets.length === 0) {
     return true;
   }
-  return value ? targets.includes(value) : false;
+  const normalizedTargets = targets
+    .map((target) => normalizeString(target, null))
+    .filter(Boolean);
+  return value ? normalizedTargets.includes(value) : false;
 }
 
 function evaluateFlag(flag, requestContext, registryEntry) {
   const evaluatedAt = new Date().toISOString();
+  const normalizedFlagId = normalizeString(flag.flagId, "unknown-flag");
   const shared = {
     routes: registryEntry?.routes ?? [],
     capabilities: registryEntry?.capabilities ?? [],
   };
   if (flag.isKillSwitch === true && flag.requestedEnabled === true) {
     return {
-      flagId: flag.flagId,
+      flagId: normalizedFlagId,
       enabled: false,
       reason: "kill-switch",
       rolloutScope: flag.rolloutScope,
@@ -68,7 +72,7 @@ function evaluateFlag(flag, requestContext, registryEntry) {
   const environment = normalizeEnvironment(requestContext.environment);
   if (!flag.environmentTargets.includes(environment)) {
     return {
-      flagId: flag.flagId,
+      flagId: normalizedFlagId,
       enabled: false,
       reason: "env-mismatch",
       rolloutScope: flag.rolloutScope,
@@ -81,7 +85,7 @@ function evaluateFlag(flag, requestContext, registryEntry) {
   const userId = normalizeString(requestContext.userId ?? requestContext.actorId, null);
   if (flag.rolloutScope === "workspace" && !matchesTarget(flag.workspaceTargets, workspaceId)) {
     return {
-      flagId: flag.flagId,
+      flagId: normalizedFlagId,
       enabled: false,
       reason: "scope-excluded",
       rolloutScope: flag.rolloutScope,
@@ -92,7 +96,7 @@ function evaluateFlag(flag, requestContext, registryEntry) {
 
   if (flag.userTargets.length > 0 && !matchesTarget(flag.userTargets, userId)) {
     return {
-      flagId: flag.flagId,
+      flagId: normalizedFlagId,
       enabled: false,
       reason: "scope-excluded",
       rolloutScope: flag.rolloutScope,
@@ -104,7 +108,7 @@ function evaluateFlag(flag, requestContext, registryEntry) {
   const riskLevel = normalizeRiskLevel(requestContext);
   if (flag.riskSensitive === true && ["high", "critical"].includes(riskLevel)) {
     return {
-      flagId: flag.flagId,
+      flagId: normalizedFlagId,
       enabled: false,
       reason: "risk-blocked",
       rolloutScope: flag.rolloutScope,
@@ -116,11 +120,11 @@ function evaluateFlag(flag, requestContext, registryEntry) {
   if (flag.rolloutScope === "percentage") {
     const { hashBucket, isDeterministic } = createRolloutHashUtility({
       userId,
-      flagId: flag.flagId,
+      flagId: normalizedFlagId,
     });
     if (!isDeterministic) {
       return {
-        flagId: flag.flagId,
+        flagId: normalizedFlagId,
         enabled: false,
         reason: "percentage-excluded",
         rolloutScope: flag.rolloutScope,
@@ -130,7 +134,7 @@ function evaluateFlag(flag, requestContext, registryEntry) {
     }
     if (hashBucket >= flag.rolloutPercentage) {
       return {
-        flagId: flag.flagId,
+        flagId: normalizedFlagId,
         enabled: false,
         reason: "percentage-excluded",
         rolloutScope: flag.rolloutScope,
@@ -141,7 +145,7 @@ function evaluateFlag(flag, requestContext, registryEntry) {
   }
 
   return {
-    flagId: flag.flagId,
+    flagId: normalizedFlagId,
     enabled: flag.enabled === true,
     reason: flag.enabled === true ? "enabled" : "scope-excluded",
     rolloutScope: flag.rolloutScope,
@@ -164,12 +168,14 @@ export function createFeatureFlagResolver({
   );
   const workspaceId = normalizeString(normalizedRequestContext.workspaceId, null);
   const userId = normalizeString(normalizedRequestContext.userId ?? normalizedRequestContext.actorId, null);
+  const routeId = normalizeString(normalizedRequestContext.routeId ?? normalizedRequestContext.route, null);
 
   const flagResults = flags.map((flag) => evaluateFlag(flag, {
     ...normalizedRequestContext,
     environment,
     workspaceId,
     userId,
+    routeId,
   }, featureFlagRouteRegistry[flag.flagId] ?? null));
 
   const enabledCapabilities = [...new Set(flagResults
@@ -189,6 +195,7 @@ export function createFeatureFlagResolver({
       environment,
       workspaceId,
       userId,
+      routeId,
       flagResults,
       enabledCapabilities,
       blockedRoutes,

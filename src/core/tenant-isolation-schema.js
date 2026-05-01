@@ -2,6 +2,10 @@ function normalizeWorkspaceModel(workspaceModel) {
   return workspaceModel && typeof workspaceModel === "object" ? workspaceModel : {};
 }
 
+function normalizeString(value, fallback = null) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 function normalizeResourceDefinitions(resourceDefinitions) {
   return Array.isArray(resourceDefinitions) ? resourceDefinitions.filter((entry) => entry && typeof entry === "object") : [];
 }
@@ -11,28 +15,28 @@ function inferDefaultResources(workspaceModel) {
     {
       resourceType: "project-state",
       scope: "project",
-      workspaceId: workspaceModel.workspaceId ?? null,
+      workspaceId: normalizeString(workspaceModel.workspaceId, null),
       tenantBoundary: "workspace",
       sensitivity: "high",
     },
     {
       resourceType: "artifacts",
       scope: "workspace",
-      workspaceId: workspaceModel.workspaceId ?? null,
+      workspaceId: normalizeString(workspaceModel.workspaceId, null),
       tenantBoundary: "workspace",
       sensitivity: "high",
     },
     {
       resourceType: "logs",
       scope: "workspace",
-      workspaceId: workspaceModel.workspaceId ?? null,
+      workspaceId: normalizeString(workspaceModel.workspaceId, null),
       tenantBoundary: "workspace",
       sensitivity: "medium",
     },
     {
       resourceType: "linked-accounts",
       scope: "workspace",
-      workspaceId: workspaceModel.workspaceId ?? null,
+      workspaceId: normalizeString(workspaceModel.workspaceId, null),
       tenantBoundary: "workspace",
       sensitivity: "critical",
     },
@@ -42,12 +46,15 @@ function inferDefaultResources(workspaceModel) {
 function buildResources(workspaceModel, resourceDefinitions) {
   const source = resourceDefinitions.length > 0 ? resourceDefinitions : inferDefaultResources(workspaceModel);
   return source.map((resource, index) => ({
-    resourceId: resource.resourceId ?? `tenant-resource:${workspaceModel.workspaceId ?? "workspace"}:${resource.resourceType ?? "resource"}:${index + 1}`,
-    resourceType: resource.resourceType ?? "resource",
-    scope: resource.scope ?? "workspace",
-    workspaceId: resource.workspaceId ?? workspaceModel.workspaceId ?? null,
-    tenantBoundary: resource.tenantBoundary ?? "workspace",
-    sensitivity: resource.sensitivity ?? "medium",
+    resourceId: normalizeString(
+      resource.resourceId,
+      `tenant-resource:${normalizeString(workspaceModel.workspaceId, "workspace")}:${normalizeString(resource.resourceType, "resource")}:${index + 1}`,
+    ),
+    resourceType: normalizeString(resource.resourceType, "resource"),
+    scope: normalizeString(resource.scope, "workspace"),
+    workspaceId: normalizeString(resource.workspaceId, normalizeString(workspaceModel.workspaceId, null)),
+    tenantBoundary: normalizeString(resource.tenantBoundary, "workspace"),
+    sensitivity: normalizeString(resource.sensitivity, "medium"),
     crossTenantAccessAllowed: resource.crossTenantAccessAllowed === true,
   }));
 }
@@ -62,9 +69,9 @@ export function defineTenantIsolationSchema({
 
   return {
     tenantIsolationSchema: {
-      tenantIsolationSchemaId: `tenant-isolation:${normalizedWorkspaceModel.workspaceId ?? "workspace"}`,
-      workspaceId: normalizedWorkspaceModel.workspaceId ?? null,
-      workspaceVisibility: normalizedWorkspaceModel.visibility ?? "private",
+      tenantIsolationSchemaId: `tenant-isolation:${normalizeString(normalizedWorkspaceModel.workspaceId, "workspace")}`,
+      workspaceId: normalizeString(normalizedWorkspaceModel.workspaceId, null),
+      workspaceVisibility: normalizeString(normalizedWorkspaceModel.visibility, "private"),
       isolationBoundary: "workspace",
       tenantSubjects: {
         users: true,

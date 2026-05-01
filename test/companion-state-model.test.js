@@ -50,3 +50,59 @@ test("companion state model recommends when learning signals are available witho
   assert.equal(companionState.summary.hasRecommendations, true);
   assert.equal(Array.isArray(companionState.reasons), true);
 });
+
+test("companion state model stays passive when no learning signals are available", () => {
+  const { companionState } = createCompanionStateModel({
+    learningInsights: {
+      summary: "Baseline learning insights are waiting for more task outcomes and approval signals.",
+      items: [],
+    },
+    decisionIntelligence: {
+      summary: {
+        requiresApproval: false,
+        hasUncertainty: false,
+        canAutoExecute: false,
+      },
+    },
+    notificationPayload: {
+      type: "success",
+      taskId: "task-3",
+    },
+  });
+
+  assert.equal(companionState.state, "waiting");
+  assert.equal(companionState.summary.isPassive, true);
+  assert.equal(companionState.sourceSignals.insightCount, 0);
+  assert.match(companionState.reasons[0], /watching the workspace/i);
+});
+
+test("companion state model normalizes malformed identifiers and notification payloads", () => {
+  const { companionState } = createCompanionStateModel({
+    learningInsights: {
+      summary: "   ",
+      items: [{ id: "insight-1" }],
+    },
+    decisionIntelligence: {
+      summary: {
+        requiresApproval: false,
+        hasUncertainty: true,
+        canAutoExecute: true,
+      },
+    },
+    notificationPayload: {
+      type: "  FAILURE ",
+      status: "   ",
+      message: "   Approval still required   ",
+      taskId: "   ",
+    },
+  });
+
+  assert.equal(companionState.stateId, "companion-state:project");
+  assert.equal(companionState.state, "warning");
+  assert.equal(companionState.mode, "warning");
+  assert.equal(companionState.reasons[0], "Approval still required");
+  assert.equal(companionState.reasons[1], "Execution can continue automatically once the current recommendation is accepted.");
+  assert.equal(companionState.sourceSignals.notificationType, "failure");
+  assert.equal(companionState.summary.latestNotificationType, "failure");
+  assert.equal(companionState.summary.requiresAttention, true);
+});

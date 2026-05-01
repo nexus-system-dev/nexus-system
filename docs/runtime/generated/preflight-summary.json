@@ -1,0 +1,33 @@
+{
+  "generatedAt": "2026-04-16T20:28:19.816Z",
+  "ready": false,
+  "riskLevel": "heavy",
+  "canonicalStateHealthy": true,
+  "invariantsPassed": true,
+  "docSyncPassed": false,
+  "requiresFullRepoRescan": true,
+  "blockingIssues": [
+    "Full repo rescan required (riskLevel=heavy) before proceeding"
+  ],
+  "warnings": [
+    "Doc sync check failed: 5 mismatch(es) detected in tracking documents",
+    "Previous task revalidation required before proceeding"
+  ],
+  "activeTask": {
+    "execution_order": 38,
+    "taskName": "Create cross-project pattern disclosure panel",
+    "recordedState": "blocked"
+  },
+  "wave2StateCounts": {
+    "trueGreen": 145,
+    "blocked": 39,
+    "bridge-deferred": 12,
+    "in-progress": 85
+  },
+  "stepResults": {
+    "generateStatePack": true,
+    "checkInvariants": true,
+    "analyzeImpact": true,
+    "checkDocSync": false
+  }
+}

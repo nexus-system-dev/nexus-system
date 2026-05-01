@@ -8,6 +8,7 @@ function createTasks() {
   return [
     createTask({
       id: "setup",
+      taskType: "backend",
       lane: "build",
       summary: "Setup",
       requiredCapabilities: ["backend"],
@@ -17,6 +18,7 @@ function createTasks() {
     }),
     createTask({
       id: "auth",
+      taskType: "backend",
       lane: "build",
       summary: "Auth",
       requiredCapabilities: ["backend"],
@@ -27,6 +29,7 @@ function createTasks() {
     }),
     createTask({
       id: "campaign",
+      taskType: "growth",
       lane: "growth",
       summary: "Campaign",
       requiredCapabilities: ["marketing"],
@@ -70,6 +73,6 @@ test("reconcileRoadmap unlocks dependent tasks after completion", () => {
   });
 
   assert.equal(roadmap.find((task) => task.id === "setup").status, TaskStatus.DONE);
-  assert.equal(roadmap.find((task) => task.id === "auth").status, TaskStatus.BLOCKED);
+  assert.equal(roadmap.find((task) => task.id === "auth").status, TaskStatus.READY);
   assert.equal(roadmap.find((task) => task.id === "campaign").status, TaskStatus.BLOCKED);
 });

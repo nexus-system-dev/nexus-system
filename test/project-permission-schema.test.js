@@ -34,3 +34,22 @@ test("defineProjectPermissionSchema falls back safely without explicit workspace
   assert.equal(projectPermissionSchema.permissionsByRole[0].capabilities.edit, false);
   assert.equal(projectPermissionSchema.summary.approvalCapableRoles, 0);
 });
+
+test("defineProjectPermissionSchema normalizes malformed workspace identifiers and roles", () => {
+  const { projectPermissionSchema } = defineProjectPermissionSchema({
+    workspaceModel: {
+      workspaceId: "  ",
+      visibility: " workspace ",
+      roles: [" OWNER ", " editor ", "   ", "OWNER"],
+    },
+    projectType: " MOBILE-APP ",
+  });
+
+  assert.equal(projectPermissionSchema.permissionSchemaId, "project-permissions:workspace:mobile-app");
+  assert.equal(projectPermissionSchema.workspaceId, null);
+  assert.equal(projectPermissionSchema.visibility, "workspace");
+  assert.deepEqual(projectPermissionSchema.roles, ["owner", "editor"]);
+  assert.equal(projectPermissionSchema.permissionsByRole[0].role, "owner");
+  assert.equal(projectPermissionSchema.permissionsByRole[1].role, "editor");
+  assert.equal(projectPermissionSchema.projectType, "mobile-app");
+});

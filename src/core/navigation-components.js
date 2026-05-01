@@ -1,15 +1,31 @@
 function normalizeScreenFlowMap(screenFlowMap) {
   return screenFlowMap && typeof screenFlowMap === "object"
-    ? { mappings: Array.isArray(screenFlowMap.mappings) ? screenFlowMap.mappings : [] }
+    ? {
+        mappings: Array.isArray(screenFlowMap.mappings)
+          ? screenFlowMap.mappings.filter((mapping) => mapping && typeof mapping === "object")
+          : [],
+      }
     : { mappings: [] };
 }
 
 function uniqueFlowTypes(mappings) {
-  return [...new Set(mappings.map((mapping) => mapping.flowType).filter(Boolean))];
+  return [
+    ...new Set(
+      mappings
+        .map((mapping) => (typeof mapping.flowType === "string" && mapping.flowType.trim() ? mapping.flowType.trim() : null))
+        .filter(Boolean),
+    ),
+  ];
 }
 
 function uniqueStepIds(mappings) {
-  return [...new Set(mappings.map((mapping) => mapping.stepId).filter(Boolean))];
+  return [
+    ...new Set(
+      mappings
+        .map((mapping) => (typeof mapping.stepId === "string" && mapping.stepId.trim() ? mapping.stepId.trim() : null))
+        .filter(Boolean),
+    ),
+  ];
 }
 
 function createNavigationComponent({

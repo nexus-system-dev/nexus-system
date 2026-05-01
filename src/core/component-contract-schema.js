@@ -1,6 +1,22 @@
+const SUPPORTED_COMPONENT_TYPES = new Set([
+  "panel",
+  "button",
+  "input",
+  "textarea",
+  "select",
+  "modal",
+  "badge",
+  "icon-button",
+]);
+
 function normalizeComponentType(componentType) {
-  return typeof componentType === "string" && componentType.trim()
-    ? componentType.trim()
+  if (typeof componentType !== "string" || !componentType.trim()) {
+    return "panel";
+  }
+
+  const normalizedComponentType = componentType.trim().toLowerCase();
+  return SUPPORTED_COMPONENT_TYPES.has(normalizedComponentType)
+    ? normalizedComponentType
     : "panel";
 }
 
@@ -13,12 +29,24 @@ function buildAnatomy(componentType) {
     return ["label", "field", "helperText", "validationMessage"];
   }
 
+  if (componentType === "textarea") {
+    return ["label", "field", "helperText", "validationMessage"];
+  }
+
+  if (componentType === "select") {
+    return ["label", "trigger", "menu", "optionList"];
+  }
+
   if (componentType === "modal") {
     return ["overlay", "container", "header", "body", "footer"];
   }
 
   if (componentType === "badge") {
     return ["container", "label"];
+  }
+
+  if (componentType === "icon-button") {
+    return ["container", "icon", "assistiveLabel"];
   }
 
   return ["container", "header", "body", "footer"];
@@ -41,6 +69,22 @@ function buildBehavior(componentType) {
     };
   }
 
+  if (componentType === "textarea") {
+    return {
+      interactive: true,
+      supportsStates: ["focus", "disabled", "warning", "success"],
+      supportsContentSlots: ["label", "helperText", "placeholder"],
+    };
+  }
+
+  if (componentType === "select") {
+    return {
+      interactive: true,
+      supportsStates: ["focus", "disabled", "warning"],
+      supportsContentSlots: ["label", "optionList", "helperText"],
+    };
+  }
+
   if (componentType === "modal") {
     return {
       interactive: true,
@@ -54,6 +98,14 @@ function buildBehavior(componentType) {
       interactive: false,
       supportsStates: ["success", "warning", "destructive"],
       supportsContentSlots: ["label"],
+    };
+  }
+
+  if (componentType === "icon-button") {
+    return {
+      interactive: true,
+      supportsStates: ["hover", "active", "focus", "disabled", "destructive"],
+      supportsContentSlots: ["icon", "assistiveLabel"],
     };
   }
 
@@ -80,7 +132,12 @@ export function defineComponentContractSchema({
       accessibility: {
         requiresKeyboardSupport: behavior.interactive,
         requiresFocusTreatment: behavior.supportsStates.includes("focus"),
-        requiresLabeling: normalizedComponentType === "button" || normalizedComponentType === "input" || normalizedComponentType === "modal",
+        requiresLabeling: normalizedComponentType === "button"
+          || normalizedComponentType === "input"
+          || normalizedComponentType === "textarea"
+          || normalizedComponentType === "select"
+          || normalizedComponentType === "modal"
+          || normalizedComponentType === "icon-button",
       },
       summary: {
         anatomyParts: anatomy.length,

@@ -49,3 +49,31 @@ test("pattern confidence indicator falls back safely when no learning view model
   assert.equal(confidenceIndicator.summary.totalPatterns, 0);
   assert.equal(confidenceIndicator.summary.hasTentativePatterns, false);
 });
+
+test("pattern confidence indicator normalizes malformed identifiers and confidence payloads", () => {
+  const { confidenceIndicator } = createPatternConfidenceIndicator({
+    learningInsightViewModel: {
+      viewModelId: { bad: true },
+      patterns: [
+        {
+          patternId: {},
+          label: " Approval-first communication ",
+          confidenceBand: "high",
+          confidenceScore: 2,
+        },
+      ],
+      insights: [
+        {
+          pattern: "Approval-first communication",
+          recommendationReasoning: " because ",
+        },
+      ],
+    },
+  });
+
+  assert.equal(confidenceIndicator.indicatorCollectionId, "pattern-confidence:nexus");
+  assert.equal(confidenceIndicator.indicators[0].indicatorId, "confidence-indicator:1");
+  assert.equal(confidenceIndicator.indicators[0].label, "Approval-first communication");
+  assert.equal(confidenceIndicator.indicators[0].confidenceScore, 1);
+  assert.equal(confidenceIndicator.indicators[0].reasoning, "because");
+});

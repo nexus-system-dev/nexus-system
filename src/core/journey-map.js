@@ -7,30 +7,36 @@ function normalizeUserJourneys(userJourneys) {
 }
 
 function inferFlowType(journeyId) {
-  if (journeyId === "journey-onboarding") {
-    return "onboarding";
-  }
+  const mapping = {
+    "journey-onboarding-initialization": "onboarding-initialization",
+    "journey-execution-state-advancement": "execution-state-advancement",
+    "journey-approval-explanation-resolution": "approval-explanation-resolution",
+    "journey-failure-recovery-continuity": "failure-recovery-continuity",
+    "journey-continuous-operation-reentry": "continuous-operation-reentry",
+  };
 
-  if (journeyId === "journey-execution") {
-    return "execution";
-  }
-
-  if (journeyId === "journey-release") {
-    return "tracking";
-  }
-
-  if (journeyId === "journey-growth") {
-    return "project-creation";
-  }
-
-  return "general";
+  return mapping[journeyId] ?? "general";
 }
 
-function buildTransitions(steps) {
-  return steps.map((step, index) => ({
-    fromStepId: step.stepId,
-    toStepId: steps[index + 1]?.stepId ?? null,
-    isTerminal: index === steps.length - 1,
+function resolveNextTransitionId(currentTransition, transitions) {
+  const currentToState = currentTransition?.toState ?? null;
+
+  if (!currentToState) {
+    return null;
+  }
+
+  const nextTransition = transitions.find((candidate) => candidate?.fromState === currentToState) ?? null;
+  return nextTransition?.transitionId ?? null;
+}
+
+function buildTransitions(transitions) {
+  return transitions.map((transition, index) => ({
+    transitionId: transition.transitionId,
+    fromState: transition.fromState,
+    toState: transition.toState,
+    nextTransitionId: resolveNextTransitionId(transition, transitions),
+    branch: transition.branch ?? "success",
+    isTerminal: resolveNextTransitionId(transition, transitions) === null,
   }));
 }
 
@@ -43,9 +49,17 @@ export function createJourneyMap({
     flowType: inferFlowType(journey.journeyId),
     name: journey.name,
     intent: journey.intent,
-    entryStepId: journey.steps?.[0]?.stepId ?? null,
-    steps: Array.isArray(journey.steps) ? journey.steps : [],
-    transitions: buildTransitions(Array.isArray(journey.steps) ? journey.steps : []),
+    entryStepId: journey.transitions?.[0]?.transitionId ?? null,
+    entryPoints: Array.isArray(journey.entryPoints) ? journey.entryPoints : [],
+    initialSystemState: journey.initialSystemState ?? {},
+    transitions: Array.isArray(journey.transitions) ? journey.transitions : [],
+    branches: journey.branches ?? {},
+    exitStates: Array.isArray(journey.exitStates) ? journey.exitStates : [],
+    reEntryPoints: Array.isArray(journey.reEntryPoints) ? journey.reEntryPoints : [],
+    crossJourneyConnections: Array.isArray(journey.crossJourneyConnections) ? journey.crossJourneyConnections : [],
+    stateMappings: Array.isArray(journey.stateMappings) ? journey.stateMappings : [],
+    steps: Array.isArray(journey.transitions) ? journey.transitions : [],
+    transitionMap: buildTransitions(Array.isArray(journey.transitions) ? journey.transitions : []),
   }));
 
   return {
@@ -54,8 +68,9 @@ export function createJourneyMap({
       flows,
       summary: {
         totalJourneys: flows.length,
-        totalSteps: flows.reduce((total, flow) => total + flow.steps.length, 0),
+        totalSteps: flows.reduce((total, flow) => total + flow.transitions.length, 0),
         flowTypes: [...new Set(flows.map((flow) => flow.flowType))],
+        entryPoints: flows.flatMap((flow) => flow.entryPoints),
       },
     },
   };

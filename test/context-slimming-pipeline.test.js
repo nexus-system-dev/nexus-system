@@ -59,3 +59,46 @@ test("context slimming pipeline falls back safely", () => {
   assert.equal(Array.isArray(slimmedContextPayload.summaries), true);
   assert.equal(typeof droppedContextSummary.summaryId, "string");
 });
+
+test("context slimming pipeline normalizes malformed identifiers budget and context items", () => {
+  const { slimmedContextPayload, droppedContextSummary } = createContextSlimmingPipeline({
+    relevanceFilteredContext: {
+      filterId: {},
+      keptContext: [
+        {
+          itemId: {},
+          section: " activeBottleneck ",
+          source: " project-state ",
+          summary: " Approval needed ",
+          payload: { bottleneckId: "approval-blocker" },
+          tokenWeight: "bad",
+          priorityScore: 0.9,
+          relevanceScore: "bad",
+          freshnessScore: 0.6,
+        },
+      ],
+      summarizedContext: [
+        { itemId: {}, section: " events ", source: " project-state ", summary: " Events: 6 " },
+      ],
+      droppedContext: [
+        { itemId: {}, section: " urgency ", source: " interaction-context " },
+      ],
+    },
+    tokenBudget: {
+      rawBudget: "bad",
+      maxItems: 1.9,
+      maxSummaryItems: 1.2,
+    },
+  });
+
+  assert.equal(slimmedContextPayload.payloadId, "slimmed-context:context");
+  assert.equal(slimmedContextPayload.orderedContext[0].itemId, "context-item-1");
+  assert.equal(slimmedContextPayload.orderedContext[0].section, "activeBottleneck");
+  assert.equal(slimmedContextPayload.orderedContext[0].source, "project-state");
+  assert.equal(slimmedContextPayload.orderedContext[0].summary, "Approval needed");
+  assert.equal(slimmedContextPayload.orderedContext[0].tokenWeight, null);
+  assert.equal(slimmedContextPayload.summaries[0].section, "events");
+  assert.equal(droppedContextSummary.summaryId, "dropped-context:context");
+  assert.equal(droppedContextSummary.droppedSections[0], "urgency");
+  assert.equal(droppedContextSummary.droppedItems[0].source, "interaction-context");
+});

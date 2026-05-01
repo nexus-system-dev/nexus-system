@@ -85,3 +85,28 @@ test("project rollback execution module stays blocked when restore cannot run", 
   assert.equal(rollbackExecutionResult.blockedReason, "Snapshot cannot be restored safely");
   assert.equal(rollbackExecutionResult.summary.restoredTargetCount, 0);
 });
+
+test("project rollback execution module normalizes malformed identifiers", () => {
+  const { rollbackExecutionResult } = createProjectRollbackExecutionModule({
+    restoreDecision: {
+      restoreDecisionId: " restore-decision:project-1 ",
+      canRestore: false,
+      restoreMode: " blocked ",
+      blockedReason: " Snapshot cannot be restored safely ",
+      restoreTargets: [],
+    },
+    snapshotRecord: {
+      snapshotRecordId: "  ",
+      versions: {
+        stateVersion: 3,
+        executionGraphVersion: 2,
+      },
+    },
+  });
+
+  assert.equal(rollbackExecutionResult.rollbackExecutionId, "rollback-execution:unknown-snapshot");
+  assert.equal(rollbackExecutionResult.snapshotRecordId, null);
+  assert.equal(rollbackExecutionResult.restoreDecisionId, "restore-decision:project-1");
+  assert.equal(rollbackExecutionResult.restoreMode, "blocked");
+  assert.equal(rollbackExecutionResult.blockedReason, "Snapshot cannot be restored safely");
+});

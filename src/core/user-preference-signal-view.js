@@ -8,6 +8,10 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 function inferSignalTone(strength) {
   if (strength === "high") {
     return "stable";
@@ -24,13 +28,16 @@ function buildProfileSignals(userPreferenceProfile) {
 
   return preferences.map((preference, index) => {
     const normalizedPreference = normalizeObject(preference);
-    const strength = normalizedPreference.strength ?? "medium";
+    const strength = normalizeString(normalizedPreference.strength) ?? "medium";
 
     return {
-      signalId: normalizedPreference.preferenceId ?? `user-preference-${index + 1}`,
-      label: normalizedPreference.label ?? normalizedPreference.category ?? `Preference ${index + 1}`,
-      influence: normalizedPreference.influence ?? normalizedPreference.reason ?? null,
-      source: normalizedPreference.source ?? "user-preference-profile",
+      signalId: normalizeString(normalizedPreference.preferenceId) ?? `user-preference-${index + 1}`,
+      label:
+        normalizeString(normalizedPreference.label)
+        ?? normalizeString(normalizedPreference.category)
+        ?? `Preference ${index + 1}`,
+      influence: normalizeString(normalizedPreference.influence) ?? normalizeString(normalizedPreference.reason),
+      source: normalizeString(normalizedPreference.source) ?? "user-preference-profile",
       strength,
       tone: inferSignalTone(strength),
     };
@@ -42,7 +49,7 @@ function buildApprovalSignals(approvalFeedbackMemory) {
 
   return feedbackItems.map((feedback, index) => {
     const normalizedFeedback = normalizeObject(feedback);
-    const status = normalizedFeedback.status ?? "unknown";
+    const status = normalizeString(normalizedFeedback.status) ?? "unknown";
     const strength = status === "approved"
       ? "high"
       : status === "rejected"
@@ -50,12 +57,12 @@ function buildApprovalSignals(approvalFeedbackMemory) {
         : "low";
 
     return {
-      signalId: normalizedFeedback.approvalRecordId ?? `approval-feedback-${index + 1}`,
-      label: normalizedFeedback.actionType
-        ? `Past ${normalizedFeedback.actionType} decision`
+      signalId: normalizeString(normalizedFeedback.approvalRecordId) ?? `approval-feedback-${index + 1}`,
+      label: normalizeString(normalizedFeedback.actionType)
+        ? `Past ${normalizeString(normalizedFeedback.actionType)} decision`
         : `Approval feedback ${index + 1}`,
-      influence: normalizedFeedback.summary
-        ?? normalizedFeedback.reason
+      influence: normalizeString(normalizedFeedback.summary)
+        ?? normalizeString(normalizedFeedback.reason)
         ?? `Recent ${status} approval feedback is still shaping the current recommendation.`,
       source: "approval-feedback-memory",
       strength,
@@ -75,7 +82,7 @@ export function createUserPreferenceSignalView({
 
   return {
     userPreferenceSignals: {
-      signalViewId: `user-preference-signals:${normalizedProfile.profileId ?? "nexus"}`,
+      signalViewId: `user-preference-signals:${normalizeString(normalizedProfile.profileId) ?? "nexus"}`,
       signals,
       summary: {
         totalSignals: signals.length,

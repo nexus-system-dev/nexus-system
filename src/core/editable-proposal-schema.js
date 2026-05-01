@@ -7,7 +7,7 @@ function normalizeArray(value) {
 }
 
 function normalizeString(value, fallback) {
-  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
 }
 
 function buildSections(proposalPayload, proposalType) {
@@ -17,10 +17,10 @@ function buildSections(proposalPayload, proposalType) {
       const normalizedSection = normalizeObject(section);
 
       return {
-        sectionId: normalizedSection.sectionId ?? `section-${index + 1}`,
-        sectionType: normalizedSection.sectionType ?? "custom",
+        sectionId: normalizeString(normalizedSection.sectionId, `section-${index + 1}`),
+        sectionType: normalizeString(normalizedSection.sectionType, "custom"),
         label: normalizeString(normalizedSection.label, `Section ${index + 1}`),
-        status: normalizedSection.status ?? "proposed",
+        status: normalizeString(normalizedSection.status, "proposed"),
         isEditable: normalizedSection.isEditable ?? true,
         contentSummary: normalizeString(
           normalizedSection.contentSummary,
@@ -81,10 +81,10 @@ function buildComponents(proposalPayload, sections) {
       const normalizedComponent = normalizeObject(component);
 
       return {
-        componentId: normalizedComponent.componentId ?? `component-${index + 1}`,
-        sectionId: normalizedComponent.sectionId ?? sections[0]?.sectionId ?? "overview",
-        componentType: normalizedComponent.componentType ?? "panel",
-        status: normalizedComponent.status ?? "proposed",
+        componentId: normalizeString(normalizedComponent.componentId, `component-${index + 1}`),
+        sectionId: normalizeString(normalizedComponent.sectionId, sections[0]?.sectionId ?? "overview"),
+        componentType: normalizeString(normalizedComponent.componentType, "panel"),
+        status: normalizeString(normalizedComponent.status, "proposed"),
         isEditable: normalizedComponent.isEditable ?? true,
         currentValue: normalizedComponent.currentValue ?? null,
         proposedValue: normalizedComponent.proposedValue ?? normalizedComponent.value ?? null,
@@ -134,12 +134,12 @@ function buildCopyItems(proposalPayload, sections) {
       const normalizedCopy = normalizeObject(copyItem);
 
       return {
-        copyId: normalizedCopy.copyId ?? `copy-${index + 1}`,
-        sectionId: normalizedCopy.sectionId ?? sections[0]?.sectionId ?? "overview",
-        field: normalizedCopy.field ?? "body",
+        copyId: normalizeString(normalizedCopy.copyId, `copy-${index + 1}`),
+        sectionId: normalizeString(normalizedCopy.sectionId, sections[0]?.sectionId ?? "overview"),
+        field: normalizeString(normalizedCopy.field, "body"),
         label: normalizeString(normalizedCopy.label, "Copy"),
         currentText: normalizedCopy.currentText ?? null,
-        proposedText: normalizedCopy.proposedText ?? normalizedCopy.text ?? "",
+        proposedText: normalizeString(normalizedCopy.proposedText, normalizeString(normalizedCopy.text, "")),
         isEditable: normalizedCopy.isEditable ?? true,
       };
     });
@@ -182,9 +182,9 @@ function buildNextAction(proposalPayload) {
   const explicitNextAction = normalizeObject(proposalPayload.nextAction);
   if (explicitNextAction.actionId || explicitNextAction.label) {
     return {
-      actionId: explicitNextAction.actionId ?? "review-proposal",
+      actionId: normalizeString(explicitNextAction.actionId, "review-proposal"),
       label: normalizeString(explicitNextAction.label, "Review proposal"),
-      intent: explicitNextAction.intent ?? "review",
+      intent: normalizeString(explicitNextAction.intent, "review"),
       requiresApproval: explicitNextAction.requiresApproval ?? false,
     };
   }
@@ -193,12 +193,15 @@ function buildNextAction(proposalPayload) {
   const nextTask = normalizeObject(proposalPayload.nextTaskPresentation);
 
   return {
-    actionId: recommendation.primaryCta?.actionId ?? nextTask.selectedTask?.id ?? "review-proposal",
+    actionId: normalizeString(
+      recommendation.primaryCta?.actionId,
+      normalizeString(nextTask.selectedTask?.id, "review-proposal"),
+    ),
     label: normalizeString(
       recommendation.primaryCta?.label,
       nextTask.expectedOutcome?.headline ?? "Review proposal",
     ),
-    intent: recommendation.primaryCta?.intent ?? "review",
+    intent: normalizeString(recommendation.primaryCta?.intent, "review"),
     requiresApproval: nextTask.approvalState?.requiresApproval ?? false,
   };
 }
@@ -213,17 +216,19 @@ export function defineEditableProposalSchema({
   const components = buildComponents(normalizedPayload, sections);
   const copy = buildCopyItems(normalizedPayload, sections);
   const nextAction = buildNextAction(normalizedPayload);
-  const sourceId =
-    normalizedPayload.sourceId
-    ?? normalizedPayload.recommendationDisplay?.displayId
-    ?? normalizedPayload.nextTaskPresentation?.presentationId
-    ?? "unknown";
+  const sourceId = normalizeString(
+    normalizedPayload.sourceId,
+    normalizeString(
+      normalizedPayload.recommendationDisplay?.displayId,
+      normalizeString(normalizedPayload.nextTaskPresentation?.presentationId, "unknown"),
+    ),
+  );
 
   return {
     editableProposal: {
       proposalId: `editable-proposal:${normalizedType}:${sourceId}`,
       proposalType: normalizedType,
-      status: normalizedPayload.status ?? "proposed",
+      status: normalizeString(normalizedPayload.status, "proposed"),
       sourceId,
       sections,
       components,

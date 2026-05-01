@@ -3,43 +3,49 @@ import assert from "node:assert/strict";
 
 import { createCrossTenantLeakDetector } from "../src/core/cross-tenant-leak-detector.js";
 
-test("createCrossTenantLeakDetector raises critical alert when isolation boundary is blocked", () => {
+test("createCrossTenantLeakDetector raises critical alert for blocked tenant-boundary evidence", () => {
   const { leakageAlert } = createCrossTenantLeakDetector({
-    workspaceIsolationDecision: {
-      workspaceIsolationDecisionId: "workspace-isolation:alpha:read",
+    tenantBoundaryEvidence: {
+      tenantBoundaryEvidenceId: "tenant-boundary-evidence:alpha",
       workspaceId: "workspace-alpha",
-      requestWorkspaceId: "workspace-alpha",
       resourceType: "linked-accounts",
-      decision: "blocked",
-      isBlocked: true,
-      triggeredLeakSignals: ["workspace-id-mismatch", "resource-owner-mismatch"],
-    },
-    learningEvent: {
-      sourceWorkspaceId: "workspace-beta",
-      mixedResources: ["learning-records"],
+      evidenceStatus: "blocked",
+      evidenceChecks: [
+        "workspace:resource-workspace-mismatch",
+        "authorization:role-capability-missing",
+      ],
     },
   });
 
   assert.equal(leakageAlert.severity, "critical");
   assert.equal(leakageAlert.isActive, true);
-  assert.equal(leakageAlert.leakSignals.includes("workspace-id-mismatch"), true);
-  assert.equal(leakageAlert.leakSignals.includes("learning-workspace-mismatch"), true);
+  assert.equal(leakageAlert.leakSignals.includes("workspace:resource-workspace-mismatch"), true);
 });
 
-test("createCrossTenantLeakDetector stays clear when learning and isolation stay scoped", () => {
+test("createCrossTenantLeakDetector raises warning for approval-required tenant-boundary evidence", () => {
   const { leakageAlert } = createCrossTenantLeakDetector({
-    workspaceIsolationDecision: {
-      workspaceIsolationDecisionId: "workspace-isolation:alpha:view",
+    tenantBoundaryEvidence: {
+      tenantBoundaryEvidenceId: "tenant-boundary-evidence:alpha",
       workspaceId: "workspace-alpha",
-      requestWorkspaceId: "workspace-alpha",
       resourceType: "project-state",
-      decision: "allowed",
-      isBlocked: false,
-      triggeredLeakSignals: [],
+      evidenceStatus: "requires-approval",
+      evidenceChecks: ["authorization:policy-requires-approval"],
     },
-    learningEvent: {
-      sourceWorkspaceId: "workspace-alpha",
-      mixedResources: [],
+  });
+
+  assert.equal(leakageAlert.severity, "warning");
+  assert.equal(leakageAlert.isActive, true);
+  assert.equal(leakageAlert.checks.includes("authorization:policy-requires-approval"), true);
+});
+
+test("createCrossTenantLeakDetector stays clear when tenant-boundary evidence is allowed", () => {
+  const { leakageAlert } = createCrossTenantLeakDetector({
+    tenantBoundaryEvidence: {
+      tenantBoundaryEvidenceId: "tenant-boundary-evidence:alpha",
+      workspaceId: "workspace-alpha",
+      resourceType: "project-state",
+      evidenceStatus: "allowed",
+      evidenceChecks: ["workspace:tenant-schema-loaded"],
     },
   });
 

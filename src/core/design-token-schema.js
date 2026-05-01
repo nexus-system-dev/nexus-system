@@ -1,3 +1,5 @@
+const ALLOWED_PRODUCT_MODES = new Set(["desktop-first-web"]);
+
 function normalizeBrandDirection(brandDirection) {
   if (brandDirection && typeof brandDirection === "object") {
     return brandDirection;
@@ -6,20 +8,36 @@ function normalizeBrandDirection(brandDirection) {
   return {};
 }
 
+function resolveStringValue(value, fallback) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function normalizeBrandMetadata(brandDirection) {
+  const brandId = resolveStringValue(brandDirection.brandId, "nexus");
+  const productMode = resolveStringValue(brandDirection.productMode, "desktop-first-web");
+  const visualTone = resolveStringValue(brandDirection.visualTone, "focused");
+
+  return {
+    brandId,
+    productMode: ALLOWED_PRODUCT_MODES.has(productMode) ? productMode : "desktop-first-web",
+    visualTone,
+  };
+}
+
 function buildColorTokens(brandDirection) {
   const palette = brandDirection.palette ?? {};
 
   return {
-    canvas: palette.canvas ?? "#f5f1e8",
-    surface: palette.surface ?? "#fffaf0",
-    ink: palette.ink ?? "#1f2933",
-    muted: palette.muted ?? "#6b7280",
-    accent: palette.accent ?? "#0f766e",
-    accentStrong: palette.accentStrong ?? "#115e59",
-    success: palette.success ?? "#15803d",
-    warning: palette.warning ?? "#b45309",
-    danger: palette.danger ?? "#b91c1c",
-    border: palette.border ?? "#d6d3d1",
+    canvas: resolveStringValue(palette.canvas, "#f5f1e8"),
+    surface: resolveStringValue(palette.surface, "#fffaf0"),
+    ink: resolveStringValue(palette.ink, "#1f2933"),
+    muted: resolveStringValue(palette.muted, "#6b7280"),
+    accent: resolveStringValue(palette.accent, "#0f766e"),
+    accentStrong: resolveStringValue(palette.accentStrong, "#115e59"),
+    success: resolveStringValue(palette.success, "#15803d"),
+    warning: resolveStringValue(palette.warning, "#b45309"),
+    danger: resolveStringValue(palette.danger, "#b91c1c"),
+    border: resolveStringValue(palette.border, "#d6d3d1"),
   };
 }
 
@@ -36,8 +54,8 @@ function buildSpacingTokens() {
 
 function buildTypographyTokens(brandDirection) {
   return {
-    familyDisplay: brandDirection.familyDisplay ?? "\"Avenir Next\", \"Helvetica Neue\", sans-serif",
-    familyBody: brandDirection.familyBody ?? "\"IBM Plex Sans\", \"Helvetica Neue\", sans-serif",
+    familyDisplay: resolveStringValue(brandDirection.familyDisplay, "\"Avenir Next\", \"Helvetica Neue\", sans-serif"),
+    familyBody: resolveStringValue(brandDirection.familyBody, "\"IBM Plex Sans\", \"Helvetica Neue\", sans-serif"),
     sizeXs: 12,
     sizeSm: 14,
     sizeMd: 16,
@@ -76,15 +94,12 @@ export function defineDesignTokenSchema({
   brandDirection,
 } = {}) {
   const normalizedBrandDirection = normalizeBrandDirection(brandDirection);
+  const normalizedBrandMetadata = normalizeBrandMetadata(normalizedBrandDirection);
 
   return {
     designTokens: {
-      tokenSetId: `design-tokens:${normalizedBrandDirection.brandId ?? "nexus"}`,
-      brandDirection: {
-        brandId: normalizedBrandDirection.brandId ?? "nexus",
-        productMode: normalizedBrandDirection.productMode ?? "desktop-first-web",
-        visualTone: normalizedBrandDirection.visualTone ?? "focused",
-      },
+      tokenSetId: `design-tokens:${normalizedBrandMetadata.brandId}`,
+      brandDirection: normalizedBrandMetadata,
       colors: buildColorTokens(normalizedBrandDirection),
       spacing: buildSpacingTokens(),
       typography: buildTypographyTokens(normalizedBrandDirection),
@@ -93,7 +108,7 @@ export function defineDesignTokenSchema({
       shadows: buildShadowTokens(),
       summary: {
         tokenFamilies: 6,
-        desktopFirst: (normalizedBrandDirection.productMode ?? "desktop-first-web") === "desktop-first-web",
+        desktopFirst: normalizedBrandMetadata.productMode === "desktop-first-web",
       },
     },
   };

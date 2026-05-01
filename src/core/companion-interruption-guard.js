@@ -4,80 +4,87 @@ function normalizeObject(value) {
     : {};
 }
 
-function resolveDecision({ companionTriggerDecision, gatingDecision, progressState }) {
-  const normalizedTriggerDecision = normalizeObject(companionTriggerDecision);
-  const normalizedGatingDecision = normalizeObject(gatingDecision);
-  const normalizedProgressState = normalizeObject(progressState);
-  const progressStatus = normalizedProgressState.status ?? "idle";
+function normalizeString(value, fallback = "") {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
 
-  if (
-    progressStatus === "running"
-    || progressStatus === "running-critical"
-    || normalizedTriggerDecision.summary?.executionMode === "critical-run"
-  ) {
+function isCriticalExecution(normalizedTriggerDecision, normalizedProgressState) {
+  const normalizedStatus = normalizeString(normalizedProgressState.status).toLowerCase();
+  const normalizedExecutionMode = normalizeString(normalizedTriggerDecision.summary?.executionMode).toLowerCase();
+
+  return normalizedStatus === "running"
+    || normalizedStatus === "running-critical"
+    || normalizedExecutionMode === "critical-run";
+}
+
+function requiresApprovalGuard(normalizedTriggerDecision) {
+  return normalizedTriggerDecision.summary?.requiresApproval === true;
+}
+
+function resolveDecision({ companionTriggerDecision, progressState }) {
+  const normalizedTriggerDecision = normalizeObject(companionTriggerDecision);
+  const normalizedProgressState = normalizeObject(progressState);
+  const normalizedDecisionType = normalizeString(normalizedTriggerDecision.decisionType).toLowerCase();
+
+  if (isCriticalExecution(normalizedTriggerDecision, normalizedProgressState)) {
     return "suppress";
   }
 
-  if (
-    normalizedGatingDecision.requiresApproval === true
-    || normalizedGatingDecision.decision === "requires-approval"
-  ) {
+  if (normalizedDecisionType === "stay-quiet") {
+    return "suppress";
+  }
+
+  if (requiresApprovalGuard(normalizedTriggerDecision)) {
     return "guarded";
   }
 
-  if (normalizedTriggerDecision.decisionType === "interrupt") {
+  if (normalizedDecisionType === "interrupt") {
     return "allow";
   }
 
-  return "soft-allow";
+  return "suppress";
 }
 
-function buildSummary(decision, companionTriggerDecision, gatingDecision, progressState) {
+function buildSummary(decision, companionTriggerDecision, progressState) {
   const normalizedTriggerDecision = normalizeObject(companionTriggerDecision);
-  const normalizedGatingDecision = normalizeObject(gatingDecision);
   const normalizedProgressState = normalizeObject(progressState);
 
   return {
     decision,
-    blockedByCriticalExecution:
-      normalizedProgressState.status === "running"
-      || normalizedProgressState.status === "running-critical"
-      || normalizedTriggerDecision.summary?.executionMode === "critical-run",
-    blockedByApprovalSensitivity:
-      normalizedGatingDecision.requiresApproval === true
-      || normalizedGatingDecision.decision === "requires-approval",
+    blockedByCriticalExecution: isCriticalExecution(normalizedTriggerDecision, normalizedProgressState),
+    blockedByApprovalSensitivity: requiresApprovalGuard(normalizedTriggerDecision),
+    blockedByQuietMode: normalizeString(normalizedTriggerDecision.decisionType).toLowerCase() === "stay-quiet",
     canInterrupt: decision === "allow",
   };
 }
 
 export function createCompanionInterruptionGuard({
   companionTriggerDecision = null,
-  gatingDecision = null,
   progressState = null,
 } = {}) {
   const normalizedTriggerDecision = normalizeObject(companionTriggerDecision);
-  const normalizedGatingDecision = normalizeObject(gatingDecision);
   const normalizedProgressState = normalizeObject(progressState);
   const decision = resolveDecision({
     companionTriggerDecision: normalizedTriggerDecision,
-    gatingDecision: normalizedGatingDecision,
     progressState: normalizedProgressState,
   });
 
+  const primaryReason = normalizeString(
+    normalizedTriggerDecision.reasons?.[0],
+    decision === "suppress"
+      ? "The companion should remain quiet."
+      : "The companion may interrupt with actionable guidance.",
+  );
+
   return {
     interruptionDecision: {
-      decisionId: `companion-interruption:${normalizedTriggerDecision.decisionId ?? "project"}`,
+      decisionId: `companion-interruption:${normalizeString(normalizedTriggerDecision.decisionId, "project")}`,
       decision,
-      allowed: decision === "allow" || decision === "soft-allow",
-      reasons: [
-        normalizedGatingDecision.reason
-          ?? normalizedTriggerDecision.reasons?.[0]
-          ?? "No interruption guard reason is available yet.",
-      ],
+      allowed: decision === "allow",
+      reasons: [primaryReason],
       summary: buildSummary(
         decision,
         normalizedTriggerDecision,
-        normalizedGatingDecision,
         normalizedProgressState,
       ),
     },

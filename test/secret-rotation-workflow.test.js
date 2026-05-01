@@ -144,3 +144,40 @@ test("secret rotation workflow returns partial when connector update does not fi
   assert.equal(linkedAccounts[0].credentialReference, rotationResult.newReference.credentialReference);
   assert.equal(linkedAccounts[1].credentialReference, "credref_old");
 });
+
+test("secret rotation workflow normalizes malformed request and provider fields", () => {
+  const { rotationResult } = createSecretRotationWorkflow({
+    credentialReference: " credref_old ",
+    rotationRequest: {
+      newValue: "next-secret",
+      requestedBy: " owner-1 ",
+      reason: " routine-rotation ",
+      mode: " manual ",
+    },
+    project: {
+      id: " giftwallet ",
+      linkedAccounts: [buildLinkedAccount("account-1", "credref_old", {
+        accountRecord: {
+          accountId: "account-1",
+          provider: " hosting ",
+          accountType: "hosting",
+          connectionMode: " api-key ",
+          status: " connected ",
+          credentialReference: "credref_old",
+          metadata: {},
+        },
+        providerSession: {
+          providerType: " hosting ",
+          authMode: " api-key ",
+          status: " connected ",
+          operationTypes: ["verify"],
+        },
+      })],
+    },
+  });
+
+  assert.equal(rotationResult.requestedBy, "owner-1");
+  assert.equal(rotationResult.reason, "routine-rotation");
+  assert.equal(rotationResult.mode, "manual");
+  assert.equal(rotationResult.status, "completed");
+});

@@ -18,7 +18,7 @@ function deriveFallbackReliabilitySlaModel(reliabilitySlaModel = {}, incidentAle
   const severity = normalizeSeverity(incidentAlert.severity);
 
   return {
-    reliabilityModelId: normalized.reliabilityModelId ?? null,
+    reliabilityModelId: normalizeString(normalized.reliabilityModelId, null),
     schemaStatus: hasCanonicalModel ? "canonical" : "fallback",
     source: hasCanonicalModel ? "reliability-sla-schema" : "planner-fallback",
     serviceTier,

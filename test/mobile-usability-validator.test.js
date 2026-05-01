@@ -49,3 +49,30 @@ test("createMobileUsabilityValidator blocks screen without checklist or responsi
     "missing-responsive-zone",
   ]);
 });
+
+test("createMobileUsabilityValidator normalizes malformed identifiers and checklist payloads", () => {
+  const { mobileValidation } = createMobileUsabilityValidator({
+    screenId: {},
+    screenTemplate: {
+      templateType: " detail ",
+      sections: "bad",
+    },
+    mobileChecklist: {
+      screenType: " dashboard ",
+      supportsMobile: true,
+      checklistItems: [
+        null,
+        { key: "viewport-fit", required: true },
+        "bad",
+      ],
+    },
+  });
+
+  assert.equal(mobileValidation.validationId, "mobile-validation:dashboard");
+  assert.equal(mobileValidation.screenId, null);
+  assert.equal(mobileValidation.screenType, "dashboard");
+  assert.equal(mobileValidation.templateType, "detail");
+  assert.equal(mobileValidation.summary.hasRequiredChecklist, true);
+  assert.equal(mobileValidation.summary.handlesDenseRegions, true);
+  assert.equal(mobileValidation.summary.isUsable, true);
+});

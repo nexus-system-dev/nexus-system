@@ -2,6 +2,7 @@ import { createTask } from "./types.js";
 
 function createGrowthTask({
   id,
+  taskType,
   summary,
   successCriteria,
   businessGoal,
@@ -12,6 +13,7 @@ function createGrowthTask({
 }) {
   return createTask({
     id,
+    taskType,
     lane: "growth",
     summary,
     requiredCapabilities,
@@ -41,6 +43,7 @@ export function buildGrowthMarketingPlanner({
     tasks.push(
       createGrowthTask({
         id: "growth-acquisition-funnel",
+        taskType: "growth",
         summary: "להגדיר משפך רכישה ראשוני",
         successCriteria: [
           "יש ערוץ רכישה ראשי מוגדר",
@@ -58,6 +61,7 @@ export function buildGrowthMarketingPlanner({
     tasks.push(
       createGrowthTask({
         id: "growth-onboarding-flow",
+        taskType: "growth",
         summary: "להקים onboarding ו-activation flow עסקי",
         successCriteria: [
           "יש צעד activation ראשון",
@@ -79,6 +83,7 @@ export function buildGrowthMarketingPlanner({
     tasks.push(
       createGrowthTask({
         id: "growth-retention-loop",
+        taskType: "growth",
         summary: "להגדיר retention loop ראשוני",
         successCriteria: [
           "יש trigger מרכזי לחזרת משתמש",
@@ -99,6 +104,7 @@ export function buildGrowthMarketingPlanner({
     tasks.push(
       createGrowthTask({
         id: "growth-kpi-instrumentation",
+        taskType: "growth",
         summary: "להגדיר KPI עסקיים ומדידה ראשונית",
         successCriteria: [
           "יש רשימת KPI מוסכמת",
@@ -116,6 +122,7 @@ export function buildGrowthMarketingPlanner({
     tasks.push(
       createGrowthTask({
         id: "growth-business-approvals",
+        taskType: "ops",
         summary: "לרכז החלטות ואישורים עסקיים פתוחים",
         successCriteria: [
           "יש רשימת אישורים פתוחים",

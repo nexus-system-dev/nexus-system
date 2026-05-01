@@ -88,3 +88,49 @@ test("platform logging and tracing layer records trace and logs into observabili
   assert.equal(snapshot.platformTraces[0].traceId, "request-transport-1");
   assert.equal(snapshot.platformLogs[0].message, "Execution finished");
 });
+
+test("platform logging and tracing layer normalizes malformed trace and log strings", () => {
+  const { platformTrace, platformLogs } = createPlatformLoggingAndTracingLayer({
+    runtimeEvents: {
+      runId: " run-1 ",
+      status: " running ",
+      progressEntries: [
+        {
+          id: " progress-1 ",
+          source: " worker ",
+          status: " running ",
+          message: " Bootstrap started ",
+        },
+      ],
+      formattedLogs: [
+        {
+          logId: " log-1 ",
+          level: " info ",
+          source: " worker ",
+          message: " Running task ",
+          command: " npm test ",
+        },
+      ],
+    },
+    requestContext: {
+      requestId: "  ",
+      route: " /runtime/bootstrap ",
+      method: " SYSTEM ",
+      actorId: " user-1 ",
+      workspaceId: " workspace-1 ",
+      service: " runtime-service ",
+    },
+  });
+
+  assert.equal(platformTrace.traceId, "run-1");
+  assert.equal(platformTrace.route, "/runtime/bootstrap");
+  assert.equal(platformTrace.method, "SYSTEM");
+  assert.equal(platformTrace.actorId, "user-1");
+  assert.equal(platformTrace.workspaceId, "workspace-1");
+  assert.equal(platformTrace.service, "runtime-service");
+  assert.equal(platformTrace.status, "running");
+  assert.equal(platformTrace.steps[0].stepId, "progress-1");
+  assert.equal(platformLogs[0].logId, "log-1");
+  assert.equal(platformLogs[0].message, "Running task");
+  assert.equal(platformLogs[0].metadata.command, "npm test");
+});

@@ -8,13 +8,18 @@ function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function normalizeString(value, fallback) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
+}
+
 function resolvePriority({ learningInsights, gatingDecision, notificationPayload }) {
   const normalizedLearningInsights = normalizeObject(learningInsights);
   const normalizedGatingDecision = normalizeObject(gatingDecision);
   const normalizedNotificationPayload = normalizeObject(notificationPayload);
   const insightCount = normalizeArray(normalizedLearningInsights.items).length;
+  const notificationType = normalizeString(normalizedNotificationPayload.type, "unknown").toLowerCase();
 
-  if (normalizedNotificationPayload.type === "failure") {
+  if (notificationType === "failure") {
     return "critical";
   }
 
@@ -39,7 +44,7 @@ function buildSummary(priority, learningInsights, gatingDecision, notificationPa
     blocked: normalizedGatingDecision.isBlocked === true,
     requiresApproval: normalizedNotificationPayload.requiresApproval === true,
     insightCount: normalizeArray(normalizedLearningInsights.items).length,
-    notificationType: normalizedNotificationPayload.type ?? "unknown",
+    notificationType: normalizeString(normalizedNotificationPayload.type, "unknown").toLowerCase(),
   };
 }
 
@@ -59,13 +64,17 @@ export function createCompanionMessagePriorityResolver({
 
   return {
     companionMessagePriority: {
-      priorityId: `companion-message-priority:${normalizedNotificationPayload.taskId ?? "project"}`,
+      priorityId: `companion-message-priority:${normalizeString(normalizedNotificationPayload.taskId, "project")}`,
       priority,
       label: priority,
       reasons: [
-        normalizedNotificationPayload.message
-          ?? normalizedLearningInsights.summary
-          ?? "No companion message priority reasoning is available yet.",
+        normalizeString(
+          normalizedNotificationPayload.message,
+          normalizeString(
+            normalizedLearningInsights.summary,
+            "No companion message priority reasoning is available yet.",
+          ),
+        ),
       ],
       summary: buildSummary(
         priority,

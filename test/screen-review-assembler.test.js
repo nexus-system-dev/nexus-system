@@ -46,3 +46,26 @@ test("createScreenReviewAssembler aggregates blocking issues when validators fai
     "missing-component:badge",
   ]);
 });
+
+test("createScreenReviewAssembler ignores malformed screen entries and deduplicates issues", () => {
+  const { screenReviewReport } = createScreenReviewAssembler({
+    primaryActionValidation: {
+      screens: [
+        { screenId: " screen-1 ", screenType: " detail ", summary: { isValid: false }, blockingIssues: ["missing-primary-action", "missing-primary-action"] },
+        null,
+        { screenId: {}, summary: { isValid: true }, blockingIssues: [] },
+      ],
+    },
+    mobileValidation: {
+      screens: [{ screenId: "screen-1", screenType: "detail", summary: { isUsable: false }, blockingIssues: ["missing-primary-action", "missing-responsive-zone"] }],
+    },
+  });
+
+  assert.equal(screenReviewReport.summary.totalScreens, 1);
+  assert.equal(screenReviewReport.screens[0].screenId, "screen-1");
+  assert.equal(screenReviewReport.screens[0].screenType, "detail");
+  assert.deepEqual(screenReviewReport.screens[0].summary.blockingIssues, [
+    "missing-primary-action",
+    "missing-responsive-zone",
+  ]);
+});

@@ -29,7 +29,15 @@ function buildBillingPlanSchema(overrides = {}) {
     },
     entitlements: {
       default: {
-        features: ["workspace-access"],
+        features: ["trial-workspace-access"],
+        limits: {},
+      },
+      pro: {
+        features: ["workspace-access", "priority-support"],
+        limits: {},
+      },
+      enterprise: {
+        features: ["workspace-access", "priority-support", "sso"],
         limits: {},
       },
     },
@@ -71,8 +79,8 @@ test("entitlement decision resolver returns restricted when features are empty",
   });
 
   assert.equal(entitlementDecision.decision, "restricted");
-  assert.equal(entitlementDecision.source, "billing-plan-schema");
-  assert.equal(entitlementDecision.summary, "No features available under current billing plan.");
+  assert.equal(entitlementDecision.source, "billing-plan-default");
+  assert.equal(entitlementDecision.summary, "No features available under default billing plan.");
 });
 
 test("entitlement decision resolver returns restricted when limits are missing", () => {
@@ -86,7 +94,7 @@ test("entitlement decision resolver returns restricted when limits are missing",
   });
 
   assert.equal(entitlementDecision.decision, "restricted");
-  assert.deepEqual(entitlementDecision.features, ["workspace-access"]);
+  assert.deepEqual(entitlementDecision.features, ["trial-workspace-access"]);
   assert.deepEqual(entitlementDecision.limits, {});
 });
 
@@ -96,11 +104,16 @@ test("entitlement decision resolver returns allowed when features and limits exi
     workspaceModel: {
       workspaceId: "workspace-1",
     },
+    workspaceBillingState: {
+      workspaceId: "workspace-1",
+      currentPlanId: "pro",
+      subscriptionStatus: "active",
+    },
   });
 
   assert.equal(entitlementDecision.decision, "allowed");
-  assert.equal(entitlementDecision.source, "billing-plan-schema");
-  assert.deepEqual(entitlementDecision.features, ["workspace-access"]);
+  assert.equal(entitlementDecision.source, "workspace-billing-state");
+  assert.deepEqual(entitlementDecision.features, ["workspace-access", "priority-support"]);
   assert.deepEqual(entitlementDecision.limits, {
     spendThresholds: {
       perAction: 5,
@@ -108,4 +121,50 @@ test("entitlement decision resolver returns allowed when features and limits exi
       perDay: 100,
     },
   });
+});
+
+test("entitlement decision resolver uses current plan runtime for upgrade and downgrade transitions", () => {
+  const upgrade = resolveEntitlementDecision({
+    billingPlanSchema: buildBillingPlanSchema(),
+    workspaceModel: {
+      workspaceId: "workspace-1",
+    },
+    workspaceBillingState: {
+      workspaceId: "workspace-1",
+      currentPlanId: "enterprise",
+      subscriptionStatus: "active",
+    },
+  }).entitlementDecision;
+  const downgrade = resolveEntitlementDecision({
+    billingPlanSchema: buildBillingPlanSchema(),
+    workspaceModel: {
+      workspaceId: "workspace-1",
+    },
+    workspaceBillingState: {
+      workspaceId: "workspace-1",
+      currentPlanId: "pro",
+      subscriptionStatus: "active",
+    },
+  }).entitlementDecision;
+
+  assert.deepEqual(upgrade.features, ["workspace-access", "priority-support", "sso"]);
+  assert.deepEqual(downgrade.features, ["workspace-access", "priority-support"]);
+});
+
+test("entitlement decision resolver falls back to default entitlements after cancel removes current plan", () => {
+  const { entitlementDecision } = resolveEntitlementDecision({
+    billingPlanSchema: buildBillingPlanSchema(),
+    workspaceModel: {
+      workspaceId: "workspace-1",
+    },
+    workspaceBillingState: {
+      workspaceId: "workspace-1",
+      currentPlanId: null,
+      subscriptionStatus: "canceled",
+    },
+  });
+
+  assert.equal(entitlementDecision.source, "billing-plan-default");
+  assert.deepEqual(entitlementDecision.features, ["trial-workspace-access"]);
+  assert.equal(entitlementDecision.decision, "allowed");
 });

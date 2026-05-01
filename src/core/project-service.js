@@ -14,7 +14,10 @@ import { buildObservedProjectState } from "./project-state.js";
 import { buildExecutionGraph, reconcileRoadmap } from "./project-graph.js";
 import { normalizeProjectSources } from "./normalization-layer.js";
 import { defineLifecycleState } from "./project-lifecycle.js";
+import { createBlockedTaskOutcomeCanonicalizer } from "./blocked-task-outcome-canonicalizer.js";
 import { ingestTaskResults } from "./task-result-ingestion.js";
+import { defineOutcomeEvaluationSchema } from "./outcome-evaluation-schema.js";
+import { createActionSuccessScoringEngine } from "./action-success-scoring-engine.js";
 import { SourceAdapterRegistry } from "./source-adapter.js";
 import { CasinoSourceAdapter } from "./casino-source-adapter.js";
 import { RuntimeSourceAdapter } from "./runtime-source-adapter.js";
@@ -29,16 +32,23 @@ import { createSecretRotationWorkflow } from "./secret-rotation-workflow.js";
 import { createApprovalRecordStore } from "./approval-record-store.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
+import { createOwnerSecureAuthenticationSystem } from "./owner-secure-authentication-system.js";
+import { createOwnerMfaEnforcement } from "./owner-mfa-enforcement.js";
 import { createSessionAndTokenManagement } from "./session-and-token-management.js";
+import { createSessionSecurityControls } from "./session-security-controls.js";
 import { createAuthenticationRouteResolver } from "./authentication-route-resolver.js";
 import { buildAuthenticationScreenStates } from "./authentication-screen-states.js";
 import { createPostAuthRedirectResolver } from "./post-auth-redirect-resolver.js";
 import { createProjectDraftCreationService } from "./project-draft-creation-service.js";
+import { defineProjectCreationEventSchema } from "./project-creation-event-schema.js";
+import { createProjectCreationTracker } from "./project-creation-tracker.js";
+import { createProjectCreationAggregationModule } from "./project-creation-aggregation-module.js";
 import { createProjectCreationExperienceModel } from "./project-creation-experience-model.js";
 import { createPostProjectCreationRedirectResolver } from "./post-project-creation-redirect-resolver.js";
 import { createProjectStateBootstrapService } from "./project-state-bootstrap-service.js";
 import { createOnboardingCompletionEvaluator } from "./onboarding-completion-evaluator.js";
 import { createOnboardingToStateHandoffContract } from "./onboarding-to-state-handoff-contract.js";
+import { createUploadedIntakeToScannerHandoff } from "./uploaded-intake-to-scanner-handoff.js";
 import { createPasswordResetAndEmailVerificationFlow } from "./password-reset-email-verification-flow.js";
 import { defineWorkspaceAndMembershipModel } from "./workspace-membership-model.js";
 import { createProjectAccessControlModule } from "./project-access-control-module.js";
@@ -50,11 +60,24 @@ import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-
 import { createSystemAuditLogStore } from "./system-audit-log-store.js";
 import { createSecurityAuditLogStore } from "./security-audit-log-store.js";
 import { createProjectReviewThreadStore } from "./project-review-thread-store.js";
+import { createPersistentUserActivitySessionHistoryStore } from "./user-activity-session-history-store.js";
 import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
 import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
 import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
 import { createSnapshotBackupWorkerJob } from "./snapshot-backup-worker-job.js";
 import { createPrivacyRightsExecutionModule } from "./privacy-rights-execution-module.js";
+import {
+  buildCanonicalBillingEventInput,
+  buildWorkspaceBillingActionId,
+  buildWorkspaceBillingIdempotencyEnvelope,
+  buildWorkspaceBillingPayload,
+  buildWorkspaceBillingResult,
+  isWorkspaceBillingActionType,
+  validateWorkspaceBillingActionInput,
+  WORKSPACE_BILLING_EVENT_TYPES,
+} from "./workspace-billing-action-service.js";
+import { createProviderBillingEventAdapter } from "./provider-billing-event-adapter.js";
+import { ingestBillingEvent } from "./billing-event-ingestion-service.js";
 
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
 import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
@@ -67,11 +90,13 @@ export class ProjectService {
     securityAuditLogPath = null,
     snapshotLogPath = null,
     reviewThreadLogPath = null,
+    userActivityHistoryLogPath = null,
     platformObservabilityTransport = null,
     systemAuditLogStore = null,
     securityAuditLogStore = null,
     projectSnapshotStore = null,
     projectReviewThreadStore = null,
+    userActivityHistoryStore = null,
   }) {
     this.eventBus = new EventBus({
       eventLog: new FileEventLog({
@@ -99,6 +124,8 @@ export class ProjectService {
     this.sourceAdapters = new SourceAdapterRegistry([new CasinoSourceAdapter(), new RuntimeSourceAdapter()]);
     this.projects = new Map();
     this.projectDrafts = new Map();
+    this.projectCreationEvents = new Map();
+    this.projectCreationMetric = null;
     this.users = new Map();
     this.projectPresenceRegistry = new Map();
     this.platformObservabilityTransport = platformObservabilityTransport ?? createPlatformObservabilityTransport();
@@ -108,6 +135,10 @@ export class ProjectService {
       ?? createPersistentProjectSnapshotStore({ filePath: snapshotLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "project-snapshots.ndjson") });
     this.projectReviewThreadStore = projectReviewThreadStore
       ?? createProjectReviewThreadStore({ filePath: reviewThreadLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "project-review-threads.ndjson") });
+    this.userActivityHistoryStore = userActivityHistoryStore
+      ?? createPersistentUserActivitySessionHistoryStore({
+        filePath: userActivityHistoryLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "user-activity-session-history.ndjson"),
+      });
     this.snapshotBackupTimers = new Map();
   }
 
@@ -253,6 +284,26 @@ export class ProjectService {
       ?? null;
   }
 
+  findProjectRecordByWorkspaceId(workspaceId) {
+    const normalizedWorkspaceId = typeof workspaceId === "string" && workspaceId.trim() ? workspaceId.trim() : null;
+    if (!normalizedWorkspaceId) {
+      return null;
+    }
+
+    return [...this.projects.values()].find((project) => {
+      const projectWorkspaceId =
+        project.context?.workspaceModel?.workspaceId
+        ?? project.state?.workspaceModel?.workspaceId
+        ?? null;
+      return projectWorkspaceId === normalizedWorkspaceId;
+    }) ?? null;
+  }
+
+  getProjectByWorkspaceId(workspaceId) {
+    const project = this.findProjectRecordByWorkspaceId(workspaceId);
+    return project ? this.serializeProject(project) : null;
+  }
+
   createDefaultAgents() {
     return [
       {
@@ -382,6 +433,15 @@ export class ProjectService {
       projectCreationInput,
       existingProjectDraft: requestedDraftId ? this.projectDrafts.get(requestedDraftId) ?? null : null,
     });
+    const { projectCreationEvent } = defineProjectCreationEventSchema({
+      userId: existing.userIdentity?.userId ?? null,
+      projectId: projectDraftId,
+      creationSource: projectDraft.creationSource ?? null,
+    });
+    const { projectCreationMetric } = createProjectCreationTracker({
+      projectCreationEvent,
+      previousProjectCreationMetric: this.projectCreationMetric,
+    });
     const { projectCreationExperience } = createProjectCreationExperienceModel({
       workspaceModel: existing.workspaceModel,
       postLoginDestination: "project-creation",
@@ -392,10 +452,18 @@ export class ProjectService {
     });
 
     this.projectDrafts.set(projectDraftId, projectDraft);
+    this.projectCreationEvents.set(projectDraftId, projectCreationEvent);
+    this.projectCreationMetric = projectCreationMetric;
+    const projectCreationEvents = this.listProjectCreationEvents();
+    const projectCreationSummary = this.buildProjectCreationSummary(projectCreationEvents);
 
     return {
       projectDraft,
       projectDraftId,
+      projectCreationEvent,
+      projectCreationEvents,
+      projectCreationMetric,
+      projectCreationSummary,
       projectCreationExperience,
       projectCreationRedirect,
     };
@@ -532,6 +600,8 @@ export class ProjectService {
         stack: "Unknown",
         state: bootstrapped.initialProjectState ?? projectDraft.state ?? null,
         projectDraft,
+        projectCreationEvent: this.projectCreationEvents.get(projectId) ?? null,
+        projectCreationMetric: this.projectCreationMetric ?? null,
         userId: session.userId ?? null,
         onboardingSession: session,
       });
@@ -539,12 +609,33 @@ export class ProjectService {
       const existingProject = this.projects.get(projectId);
       existingProject.onboardingSession = session;
       existingProject.projectDraft = projectDraft;
+      existingProject.projectCreationEvent =
+        this.projectCreationEvents.get(projectId)
+        ?? existingProject.projectCreationEvent
+        ?? null;
+      existingProject.projectCreationMetric = this.projectCreationMetric ?? existingProject.projectCreationMetric ?? null;
       existingProject.name = projectName;
       existingProject.goal = projectGoal;
       existingProject.state = bootstrapped.initialProjectState ?? projectDraft.state ?? existingProject.state;
     }
 
     const project = this.projects.get(projectId);
+    project.projectCreationEvent =
+      this.projectCreationEvents.get(projectId)
+      ?? project.projectCreationEvent
+      ?? null;
+    project.projectCreationMetric = this.projectCreationMetric ?? project.projectCreationMetric ?? null;
+    project.projectIntake = projectIntake;
+    project.intakeScanHandoff = createUploadedIntakeToScannerHandoff({
+      projectId,
+      projectIntake,
+      connectedSources: session.connectedSources,
+      gitSnapshot: project.gitSnapshot,
+      notionSnapshot: project.notionSnapshot,
+    });
+    if (project.intakeScanHandoff?.scan) {
+      this.applyScanToProject(project, project.intakeScanHandoff.scan, { persistPath: false });
+    }
     this.rebuildContext(projectId);
     this.runCycle(projectId);
 
@@ -1426,6 +1517,44 @@ export class ProjectService {
     };
   }
 
+  buildOwnerSecurityPayloadState({
+    userIdentity = null,
+    authenticationState = null,
+    sessionState = null,
+    membershipRecord = null,
+    workspaceModel = null,
+    ownerSecurityContext = null,
+  } = {}) {
+    const { sessionSecurityDecision } = createSessionSecurityControls({
+      sessionState: {
+        ...(sessionState && typeof sessionState === "object" ? sessionState : {}),
+        ...(ownerSecurityContext?.sessionState && typeof ownerSecurityContext.sessionState === "object"
+          ? ownerSecurityContext.sessionState
+          : {}),
+      },
+      securitySignals: ownerSecurityContext?.securitySignals ?? null,
+    });
+    const { ownerAuthState } = createOwnerSecureAuthenticationSystem({
+      userIdentity,
+      authenticationState,
+      sessionSecurityDecision,
+      membershipRecord,
+      workspaceModel,
+    });
+    const { ownerMfaDecision } = createOwnerMfaEnforcement({
+      ownerAuthState,
+      authenticationState,
+      sessionSecurityDecision,
+      requestContext: ownerSecurityContext,
+    });
+
+    return {
+      sessionSecurityDecision,
+      ownerAuthState,
+      ownerMfaDecision,
+    };
+  }
+
   signupUser({ userInput, credentials } = {}) {
     const profile = userInput && typeof userInput === "object" ? userInput : {};
     const authInput = credentials && typeof credentials === "object" ? credentials : {};
@@ -1475,6 +1604,13 @@ export class ProjectService {
         ownerUserId: userId,
       },
     });
+    const { sessionSecurityDecision, ownerAuthState, ownerMfaDecision } = this.buildOwnerSecurityPayloadState({
+      userIdentity,
+      authenticationState,
+      sessionState,
+      membershipRecord,
+      workspaceModel,
+    });
     const { authenticationRouteDecision, authenticationViewState, postAuthRedirect } = this.buildAuthPayloadState({
       authenticationState,
       sessionState,
@@ -1485,7 +1621,10 @@ export class ProjectService {
     const authPayload = {
       userIdentity,
       authenticationState,
+      ownerAuthState,
+      ownerMfaDecision,
       sessionState,
+      sessionSecurityDecision,
       tokenBundle,
       authenticationRouteDecision,
       verificationFlowState,
@@ -1535,6 +1674,14 @@ export class ProjectService {
           }
         : null,
     });
+    const { sessionSecurityDecision, ownerAuthState, ownerMfaDecision } = this.buildOwnerSecurityPayloadState({
+      userIdentity: existing.userIdentity,
+      authenticationState,
+      sessionState,
+      membershipRecord: existing.membershipRecord,
+      workspaceModel: existing.workspaceModel,
+      ownerSecurityContext: authInput.ownerSecurityContext ?? null,
+    });
     const { authenticationRouteDecision, authenticationViewState, postAuthRedirect } = this.buildAuthPayloadState({
       authenticationState,
       sessionState,
@@ -1545,7 +1692,10 @@ export class ProjectService {
     const authPayload = {
       ...existing,
       authenticationState,
+      ownerAuthState,
+      ownerMfaDecision,
       sessionState,
+      sessionSecurityDecision,
       tokenBundle,
       authenticationRouteDecision,
       verificationFlowState,
@@ -1587,6 +1737,13 @@ export class ProjectService {
           }
         : null,
     });
+    const { sessionSecurityDecision, ownerAuthState, ownerMfaDecision } = this.buildOwnerSecurityPayloadState({
+      userIdentity: existing.userIdentity,
+      authenticationState,
+      sessionState,
+      membershipRecord: existing.membershipRecord,
+      workspaceModel: existing.workspaceModel,
+    });
     const { authenticationRouteDecision, authenticationViewState, postAuthRedirect } = this.buildAuthPayloadState({
       authenticationState,
       sessionState,
@@ -1597,7 +1754,10 @@ export class ProjectService {
     const authPayload = {
       ...existing,
       authenticationState,
+      ownerAuthState,
+      ownerMfaDecision,
       sessionState,
+      sessionSecurityDecision,
       tokenBundle,
       authenticationRouteDecision,
       verificationFlowState,
@@ -1629,9 +1789,19 @@ export class ProjectService {
       verificationFlowState,
       workspaceModel: existing.workspaceModel,
     });
+    const { sessionSecurityDecision, ownerAuthState, ownerMfaDecision } = this.buildOwnerSecurityPayloadState({
+      userIdentity: existing.userIdentity,
+      authenticationState: existing.authenticationState,
+      sessionState: existing.sessionState,
+      membershipRecord: existing.membershipRecord,
+      workspaceModel: existing.workspaceModel,
+    });
 
     const authPayload = {
       ...existing,
+      ownerAuthState,
+      ownerMfaDecision,
+      sessionSecurityDecision,
       authenticationRouteDecision,
       verificationFlowState,
       authenticationViewState,
@@ -1662,9 +1832,19 @@ export class ProjectService {
       verificationFlowState,
       workspaceModel: existing.workspaceModel,
     });
+    const { sessionSecurityDecision, ownerAuthState, ownerMfaDecision } = this.buildOwnerSecurityPayloadState({
+      userIdentity: existing.userIdentity,
+      authenticationState: existing.authenticationState,
+      sessionState: existing.sessionState,
+      membershipRecord: existing.membershipRecord,
+      workspaceModel: existing.workspaceModel,
+    });
 
     const authPayload = {
       ...existing,
+      ownerAuthState,
+      ownerMfaDecision,
+      sessionSecurityDecision,
       authenticationRouteDecision,
       verificationFlowState,
       authenticationViewState,
@@ -1880,6 +2060,208 @@ export class ProjectService {
     return this.serializeProject(project);
   }
 
+  getUserAuthPayload(userId) {
+    if (typeof userId !== "string" || !userId.trim()) {
+      return null;
+    }
+
+    const authPayload = this.users.get(userId.trim());
+    return authPayload ? { ...authPayload } : null;
+  }
+
+  listProjectCreationEvents() {
+    return [...this.projectCreationEvents.values()].map((event) => ({ ...event }));
+  }
+
+  buildProjectCreationSummary(projectCreationEvents = []) {
+    const { projectCreationSummary } = createProjectCreationAggregationModule({
+      projectCreationEvents,
+      projectCreationMetric: this.projectCreationMetric,
+    });
+
+    return projectCreationSummary;
+  }
+
+  performWorkspaceBillingAction({
+    workspaceId,
+    actionType,
+    billingInput = {},
+    userId = null,
+  } = {}) {
+    const project = this.findProjectRecordByWorkspaceId(workspaceId);
+    if (!project || !isWorkspaceBillingActionType(actionType)) {
+      return null;
+    }
+
+    const ownerUserId =
+      project.context?.workspaceModel?.ownerUserId
+      ?? project.state?.workspaceModel?.ownerUserId
+      ?? project.userId
+      ?? null;
+
+    if (!userId || ownerUserId !== userId) {
+      return {
+        httpStatus: 403,
+        error: "Forbidden",
+      };
+    }
+
+    const { isValid, normalizedInput } = validateWorkspaceBillingActionInput(actionType, billingInput);
+    if (!isValid) {
+      return {
+        httpStatus: 400,
+        billingPayload: buildWorkspaceBillingPayload({
+          workspaceId,
+          actionType,
+          status: "rejected",
+          emittedEventType: null,
+          stateRefreshRequired: false,
+          result: buildWorkspaceBillingResult({
+            actionType,
+            normalizedInput: {},
+          }),
+        }),
+      };
+    }
+
+    const idempotencyEnvelope = buildWorkspaceBillingIdempotencyEnvelope({
+      workspaceId,
+      actionType,
+      normalizedInput,
+    });
+
+    const existingReceipt = project.manualContext?.billingActionReceipts?.[idempotencyEnvelope] ?? null;
+    if (existingReceipt) {
+      return {
+        httpStatus: 200,
+        billingPayload: existingReceipt,
+      };
+    }
+
+    const canonicalEventInput = buildCanonicalBillingEventInput({
+      workspaceId,
+      userId,
+      actionType,
+      normalizedInput,
+      currency: project.context?.costSummary?.currency ?? "usd",
+      idempotencyEnvelope,
+    });
+    const ingestionResult = ingestBillingEvent({
+      billingEvent: canonicalEventInput.billingEvent,
+      existingNormalizedBillingEvents: project.manualContext?.normalizedBillingEvents,
+    });
+    if (ingestionResult.ingestStatus === "rejected") {
+      return {
+        httpStatus: 500,
+        billingPayload: buildWorkspaceBillingPayload({
+          workspaceId,
+          actionType,
+          status: "failed",
+          emittedEventType: null,
+          stateRefreshRequired: false,
+          result: buildWorkspaceBillingResult({
+            actionType,
+            normalizedInput,
+          }),
+        }),
+      };
+    }
+
+    const billingPayload = buildWorkspaceBillingPayload({
+      workspaceId,
+      actionType,
+      status: "accepted",
+      emittedEventType: WORKSPACE_BILLING_EVENT_TYPES[actionType] ?? null,
+      stateRefreshRequired: ingestionResult.ingestStatus === "accepted",
+      result: buildWorkspaceBillingResult({
+        actionType,
+        normalizedInput,
+      }),
+    });
+
+    project.manualContext = {
+      ...(project.manualContext ?? {}),
+      normalizedBillingEvents: ingestionResult.normalizedBillingEvents,
+      billingActionReceipts: {
+        ...(project.manualContext?.billingActionReceipts ?? {}),
+        [idempotencyEnvelope]: billingPayload,
+      },
+      billingActionLastResult: {
+        actionType,
+        billingActionId: buildWorkspaceBillingActionId({
+          workspaceId,
+          actionType,
+          status: "accepted",
+        }),
+      },
+    };
+
+    if (ingestionResult.ingestStatus === "accepted") {
+      this.rebuildContext(project.id);
+    }
+
+    return {
+      httpStatus: 200,
+      billingPayload,
+    };
+  }
+
+  ingestProviderBillingEvent(projectId, {
+    providerType,
+    providerPayload,
+  } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return {
+        ingestStatus: "rejected",
+        normalizedBillingEvent: null,
+        stateRefreshRequired: false,
+      };
+    }
+
+    const { billingEvent } = createProviderBillingEventAdapter({
+      providerType,
+      providerPayload,
+      workspaceModel: project.context?.workspaceModel ?? project.state?.workspaceModel ?? null,
+    });
+
+    if (!billingEvent) {
+      return {
+        ingestStatus: "rejected",
+        normalizedBillingEvent: null,
+        stateRefreshRequired: false,
+      };
+    }
+
+    const ingestionResult = ingestBillingEvent({
+      billingEvent,
+      existingNormalizedBillingEvents: project.manualContext?.normalizedBillingEvents,
+    });
+
+    if (ingestionResult.ingestStatus === "rejected") {
+      return {
+        ingestStatus: "rejected",
+        normalizedBillingEvent: null,
+        stateRefreshRequired: false,
+      };
+    }
+
+    project.manualContext = {
+      ...(project.manualContext ?? {}),
+      normalizedBillingEvents: ingestionResult.normalizedBillingEvents,
+    };
+
+    if (ingestionResult.ingestStatus === "accepted") {
+      this.rebuildContext(project.id);
+    }
+
+    return {
+      ingestStatus: ingestionResult.ingestStatus,
+      normalizedBillingEvent: ingestionResult.normalizedBillingEvent,
+      stateRefreshRequired: ingestionResult.ingestStatus === "accepted",
+    };
+  }
+
   executePrivacyRightsRequest({ projectId, privacyRequest } = {}) {
     const project = this.projects.get(projectId);
     if (!project) {
@@ -1920,7 +2302,7 @@ export class ProjectService {
   getProjectEvents(projectId) {
     return this.eventBus
       .getEvents()
-      .filter((event) => event.payload.projectId === projectId)
+      .filter((event) => event?.payload?.projectId === projectId)
       .slice(-50);
   }
 
@@ -1936,6 +2318,7 @@ export class ProjectService {
         task: event.payload.task
           ? {
               id: event.payload.task.id,
+              taskType: event.payload.task.taskType ?? null,
               summary: event.payload.task.summary,
               lane: event.payload.task.lane,
             }
@@ -2053,6 +2436,8 @@ export class ProjectService {
       return null;
     }
 
+    project.projectCreationEvents = this.listProjectCreationEvents();
+    project.projectCreationSummary = this.buildProjectCreationSummary(project.projectCreationEvents);
     project.normalizedSources = normalizeProjectSources(project);
     project.state = buildObservedProjectState(project);
     const builtContext = buildProjectContext(project, {
@@ -2061,6 +2446,7 @@ export class ProjectService {
       securityAuditLogStore: this.securityAuditLogStore,
       snapshotStore: this.projectSnapshotStore,
       reviewThreadStore: this.projectReviewThreadStore,
+      userActivityHistoryStore: this.userActivityHistoryStore,
     });
     if (!skipPreChangeBackups) {
       this.applyScheduledPreChangeBackups(projectId, builtContext);
@@ -2118,7 +2504,232 @@ export class ProjectService {
       stackRecommendation: project.context?.stackRecommendation ?? null,
       businessContext: project.context?.businessContext ?? null,
       projectIdentity: project.context?.projectIdentity ?? null,
+      productBoundaryModel: project.context?.productBoundaryModel ?? null,
+      capabilityLimitMap: project.context?.capabilityLimitMap ?? null,
+      boundaryDisclosureModel: project.context?.boundaryDisclosureModel ?? null,
+      systemCapabilityRegistry: project.context?.systemCapabilityRegistry ?? null,
+      capabilityDecision: project.context?.capabilityDecision ?? null,
+      atomicExecutionEnvelope: project.context?.atomicExecutionEnvelope ?? null,
+      externalExecutionResult: project.context?.externalExecutionResult ?? null,
+      executionConsistencyReport: project.context?.executionConsistencyReport ?? null,
+      existingBusinessAssets: project.context?.existingBusinessAssets ?? null,
+      repositoryImportAndCodebaseDiagnosis: project.context?.repositoryImportAndCodebaseDiagnosis ?? null,
+      liveWebsiteIngestionAndFunnelDiagnosis: project.context?.liveWebsiteIngestionAndFunnelDiagnosis ?? null,
+      importedAnalyticsNormalization: project.context?.importedAnalyticsNormalization ?? null,
+      importedAssetTaskExtraction: project.context?.importedAssetTaskExtraction ?? null,
+      nexusPositioning: project.context?.nexusPositioning ?? null,
+      messagingFramework: project.context?.messagingFramework ?? null,
+      messagingVariants: project.context?.messagingVariants ?? null,
+      landingVariantDecision: project.context?.landingVariantDecision ?? null,
+      objectionMap: project.context?.objectionMap ?? null,
+      faqMap: project.context?.faqMap ?? null,
+      activationGoals: project.context?.activationGoals ?? null,
+      productCtaStrategy: project.context?.productCtaStrategy ?? null,
+      nexusWebsiteSchema: project.context?.nexusWebsiteSchema ?? null,
+      landingPageIa: project.context?.landingPageIa ?? null,
+      websiteCopyPack: project.context?.websiteCopyPack ?? null,
+      websiteConversionFlow: project.context?.websiteConversionFlow ?? null,
+      waitlistRecord: project.context?.waitlistRecord ?? null,
+      accessRequest: project.context?.accessRequest ?? null,
+      websiteExperimentPlan: project.context?.websiteExperimentPlan ?? null,
+      trustProofBlocks: project.context?.trustProofBlocks ?? null,
+      productDeliveryModel: project.context?.productDeliveryModel ?? null,
+      siteAppBoundary: project.context?.siteAppBoundary ?? null,
+      accessModeDecision: project.context?.accessModeDecision ?? null,
+      landingAuthHandoff: project.context?.landingAuthHandoff ?? null,
+      appEntryDecision: project.context?.appEntryDecision ?? null,
+      postLoginDestination: project.context?.postLoginDestination ?? null,
+      appLandingEntry: project.context?.appLandingEntry ?? null,
+      entryStateVariants: project.context?.entryStateVariants ?? null,
+      entryRecoveryState: project.context?.entryRecoveryState ?? null,
+      entryOrientationPanel: project.context?.entryOrientationPanel ?? null,
+      entryDecisionSupport: project.context?.entryDecisionSupport ?? null,
+      firstProjectKickoff: project.context?.firstProjectKickoff ?? null,
+      landingToDashboardFlow: project.context?.landingToDashboardFlow ?? null,
+      activationFunnel: project.context?.activationFunnel ?? null,
+      activationMilestones: project.context?.activationMilestones ?? null,
+      onboardingMarketingFlow: project.context?.onboardingMarketingFlow ?? null,
+      activationDropOffs: project.context?.activationDropOffs ?? null,
+      reEngagementPlan: project.context?.reEngagementPlan ?? null,
+      nexusContentStrategy: project.context?.nexusContentStrategy ?? null,
+      launchContentCalendar: project.context?.launchContentCalendar ?? null,
+      storyAssets: project.context?.storyAssets ?? null,
+      socialCommunityPack: project.context?.socialCommunityPack ?? null,
+      productProofPlan: project.context?.productProofPlan ?? null,
+      launchCampaignBrief: project.context?.launchCampaignBrief ?? null,
+      launchRolloutPlan: project.context?.launchRolloutPlan ?? null,
+      launchReadinessChecklist: project.context?.launchReadinessChecklist ?? null,
+      launchPublishingPlan: project.context?.launchPublishingPlan ?? null,
+      launchFeedbackSummary: project.context?.launchFeedbackSummary ?? null,
+      goToMarketPlan: project.context?.goToMarketPlan ?? null,
+      promotionExecutionPlan: project.context?.promotionExecutionPlan ?? null,
+      launchMarketingExecution: project.context?.launchMarketingExecution ?? null,
+      gtmMetricSchema: project.context?.gtmMetricSchema ?? null,
+      acquisitionSourceMetrics: project.context?.acquisitionSourceMetrics ?? null,
+      firstTouchAttribution: project.context?.firstTouchAttribution ?? null,
+      preAuthConversionEvents: project.context?.preAuthConversionEvents ?? null,
+      websiteActivationFunnel: project.context?.websiteActivationFunnel ?? null,
+      conversionAnalytics: project.context?.conversionAnalytics ?? null,
+      launchPerformanceDashboard: project.context?.launchPerformanceDashboard ?? null,
+      gtmOptimizationPlan: project.context?.gtmOptimizationPlan ?? null,
+      growthLoopManagement: project.context?.growthLoopManagement ?? null,
+      ownerControlPlane: project.context?.ownerControlPlane ?? null,
+      ownerControlCenter: project.context?.ownerControlCenter ?? null,
+      dailyOwnerOverview: project.context?.dailyOwnerOverview ?? null,
+      ownerPriorityQueue: project.context?.ownerPriorityQueue ?? null,
+      ownerActionRecommendations: project.context?.ownerActionRecommendations ?? null,
+      ownerDecisionDashboard: project.context?.ownerDecisionDashboard ?? null,
+      ownerDailyWorkflow: project.context?.ownerDailyWorkflow ?? null,
+      ownerFocusArea: project.context?.ownerFocusArea ?? null,
+      ownerTaskList: project.context?.ownerTaskList ?? null,
+      ownerRoutinePlan: project.context?.ownerRoutinePlan ?? null,
+      dashboardHomeSurface: project.context?.dashboardHomeSurface ?? null,
+      unifiedHomeDashboard: project.context?.unifiedHomeDashboard ?? null,
+      todayPrioritiesFeed: project.context?.todayPrioritiesFeed ?? null,
+      ownerVisibilityStrip: project.context?.ownerVisibilityStrip ?? null,
+      aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
+      ownerRevenueView: project.context?.ownerRevenueView ?? null,
+      ownerCostView: project.context?.ownerCostView ?? null,
+      profitMarginSummary: project.context?.profitMarginSummary ?? null,
+      unitEconomicsDashboard: project.context?.unitEconomicsDashboard ?? null,
+      cashFlowProjection: project.context?.cashFlowProjection ?? null,
+      ownerUserAnalytics: project.context?.ownerUserAnalytics ?? null,
+      featureUsageSummary: project.context?.featureUsageSummary ?? null,
+      decisionAccuracySummary: project.context?.decisionAccuracySummary ?? null,
+      automationImpactSummary: project.context?.automationImpactSummary ?? null,
+      roadmapTracking: project.context?.roadmapTracking ?? null,
+      ownerOperationsSignals: project.context?.ownerOperationsSignals ?? null,
+      prioritizedOwnerAlerts: project.context?.prioritizedOwnerAlerts ?? null,
+      ownerAlertFeed: project.context?.ownerAlertFeed ?? null,
+      ownerIncident: project.context?.ownerIncident ?? null,
+      outageResponsePlan: project.context?.outageResponsePlan ?? null,
+      incidentTimeline: project.context?.incidentTimeline ?? null,
+      rootCauseSummary: project.context?.rootCauseSummary ?? null,
+      liveProjectMonitoring: project.context?.liveProjectMonitoring ?? null,
+      maintenanceBacklog: project.context?.maintenanceBacklog ?? null,
       projectDraft: project.context?.projectDraft ?? project.projectDraft ?? null,
+      projectCreationEvent: project.context?.projectCreationEvent ?? project.projectCreationEvent ?? null,
+      projectCreationEvents: project.context?.projectCreationEvents ?? project.projectCreationEvents ?? [],
+      projectCreationMetric: project.context?.projectCreationMetric ?? project.projectCreationMetric ?? null,
+      projectCreationSummary: project.context?.projectCreationSummary ?? project.projectCreationSummary ?? null,
+      productBoundaryModel: project.context?.productBoundaryModel ?? null,
+      capabilityLimitMap: project.context?.capabilityLimitMap ?? null,
+      boundaryDisclosureModel: project.context?.boundaryDisclosureModel ?? null,
+      systemCapabilityRegistry: project.context?.systemCapabilityRegistry ?? null,
+      capabilityDecision: project.context?.capabilityDecision ?? null,
+      atomicExecutionEnvelope: project.context?.atomicExecutionEnvelope ?? null,
+      externalExecutionResult: project.context?.externalExecutionResult ?? null,
+      executionConsistencyReport: project.context?.executionConsistencyReport ?? null,
+      existingBusinessAssets: project.context?.existingBusinessAssets ?? null,
+      repositoryImportAndCodebaseDiagnosis: project.context?.repositoryImportAndCodebaseDiagnosis ?? null,
+      liveWebsiteIngestionAndFunnelDiagnosis: project.context?.liveWebsiteIngestionAndFunnelDiagnosis ?? null,
+      importedAnalyticsNormalization: project.context?.importedAnalyticsNormalization ?? null,
+      importedAssetTaskExtraction: project.context?.importedAssetTaskExtraction ?? null,
+      nexusPositioning: project.context?.nexusPositioning ?? null,
+      messagingFramework: project.context?.messagingFramework ?? null,
+      messagingVariants: project.context?.messagingVariants ?? null,
+      landingVariantDecision: project.context?.landingVariantDecision ?? null,
+      objectionMap: project.context?.objectionMap ?? null,
+      faqMap: project.context?.faqMap ?? null,
+      activationGoals: project.context?.activationGoals ?? null,
+      productCtaStrategy: project.context?.productCtaStrategy ?? null,
+      nexusWebsiteSchema: project.context?.nexusWebsiteSchema ?? null,
+      landingPageIa: project.context?.landingPageIa ?? null,
+      websiteCopyPack: project.context?.websiteCopyPack ?? null,
+      websiteConversionFlow: project.context?.websiteConversionFlow ?? null,
+      waitlistRecord: project.context?.waitlistRecord ?? null,
+      accessRequest: project.context?.accessRequest ?? null,
+      websiteExperimentPlan: project.context?.websiteExperimentPlan ?? null,
+      trustProofBlocks: project.context?.trustProofBlocks ?? null,
+      productDeliveryModel: project.context?.productDeliveryModel ?? null,
+      siteAppBoundary: project.context?.siteAppBoundary ?? null,
+      accessModeDecision: project.context?.accessModeDecision ?? null,
+      landingAuthHandoff: project.context?.landingAuthHandoff ?? null,
+      appEntryDecision: project.context?.appEntryDecision ?? null,
+      postLoginDestination: project.context?.postLoginDestination ?? null,
+      appLandingEntry: project.context?.appLandingEntry ?? null,
+      entryStateVariants: project.context?.entryStateVariants ?? null,
+      entryRecoveryState: project.context?.entryRecoveryState ?? null,
+      entryOrientationPanel: project.context?.entryOrientationPanel ?? null,
+      entryDecisionSupport: project.context?.entryDecisionSupport ?? null,
+      firstProjectKickoff: project.context?.firstProjectKickoff ?? null,
+      landingToDashboardFlow: project.context?.landingToDashboardFlow ?? null,
+      activationFunnel: project.context?.activationFunnel ?? null,
+      activationMilestones: project.context?.activationMilestones ?? null,
+      onboardingMarketingFlow: project.context?.onboardingMarketingFlow ?? null,
+      activationDropOffs: project.context?.activationDropOffs ?? null,
+      reEngagementPlan: project.context?.reEngagementPlan ?? null,
+      nexusContentStrategy: project.context?.nexusContentStrategy ?? null,
+      launchContentCalendar: project.context?.launchContentCalendar ?? null,
+      storyAssets: project.context?.storyAssets ?? null,
+      socialCommunityPack: project.context?.socialCommunityPack ?? null,
+      productProofPlan: project.context?.productProofPlan ?? null,
+      launchCampaignBrief: project.context?.launchCampaignBrief ?? null,
+      launchRolloutPlan: project.context?.launchRolloutPlan ?? null,
+      launchReadinessChecklist: project.context?.launchReadinessChecklist ?? null,
+      launchPublishingPlan: project.context?.launchPublishingPlan ?? null,
+      launchFeedbackSummary: project.context?.launchFeedbackSummary ?? null,
+      goToMarketPlan: project.context?.goToMarketPlan ?? null,
+      promotionExecutionPlan: project.context?.promotionExecutionPlan ?? null,
+      launchMarketingExecution: project.context?.launchMarketingExecution ?? null,
+      gtmMetricSchema: project.context?.gtmMetricSchema ?? null,
+      acquisitionSourceMetrics: project.context?.acquisitionSourceMetrics ?? null,
+      firstTouchAttribution: project.context?.firstTouchAttribution ?? null,
+      preAuthConversionEvents: project.context?.preAuthConversionEvents ?? null,
+      websiteActivationFunnel: project.context?.websiteActivationFunnel ?? null,
+      conversionAnalytics: project.context?.conversionAnalytics ?? null,
+      launchPerformanceDashboard: project.context?.launchPerformanceDashboard ?? null,
+      gtmOptimizationPlan: project.context?.gtmOptimizationPlan ?? null,
+      growthLoopManagement: project.context?.growthLoopManagement ?? null,
+      ownerControlPlane: project.context?.ownerControlPlane ?? null,
+      ownerControlCenter: project.context?.ownerControlCenter ?? null,
+      dailyOwnerOverview: project.context?.dailyOwnerOverview ?? null,
+      ownerPriorityQueue: project.context?.ownerPriorityQueue ?? null,
+      ownerActionRecommendations: project.context?.ownerActionRecommendations ?? null,
+      ownerDecisionDashboard: project.context?.ownerDecisionDashboard ?? null,
+      ownerDailyWorkflow: project.context?.ownerDailyWorkflow ?? null,
+      ownerFocusArea: project.context?.ownerFocusArea ?? null,
+      ownerTaskList: project.context?.ownerTaskList ?? null,
+      ownerRoutinePlan: project.context?.ownerRoutinePlan ?? null,
+      ownerRevenueView: project.context?.ownerRevenueView ?? null,
+      ownerCostView: project.context?.ownerCostView ?? null,
+      profitMarginSummary: project.context?.profitMarginSummary ?? null,
+      unitEconomicsDashboard: project.context?.unitEconomicsDashboard ?? null,
+      cashFlowProjection: project.context?.cashFlowProjection ?? null,
+      ownerUserAnalytics: project.context?.ownerUserAnalytics ?? null,
+      featureUsageSummary: project.context?.featureUsageSummary ?? null,
+      decisionAccuracySummary: project.context?.decisionAccuracySummary ?? null,
+      automationImpactSummary: project.context?.automationImpactSummary ?? null,
+      roadmapTracking: project.context?.roadmapTracking ?? null,
+      ownerOperationsSignals: project.context?.ownerOperationsSignals ?? null,
+      prioritizedOwnerAlerts: project.context?.prioritizedOwnerAlerts ?? null,
+      ownerAlertFeed: project.context?.ownerAlertFeed ?? null,
+      ownerIncident: project.context?.ownerIncident ?? null,
+      outageResponsePlan: project.context?.outageResponsePlan ?? null,
+      incidentTimeline: project.context?.incidentTimeline ?? null,
+      rootCauseSummary: project.context?.rootCauseSummary ?? null,
+      liveProjectMonitoring: project.context?.liveProjectMonitoring ?? null,
+      maintenanceBacklog: project.context?.maintenanceBacklog ?? null,
+      userActivityEvent: project.context?.userActivityEvent ?? null,
+      userActivityHistory: project.context?.userActivityHistory ?? null,
+      userSessionMetric: project.context?.userSessionMetric ?? project.manualContext?.userSessionMetric ?? null,
+      userSessionHistory: project.context?.userSessionHistory ?? null,
+      returningUserMetric: project.context?.returningUserMetric ?? null,
+      retentionSummary: project.context?.retentionSummary ?? null,
+      blockedTaskOutcomes: project.context?.blockedTaskOutcomes ?? project.state?.blockedTaskOutcomes ?? [],
+      taskExecutionMetric: project.context?.taskExecutionMetric ?? null,
+      taskExecutionCounters: project.context?.taskExecutionCounters ?? null,
+      taskThroughputSummary: project.context?.taskThroughputSummary ?? null,
+      baselineEstimate: project.context?.baselineEstimate ?? null,
+      timeSavedMetric: project.context?.timeSavedMetric ?? null,
+      timeSaved: project.context?.timeSaved ?? null,
+      productivitySummary: project.context?.productivitySummary ?? null,
+      outcomeEvaluation: project.context?.outcomeEvaluation ?? null,
+      actionSuccessScore: project.context?.actionSuccessScore ?? null,
+      outcomeFeedbackState: project.context?.outcomeFeedbackState ?? null,
+      goalProgressState: project.context?.goalProgressState ?? null,
+      milestoneTracking: project.context?.milestoneTracking ?? null,
+      productIterationInsights: project.context?.productIterationInsights ?? null,
       projectIdentityProfile: project.context?.projectIdentityProfile ?? null,
       identityCompleteness: project.context?.identityCompleteness ?? null,
       instantValuePlan: project.context?.instantValuePlan ?? null,
@@ -2132,6 +2743,13 @@ export class ProjectService {
       securityAuditRecord: project.context?.securityAuditRecord ?? null,
       gatingDecision: project.context?.gatingDecision ?? null,
       approvalAuditTrail: project.context?.approvalAuditTrail ?? null,
+      approvalOutcome: project.context?.approvalOutcome ?? null,
+      serviceReliabilityDashboard: project.context?.serviceReliabilityDashboard ?? null,
+      postExecutionEvaluation: project.context?.postExecutionEvaluation ?? null,
+      postExecutionReport: project.context?.postExecutionReport ?? null,
+      crossLayerFeedbackState: project.context?.crossLayerFeedbackState ?? null,
+      adaptiveExecutionDecision: project.context?.adaptiveExecutionDecision ?? null,
+      systemOptimizationPlan: project.context?.systemOptimizationPlan ?? null,
       policySchema: project.context?.policySchema ?? null,
       agentGovernancePolicy: project.context?.agentGovernancePolicy ?? null,
       budgetDecision: project.context?.budgetDecision ?? null,
@@ -2165,6 +2783,14 @@ export class ProjectService {
       growthMarketingPlan: project.context?.growthMarketingPlan ?? [],
       userIdentity: project.context?.userIdentity ?? null,
       authenticationState: project.context?.authenticationState ?? null,
+      ownerAuthState: project.context?.ownerAuthState ?? null,
+      ownerMfaDecision: project.context?.ownerMfaDecision ?? null,
+      deviceTrustDecision: project.context?.deviceTrustDecision ?? null,
+      sensitiveActionConfirmation: project.context?.sensitiveActionConfirmation ?? null,
+      stepUpAuthDecision: project.context?.stepUpAuthDecision ?? null,
+      privilegedModeState: project.context?.privilegedModeState ?? null,
+      ownerAccessDecision: project.context?.ownerAccessDecision ?? null,
+      criticalOperationDecision: project.context?.criticalOperationDecision ?? null,
       sessionState: project.context?.sessionState ?? null,
       securitySignals: project.context?.securitySignals ?? null,
       sessionSecurityDecision: project.context?.sessionSecurityDecision ?? null,
@@ -2178,6 +2804,9 @@ export class ProjectService {
       postAuthRedirect: project.context?.postAuthRedirect ?? null,
       projectCreationExperience: project.context?.projectCreationExperience ?? null,
       projectCreationRedirect: project.context?.projectCreationRedirect ?? null,
+      nexusAppShellSchema: project.context?.nexusAppShellSchema ?? null,
+      authenticatedAppShell: project.context?.authenticatedAppShell ?? null,
+      navigationRouteSurface: project.context?.navigationRouteSurface ?? null,
       onboardingProgress: project.context?.onboardingProgress ?? null,
       onboardingViewState: project.context?.onboardingViewState ?? null,
       onboardingCompletionDecision: project.context?.onboardingCompletionDecision ?? null,
@@ -2188,6 +2817,7 @@ export class ProjectService {
       privilegedAuthorityDecision: project.context?.privilegedAuthorityDecision ?? null,
       tenantIsolationSchema: project.context?.tenantIsolationSchema ?? null,
       workspaceIsolationDecision: project.context?.workspaceIsolationDecision ?? null,
+      tenantBoundaryEvidence: project.context?.tenantBoundaryEvidence ?? null,
       leakageAlert: project.context?.leakageAlert ?? null,
       projectOwnershipBinding: project.context?.projectOwnershipBinding ?? null,
       initialProjectStateContract: project.context?.initialProjectStateContract ?? null,
@@ -2202,14 +2832,22 @@ export class ProjectService {
       nextTaskApprovalPanel: project.context?.nextTaskApprovalPanel ?? null,
       recommendationDisplay: project.context?.recommendationDisplay ?? null,
       recommendationSummaryPanel: project.context?.recommendationSummaryPanel ?? null,
+      aiDesignRequest: project.context?.aiDesignRequest ?? null,
+      aiDesignProposal: project.context?.aiDesignProposal ?? null,
+      aiDesignProviderResult: project.context?.aiDesignProviderResult ?? null,
+      aiDesignServiceResult: project.context?.aiDesignServiceResult ?? null,
+      aiDesignExecutionState: project.context?.aiDesignExecutionState ?? null,
       editableProposal: project.context?.editableProposal ?? null,
       editedProposal: project.context?.editedProposal ?? null,
       proposalEditHistory: project.context?.proposalEditHistory ?? null,
       partialAcceptanceDecision: project.context?.partialAcceptanceDecision ?? null,
       remainingProposalScope: project.context?.remainingProposalScope ?? null,
       cockpitRecommendationSurface: project.context?.cockpitRecommendationSurface ?? null,
+      aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
       stateBootstrapPayload: project.context?.stateBootstrapPayload ?? null,
       workspaceModel: project.context?.workspaceModel ?? null,
+      workspaceMode: project.context?.workspaceMode ?? null,
+      workspaceModeDefinitions: project.context?.workspaceModeDefinitions ?? null,
       membershipRecord: project.context?.membershipRecord ?? null,
       accessDecision: project.context?.accessDecision ?? null,
       collaborationEvent: project.context?.collaborationEvent ?? null,
@@ -2226,13 +2864,25 @@ export class ProjectService {
       platformCostMetric: project.context?.platformCostMetric ?? null,
       aiUsageMetric: project.context?.aiUsageMetric ?? null,
       workspaceComputeMetric: project.context?.workspaceComputeMetric ?? null,
+      buildDeployCostMetric: project.context?.buildDeployCostMetric ?? null,
       storageCostMetric: project.context?.storageCostMetric ?? null,
       costSummary: project.context?.costSummary ?? null,
+      normalizedBillingEvents: project.manualContext?.normalizedBillingEvents ?? [],
+      billableUsage: project.context?.billableUsage ?? null,
       costVisibilityPayload: project.context?.costVisibilityPayload ?? null,
       costDashboardModel: project.context?.costDashboardModel ?? null,
+      workspaceMode: project.context?.workspaceMode ?? null,
+      workspaceModeDefinitions: project.context?.workspaceModeDefinitions ?? null,
+      reasonableUsagePolicy: project.context?.reasonableUsagePolicy ?? null,
       billingPlanSchema: project.context?.billingPlanSchema ?? null,
       entitlementDecision: project.context?.entitlementDecision ?? null,
+      workspaceBillingState: project.context?.workspaceBillingState ?? null,
+      payingUserMetrics: project.context?.payingUserMetrics ?? null,
+      revenueSummary: project.context?.revenueSummary ?? null,
+      billingGuardDecision: project.context?.billingGuardDecision ?? null,
+      billingApprovalRequest: project.context?.billingApprovalRequest ?? null,
       subscriptionState: project.context?.subscriptionState ?? null,
+      billingSettingsModel: project.context?.billingSettingsModel ?? null,
       costAwareActionSelection: project.context?.costAwareActionSelection ?? null,
       privacyPolicyDecision: project.context?.privacyPolicyDecision ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
@@ -2240,6 +2890,8 @@ export class ProjectService {
       restorePlan: project.context?.restorePlan ?? null,
       userJourneys: project.context?.userJourneys ?? null,
       journeySteps: project.context?.journeySteps ?? [],
+      journeyStateRegistry: project.context?.journeyStateRegistry ?? null,
+      journeyTransitionRegistry: project.context?.journeyTransitionRegistry ?? [],
       journeyMap: project.context?.journeyMap ?? null,
       screenInventory: project.context?.screenInventory ?? null,
       screenFlowMap: project.context?.screenFlowMap ?? null,
@@ -2269,6 +2921,7 @@ export class ProjectService {
       stateCoverageValidation: project.context?.stateCoverageValidation ?? null,
       consistencyValidation: project.context?.consistencyValidation ?? null,
       screenReviewReport: project.context?.screenReviewReport ?? null,
+      learningInsights: project.context?.learningInsights ?? null,
       learningInsightViewModel: project.context?.learningInsightViewModel ?? null,
       reasoningPanel: project.context?.reasoningPanel ?? null,
       confidenceIndicator: project.context?.confidenceIndicator ?? null,
@@ -2294,6 +2947,29 @@ export class ProjectService {
       projectWorkbenchLayout: project.context?.projectWorkbenchLayout ?? null,
       fileEditorContract: project.context?.fileEditorContract ?? null,
       commandConsoleView: project.context?.commandConsoleView ?? null,
+      dailyWorkspaceSurface: project.context?.dailyWorkspaceSurface ?? null,
+      guidedTaskExecutionSurface: project.context?.guidedTaskExecutionSurface ?? null,
+      taskStepFlowProgress: project.context?.taskStepFlowProgress ?? null,
+      taskApprovalHandoffPanel: project.context?.taskApprovalHandoffPanel ?? null,
+      settingsProfileSurface: project.context?.settingsProfileSurface ?? null,
+      renderableScreenModel: project.context?.renderableScreenModel ?? null,
+      screenComponentMapping: project.context?.screenComponentMapping ?? null,
+      activeScreenVariantPlan: project.context?.activeScreenVariantPlan ?? null,
+      layoutCompositionPlan: project.context?.layoutCompositionPlan ?? null,
+      renderableScreenComposition: project.context?.renderableScreenComposition ?? null,
+      renderableDesignProposal: project.context?.renderableDesignProposal ?? null,
+      designProposalValidation: project.context?.designProposalValidation ?? null,
+      designProposalPreviewState: project.context?.designProposalPreviewState ?? null,
+      screenProposalDiff: project.context?.screenProposalDiff ?? null,
+      designProposalReviewState: project.context?.designProposalReviewState ?? null,
+      approvedScreenDelta: project.context?.approvedScreenDelta ?? null,
+      proposalApplyDecision: project.context?.proposalApplyDecision ?? null,
+      acceptedScreenState: project.context?.acceptedScreenState ?? null,
+      integratedDesignProposalState: project.context?.integratedDesignProposalState ?? null,
+      runtimeScreenRegistry: project.context?.runtimeScreenRegistry ?? null,
+      activeScreenResolver: project.context?.activeScreenResolver ?? null,
+      liveRuntimeScreenState: project.context?.liveRuntimeScreenState ?? null,
+      previewScreenViewModel: project.context?.previewScreenViewModel ?? null,
       liveLogStream: project.context?.liveLogStream ?? null,
       branchDiffActivityPanel: project.context?.branchDiffActivityPanel ?? null,
       reviewThreadState: project.context?.reviewThreadState ?? null,
@@ -2369,10 +3045,14 @@ export class ProjectService {
       projectAuditRecord: project.context?.projectAuditRecord ?? null,
       actorActionTrace: project.context?.actorActionTrace ?? null,
       projectAuditPayload: project.context?.projectAuditPayload ?? null,
+      ownerAuditView: project.context?.ownerAuditView ?? null,
+      systemActivityFeed: project.context?.systemActivityFeed ?? null,
+      criticalChangeHistory: project.context?.criticalChangeHistory ?? null,
       notificationPayload: project.context?.notificationPayload ?? null,
       notificationEvent: project.context?.notificationEvent ?? null,
       notificationCenterState: project.context?.notificationCenterState ?? null,
       notificationPreferences: project.context?.notificationPreferences ?? null,
+      userPreferenceProfile: project.context?.userPreferenceProfile ?? null,
       complianceConsentState: project.context?.complianceConsentState ?? null,
       complianceAuditSummary: project.context?.complianceAuditSummary ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
@@ -2600,7 +3280,19 @@ export class ProjectService {
       gitSnapshot: project.gitSnapshot,
       notionSnapshot: project.notionSnapshot,
     });
-    project.path = scan.path;
+    this.applyScanToProject(project, scan, { persistPath: true });
+    this.rebuildContext(projectId);
+    return scan;
+  }
+
+  applyScanToProject(project, scan, { persistPath = true } = {}) {
+    if (!project || !scan) {
+      return null;
+    }
+
+    if (persistPath && typeof scan.path === "string" && scan.path.length > 0) {
+      project.path = scan.path;
+    }
     project.scan = scan;
     project.stack =
       [...scan.stack.backend, ...scan.stack.frontend, ...scan.stack.database].join(", ") || project.stack;
@@ -2621,8 +3313,10 @@ export class ProjectService {
       backend: scan.stack.backend.join(", ") || "לא זוהה",
       database: scan.stack.database.join(", ") || "לא זוהה",
     };
-    project.state.product.hasAuth = scan.findings.hasAuth;
-    this.rebuildContext(projectId);
+    project.state.product = {
+      ...(project.state.product ?? {}),
+      hasAuth: scan.findings.hasAuth,
+    };
     return scan;
   }
 
@@ -3144,10 +3838,45 @@ export class ProjectService {
       failedTaskIds: failedTaskIdsAfterRuntime,
     });
     const ingestedTaskResults = ingestTaskResults({ runtimeResults });
+    const { blockedTaskOutcomes } = createBlockedTaskOutcomeCanonicalizer({
+      projectId,
+      executionGraph: cycle.executionGraph,
+      roadmap: cycle.roadmap,
+      taskAssignments: cycle.assignments,
+      runtimeResults,
+      existingTaskResults: ingestedTaskResults.taskResults,
+    });
+    const blockedTaskOutcomeByTaskId = new Map(
+      blockedTaskOutcomes
+        .filter((result) => result?.taskId)
+        .map((result) => [result.taskId, result]),
+    );
+    const canonicalTaskResults = [
+      ...ingestedTaskResults.taskResults.filter((result) => result?.status !== "blocked" || !blockedTaskOutcomeByTaskId.has(result?.taskId)),
+      ...blockedTaskOutcomes,
+    ];
+    const { outcomeEvaluation } = defineOutcomeEvaluationSchema({
+      projectId,
+      taskResults: canonicalTaskResults,
+    });
+    const { actionSuccessScore } = createActionSuccessScoringEngine({
+      projectId,
+      outcomeEvaluation,
+    });
 
     project.cycle = cycle;
     project.runtimeResults = runtimeResults;
-    project.taskResults = ingestedTaskResults.taskResults;
+    project.taskResults = canonicalTaskResults;
+    project.blockedTaskOutcomes = blockedTaskOutcomes;
+    project.taskTransitionEvents = ingestedTaskResults.transitionEvents;
+    project.state = {
+      ...(project.state ?? {}),
+      taskResults: canonicalTaskResults,
+      blockedTaskOutcomes,
+      taskTransitionEvents: ingestedTaskResults.transitionEvents,
+      outcomeEvaluation,
+      actionSuccessScore,
+    };
     project.agents = project.agents.map((agent) => {
       const assignment = cycle.assignments.find((item) => item.agentId === agent.id);
       const completion = runtimeResults.find((item) => item.payload.agentId === agent.id);
@@ -3179,6 +3908,165 @@ export class ProjectService {
       path: project.path,
       stack: project.stack,
       projectDraft: project.projectDraft ?? project.context?.projectDraft ?? null,
+      projectCreationEvent: project.context?.projectCreationEvent ?? project.projectCreationEvent ?? null,
+      projectCreationEvents: project.context?.projectCreationEvents ?? project.projectCreationEvents ?? [],
+      projectCreationMetric: project.context?.projectCreationMetric ?? project.projectCreationMetric ?? null,
+      projectCreationSummary: project.context?.projectCreationSummary ?? project.projectCreationSummary ?? null,
+      existingBusinessAssets: project.context?.existingBusinessAssets ?? null,
+      repositoryImportAndCodebaseDiagnosis: project.context?.repositoryImportAndCodebaseDiagnosis ?? null,
+      liveWebsiteIngestionAndFunnelDiagnosis: project.context?.liveWebsiteIngestionAndFunnelDiagnosis ?? null,
+      importedAnalyticsNormalization: project.context?.importedAnalyticsNormalization ?? null,
+      importedAssetTaskExtraction: project.context?.importedAssetTaskExtraction ?? null,
+      nexusAppShellSchema: project.context?.nexusAppShellSchema ?? null,
+      authenticatedAppShell: project.context?.authenticatedAppShell ?? null,
+      navigationRouteSurface: project.context?.navigationRouteSurface ?? null,
+      aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
+      aiDesignRequest: project.context?.aiDesignRequest ?? null,
+      aiDesignProposal: project.context?.aiDesignProposal ?? null,
+      aiDesignProviderResult: project.context?.aiDesignProviderResult ?? null,
+      aiDesignServiceResult: project.context?.aiDesignServiceResult ?? null,
+      aiDesignExecutionState: project.context?.aiDesignExecutionState ?? null,
+      dailyWorkspaceSurface: project.context?.dailyWorkspaceSurface ?? null,
+      guidedTaskExecutionSurface: project.context?.guidedTaskExecutionSurface ?? null,
+      taskStepFlowProgress: project.context?.taskStepFlowProgress ?? null,
+      taskApprovalHandoffPanel: project.context?.taskApprovalHandoffPanel ?? null,
+      settingsProfileSurface: project.context?.settingsProfileSurface ?? null,
+      renderableScreenModel: project.context?.renderableScreenModel ?? null,
+      screenComponentMapping: project.context?.screenComponentMapping ?? null,
+      activeScreenVariantPlan: project.context?.activeScreenVariantPlan ?? null,
+      layoutCompositionPlan: project.context?.layoutCompositionPlan ?? null,
+      renderableScreenComposition: project.context?.renderableScreenComposition ?? null,
+      renderableDesignProposal: project.context?.renderableDesignProposal ?? null,
+      designProposalValidation: project.context?.designProposalValidation ?? null,
+      designProposalPreviewState: project.context?.designProposalPreviewState ?? null,
+      screenProposalDiff: project.context?.screenProposalDiff ?? null,
+      designProposalReviewState: project.context?.designProposalReviewState ?? null,
+      approvedScreenDelta: project.context?.approvedScreenDelta ?? null,
+      proposalApplyDecision: project.context?.proposalApplyDecision ?? null,
+      acceptedScreenState: project.context?.acceptedScreenState ?? null,
+      integratedDesignProposalState: project.context?.integratedDesignProposalState ?? null,
+      runtimeScreenRegistry: project.context?.runtimeScreenRegistry ?? null,
+      activeScreenResolver: project.context?.activeScreenResolver ?? null,
+      liveRuntimeScreenState: project.context?.liveRuntimeScreenState ?? null,
+      previewScreenViewModel: project.context?.previewScreenViewModel ?? null,
+      atomicExecutionEnvelope: project.context?.atomicExecutionEnvelope ?? null,
+      externalExecutionResult: project.context?.externalExecutionResult ?? null,
+      executionConsistencyReport: project.context?.executionConsistencyReport ?? null,
+      nexusPositioning: project.context?.nexusPositioning ?? null,
+      messagingFramework: project.context?.messagingFramework ?? null,
+      messagingVariants: project.context?.messagingVariants ?? null,
+      landingVariantDecision: project.context?.landingVariantDecision ?? null,
+      objectionMap: project.context?.objectionMap ?? null,
+      faqMap: project.context?.faqMap ?? null,
+      activationGoals: project.context?.activationGoals ?? null,
+      productCtaStrategy: project.context?.productCtaStrategy ?? null,
+      nexusWebsiteSchema: project.context?.nexusWebsiteSchema ?? null,
+      landingPageIa: project.context?.landingPageIa ?? null,
+      websiteCopyPack: project.context?.websiteCopyPack ?? null,
+      websiteConversionFlow: project.context?.websiteConversionFlow ?? null,
+      waitlistRecord: project.context?.waitlistRecord ?? null,
+      accessRequest: project.context?.accessRequest ?? null,
+      websiteExperimentPlan: project.context?.websiteExperimentPlan ?? null,
+      trustProofBlocks: project.context?.trustProofBlocks ?? null,
+      productDeliveryModel: project.context?.productDeliveryModel ?? null,
+      siteAppBoundary: project.context?.siteAppBoundary ?? null,
+      accessModeDecision: project.context?.accessModeDecision ?? null,
+      landingAuthHandoff: project.context?.landingAuthHandoff ?? null,
+      appEntryDecision: project.context?.appEntryDecision ?? null,
+      postLoginDestination: project.context?.postLoginDestination ?? null,
+      appLandingEntry: project.context?.appLandingEntry ?? null,
+      entryStateVariants: project.context?.entryStateVariants ?? null,
+      entryRecoveryState: project.context?.entryRecoveryState ?? null,
+      entryOrientationPanel: project.context?.entryOrientationPanel ?? null,
+      entryDecisionSupport: project.context?.entryDecisionSupport ?? null,
+      firstProjectKickoff: project.context?.firstProjectKickoff ?? null,
+      landingToDashboardFlow: project.context?.landingToDashboardFlow ?? null,
+      activationFunnel: project.context?.activationFunnel ?? null,
+      activationMilestones: project.context?.activationMilestones ?? null,
+      onboardingMarketingFlow: project.context?.onboardingMarketingFlow ?? null,
+      activationDropOffs: project.context?.activationDropOffs ?? null,
+      reEngagementPlan: project.context?.reEngagementPlan ?? null,
+      nexusContentStrategy: project.context?.nexusContentStrategy ?? null,
+      launchContentCalendar: project.context?.launchContentCalendar ?? null,
+      storyAssets: project.context?.storyAssets ?? null,
+      socialCommunityPack: project.context?.socialCommunityPack ?? null,
+      productProofPlan: project.context?.productProofPlan ?? null,
+      launchCampaignBrief: project.context?.launchCampaignBrief ?? null,
+      launchRolloutPlan: project.context?.launchRolloutPlan ?? null,
+      launchReadinessChecklist: project.context?.launchReadinessChecklist ?? null,
+      launchPublishingPlan: project.context?.launchPublishingPlan ?? null,
+      launchFeedbackSummary: project.context?.launchFeedbackSummary ?? null,
+      goToMarketPlan: project.context?.goToMarketPlan ?? null,
+      promotionExecutionPlan: project.context?.promotionExecutionPlan ?? null,
+      launchMarketingExecution: project.context?.launchMarketingExecution ?? null,
+      gtmMetricSchema: project.context?.gtmMetricSchema ?? null,
+      acquisitionSourceMetrics: project.context?.acquisitionSourceMetrics ?? null,
+      firstTouchAttribution: project.context?.firstTouchAttribution ?? null,
+      preAuthConversionEvents: project.context?.preAuthConversionEvents ?? null,
+      websiteActivationFunnel: project.context?.websiteActivationFunnel ?? null,
+      conversionAnalytics: project.context?.conversionAnalytics ?? null,
+      launchPerformanceDashboard: project.context?.launchPerformanceDashboard ?? null,
+      gtmOptimizationPlan: project.context?.gtmOptimizationPlan ?? null,
+      growthLoopManagement: project.context?.growthLoopManagement ?? null,
+      ownerControlPlane: project.context?.ownerControlPlane ?? null,
+      ownerControlCenter: project.context?.ownerControlCenter ?? null,
+      dailyOwnerOverview: project.context?.dailyOwnerOverview ?? null,
+      ownerPriorityQueue: project.context?.ownerPriorityQueue ?? null,
+      ownerActionRecommendations: project.context?.ownerActionRecommendations ?? null,
+      ownerDecisionDashboard: project.context?.ownerDecisionDashboard ?? null,
+      ownerDailyWorkflow: project.context?.ownerDailyWorkflow ?? null,
+      ownerFocusArea: project.context?.ownerFocusArea ?? null,
+      ownerTaskList: project.context?.ownerTaskList ?? null,
+      ownerRoutinePlan: project.context?.ownerRoutinePlan ?? null,
+      ownerRevenueView: project.context?.ownerRevenueView ?? null,
+      ownerCostView: project.context?.ownerCostView ?? null,
+      profitMarginSummary: project.context?.profitMarginSummary ?? null,
+      unitEconomicsDashboard: project.context?.unitEconomicsDashboard ?? null,
+      cashFlowProjection: project.context?.cashFlowProjection ?? null,
+      ownerUserAnalytics: project.context?.ownerUserAnalytics ?? null,
+      featureUsageSummary: project.context?.featureUsageSummary ?? null,
+      decisionAccuracySummary: project.context?.decisionAccuracySummary ?? null,
+      automationImpactSummary: project.context?.automationImpactSummary ?? null,
+      roadmapTracking: project.context?.roadmapTracking ?? null,
+      ownerOperationsSignals: project.context?.ownerOperationsSignals ?? null,
+      prioritizedOwnerAlerts: project.context?.prioritizedOwnerAlerts ?? null,
+      ownerAlertFeed: project.context?.ownerAlertFeed ?? null,
+      ownerIncident: project.context?.ownerIncident ?? null,
+      outageResponsePlan: project.context?.outageResponsePlan ?? null,
+      incidentTimeline: project.context?.incidentTimeline ?? null,
+      rootCauseSummary: project.context?.rootCauseSummary ?? null,
+      liveProjectMonitoring: project.context?.liveProjectMonitoring ?? null,
+      serviceReliabilityDashboard: project.context?.serviceReliabilityDashboard ?? null,
+      postExecutionEvaluation: project.context?.postExecutionEvaluation ?? null,
+      postExecutionReport: project.context?.postExecutionReport ?? null,
+      crossLayerFeedbackState: project.context?.crossLayerFeedbackState ?? null,
+      adaptiveExecutionDecision: project.context?.adaptiveExecutionDecision ?? null,
+      systemOptimizationPlan: project.context?.systemOptimizationPlan ?? null,
+      maintenanceBacklog: project.context?.maintenanceBacklog ?? null,
+      dashboardHomeSurface: project.context?.dashboardHomeSurface ?? null,
+      unifiedHomeDashboard: project.context?.unifiedHomeDashboard ?? null,
+      todayPrioritiesFeed: project.context?.todayPrioritiesFeed ?? null,
+      ownerVisibilityStrip: project.context?.ownerVisibilityStrip ?? null,
+      userActivityEvent: project.context?.userActivityEvent ?? null,
+      userActivityHistory: project.context?.userActivityHistory ?? null,
+      userSessionMetric: project.context?.userSessionMetric ?? project.manualContext?.userSessionMetric ?? null,
+      userSessionHistory: project.context?.userSessionHistory ?? null,
+      returningUserMetric: project.context?.returningUserMetric ?? null,
+      retentionSummary: project.context?.retentionSummary ?? null,
+      blockedTaskOutcomes: project.context?.blockedTaskOutcomes ?? project.state?.blockedTaskOutcomes ?? [],
+      taskExecutionMetric: project.context?.taskExecutionMetric ?? null,
+      taskExecutionCounters: project.context?.taskExecutionCounters ?? null,
+      taskThroughputSummary: project.context?.taskThroughputSummary ?? null,
+      baselineEstimate: project.context?.baselineEstimate ?? null,
+      timeSavedMetric: project.context?.timeSavedMetric ?? null,
+      timeSaved: project.context?.timeSaved ?? null,
+      productivitySummary: project.context?.productivitySummary ?? null,
+      outcomeEvaluation: project.context?.outcomeEvaluation ?? project.state?.outcomeEvaluation ?? null,
+      actionSuccessScore: project.context?.actionSuccessScore ?? project.state?.actionSuccessScore ?? null,
+      outcomeFeedbackState: project.context?.outcomeFeedbackState ?? null,
+      goalProgressState: project.context?.goalProgressState ?? null,
+      milestoneTracking: project.context?.milestoneTracking ?? null,
+      productIterationInsights: project.context?.productIterationInsights ?? null,
       approvals: project.approvals,
       state: project.state,
       normalizedSources: project.normalizedSources,
@@ -3222,13 +4110,25 @@ export class ProjectService {
       platformCostMetric: project.context?.platformCostMetric ?? null,
       aiUsageMetric: project.context?.aiUsageMetric ?? null,
       workspaceComputeMetric: project.context?.workspaceComputeMetric ?? null,
+      buildDeployCostMetric: project.context?.buildDeployCostMetric ?? null,
       storageCostMetric: project.context?.storageCostMetric ?? null,
       costSummary: project.context?.costSummary ?? null,
+      normalizedBillingEvents: project.manualContext?.normalizedBillingEvents ?? [],
+      billableUsage: project.context?.billableUsage ?? null,
       costVisibilityPayload: project.context?.costVisibilityPayload ?? null,
       costDashboardModel: project.context?.costDashboardModel ?? null,
+      workspaceMode: project.context?.workspaceMode ?? null,
+      workspaceModeDefinitions: project.context?.workspaceModeDefinitions ?? null,
+      reasonableUsagePolicy: project.context?.reasonableUsagePolicy ?? null,
       billingPlanSchema: project.context?.billingPlanSchema ?? null,
       entitlementDecision: project.context?.entitlementDecision ?? null,
+      workspaceBillingState: project.context?.workspaceBillingState ?? null,
+      payingUserMetrics: project.context?.payingUserMetrics ?? null,
+      revenueSummary: project.context?.revenueSummary ?? null,
+      billingGuardDecision: project.context?.billingGuardDecision ?? null,
+      billingApprovalRequest: project.context?.billingApprovalRequest ?? null,
       subscriptionState: project.context?.subscriptionState ?? null,
+      billingSettingsModel: project.context?.billingSettingsModel ?? null,
       costAwareActionSelection: project.context?.costAwareActionSelection ?? null,
       privacyRightsResult: project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null,
       agents: project.agents,
@@ -3264,6 +4164,8 @@ export class ProjectService {
           }
         : null,
       taskResults: project.taskResults,
+      blockedTaskOutcomes: project.blockedTaskOutcomes ?? project.state?.blockedTaskOutcomes ?? [],
+      taskTransitionEvents: project.taskTransitionEvents ?? project.state?.taskTransitionEvents ?? [],
       runtimeResults: project.runtimeResults,
       linkedAccounts: project.linkedAccounts ?? [],
       rotationResult: project.rotationResult ?? null,

@@ -23,6 +23,23 @@ import { createBootstrapExecutionResultEnvelope } from "./bootstrap-execution-re
 import { createBootstrapValidationModule } from "./bootstrap-validation-module.js";
 import { createBootstrapStateUpdater } from "./bootstrap-state-updater.js";
 import { defineExecutionProgressSchema } from "./execution-progress-schema.js";
+import { createBlockedTaskOutcomeCanonicalizer } from "./blocked-task-outcome-canonicalizer.js";
+import { defineTaskExecutionMetricSchema } from "./task-execution-metric-schema.js";
+import { createTaskExecutionTracker } from "./task-execution-tracker.js";
+import { createTaskThroughputAggregator } from "./task-throughput-aggregator.js";
+import { createBaselineEffortEstimator } from "./baseline-effort-estimator.js";
+import { defineTimeSavedEstimationSchema } from "./time-saved-estimation-schema.js";
+import { createTimeSavedCalculator } from "./time-saved-calculator.js";
+import { createProductivitySummaryAggregator } from "./productivity-summary-aggregator.js";
+import { defineOutcomeEvaluationSchema } from "./outcome-evaluation-schema.js";
+import { createActionSuccessScoringEngine } from "./action-success-scoring-engine.js";
+import { createOutcomeFeedbackLoop } from "./outcome-feedback-loop.js";
+import { createGoalProgressEvaluator } from "./goal-progress-evaluator.js";
+import { defineUserActivityEventSchema } from "./user-activity-event-schema.js";
+import { createSessionActivityTracker } from "./session-activity-tracker.js";
+import { createReturningUserResolver } from "./returning-user-resolver.js";
+import { createRetentionMetricsAggregator } from "./retention-metrics-aggregator.js";
+import { createDurableUserActivitySessionHistory } from "./user-activity-session-history-store.js";
 import { createRunProgressNormalizer } from "./run-progress-normalizer.js";
 import { createProgressPhaseResolver } from "./progress-phase-resolver.js";
 import { createProgressPercentageCalculator } from "./progress-percentage-calculator.js";
@@ -33,10 +50,109 @@ import { createLiveLogStreamingModule } from "./live-log-streaming-module.js";
 import { createReactiveWorkspaceRefreshModel } from "./reactive-workspace-refresh-model.js";
 import { defineRealtimeEventStreamSchema } from "./realtime-event-stream-schema.js";
 import { defineCollaborationEventSchema } from "./collaboration-event-schema.js";
+import { createBaselineCollaborationEventAssembler } from "./baseline-collaboration-event-assembler.js";
 import { createProjectPresenceModel } from "./project-presence-model.js";
 import { createProjectCommentsAndReviewThreadsModule } from "./project-comments-review-threads-module.js";
 import { createSharedApprovalFlowModel } from "./shared-approval-flow-model.js";
 import { createCollaborationActivityFeed } from "./collaboration-activity-feed.js";
+import { createBaselineCollaborationActivityHistoryAssembler } from "./baseline-collaboration-activity-history-assembler.js";
+import { createCoreMessagingFramework } from "./core-messaging-framework.js";
+import { createAudienceSpecificMessagingVariants } from "./audience-specific-messaging-variants.js";
+import { createPersonaSpecificLandingVariantResolver } from "./persona-specific-landing-variant-resolver.js";
+import { deriveActivationGoals } from "./activation-goals-helper.js";
+import { createObjectionAndFaqMap } from "./objection-faq-map.js";
+import { defineNexusWebsiteSchema } from "./nexus-website-schema.js";
+import { createLandingPageInformationArchitecture } from "./landing-page-information-architecture.js";
+import { createNexusWebsiteCopyPack } from "./nexus-website-copy-pack.js";
+import { createWebsiteConversionFlow } from "./website-conversion-flow.js";
+import { createWaitlistAndAccessRequestModule } from "./waitlist-access-request-module.js";
+import { createWebsiteExperimentAndCtaTestLayer } from "./website-experiment-cta-test-layer.js";
+import { createTrustProofBlockBuilder } from "./trust-proof-block-builder.js";
+import { defineProductDeliveryModelSchema } from "./product-delivery-model-schema.js";
+import { createPublicSiteAndAppBoundaryModel } from "./public-site-app-boundary-model.js";
+import { createAccessModeResolver } from "./access-mode-resolver.js";
+import { createPublicLandingAuthHandoffFlow } from "./public-landing-auth-handoff-flow.js";
+import { createAppEntryGateResolver } from "./app-entry-gate-resolver.js";
+import { createPostLoginDestinationResolver } from "./post-login-destination-resolver.js";
+import { createFirstProjectKickoffFlow } from "./first-project-kickoff-flow.js";
+import { createLandingToDashboardFunnelAssembler } from "./landing-to-dashboard-funnel-assembler.js";
+import { createAppLandingEntryExperience } from "./app-landing-entry-experience.js";
+import { createEntryStateVariantsAndRedirects } from "./entry-state-variants-redirects.js";
+import { createEntryLoadingAndRecoveryStates } from "./entry-loading-recovery-states.js";
+import { createAppEntryTrustAndOrientationPanel } from "./app-entry-trust-orientation-panel.js";
+import { createEntryDecisionSupportFlow } from "./entry-decision-support-flow.js";
+import { createRepositoryImportAndCodebaseDiagnosisBridge } from "./repository-import-codebase-diagnosis-bridge.js";
+import { createLiveWebsiteIngestionFunnelDiagnosisModel } from "./live-website-ingestion-funnel-diagnosis-model.js";
+import { createImportedAnalyticsNormalizationLayer } from "./imported-analytics-normalization-layer.js";
+import { createImportedAssetTaskExtractionModule } from "./imported-asset-task-extraction-module.js";
+import { defineActivationFunnelSchema } from "./activation-funnel-schema.js";
+import { createFirstValueMilestoneMapper } from "./first-value-milestone-mapper.js";
+import { createOnboardingMarketingCopyFlow } from "./onboarding-marketing-copy-flow.js";
+import { createActivationDropOffDetector } from "./activation-drop-off-detector.js";
+import { createReEngagementTriggerPlanner } from "./re-engagement-trigger-planner.js";
+import { createNexusContentStrategyProfile } from "./nexus-content-strategy-profile.js";
+import { createLaunchContentCalendar } from "./launch-content-calendar.js";
+import { createFounderAndProductStoryAssetBuilder } from "./founder-product-story-asset-builder.js";
+import { createSocialAndCommunityContentPack } from "./social-community-content-pack.js";
+import { createProductDemoAndProofAssetPlan } from "./product-demo-proof-asset-plan.js";
+import { createNexusLaunchCampaignBrief } from "./nexus-launch-campaign-brief.js";
+import { createLaunchChannelRolloutPlan } from "./launch-channel-rollout-plan.js";
+import { createLaunchAssetReadinessChecklist } from "./launch-asset-readiness-checklist.js";
+import { createLaunchDraftPublishingPlan } from "./launch-draft-publishing-plan.js";
+import { createLaunchFeedbackIntakeModule } from "./launch-feedback-intake-module.js";
+import { createGoToMarketPlanningModel } from "./go-to-market-planning-model.js";
+import { createPromotionExecutionPlanner } from "./promotion-execution-planner.js";
+import { createLaunchMarketingExecutionTracker } from "./launch-marketing-execution-tracker.js";
+import { defineGtmMetricSchema } from "./gtm-metric-schema.js";
+import { createAcquisitionSourceTracker } from "./acquisition-source-tracker.js";
+import { createWebsiteToActivationFunnelAnalyzer } from "./website-to-activation-funnel-analyzer.js";
+import { createLaunchPerformanceDashboardAssembler } from "./launch-performance-dashboard-assembler.js";
+import { createGtmOptimizationLoop } from "./gtm-optimization-loop.js";
+import { createFirstTouchAttributionRecorder } from "./first-touch-attribution-recorder.js";
+import { createPreAuthConversionEventCollector } from "./pre-auth-conversion-event-collector.js";
+import { createConversionAnalyticsModel } from "./conversion-analytics-model.js";
+import { createGrowthLoopManagementState } from "./growth-loop-management-state.js";
+import { defineOwnerControlPlaneSchema } from "./owner-control-plane-schema.js";
+import { createOwnerControlCenter } from "./owner-control-center.js";
+import { createDailyOverviewGenerator } from "./daily-overview-generator.js";
+import { createOwnerPriorityEngine } from "./owner-priority-engine.js";
+import { createActionRecommendationSystem } from "./action-recommendation-system.js";
+import { createOwnerDecisionDashboard } from "./owner-decision-dashboard.js";
+import { createDailyWorkflowGenerator } from "./daily-workflow-generator.js";
+import { createFocusAreaSelector } from "./focus-area-selector.js";
+import { createTaskRecommendationEngine } from "./task-recommendation-engine.js";
+import { createOwnerRoutineAssistant } from "./owner-routine-assistant.js";
+import { createProductIterationFeedbackEngine } from "./product-iteration-feedback-engine.js";
+import { createRevenueTrackingSystem } from "./revenue-tracking-system.js";
+import { createCostTrackingSystem } from "./cost-tracking-system.js";
+import { createProfitMarginAnalyzer } from "./profit-margin-analyzer.js";
+import { createUnitEconomicsDashboard } from "./unit-economics-dashboard.js";
+import { createCashFlowProjectionEngine } from "./cash-flow-projection-engine.js";
+import { createUserAnalyticsDashboard } from "./user-analytics-dashboard.js";
+import { createFeatureUsageTracker } from "./feature-usage-tracker.js";
+import { createDecisionAccuracyTracker } from "./decision-accuracy-tracker.js";
+import { createAutomationImpactTracker } from "./automation-impact-tracker.js";
+import { createSystemRoadmapTracker } from "./system-roadmap-tracker.js";
+import { createOperationsSignalAggregator } from "./operations-signal-aggregator.js";
+import { createCriticalAlertPrioritizer } from "./critical-alert-prioritizer.js";
+import { createNoiseSuppressionSystem } from "./noise-suppression-system.js";
+import { createIncidentDetectionSystem } from "./incident-detection-system.js";
+import { createOutageResponseManager } from "./outage-response-manager.js";
+import { createIncidentTimelineTracker } from "./incident-timeline-tracker.js";
+import { createRootCauseAnalysisSystem } from "./root-cause-analysis-system.js";
+import { createLiveProjectMonitoringModel } from "./live-project-monitoring-model.js";
+import { createMaintenanceTaskGenerationEngine } from "./maintenance-task-generation-engine.js";
+import { createServiceReliabilityDashboardModel } from "./service-reliability-dashboard-model.js";
+import { defineProductBoundarySchema } from "./product-boundary-schema.js";
+import { createCapabilityPromiseAndLimitMap } from "./capability-promise-limit-map.js";
+import { createBoundaryDisclosureAndExpectationModel } from "./boundary-disclosure-expectation-model.js";
+import { defineSystemCapabilityRegistrySchema } from "./system-capability-registry-schema.js";
+import { createSystemCapabilityResolver } from "./system-capability-resolver.js";
+import { createExistingBusinessAssetNormalizationLayer } from "./existing-business-asset-normalization-layer.js";
+import { createAtomicExternalActionEnvelope } from "./atomic-external-action-envelope.js";
+import { createExternalExecutionDispatchModule } from "./external-execution-dispatch-module.js";
+import { createExecutionConsistencyValidator } from "./execution-consistency-validator.js";
+import { createProductCtaStrategy } from "./product-cta-strategy.js";
 import { createExecutionLogFormatter } from "./execution-log-formatter.js";
 import { createExecutionCompletionNotifier } from "./execution-completion-notifier.js";
 import { createPlatformLoggingAndTracingLayer } from "./platform-logging-tracing-layer.js";
@@ -47,6 +163,15 @@ import { createSecurityAuditEventLogger } from "./security-audit-event-logger.js
 import { defineProjectAuditEventSchema } from "./project-audit-event-schema.js";
 import { createProjectAuditEventCollector } from "./project-audit-event-collector.js";
 import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-model.js";
+import { createOwnerAuditLogViewer } from "./owner-audit-log-viewer.js";
+import { createSystemWideActivityTracker } from "./system-wide-activity-tracker.js";
+import { createCriticalChangeHistorySystem } from "./critical-change-history-system.js";
+import { createMilestoneTrackingSystem } from "./milestone-tracking-system.js";
+import { definePostExecutionEvaluationSchema } from "./post-execution-evaluation-schema.js";
+import { createPostExecutionEvaluationPipeline } from "./post-execution-evaluation-pipeline.js";
+import { createCrossLayerFeedbackOrchestrator } from "./cross-layer-feedback-orchestrator.js";
+import { createAdaptiveExecutionLoop } from "./adaptive-execution-loop.js";
+import { createSystemOptimizationCycle } from "./system-optimization-cycle.js";
 import { defineNotificationEventSchema } from "./notification-event-schema.js";
 import { createInAppNotificationCenter } from "./in-app-notification-center.js";
 import { createEmailNotificationDeliveryModule } from "./email-notification-delivery-module.js";
@@ -89,6 +214,28 @@ import { buildAuthenticationScreenStates } from "./authentication-screen-states.
 import { createPostAuthRedirectResolver } from "./post-auth-redirect-resolver.js";
 import { createProjectCreationExperienceModel } from "./project-creation-experience-model.js";
 import { createPostProjectCreationRedirectResolver } from "./post-project-creation-redirect-resolver.js";
+import { defineNexusAppShellSchema } from "./nexus-app-shell-schema.js";
+import { createAuthenticatedAppShellModel } from "./authenticated-app-shell-model.js";
+import { createNexusNavigationAndRouteSurfaceBinder } from "./nexus-navigation-route-surface-binder.js";
+import { createDashboardHomeSurfaceModel } from "./dashboard-home-surface-model.js";
+import { createUnifiedHomeDashboardModel } from "./unified-home-dashboard-model.js";
+import { createTodayPrioritiesAndNextActionFeed } from "./today-priorities-next-action-feed.js";
+import { createOwnerVisibilityStripForHomeDashboard } from "./owner-visibility-strip.js";
+import { createDailyWorkspaceSurfaceModel } from "./daily-workspace-surface-model.js";
+import { createGuidedTaskExecutionSurface } from "./guided-task-execution-surface.js";
+import { createTaskStepFlowAndProgressBinder } from "./task-step-flow-progress-binder.js";
+import { createTaskApprovalHandoffPanel } from "./task-approval-handoff-panel.js";
+import { createSettingsAndProfileSurfaceModel } from "./settings-profile-surface-model.js";
+import { createAiControlCenterAndGeneratedSurfaceDeliveryBinder } from "./ai-control-center-generated-surface-delivery-binder.js";
+import { createAiDesignService } from "./ai-design-service.js";
+import { createAiDesignExecutionHook } from "./ai-design-execution-hook.js";
+import { createRenderableDesignProposalNormalizer } from "./renderable-design-proposal-normalizer.js";
+import { createDesignProposalValidationFlow } from "./design-proposal-validation-flow.js";
+import { createDesignProposalPreviewPipeline } from "./design-proposal-preview-pipeline.js";
+import { createScreenProposalDiffModel } from "./screen-proposal-diff-model.js";
+import { createDesignProposalReviewHandoff } from "./design-proposal-review-handoff.js";
+import { createDesignProposalEditApplyBinder } from "./design-proposal-edit-apply-binder.js";
+import { createDesignProposalStateIntegration } from "./design-proposal-state-integration.js";
 import { createOnboardingProgressModel } from "./onboarding-progress-model.js";
 import { buildOnboardingScreenFlow } from "./onboarding-screen-flow.js";
 import { createOnboardingCompletionEvaluator } from "./onboarding-completion-evaluator.js";
@@ -100,6 +247,7 @@ import { createPrivilegedActionAuthorityResolver } from "./privileged-action-aut
 import { defineTenantIsolationSchema } from "./tenant-isolation-schema.js";
 import { createWorkspaceIsolationGuard } from "./workspace-isolation-guard.js";
 import { createCrossTenantLeakDetector } from "./cross-tenant-leak-detector.js";
+import { createBaselineTenantBoundaryEvidenceAssembler } from "./baseline-tenant-boundary-evidence-assembler.js";
 import { defineReliabilityAndSlaSchema } from "./reliability-sla-model.js";
 import { defineFeatureFlagSchema } from "./feature-flag-schema.js";
 import { createFeatureFlagResolver } from "./feature-flag-resolver.js";
@@ -110,12 +258,21 @@ import { createAiUsageMeter } from "./ai-usage-meter.js";
 import { createWorkspaceComputeUsageTracker } from "./workspace-compute-usage-tracker.js";
 import { createPrivacyRetentionAndDeletionPolicyResolver } from "./privacy-retention-and-deletion-policy-resolver.js";
 import { createStorageAndArtifactCostTracker } from "./storage-and-artifact-cost-tracker.js";
+import { createBuildDeployCostTracker } from "./build-deploy-cost-tracker.js";
 import { createCostSummaryAggregator } from "./cost-summary-aggregator.js";
+import { createUsageToBillingMapper } from "./usage-to-billing-mapper.js";
 import { createUsageBudgetGuard } from "./usage-budget-guard.js";
 import { createCostVisibilityApiModel } from "./cost-visibility-api-model.js";
 import { createCostAwareActionSelector } from "./cost-aware-action-selector.js";
+import { createWorkspaceOperatingModeResolver } from "./workspace-operating-mode-resolver.js";
+import { createReasonableUsagePolicyResolver } from "./reasonable-usage-policy-resolver.js";
+import { createBillingEnforcementGuard } from "./billing-enforcement-guard.js";
+import { createBillingSettingsModel } from "./billing-settings-model.js";
 import { defineBillingPlanSchema } from "./billing-plan-schema.js";
 import { resolveEntitlementDecision } from "./entitlement-decision-resolver.js";
+import { createWorkspaceBillingStateSource } from "./workspace-billing-state-source.js";
+import { createPayingUserTracker } from "./paying-user-tracker.js";
+import { createRevenueSummaryAggregator } from "./revenue-summary-aggregator.js";
 import { createSubscriptionLifecycle } from "./subscription-lifecycle-module.js";
 import { createComplianceConsentAndLegalBasisRegistry } from "./compliance-consent-and-legal-basis-registry.js";
 import { createComplianceAuditSummary } from "./compliance-audit-summary.js";
@@ -192,6 +349,7 @@ import { createFirstTangibleOutcomeGenerator } from "./first-tangible-outcome-ge
 import { createProgressToRealityMapper } from "./progress-to-reality-mapper.js";
 import { createFirstValueSummaryAssembler } from "./first-value-summary-assembler.js";
 import { defineProjectIdentitySchema } from "./project-identity-schema.js";
+import { defineNexusPositioningSchema } from "./nexus-positioning-schema.js";
 import { createProjectIdentityAssembler } from "./project-identity-assembler.js";
 import { createInstantValueOutputResolver } from "./instant-value-output-resolver.js";
 import { defineV1AcceptanceScenarioSchema } from "./v1-acceptance-scenario-schema.js";
@@ -235,6 +393,8 @@ import { createMobileUsabilityValidator } from "./mobile-usability-validator.js"
 import { createStateCoverageValidator } from "./state-coverage-validator.js";
 import { createConsistencyValidator } from "./consistency-validator.js";
 import { createScreenReviewAssembler } from "./screen-review-assembler.js";
+import { createBaselineLearningInsightsAssembler } from "./baseline-learning-insights-assembler.js";
+import { createBaselineUserPreferenceProfileAssembler } from "./baseline-user-preference-profile-assembler.js";
 import { defineLearningInsightUiSchema } from "./learning-insight-ui-schema.js";
 import { createRecommendationReasoningPanelContract } from "./recommendation-reasoning-panel-contract.js";
 import { createPatternConfidenceIndicator } from "./pattern-confidence-indicator.js";
@@ -248,6 +408,7 @@ import { createContextSlimmingPipeline } from "./context-slimming-pipeline.js";
 import { defineEditableProposalSchema } from "./editable-proposal-schema.js";
 import { createProposalEditingSystem } from "./proposal-editing-system.js";
 import { createPartialAcceptanceFlow } from "./partial-acceptance-flow.js";
+import { createBaselineApprovalOutcomeSchema } from "./baseline-approval-outcome-schema.js";
 import { createCompanionStateModel } from "./companion-state-model.js";
 import { defineAiCompanionPresenceSchema } from "./ai-companion-presence-schema.js";
 import { createCompanionTriggerPolicy } from "./companion-trigger-policy.js";
@@ -284,10 +445,18 @@ import { createDisasterRecoveryChecklist } from "./disaster-recovery-checklist.j
 import { createFailoverAndContinuityPlanner } from "./failover-continuity-planner.js";
 import { createBusinessContinuityLifecycleManager } from "./business-continuity-lifecycle-manager.js";
 import { createAuthenticationSystem } from "./authentication-system.js";
+import { createDeviceTrustSystem } from "./device-trust-system.js";
+import { createOwnerSecureAuthenticationSystem } from "./owner-secure-authentication-system.js";
+import { createOwnerMfaEnforcement } from "./owner-mfa-enforcement.js";
 import { createAuthenticationRouteResolver } from "./authentication-route-resolver.js";
 import { createSecuritySignals } from "./security-signals-schema.js";
 import { createSessionAndTokenManagement } from "./session-and-token-management.js";
 import { createSessionSecurityControls } from "./session-security-controls.js";
+import { createSensitiveActionConfirmationSystem } from "./sensitive-action-confirmation-system.js";
+import { createStepUpAuthenticationSystem } from "./step-up-authentication-system.js";
+import { createPrivilegedModeSystem } from "./privileged-mode-system.js";
+import { createAdminOnlyAccessLayer } from "./admin-only-access-layer.js";
+import { createCriticalOperationGuardrails } from "./critical-operation-guardrails.js";
 import { createPasswordResetAndEmailVerificationFlow } from "./password-reset-email-verification-flow.js";
 import { defineWorkspaceAndMembershipModel } from "./workspace-membership-model.js";
 import { createProjectAccessControlModule } from "./project-access-control-module.js";
@@ -1125,8 +1294,27 @@ export function buildProjectContext(
     securityAuditLogStore = null,
     snapshotStore = null,
     reviewThreadStore = null,
+    userActivityHistoryStore = null,
   } = {},
 ) {
+  const baseTaskResults = project.taskResults ?? project.state?.taskResults ?? [];
+  const { blockedTaskOutcomes } = createBlockedTaskOutcomeCanonicalizer({
+    projectId: project.id ?? null,
+    executionGraph: project.cycle?.executionGraph ?? null,
+    roadmap: project.cycle?.roadmap ?? [],
+    taskAssignments: project.cycle?.assignments ?? [],
+    runtimeResults: project.runtimeResults ?? [],
+    existingTaskResults: baseTaskResults,
+  });
+  const blockedTaskOutcomeByTaskId = new Map(
+    blockedTaskOutcomes
+      .filter((result) => result?.taskId)
+      .map((result) => [result.taskId, result]),
+  );
+  const canonicalTaskResults = [
+    ...baseTaskResults.filter((result) => result?.status !== "blocked" || !blockedTaskOutcomeByTaskId.has(result?.taskId)),
+    ...blockedTaskOutcomes,
+  ];
   const domainDecision = inferDomain(project);
   const domain = domainDecision.domain;
   const domainRegistry = createDomainRegistry();
@@ -1161,6 +1349,31 @@ export function buildProjectContext(
     businessContext,
     domainDecision,
   });
+  const { nexusPositioning } = defineNexusPositioningSchema({
+    productVision: {
+      statement: projectIdentity?.vision ?? project.goal ?? null,
+      problem: project.projectIntake?.problem ?? projectIdentity?.vision ?? project.goal ?? null,
+      promise: project.projectIntake?.promise ?? projectIdentity?.differentiation ?? null,
+      proofPoints: project.projectIntake?.proofPoints ?? [],
+    },
+    targetAudience: businessContext?.targetAudience ?? null,
+    competitiveContext: project.manualContext?.competitiveContext ?? null,
+  });
+  const { messagingFramework } = createCoreMessagingFramework({
+    nexusPositioning,
+  });
+  const { messagingVariants } = createAudienceSpecificMessagingVariants({
+    coreMessagingFramework: messagingFramework,
+    nexusPositioning,
+    businessContext,
+    projectIdentity,
+  });
+  const { objectionMap, faqMap } = createObjectionAndFaqMap({
+    messagingFramework,
+    businessContext,
+    projectIdentity,
+    manualContext: project.manualContext ?? null,
+  });
   const { projectDraft } = defineProjectDraftSchema({
     userIdentity: {
       userId: project.userId ?? project.manualContext?.userId ?? null,
@@ -1177,6 +1390,38 @@ export function buildProjectContext(
       links: project.projectIntake?.externalLinks ?? [],
     },
     existingProjectDraft: project.projectDraft ?? null,
+  });
+  const { existingBusinessAssets } = createExistingBusinessAssetNormalizationLayer({
+    projectId: project.id,
+    projectIntake: project.projectIntake ?? null,
+    intakeScanHandoff: project.intakeScanHandoff ?? null,
+    scan: project.scan ?? null,
+    gitSnapshot: project.gitSnapshot ?? null,
+  });
+  const { repositoryImportAndCodebaseDiagnosis } = createRepositoryImportAndCodebaseDiagnosisBridge({
+    projectId: project.id,
+    existingBusinessAssets,
+    scan: project.scan ?? null,
+    gitSnapshot: project.gitSnapshot ?? null,
+  });
+  const { liveWebsiteIngestionAndFunnelDiagnosis } = createLiveWebsiteIngestionFunnelDiagnosisModel({
+    projectId: project.id,
+    existingBusinessAssets,
+    externalSnapshot: project.externalSnapshot ?? null,
+    scan: project.scan ?? null,
+  });
+  const { importedAnalyticsNormalization } = createImportedAnalyticsNormalizationLayer({
+    projectId: project.id,
+    existingBusinessAssets,
+    externalSnapshot: project.externalSnapshot ?? null,
+    runtimeSnapshot: project.runtimeSnapshot ?? null,
+  });
+  const { importedAssetTaskExtraction } = createImportedAssetTaskExtractionModule({
+    projectId: project.id,
+    existingBusinessAssets,
+    repositoryImportAndCodebaseDiagnosis,
+    liveWebsiteIngestionAndFunnelDiagnosis,
+    importedAnalyticsNormalization,
   });
   const { projectIdentityProfile, identityCompleteness } = createProjectIdentityAssembler({
     projectIdentity,
@@ -1431,7 +1676,7 @@ export function buildProjectContext(
     bootstrapResult,
     expectedArtifacts: bootstrapPlan?.artifactManifest ?? [],
     scan: project.scan ?? null,
-    taskResults: project.taskResults ?? [],
+    taskResults: canonicalTaskResults,
   });
   const {
     updatedProjectState: bootstrapStateUpdate,
@@ -1475,7 +1720,60 @@ export function buildProjectContext(
       completionEstimate: bootstrapValidation?.isValid ? "completed" : null,
     },
     runtimeLogs: [],
-    taskResults: project.taskResults ?? [],
+    taskResults: canonicalTaskResults,
+  });
+  const { taskExecutionMetric } = defineTaskExecutionMetricSchema({
+    projectId: project.id ?? null,
+    taskResults: canonicalTaskResults,
+    roadmap: project.cycle?.roadmap ?? [],
+  });
+  const { taskExecutionCounters } = createTaskExecutionTracker({
+    taskExecutionMetric,
+  });
+  const { taskThroughputSummary } = createTaskThroughputAggregator({
+    taskExecutionMetric,
+    taskExecutionCounters,
+  });
+  const { baselineEstimate } = createBaselineEffortEstimator({
+    projectId: project.id ?? null,
+    taskResults: canonicalTaskResults,
+    domain,
+    context: project.context ?? null,
+  });
+  const { timeSavedMetric } = defineTimeSavedEstimationSchema({
+    projectId: project.id ?? null,
+    taskResults: canonicalTaskResults,
+    events: project.events ?? [],
+    baselineEstimates: Object.fromEntries(
+      (baselineEstimate?.entries ?? [])
+        .filter((entry) => entry?.taskId)
+        .map((entry) => [entry.taskId, entry.baselineEstimateMs]),
+    ),
+  });
+  const { timeSaved } = createTimeSavedCalculator({
+    projectId: project.id ?? null,
+    timeSavedMetric,
+  });
+  const { productivitySummary } = createProductivitySummaryAggregator({
+    timeSaved,
+  });
+  const { outcomeEvaluation } = defineOutcomeEvaluationSchema({
+    projectId: project.id ?? null,
+    taskResults: canonicalTaskResults,
+    taskExecutionMetric,
+    taskThroughputSummary,
+    productivitySummary,
+  });
+  const { actionSuccessScore } = createActionSuccessScoringEngine({
+    projectId: project.id ?? null,
+    outcomeEvaluation,
+  });
+  const { outcomeFeedbackState } = createOutcomeFeedbackLoop({
+    projectId: project.id ?? null,
+    outcomeEvaluation,
+    actionSuccessScore,
+    taskThroughputSummary,
+    productivitySummary,
   });
   const { progressPhase } = createProgressPhaseResolver({
     normalizedProgressInputs,
@@ -1492,6 +1790,13 @@ export function buildProjectContext(
     progressPhase,
     progressPercent,
     completionEstimate,
+  });
+  const { goalProgressState } = createGoalProgressEvaluator({
+    projectId: project.id ?? null,
+    goal: project.goal ?? null,
+    outcomeFeedbackState,
+    progressState,
+    actionSuccessScore,
   });
   const { formattedLogs, userFacingMessages } = createExecutionLogFormatter({
     rawLogs: executionProgressSchema.logSchema.entries ?? [],
@@ -1798,7 +2103,7 @@ export function buildProjectContext(
       policyTrace,
     },
     executionGraph: project.cycle?.executionGraph ?? null,
-    taskResults: project.taskResults ?? [],
+    taskResults: canonicalTaskResults,
   });
   const { packagingRequirements } = definePackagingRequirementsSchema({
     buildArtifact: artifactRecord.artifacts,
@@ -1958,11 +2263,10 @@ export function buildProjectContext(
   const capabilities = buildCapabilities(project);
   const gaps = buildGaps(project);
   const flows = buildFlows(project);
-  const { userJourneys, journeySteps } = definePrimaryUserJourneys({
+  const { userJourneys, journeySteps, journeyStateRegistry, journeyTransitionRegistry } = definePrimaryUserJourneys({
     productGoals: [project.goal],
     coreCapabilities: capabilities,
     businessContext,
-    growthMarketingPlan,
   });
   const { journeyMap } = createJourneyMap({
     userJourneys,
@@ -2241,8 +2545,39 @@ export function buildProjectContext(
     stateCoverageValidation,
     consistencyValidation,
   });
+  const { learningInsights } = createBaselineLearningInsightsAssembler({
+    taskResults: canonicalTaskResults,
+    approvalRecords,
+    approvalStatus,
+    workspaceModel: project.context?.workspaceModel ?? project.state?.workspaceModel ?? null,
+  });
+  const { userIdentity } = defineUserIdentitySchema({
+    userProfile: {
+      userId: project.userId ?? project.manualContext?.userId ?? null,
+      email: project.manualContext?.userProfile?.email ?? null,
+      displayName: project.manualContext?.userProfile?.displayName ?? null,
+      status: project.manualContext?.userProfile?.status ?? "active",
+      verificationStatus: project.manualContext?.userProfile?.verificationStatus ?? null,
+    },
+    authMetadata: {
+      provider: project.manualContext?.authMetadata?.provider ?? "password",
+      sessionStatus: project.manualContext?.authMetadata?.sessionStatus ?? "authenticated",
+      hasMfa: project.manualContext?.authMetadata?.hasMfa ?? false,
+      lastLoginAt: project.manualContext?.authMetadata?.lastLoginAt ?? null,
+    },
+  });
+  const { notificationPreferences } = createNotificationPreferenceSettings({
+    userIdentity,
+    preferenceInput: project.manualContext?.deliveryPreferences ?? null,
+  });
+  const { userPreferenceProfile } = createBaselineUserPreferenceProfileAssembler({
+    userIdentity,
+    notificationPreferences,
+    approvalRecords,
+    approvalStatus,
+  });
   const { learningInsightViewModel } = defineLearningInsightUiSchema({
-    learningInsights: project.context?.learningInsights ?? null,
+    learningInsights,
     learningTrace: project.context?.learningTrace ?? null,
   });
   const { reasoningPanel } = createRecommendationReasoningPanelContract({
@@ -2254,7 +2589,7 @@ export function buildProjectContext(
     learningInsightViewModel,
   });
   const { userPreferenceSignals } = createUserPreferenceSignalView({
-    userPreferenceProfile: project.context?.userPreferenceProfile ?? null,
+    userPreferenceProfile,
     approvalFeedbackMemory: project.context?.approvalFeedbackMemory ?? project.approvalRecords ?? [],
   });
   const { crossProjectPatternPanel } = createCrossProjectPatternDisclosurePanel({
@@ -2262,7 +2597,7 @@ export function buildProjectContext(
     recommendationHints: project.context?.recommendationHints ?? [],
   });
   const { learningDisclosure } = createPassiveLearningDisclosureBanner({
-    learningInsights: project.context?.learningInsights ?? null,
+    learningInsights,
   });
   const { aiLearningWorkspaceTemplate } = createAiLearningWorkspaceTemplate({
     screenTemplateSchema: defineScreenTemplateSchema({ screenType: "workspace" }).screenTemplateSchema,
@@ -2312,7 +2647,7 @@ export function buildProjectContext(
     },
   });
   const { companionState } = createCompanionStateModel({
-    learningInsights: project.context?.learningInsights ?? null,
+    learningInsights,
     decisionIntelligence,
     notificationPayload,
   });
@@ -2326,7 +2661,7 @@ export function buildProjectContext(
     },
   });
   const { companionMessagePriority } = createCompanionMessagePriorityResolver({
-    learningInsights: project.context?.learningInsights ?? null,
+    learningInsights,
     gatingDecision,
     notificationPayload,
   });
@@ -2351,16 +2686,15 @@ export function buildProjectContext(
     companionTriggerDecision,
   });
   const { companionModeSettings } = createCompanionModeControls({
-    userPreferenceProfile: project.context?.userPreferenceProfile ?? null,
+    userPreferenceProfile,
     companionPresence,
   });
   const { interruptionDecision } = createCompanionInterruptionGuard({
     companionTriggerDecision,
-    gatingDecision,
     progressState,
   });
   const { aiCompanionTemplate } = createAiCompanionWorkspaceTemplate({
-    screenTemplateSchema: defineScreenTemplateSchema({ screenType: "workspace" }).screenTemplateSchema,
+    screenTemplateSchema,
     companionDock,
     companionPanel,
   });
@@ -2403,21 +2737,6 @@ export function buildProjectContext(
   context.gaps = context.state.gaps;
   context.flows = context.state.flows;
   context.bottleneck = resolveBottleneck(project, context);
-  const { userIdentity } = defineUserIdentitySchema({
-    userProfile: {
-      userId: project.userId ?? project.manualContext?.userId ?? null,
-      email: project.manualContext?.userProfile?.email ?? null,
-      displayName: project.manualContext?.userProfile?.displayName ?? null,
-      status: project.manualContext?.userProfile?.status ?? "active",
-      verificationStatus: project.manualContext?.userProfile?.verificationStatus ?? null,
-    },
-    authMetadata: {
-      provider: project.manualContext?.authMetadata?.provider ?? "password",
-      sessionStatus: project.manualContext?.authMetadata?.sessionStatus ?? "authenticated",
-      hasMfa: project.manualContext?.authMetadata?.hasMfa ?? false,
-      lastLoginAt: project.manualContext?.authMetadata?.lastLoginAt ?? null,
-    },
-  });
   const { authenticationState } = createAuthenticationSystem({
     userIdentity,
     credentials: {
@@ -2430,10 +2749,6 @@ export function buildProjectContext(
   const { notificationCenterState } = createInAppNotificationCenter({
     notificationEvent,
     userIdentity,
-  });
-  const { notificationPreferences } = createNotificationPreferenceSettings({
-    userIdentity,
-    preferenceInput: project.manualContext?.deliveryPreferences ?? null,
   });
   const { emailDeliveryResult } = createEmailNotificationDeliveryModule({
     notificationEvent: {
@@ -2489,6 +2804,19 @@ export function buildProjectContext(
     userIdentity,
     workspaceMetadata: project.manualContext?.workspaceMetadata ?? null,
   });
+  const { ownerAuthState } = createOwnerSecureAuthenticationSystem({
+    userIdentity,
+    authenticationState,
+    sessionSecurityDecision,
+    membershipRecord,
+    workspaceModel,
+  });
+  const { ownerMfaDecision } = createOwnerMfaEnforcement({
+    ownerAuthState,
+    authenticationState,
+    sessionSecurityDecision,
+    requestContext: project.manualContext?.ownerSecurityContext ?? null,
+  });
   const { complianceConsentState } = createComplianceConsentAndLegalBasisRegistry({
     userIdentity,
     consentRecord: project.manualContext?.consentRecordOverride ?? consentRecord,
@@ -2531,6 +2859,78 @@ export function buildProjectContext(
     projectIntake: project.projectIntake ?? project.onboardingSession?.projectIntake ?? null,
     onboardingCompletionDecision,
     onboardingSession: project.onboardingSession ?? null,
+  });
+  const { activationGoals } = deriveActivationGoals({
+    nexusPositioning,
+    onboardingCompletionDecision,
+    projectCreationSummary: project.projectCreationSummary ?? null,
+  });
+  const { productCtaStrategy } = createProductCtaStrategy({
+    messagingFramework,
+    activationGoals,
+    analyticsSummary: project.analyticsSummary ?? null,
+  });
+  const { nexusWebsiteSchema } = defineNexusWebsiteSchema({
+    messagingFramework,
+    productCtaStrategy,
+  });
+  const { landingPageIa } = createLandingPageInformationArchitecture({
+    nexusWebsiteSchema,
+    messagingFramework,
+  });
+  const { websiteCopyPack } = createNexusWebsiteCopyPack({
+    nexusWebsiteSchema,
+    landingPageIa,
+    messagingFramework,
+    objectionMap,
+    faqMap,
+    productCtaStrategy,
+  });
+  const { websiteConversionFlow } = createWebsiteConversionFlow({
+    productCtaStrategy,
+    authenticationState,
+  });
+  const { waitlistRecord, accessRequest } = createWaitlistAndAccessRequestModule({
+    visitorInput: project.manualContext?.visitorInput ?? {
+      email: userIdentity?.email ?? null,
+    },
+    websiteConversionFlow,
+  });
+  const { websiteExperimentPlan } = createWebsiteExperimentAndCtaTestLayer({
+    websiteCopyPack,
+    productCtaStrategy,
+    analyticsSummary: project.analyticsSummary ?? null,
+  });
+  const { trustProofBlocks } = createTrustProofBlockBuilder({
+    messagingFramework,
+    objectionMap,
+    landingPageIa,
+  });
+  const { productDeliveryModel } = defineProductDeliveryModelSchema({
+    businessContext,
+    distributionConstraints: businessContext?.constraints ?? [],
+    nexusWebsiteSchema,
+  });
+  const { siteAppBoundary } = createPublicSiteAndAppBoundaryModel({
+    productDeliveryModel,
+    nexusWebsiteSchema,
+  });
+  const { accessModeDecision } = createAccessModeResolver({
+    productDeliveryModel,
+    launchStage: businessContext?.gtmStage ?? null,
+    visitorContext: project.manualContext?.visitorContext ?? project.manualContext?.visitorInput ?? null,
+    waitlistRecord,
+    accessRequest,
+  });
+  const { landingAuthHandoff } = createPublicLandingAuthHandoffFlow({
+    siteAppBoundary,
+    accessModeDecision,
+    productCtaStrategy,
+  });
+  const { appEntryDecision } = createAppEntryGateResolver({
+    landingAuthHandoff,
+    authenticationState,
+    sessionState,
   });
   const { projectPermissionSchema } = defineProjectPermissionSchema({
     workspaceModel,
@@ -2583,11 +2983,70 @@ export function buildProjectContext(
     roleCapabilityMatrix,
     policyDecision,
   });
+  const { productBoundaryModel } = defineProductBoundarySchema({
+    productVision: {
+      statement: projectIdentity?.vision ?? project.goal ?? null,
+      problem: project.projectIntake?.problem ?? projectIdentity?.vision ?? project.goal ?? null,
+      promise: nexusPositioning?.promise ?? null,
+      audience: projectIdentity?.audience ?? businessContext?.targetAudience ?? null,
+    },
+    projectIdentity,
+    nexusPositioning,
+    projectAuthorizationDecision,
+    decisionIntelligence,
+  });
+  const { capabilityLimitMap } = createCapabilityPromiseAndLimitMap({
+    productBoundaryModel,
+    agentGovernancePolicy,
+  });
+  const { boundaryDisclosureModel } = createBoundaryDisclosureAndExpectationModel({
+    capabilityLimitMap,
+    messagingFramework,
+  });
+  const { systemCapabilityRegistry } = defineSystemCapabilityRegistrySchema({
+    productBoundaryModel,
+    capabilityLimitMap,
+    executionModes,
+  });
+  const { capabilityDecision } = createSystemCapabilityResolver({
+    systemCapabilityRegistry,
+    requestedAction: project.manualContext?.projectAction ?? policyDecision?.actionType ?? "view",
+    workspaceModel,
+  });
   const { privilegedAuthorityDecision } = createPrivilegedActionAuthorityResolver({
     projectAuthorizationDecision,
     approvalStatus,
     deployPolicyDecision,
     credentialPolicyDecision,
+  });
+  const { deviceTrustDecision } = createDeviceTrustSystem({
+    ownerAuthState,
+    requestContext: project.manualContext?.requestContext ?? project.manualContext?.ownerSecurityContext ?? null,
+  });
+  const { sensitiveActionConfirmation } = createSensitiveActionConfirmationSystem({
+    ownerMfaDecision,
+    privilegedAuthorityDecision,
+  });
+  const { stepUpAuthDecision } = createStepUpAuthenticationSystem({
+    deviceTrustDecision,
+    securitySignals,
+  });
+  const { privilegedModeState } = createPrivilegedModeSystem({
+    stepUpAuthDecision,
+    sensitiveActionConfirmation,
+    requestContext: project.manualContext?.ownerSecurityContext ?? null,
+  });
+  const { ownerAccessDecision } = createAdminOnlyAccessLayer({
+    privilegedModeState,
+    ownerControlPlane: {
+      ownerRole: membershipRecord?.role ?? "owner",
+    },
+    requestContext: project.manualContext?.requestContext ?? project.manualContext?.ownerSecurityContext ?? null,
+  });
+  const { criticalOperationDecision } = createCriticalOperationGuardrails({
+    ownerAccessDecision,
+    sensitiveActionConfirmation,
+    requestContext: project.manualContext?.requestContext ?? project.manualContext?.ownerSecurityContext ?? null,
   });
   const { invitationRecord, roleAssignment } = createRoleAssignmentAndInvitationFlow({
     workspaceModel,
@@ -2596,6 +3055,9 @@ export function buildProjectContext(
   const { workspaceSettings } = createOrganizationWorkspaceSettingsModule({
     workspaceModel,
     settingsInput: project.manualContext?.workspaceSettingsInput ?? null,
+  });
+  const { workspaceMode, workspaceModeDefinitions } = createWorkspaceOperatingModeResolver({
+    workspaceSettings,
   });
   const { tenantIsolationSchema } = defineTenantIsolationSchema({
     workspaceModel,
@@ -2610,8 +3072,16 @@ export function buildProjectContext(
       actionType: project.manualContext?.projectAction ?? "view",
     },
   });
+  const { tenantBoundaryEvidence } = createBaselineTenantBoundaryEvidenceAssembler({
+    tenantIsolationSchema,
+    workspaceIsolationDecision,
+    projectAuthorizationDecision,
+  });
+  const { leakageAlert } = createCrossTenantLeakDetector({
+    tenantBoundaryEvidence,
+  });
   const learningEvent = project.manualContext?.learningEvent ?? {
-    sourceWorkspaceId: project.context?.learningInsights?.sourceWorkspaceId
+    sourceWorkspaceId: learningInsights?.sourceWorkspaceId
       ?? project.context?.learningTrace?.sourceWorkspaceId
       ?? workspaceModel?.workspaceId
       ?? null,
@@ -2619,45 +3089,38 @@ export function buildProjectContext(
     providerBoundaryBreach: project.manualContext?.providerBoundaryBreach === true,
     mixedResources: project.manualContext?.mixedResources ?? [],
   };
-  const { leakageAlert } = createCrossTenantLeakDetector({
-    workspaceIsolationDecision,
-    learningEvent,
+  const { baselineCollaborationEvent } = createBaselineCollaborationEventAssembler({
+    userIdentity,
+    membershipRecord,
+    accessDecision,
+    sessionState,
+    workspaceModel,
+    approvalStatus,
+    approvalRequestWithStatus,
+    workspaceAction: project.manualContext?.workspaceAction ?? null,
   });
   const { collaborationEvent } = defineCollaborationEventSchema({
-    workspaceAction: {
-      eventId: project.manualContext?.workspaceAction?.eventId ?? null,
-      actionType:
-        project.manualContext?.workspaceAction?.actionType
-        ?? (approvalStatus?.status === "pending" ? "shared-approval" : "presence-signal"),
-      message:
-        project.manualContext?.workspaceAction?.message
-        ?? (approvalStatus?.status === "pending"
-          ? "Approval is waiting for shared review"
-          : "Workspace presence updated"),
-      mentions: project.manualContext?.workspaceAction?.mentions ?? [],
-      reviewStatus: project.manualContext?.workspaceAction?.reviewStatus ?? null,
-      approvalStatus: approvalStatus?.status ?? null,
-      workspaceId: workspaceModel?.workspaceId ?? null,
-      projectId: project.id,
-      workspaceArea: project.manualContext?.workspaceAction?.workspaceArea ?? "developer-workspace",
-      visibility: project.manualContext?.workspaceAction?.visibility ?? workspaceModel?.visibility ?? "workspace",
-      resourceId: project.manualContext?.workspaceAction?.resourceId ?? approvalRequestWithStatus?.approvalRequestId ?? null,
-    },
-    actorContext: {
-      actorId: userIdentity?.userId ?? null,
-      userId: userIdentity?.userId ?? null,
-      displayName: userIdentity?.displayName ?? null,
-      role: membershipRecord?.role ?? accessDecision?.effectiveRole ?? "viewer",
-      presence: sessionState?.status === "active" ? "active" : "idle",
-      workspaceId: workspaceModel?.workspaceId ?? null,
-      projectId: project.id,
-      workspaceArea: "developer-workspace",
-      workspaceVisibility: workspaceModel?.visibility ?? "workspace",
-    },
+    workspaceAction: baselineCollaborationEvent.workspaceAction,
+    actorContext: baselineCollaborationEvent.actorContext,
   });
-  const { projectPresenceState } = createProjectPresenceModel({
-    collaborationEvent,
-    userSessionMetric: project.manualContext?.userSessionMetric ?? {
+  const previousActivityEvent = project.manualContext?.userActivityEvent ?? project.context?.userActivityEvent ?? null;
+  const previousSessionMetric = project.manualContext?.userSessionMetric ?? project.context?.userSessionMetric ?? null;
+  const { userActivityEvent } = defineUserActivityEventSchema({
+    userId: previousSessionMetric?.userId ?? userIdentity?.userId ?? project.userId ?? null,
+    sessionId: previousSessionMetric?.sessionId ?? sessionState?.sessionId ?? null,
+    activityType: previousActivityEvent?.activityType ?? null,
+    projectId: project.id ?? null,
+    workspaceId: workspaceModel?.workspaceId ?? null,
+    workspaceArea: previousSessionMetric?.workspaceArea ?? "developer-workspace",
+    currentSurface: previousSessionMetric?.currentSurface ?? "developer-workspace",
+    currentTask: previousSessionMetric?.currentTask ?? null,
+    timestamp: previousActivityEvent?.timestamp ?? null,
+    sessionMetric: previousSessionMetric,
+    sessionState,
+  });
+  const { userSessionMetric } = createSessionActivityTracker({
+    userActivityEvent,
+    previousUserSessionMetric: previousSessionMetric ?? {
       userId: sessionState?.userId ?? userIdentity?.userId ?? null,
       status: sessionState?.status === "active" ? "active" : "idle",
       workspaceId: workspaceModel?.workspaceId ?? null,
@@ -2665,6 +3128,54 @@ export function buildProjectContext(
       workspaceArea: "developer-workspace",
       activeUsers: project.manualContext?.activeUsers ?? null,
     },
+  });
+  const { returningUserMetric } = createReturningUserResolver({
+    userSessionMetric,
+    previousUserSessionMetric: previousSessionMetric ?? null,
+  });
+  const { userActivityHistory, userSessionHistory } = createDurableUserActivitySessionHistory({
+    projectId: project.id,
+    userActivityEvent,
+    userSessionMetric,
+    returningUserMetric,
+    historyStore: userActivityHistoryStore,
+  });
+  const { retentionSummary } = createRetentionMetricsAggregator({
+    returningUserMetric,
+  });
+  const { postLoginDestination } = createPostLoginDestinationResolver({
+    appEntryDecision,
+    userSessionMetric,
+    projectState: project.state ?? null,
+  });
+  const { appLandingEntry } = createAppLandingEntryExperience({
+    siteAppBoundary,
+    accessModeDecision,
+    productCtaStrategy,
+  });
+  const { entryStateVariants } = createEntryStateVariantsAndRedirects({
+    appEntryDecision,
+    postLoginDestination,
+    appLandingEntry,
+  });
+  const { entryRecoveryState } = createEntryLoadingAndRecoveryStates({
+    appEntryDecision,
+    sessionState,
+    entryStateVariants,
+  });
+  const { entryOrientationPanel } = createAppEntryTrustAndOrientationPanel({
+    appLandingEntry,
+    trustProofBlocks,
+  });
+  const { entryDecisionSupport } = createEntryDecisionSupportFlow({
+    entryStateVariants,
+    accessModeDecision,
+    entryOrientationPanel,
+    visitorContext: project.manualContext?.visitorContext ?? project.manualContext?.visitorInput ?? null,
+  });
+  const { projectPresenceState } = createProjectPresenceModel({
+    collaborationEvent,
+    userSessionMetric,
   });
   const { storageRecord } = createFileAndArtifactStorageModule({
     artifactMetadata: {
@@ -2813,7 +3324,7 @@ export function buildProjectContext(
     bottleneck: context.bottleneck,
     activeBottleneck,
     unblockPlan,
-    taskResults: project.taskResults ?? [],
+    taskResults: canonicalTaskResults,
   });
   const { explanationSchema } = defineExplanationSchema({
     projectState: {
@@ -2839,7 +3350,7 @@ export function buildProjectContext(
   });
   const { failureExplanation } = createFailureExplanationBuilder({
     failureSummary,
-    taskResult: project.taskResults?.[project.taskResults.length - 1] ?? null,
+    taskResult: canonicalTaskResults[canonicalTaskResults.length - 1] ?? null,
     activeBottleneck,
   });
   const { approvalExplanation } = createApprovalExplanationBuilder({
@@ -2902,6 +3413,186 @@ export function buildProjectContext(
     realityProgress,
     explanationPayload: projectExplanation,
   });
+  const { activationFunnel } = defineActivationFunnelSchema({
+    websiteConversionFlow,
+    onboardingFlow: {
+      status: onboardingViewState?.status ?? "ready",
+      activeScreen: onboardingViewState?.activeScreen ?? onboardingProgress?.currentStep ?? null,
+    },
+  });
+  const { activationMilestones } = createFirstValueMilestoneMapper({
+    activationFunnel,
+    projectJourneys: journeyMap,
+    firstValueSummary,
+  });
+  const { milestoneTracking } = createMilestoneTrackingSystem({
+    projectId: project.id ?? null,
+    goalProgressState,
+    activationMilestones,
+    firstValueOutput,
+  });
+  const { productIterationInsights } = createProductIterationFeedbackEngine({
+    outcomeFeedbackState,
+  });
+  const { firstProjectKickoff } = createFirstProjectKickoffFlow({
+    postLoginDestination,
+    activationFunnel,
+    onboardingSession: project.onboardingSession ?? null,
+  });
+  const { landingToDashboardFlow } = createLandingToDashboardFunnelAssembler({
+    landingAuthHandoff,
+    appEntryDecision,
+    postLoginDestination,
+    firstProjectKickoff,
+  });
+  const { onboardingMarketingFlow } = createOnboardingMarketingCopyFlow({
+    activationFunnel,
+    messagingFramework,
+  });
+  const { activationDropOffs } = createActivationDropOffDetector({
+    activationMilestones,
+    userActivityEvent,
+  });
+  const { reEngagementPlan } = createReEngagementTriggerPlanner({
+    activationDropOffs,
+    notificationPreferences,
+  });
+  const { nexusContentStrategy } = createNexusContentStrategyProfile({
+    nexusPositioning,
+    messagingVariants,
+  });
+  const { launchContentCalendar } = createLaunchContentCalendar({
+    nexusContentStrategy,
+    businessContext,
+  });
+  const { storyAssets } = createFounderAndProductStoryAssetBuilder({
+    nexusPositioning,
+    launchContentCalendar,
+  });
+  const { socialCommunityPack } = createSocialAndCommunityContentPack({
+    storyAssets,
+    launchContentCalendar,
+  });
+  const { productProofPlan } = createProductDemoAndProofAssetPlan({
+    websiteCopyPack,
+    activationMilestones,
+  });
+  const { launchCampaignBrief } = createNexusLaunchCampaignBrief({
+    nexusPositioning,
+    businessContext,
+  });
+  const { launchRolloutPlan } = createLaunchChannelRolloutPlan({
+    launchCampaignBrief,
+    socialCommunityPack,
+  });
+  const { launchReadinessChecklist } = createLaunchAssetReadinessChecklist({
+    launchRolloutPlan,
+    productProofPlan,
+  });
+  const { launchPublishingPlan } = createLaunchDraftPublishingPlan({
+    launchRolloutPlan,
+    launchContentCalendar,
+  });
+  const { launchFeedbackSummary } = createLaunchFeedbackIntakeModule({
+    launchPublishingPlan,
+    feedbackSignals: project.manualContext?.feedbackSignals ?? [],
+  });
+  const { goToMarketPlan } = createGoToMarketPlanningModel({
+    launchCampaignBrief,
+    websiteConversionFlow,
+    activationFunnel,
+  });
+  const { promotionExecutionPlan } = createPromotionExecutionPlanner({
+    launchRolloutPlan,
+    launchPublishingPlan,
+  });
+  const { launchMarketingExecution } = createLaunchMarketingExecutionTracker({
+    promotionExecutionPlan,
+    launchFeedbackSummary,
+  });
+  const { gtmMetricSchema } = defineGtmMetricSchema({
+    launchCampaignBrief,
+    websiteConversionFlow,
+  });
+  const { acquisitionSourceMetrics } = createAcquisitionSourceTracker({
+    gtmMetricSchema,
+    projectCreationEvent: project.projectCreationEvent ?? project.projectCreationSummary ?? null,
+    userActivityEvent,
+    attributionMetadata: project.manualContext?.attributionMetadata ?? null,
+  });
+  const { landingVariantDecision } = createPersonaSpecificLandingVariantResolver({
+    messagingVariants,
+    visitorContext: project.manualContext?.visitorContext ?? project.manualContext?.visitorInput ?? null,
+    acquisitionSourceMetrics,
+  });
+  const { firstTouchAttribution } = createFirstTouchAttributionRecorder({
+    visitorContext: project.manualContext?.visitorContext ?? project.manualContext?.visitorInput ?? null,
+    landingVariantDecision,
+    productCtaStrategy,
+  });
+  const { preAuthConversionEvents } = createPreAuthConversionEventCollector({
+    firstTouchAttribution,
+    landingAuthHandoff,
+  });
+  const { websiteActivationFunnel } = createWebsiteToActivationFunnelAnalyzer({
+    acquisitionSourceMetrics,
+    activationMilestones,
+  });
+  const { conversionAnalytics } = createConversionAnalyticsModel({
+    preAuthConversionEvents,
+    websiteActivationFunnel,
+  });
+  const { ownerControlPlane } = defineOwnerControlPlaneSchema({
+    ownerContext: {
+      ownerId: membershipRecord?.userId ?? userIdentity?.userId ?? project.userId ?? null,
+      ownerRole: membershipRecord?.role ?? "owner",
+    },
+    platformState: {
+      workspaceId: workspaceModel?.workspaceId ?? project.id,
+      healthStatus: incidentAlert?.status ?? "stable",
+    },
+  });
+  let { ownerControlCenter } = createOwnerControlCenter({
+    ownerControlPlane,
+    analyticsSummary: project.analyticsSummary ?? null,
+    platformTrace,
+  });
+  let { dailyOwnerOverview } = createDailyOverviewGenerator({
+    ownerControlCenter,
+    platformLogs,
+    incidentAlert,
+  });
+  let { ownerPriorityQueue } = createOwnerPriorityEngine({
+    dailyOwnerOverview,
+    ownerControlCenter,
+  });
+  let { ownerActionRecommendations } = createActionRecommendationSystem({
+    ownerPriorityQueue,
+    ownerControlCenter,
+  });
+  let { ownerDecisionDashboard } = createOwnerDecisionDashboard({
+    ownerActionRecommendations,
+    approvalChain: {
+      status: approvalStatus?.status ?? "missing",
+      entries: approvalAuditTrail?.entries ?? [],
+    },
+  });
+  let { ownerDailyWorkflow } = createDailyWorkflowGenerator({
+    dailyOwnerOverview,
+    ownerPriorityQueue,
+  });
+  let { ownerFocusArea } = createFocusAreaSelector({
+    ownerDailyWorkflow,
+    ownerControlCenter,
+  });
+  let { ownerTaskList } = createTaskRecommendationEngine({
+    ownerFocusArea,
+    ownerActionRecommendations,
+  });
+  let { ownerRoutinePlan } = createOwnerRoutineAssistant({
+    ownerTaskList,
+    ownerDailyWorkflow,
+  });
   const { realtimeEventStream } = defineRealtimeEventStreamSchema({
     runtimeEvents: {
       runId: executionProgressSchema.runId,
@@ -2941,7 +3632,7 @@ export function buildProjectContext(
       platformLogs,
       bootstrapPlannedCommands,
       bootstrapAssignments,
-      taskResults: project.taskResults ?? [],
+      taskResults: canonicalTaskResults,
       incidentAlert,
     },
   });
@@ -2994,11 +3685,14 @@ export function buildProjectContext(
     workspaceModel,
     approvalRecords,
   });
-  const { collaborationFeed } = createCollaborationActivityFeed({
+  const { collaborationActivityHistory } = createBaselineCollaborationActivityHistoryAssembler({
     collaborationEvent,
     projectPresenceState,
     reviewThreadState,
     sharedApprovalState,
+  });
+  const { collaborationFeed } = createCollaborationActivityFeed({
+    collaborationActivityHistory,
   });
   const { projectStateSnapshot } = defineProjectStateSnapshotSchema({
     projectState: {
@@ -3213,9 +3907,15 @@ export function buildProjectContext(
     editableProposal,
     userEditInput: project.context?.userEditInput ?? null,
   });
+  const { approvalOutcome } = createBaselineApprovalOutcomeSchema({
+    approvalRequest: approvalRequestWithStatus,
+    approvalRecords,
+    approvalStatus,
+    partialAcceptanceSelection: project.context?.approvalOutcome ?? null,
+  });
   const { partialAcceptanceDecision, remainingProposalScope } = createPartialAcceptanceFlow({
     editedProposal,
-    approvalOutcome: project.context?.approvalOutcome ?? null,
+    approvalOutcome,
   });
   const { cockpitRecommendationSurface } = createCockpitRecommendationSurface({
     projectExplanation,
@@ -3264,6 +3964,139 @@ export function buildProjectContext(
     projectExplanation,
     activeBottleneck,
     releaseStatus,
+  });
+  const { nexusAppShellSchema } = defineNexusAppShellSchema({
+    authenticationViewState,
+    postAuthRedirect,
+    projectCreationExperience,
+    onboardingViewState,
+    workspaceNavigationModel,
+    screenInventory,
+    boundaryDisclosureModel,
+  });
+  const { authenticatedAppShell } = createAuthenticatedAppShellModel({
+    nexusAppShellSchema,
+    authenticationState,
+    postAuthRedirect,
+    projectCreationExperience,
+    onboardingViewState,
+    workspaceNavigationModel,
+    userIdentity,
+  });
+  const { navigationRouteSurface } = createNexusNavigationAndRouteSurfaceBinder({
+    nexusAppShellSchema,
+    authenticatedAppShell,
+    workspaceNavigationModel,
+    navigationComponents,
+  });
+  const {
+    aiControlCenterSurface,
+    renderableScreenModel,
+    screenComponentMapping,
+    activeScreenVariantPlan,
+    layoutCompositionPlan,
+    renderableScreenComposition,
+    runtimeScreenRegistry,
+    activeScreenResolver,
+    liveRuntimeScreenState,
+    previewScreenViewModel,
+  } = createAiControlCenterAndGeneratedSurfaceDeliveryBinder({
+    authenticatedAppShell,
+    navigationRouteSurface,
+    ownerControlCenter,
+    cockpitRecommendationSurface,
+    editableProposal,
+    editedProposal,
+    partialAcceptanceDecision,
+    remainingProposalScope,
+    screenContracts,
+    screenInventory,
+    screenStates,
+    screenValidationChecklist,
+    screenFlowMap,
+    templateVariants,
+    designTokens,
+    layoutSystem,
+    colorRules,
+    interactionStateSystem,
+    componentContract,
+    primitiveComponents,
+    layoutComponents,
+    feedbackComponents,
+    navigationComponents,
+    dataDisplayComponents,
+    dashboardTemplate,
+    detailPageTemplate,
+    workflowTemplate,
+    managementTemplate,
+    projectState: project.state ?? {},
+  });
+  const { aiDesignServiceResult } = createAiDesignService({
+    projectId: project.id,
+    projectState: project.state ?? {},
+    selectedTask,
+    screenContract: renderableScreenModel,
+    renderableScreenModel,
+    renderableScreenComposition,
+    screenFlowMap,
+    screenStates,
+    designTokens,
+    componentContract,
+    slimmedContextPayload,
+    providerConfig: project.manualContext?.aiDesignProviderConfig ?? null,
+  });
+  const { aiDesignExecutionState } = createAiDesignExecutionHook({
+    selectedTask,
+    aiDesignServiceResult,
+  });
+  const { renderableDesignProposal } = createRenderableDesignProposalNormalizer({
+    aiDesignProposal: aiDesignServiceResult.aiDesignProviderResult?.aiDesignProposal ?? null,
+    renderableScreenModel,
+    screenComponentMapping,
+  });
+  const { designProposalValidation } = createDesignProposalValidationFlow({
+    renderableDesignProposal,
+    screenTemplateSchema,
+    screenValidationChecklist: renderableScreenModel,
+    screenContract: renderableScreenModel,
+  });
+  const { designProposalPreviewState } = createDesignProposalPreviewPipeline({
+    renderableDesignProposal,
+    designProposalValidation,
+    designTokens,
+    layoutSystem,
+    colorRules,
+  });
+  const { screenProposalDiff } = createScreenProposalDiffModel({
+    renderableScreenComposition,
+    designProposalPreviewState,
+  });
+  const { designProposalReviewState } = createDesignProposalReviewHandoff({
+    renderableDesignProposal,
+    designProposalValidation,
+    screenProposalDiff,
+  });
+  const { approvedScreenDelta, proposalApplyDecision } = createDesignProposalEditApplyBinder({
+    designProposalReviewState,
+    editableProposal,
+    editedProposal,
+    partialAcceptanceDecision,
+    screenProposalDiff,
+  });
+  const { acceptedScreenState, integratedDesignProposalState } = createDesignProposalStateIntegration({
+    proposalApplyDecision,
+    approvedScreenDelta,
+    renderableDesignProposal,
+    designProposalReviewState,
+  });
+  const { dailyWorkspaceSurface } = createDailyWorkspaceSurfaceModel({
+    authenticatedAppShell,
+    navigationRouteSurface,
+    developerWorkspace,
+    projectBrainWorkspace,
+    releaseWorkspace,
+    growthWorkspace,
+    capabilityDecision,
   });
   const { acceptanceScenario } = defineV1AcceptanceScenarioSchema({
     productFlows: journeyMap?.flows ?? [],
@@ -3356,12 +4189,20 @@ export function buildProjectContext(
     cloudWorkspaceModel,
     platformTrace,
   });
+  const { buildDeployCostMetric } = createBuildDeployCostTracker({
+    projectId: project.id,
+    workspaceId: workspaceModel?.workspaceId ?? null,
+    buildArtifact: preparedArtifact?.artifacts ?? [],
+    deploymentResult: releaseStateUpdate,
+    executionModeDecision,
+    pricingMetadata: project.manualContext?.pricingMetadata ?? null,
+  });
   const { costSummary } = createCostSummaryAggregator({
     platformCostMetric,
     aiUsageMetric,
     storageCostMetric,
     workspaceComputeMetric,
-    buildDeployCostMetric: null,
+    buildDeployCostMetric,
   });
   const { budgetDecision, approvalRequest: budgetApprovalRequest } = createUsageBudgetGuard({
     costSummary,
@@ -3378,13 +4219,200 @@ export function buildProjectContext(
     agentGovernancePolicy,
     reliabilitySlaModel,
   });
-  const { entitlementDecision } = resolveEntitlementDecision({
+  const { billableUsage } = createUsageToBillingMapper({
+    costSummary,
+    billingPlanSchema,
+  });
+  const { reasonableUsagePolicy } = createReasonableUsagePolicyResolver({
+    workspaceMode,
+    workspaceModeDefinitions,
+    billingPlanSchema,
+    billableUsage,
+    costSummary,
+  });
+  const { workspaceBillingState } = createWorkspaceBillingStateSource({
+    normalizedBillingEvents: project.manualContext?.normalizedBillingEvents ?? [],
     billingPlanSchema,
     workspaceModel,
   });
-  const { subscriptionState } = createSubscriptionLifecycle({
+  const { entitlementDecision } = resolveEntitlementDecision({
     billingPlanSchema,
     workspaceModel,
+    workspaceBillingState,
+  });
+  const { payingUserMetrics } = createPayingUserTracker({
+    normalizedBillingEvents: project.manualContext?.normalizedBillingEvents ?? [],
+  });
+  const { revenueSummary } = createRevenueSummaryAggregator({
+    payingUserMetrics,
+  });
+  const { launchPerformanceDashboard } = createLaunchPerformanceDashboardAssembler({
+    websiteActivationFunnel,
+    launchFeedbackSummary,
+    revenueSummary,
+  });
+  const { gtmOptimizationPlan } = createGtmOptimizationLoop({
+    launchPerformanceDashboard,
+    launchFeedbackSummary,
+  });
+  const { growthLoopManagement } = createGrowthLoopManagementState({
+    conversionAnalytics,
+    launchPerformanceDashboard,
+  });
+  const {
+    billingGuardDecision,
+    approvalRequest: billingApprovalRequest,
+  } = createBillingEnforcementGuard({
+    workspaceMode,
+    entitlementDecision,
+    billableUsage,
+    reasonableUsagePolicy,
+    costSummary,
+    workspaceBillingState,
+  });
+  const { subscriptionState } = createSubscriptionLifecycle({
+    workspaceBillingState,
+    billingPlanSchema,
+    workspaceModel,
+  });
+  const { ownerRevenueView } = createRevenueTrackingSystem({
+    revenueSummary,
+    subscriptionState,
+  });
+  const { ownerCostView } = createCostTrackingSystem({
+    costSummary,
+    budgetDecision,
+  });
+  const { profitMarginSummary } = createProfitMarginAnalyzer({
+    ownerRevenueView,
+    ownerCostView,
+  });
+  const { unitEconomicsDashboard } = createUnitEconomicsDashboard({
+    profitMarginSummary,
+  });
+  const { cashFlowProjection } = createCashFlowProjectionEngine({
+    ownerRevenueView,
+    ownerCostView,
+  });
+  const { ownerUserAnalytics } = createUserAnalyticsDashboard({
+    retentionSummary,
+    projectCreationSummary: project.projectCreationSummary ?? null,
+    taskThroughputSummary,
+  });
+  const { featureUsageSummary } = createFeatureUsageTracker({
+    userActivityEvent,
+    analyticsSummary: ownerUserAnalytics,
+  });
+  const { decisionAccuracySummary } = createDecisionAccuracyTracker({
+    ownerActionRecommendations,
+    outcomeEvaluation,
+  });
+  const { automationImpactSummary } = createAutomationImpactTracker({
+    taskThroughputSummary,
+    productivitySummary,
+    ownerRoutinePlan,
+  });
+  const { roadmapTracking } = createSystemRoadmapTracker({
+    roadmap: project.cycle?.roadmap ?? initialTasks,
+    taskThroughputSummary,
+  });
+  const { ownerOperationsSignals } = createOperationsSignalAggregator({
+    platformTrace,
+    healthStatus: incidentAlert?.status ?? project.state?.observed?.health?.status ?? null,
+    budgetDecision,
+    incidentAlert,
+  });
+  const { prioritizedOwnerAlerts } = createCriticalAlertPrioritizer({
+    ownerOperationsSignals,
+    ownerPriorityQueue,
+  });
+  const { ownerAlertFeed } = createNoiseSuppressionSystem({
+    prioritizedOwnerAlerts,
+    ownerRoutinePlan,
+  });
+  const { ownerIncident } = createIncidentDetectionSystem({
+    ownerOperationsSignals,
+    platformTrace,
+  });
+  const { outageResponsePlan } = createOutageResponseManager({
+    ownerIncident,
+    continuityPlan,
+  });
+  const { incidentTimeline } = createIncidentTimelineTracker({
+    ownerIncident,
+    platformTrace,
+  });
+  const { rootCauseSummary } = createRootCauseAnalysisSystem({
+    incidentTimeline,
+    causalImpactReport: project.manualContext?.causalImpactReport ?? project.context?.causalImpactReport ?? null,
+  });
+  const { liveProjectMonitoring } = createLiveProjectMonitoringModel({
+    platformTrace,
+    releaseStateUpdate,
+    ownerIncident,
+  });
+  const { serviceReliabilityDashboard } = createServiceReliabilityDashboardModel({
+    reliabilitySlaModel,
+    continuityPlan,
+    incidentAlert,
+    systemBottleneckSummary,
+    liveProjectMonitoring,
+  });
+  const { maintenanceBacklog } = createMaintenanceTaskGenerationEngine({
+    liveProjectMonitoring,
+    incidentTimeline,
+    rootCauseSummary,
+    ownerIncident,
+  });
+  ({ ownerControlCenter } = createOwnerControlCenter({
+    ownerControlPlane,
+    analyticsSummary: project.analyticsSummary ?? null,
+    platformTrace,
+    maintenanceBacklog,
+  }));
+  ({ dailyOwnerOverview } = createDailyOverviewGenerator({
+    ownerControlCenter,
+    platformLogs,
+    incidentAlert,
+    maintenanceBacklog,
+  }));
+  ({ ownerPriorityQueue } = createOwnerPriorityEngine({
+    dailyOwnerOverview,
+    ownerControlCenter,
+  }));
+  ({ ownerActionRecommendations } = createActionRecommendationSystem({
+    ownerPriorityQueue,
+    ownerControlCenter,
+  }));
+  ({ ownerDecisionDashboard } = createOwnerDecisionDashboard({
+    ownerActionRecommendations,
+    approvalChain: {
+      status: approvalStatus?.status ?? "missing",
+      entries: approvalAuditTrail?.entries ?? [],
+    },
+  }));
+  ({ ownerDailyWorkflow } = createDailyWorkflowGenerator({
+    dailyOwnerOverview,
+    ownerPriorityQueue,
+  }));
+  ({ ownerFocusArea } = createFocusAreaSelector({
+    ownerDailyWorkflow,
+    ownerControlCenter,
+  }));
+  ({ ownerTaskList } = createTaskRecommendationEngine({
+    ownerFocusArea,
+    ownerActionRecommendations,
+  }));
+  ({ ownerRoutinePlan } = createOwnerRoutineAssistant({
+    ownerTaskList,
+    ownerDailyWorkflow,
+  }));
+  const { billingSettingsModel } = createBillingSettingsModel({
+    billingPlanSchema,
+    subscriptionState,
+    workspaceBillingState,
+    billingGuardDecision,
+    normalizedBillingEvents: project.manualContext?.normalizedBillingEvents ?? [],
   });
   const candidateActions = project.manualContext?.requestContext?.candidateActions ?? [];
   const costAwareActionSelection = createCostAwareActionSelector({
@@ -3480,6 +4508,60 @@ export function buildProjectContext(
     sandboxDecision,
     agentLimitDecision,
   });
+  const { dashboardHomeSurface } = createDashboardHomeSurfaceModel({
+    authenticatedAppShell,
+    navigationRouteSurface,
+    progressState,
+    ownerDecisionDashboard,
+    ownerPriorityQueue,
+  });
+  const { unifiedHomeDashboard } = createUnifiedHomeDashboardModel({
+    dashboardHomeSurface,
+    navigationRouteSurface,
+    ownerPriorityQueue,
+    ownerActionRecommendations,
+    ownerDecisionDashboard,
+  });
+  const { todayPrioritiesFeed } = createTodayPrioritiesAndNextActionFeed({
+    unifiedHomeDashboard,
+    ownerPriorityQueue,
+    ownerActionRecommendations,
+    nextTaskPresentation,
+  });
+  const { ownerVisibilityStrip } = createOwnerVisibilityStripForHomeDashboard({
+    unifiedHomeDashboard,
+    ownerControlCenter,
+    ownerDecisionDashboard,
+    dailyOwnerOverview,
+  });
+  const { settingsProfileSurface } = createSettingsAndProfileSurfaceModel({
+    authenticatedAppShell,
+    navigationRouteSurface,
+    userIdentity,
+    workspaceSettings,
+    notificationPreferences,
+    billingSettingsModel,
+    ownerMfaDecision,
+  });
+  const { guidedTaskExecutionSurface } = createGuidedTaskExecutionSurface({
+    dailyWorkspaceSurface,
+    nextTaskPresentation,
+    selectedTask,
+    progressState,
+    executionModeDecision,
+  });
+  const { taskStepFlowProgress } = createTaskStepFlowAndProgressBinder({
+    guidedTaskExecutionSurface,
+    taskExecutionMetric,
+    progressState,
+    realityProgress,
+  });
+  const { taskApprovalHandoffPanel } = createTaskApprovalHandoffPanel({
+    guidedTaskExecutionSurface,
+    taskStepFlowProgress,
+    nextTaskApprovalPanel,
+    sharedApprovalState,
+  });
   const projectAuditAction = buildProjectAuditAction({
     project,
     agentGovernanceTrace,
@@ -3514,6 +4596,114 @@ export function buildProjectContext(
     actorActionTrace,
     filters: null,
   }));
+  const externalExecutionRequest = project.manualContext?.executionRequest ?? {
+    executionRequestId: `execution-request:${project.id}:${project.manualContext?.projectAction ?? policyDecision?.actionType ?? "project-execution"}`,
+    projectId: project.id,
+    workspaceId: workspaceModel?.workspaceId ?? project.id,
+    actionType: project.manualContext?.projectAction ?? project.manualContext?.workspaceAction?.actionType ?? policyDecision?.actionType ?? "project-execution",
+    workflow: capabilityDecision?.requestedWorkflow ?? policyDecision?.actionType ?? "project-execution",
+    operationType: deploymentRequest?.provider ? "deploy" : "validate",
+    requestPayload: {
+      workspaceAction: project.manualContext?.workspaceAction ?? null,
+      requestContext: project.manualContext?.requestContext ?? null,
+      deploymentRequestId: deploymentRequest?.requestId ?? null,
+      buildTarget: buildTargets[0] ?? null,
+    },
+    requestContext: project.manualContext?.requestContext ?? null,
+    targetSurface: executionModeDecision?.selectedMode ?? sandboxDecision?.selectedSurface ?? null,
+    buildTarget: buildTargets[0] ?? null,
+  };
+  const resolvedActionProvider = {
+    providerType: providerAdapter?.provider ?? providerSession?.providerType ?? "generic",
+    providerStatus: circuitBreakerDecision?.decision === "blocked"
+      ? "degraded"
+      : (providerConnector?.status ?? providerSession?.status ?? "unknown"),
+    executionMode: executionModeDecision?.selectedMode ?? providerAdapter?.executionModes?.[0] ?? "manual",
+    targetSurface: sandboxDecision?.selectedSurface ?? executionModeDecision?.selectedMode ?? null,
+    buildTarget: buildTargets[0] ?? null,
+    capabilities: providerCapabilities?.capabilities ?? providerAdapter?.capabilities ?? [],
+    operationTypes: providerOperations.map((operation) => operation.operationType),
+    credentialReference,
+  };
+  const { atomicExecutionEnvelope } = createAtomicExternalActionEnvelope({
+    executionRequest: externalExecutionRequest,
+    resolvedActionProvider,
+    executionPolicy: {
+      policyDecision,
+      approvalStatus,
+      projectAuthorizationDecision,
+      credentialPolicyDecision,
+      deployPolicyDecision,
+      sandboxDecision,
+      executionModeDecision,
+    },
+  });
+  const { externalExecutionResult } = createExternalExecutionDispatchModule({
+    atomicExecutionEnvelope,
+    resolvedExecutionConfig: {
+      providerType: providerAdapter?.provider ?? providerSession?.providerType ?? "generic",
+      connectorStatus: providerConnector?.status ?? providerSession?.status ?? "unknown",
+      providerConnector,
+      providerSession,
+      operationTypes: providerOperations.map((operation) => operation.operationType),
+      targetSurface: executionModeDecision?.selectedMode ?? sandboxDecision?.selectedSurface ?? null,
+      credentialReference,
+      artifactCount: preparedArtifact?.artifacts?.length ?? 0,
+    },
+  });
+  const { executionConsistencyReport } = createExecutionConsistencyValidator({
+    atomicExecutionEnvelope,
+    externalExecutionResult,
+    projectState: {
+      projectAuditRecord,
+      auditLogRecord,
+    },
+  });
+  const { postExecutionEvaluation } = definePostExecutionEvaluationSchema({
+    projectId: project.id ?? null,
+    executionConsistencyReport,
+    systemBottleneckSummary,
+    outcomeFeedbackState,
+    milestoneTracking,
+  });
+  const { postExecutionReport } = createPostExecutionEvaluationPipeline({
+    projectId: project.id ?? null,
+    postExecutionEvaluation,
+    executionConsistencyReport,
+    systemBottleneckSummary,
+  });
+  const { crossLayerFeedbackState } = createCrossLayerFeedbackOrchestrator({
+    projectId: project.id ?? null,
+    postExecutionReport,
+    productIterationInsights,
+    goalProgressState,
+    milestoneTracking,
+  });
+  const { adaptiveExecutionDecision } = createAdaptiveExecutionLoop({
+    projectId: project.id ?? null,
+    crossLayerFeedbackState,
+    activeBottleneck,
+    taskThroughputSummary,
+    progressState,
+  });
+  const { systemOptimizationPlan } = createSystemOptimizationCycle({
+    projectId: project.id ?? null,
+    adaptiveExecutionDecision,
+    serviceReliabilityDashboard,
+    systemBottleneckSummary,
+  });
+  const { ownerAuditView } = createOwnerAuditLogViewer({
+    auditLogRecord,
+    projectAuditPayload,
+  });
+  const { systemActivityFeed } = createSystemWideActivityTracker({
+    platformTrace,
+    projectAuditRecord,
+  });
+  const { criticalChangeHistory } = createCriticalChangeHistorySystem({
+    systemActivityFeed,
+    auditLogRecord,
+  });
   ({ complianceAuditSummary } = createComplianceAuditSummary({
     dataPrivacyClassification,
     privacyPolicyDecision,
@@ -3589,8 +4779,49 @@ export function buildProjectContext(
   context.defaultsTrace = defaultsTrace;
   context.stackRecommendation = stackRecommendation;
   context.businessContext = businessContext;
+  context.nexusPositioning = nexusPositioning;
+  context.messagingFramework = messagingFramework;
+  context.messagingVariants = messagingVariants;
+  context.landingVariantDecision = landingVariantDecision;
+  context.objectionMap = objectionMap;
+  context.faqMap = faqMap;
+  context.activationGoals = activationGoals;
+  context.productCtaStrategy = productCtaStrategy;
+  context.nexusWebsiteSchema = nexusWebsiteSchema;
+  context.landingPageIa = landingPageIa;
+  context.websiteCopyPack = websiteCopyPack;
+  context.websiteConversionFlow = websiteConversionFlow;
+  context.waitlistRecord = waitlistRecord;
+  context.accessRequest = accessRequest;
+  context.websiteExperimentPlan = websiteExperimentPlan;
+  context.trustProofBlocks = trustProofBlocks;
+  context.productDeliveryModel = productDeliveryModel;
+  context.siteAppBoundary = siteAppBoundary;
+  context.accessModeDecision = accessModeDecision;
+  context.landingAuthHandoff = landingAuthHandoff;
+  context.appEntryDecision = appEntryDecision;
+  context.postLoginDestination = postLoginDestination;
+  context.appLandingEntry = appLandingEntry;
+  context.entryStateVariants = entryStateVariants;
+  context.entryRecoveryState = entryRecoveryState;
+  context.entryOrientationPanel = entryOrientationPanel;
+  context.entryDecisionSupport = entryDecisionSupport;
+  context.firstProjectKickoff = firstProjectKickoff;
+  context.landingToDashboardFlow = landingToDashboardFlow;
   context.projectDraft = projectDraft;
+  context.projectCreationEvent = project.projectCreationEvent ?? null;
+  context.projectCreationEvents = Array.isArray(project.projectCreationEvents) ? project.projectCreationEvents : [];
+  context.projectCreationMetric = project.projectCreationMetric ?? null;
+  context.projectCreationSummary = project.projectCreationSummary ?? null;
   context.projectIdentity = projectIdentity;
+  context.productBoundaryModel = productBoundaryModel;
+  context.capabilityLimitMap = capabilityLimitMap;
+  context.boundaryDisclosureModel = boundaryDisclosureModel;
+  context.systemCapabilityRegistry = systemCapabilityRegistry;
+  context.capabilityDecision = capabilityDecision;
+  context.nexusAppShellSchema = nexusAppShellSchema;
+  context.authenticatedAppShell = authenticatedAppShell;
+  context.navigationRouteSurface = navigationRouteSurface;
   context.projectIdentityProfile = projectIdentityProfile;
   context.identityCompleteness = identityCompleteness;
   context.instantValuePlan = instantValuePlan;
@@ -3613,9 +4844,18 @@ export function buildProjectContext(
   context.budgetDecision = budgetDecision;
   context.costVisibilityPayload = costVisibilityPayload;
   context.costDashboardModel = costDashboardModel;
+  context.workspaceMode = workspaceMode;
+  context.workspaceModeDefinitions = workspaceModeDefinitions;
+  context.reasonableUsagePolicy = reasonableUsagePolicy;
   context.billingPlanSchema = billingPlanSchema;
   context.entitlementDecision = entitlementDecision;
+  context.workspaceBillingState = workspaceBillingState;
+  context.payingUserMetrics = payingUserMetrics;
+  context.revenueSummary = revenueSummary;
+  context.billingGuardDecision = billingGuardDecision;
+  context.billingApprovalRequest = billingApprovalRequest;
   context.subscriptionState = subscriptionState;
+  context.billingSettingsModel = billingSettingsModel;
   context.costAwareActionSelection = costAwareActionSelection;
   context.actionPolicy = actionPolicy;
   context.policyDecision = policyDecision;
@@ -3646,6 +4886,14 @@ export function buildProjectContext(
   context.growthMarketingPlan = growthMarketingPlan;
   context.userIdentity = userIdentity;
   context.authenticationState = authenticationState;
+  context.ownerAuthState = ownerAuthState;
+  context.ownerMfaDecision = ownerMfaDecision;
+  context.deviceTrustDecision = deviceTrustDecision;
+  context.sensitiveActionConfirmation = sensitiveActionConfirmation;
+  context.stepUpAuthDecision = stepUpAuthDecision;
+  context.privilegedModeState = privilegedModeState;
+  context.ownerAccessDecision = ownerAccessDecision;
+  context.criticalOperationDecision = criticalOperationDecision;
   context.sessionState = sessionState;
   context.securitySignals = securitySignals;
   context.sessionSecurityDecision = sessionSecurityDecision;
@@ -3660,6 +4908,14 @@ export function buildProjectContext(
   context.postAuthRedirect = postAuthRedirect;
   context.projectCreationExperience = projectCreationExperience;
   context.projectCreationRedirect = projectCreationRedirect;
+  context.existingBusinessAssets = existingBusinessAssets;
+  context.repositoryImportAndCodebaseDiagnosis = repositoryImportAndCodebaseDiagnosis;
+  context.liveWebsiteIngestionAndFunnelDiagnosis = liveWebsiteIngestionAndFunnelDiagnosis;
+  context.importedAnalyticsNormalization = importedAnalyticsNormalization;
+  context.importedAssetTaskExtraction = importedAssetTaskExtraction;
+  context.atomicExecutionEnvelope = atomicExecutionEnvelope;
+  context.externalExecutionResult = externalExecutionResult;
+  context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;
   context.onboardingCompletionDecision = onboardingCompletionDecision;
@@ -3670,6 +4926,7 @@ export function buildProjectContext(
   context.privilegedAuthorityDecision = privilegedAuthorityDecision;
   context.tenantIsolationSchema = tenantIsolationSchema;
   context.workspaceIsolationDecision = workspaceIsolationDecision;
+  context.tenantBoundaryEvidence = tenantBoundaryEvidence;
   context.leakageAlert = leakageAlert;
   context.projectOwnershipBinding = projectOwnershipBinding;
   context.initialProjectStateContract = initialProjectStateContract;
@@ -3688,6 +4945,7 @@ export function buildProjectContext(
   context.editedProposal = editedProposal;
   context.proposalEditHistory = proposalEditHistory;
   context.partialAcceptanceDecision = partialAcceptanceDecision;
+  context.approvalOutcome = approvalOutcome;
   context.remainingProposalScope = remainingProposalScope;
   context.cockpitRecommendationSurface = cockpitRecommendationSurface;
   context.stateBootstrapPayload = stateBootstrapPayload;
@@ -3695,6 +4953,12 @@ export function buildProjectContext(
   context.accessDecision = accessDecision;
   context.collaborationEvent = collaborationEvent;
   context.projectPresenceState = projectPresenceState;
+  context.userActivityEvent = userActivityEvent;
+  context.userActivityHistory = userActivityHistory;
+  context.userSessionMetric = userSessionMetric;
+  context.userSessionHistory = userSessionHistory;
+  context.returningUserMetric = returningUserMetric;
+  context.retentionSummary = retentionSummary;
   context.invitationRecord = invitationRecord;
   context.roleAssignment = roleAssignment;
   context.workspaceSettings = workspaceSettings;
@@ -3707,18 +4971,29 @@ export function buildProjectContext(
   context.platformCostMetric = platformCostMetric;
   context.aiUsageMetric = aiUsageMetric;
   context.workspaceComputeMetric = workspaceComputeMetric;
+  context.buildDeployCostMetric = buildDeployCostMetric;
   context.storageCostMetric = storageCostMetric;
   context.costSummary = costSummary;
+  context.normalizedBillingEvents = project.manualContext?.normalizedBillingEvents ?? [];
+  context.billableUsage = billableUsage;
   context.privacyPolicyDecision = privacyPolicyDecision;
   context.privacyRightsResult = project.context?.privacyRightsResult ?? project.privacyRightsResult ?? null;
   context.backupStrategy = backupStrategy;
   context.restorePlan = restorePlan;
   context.reliabilitySlaModel = reliabilitySlaModel;
   context.continuityPlan = continuityPlan;
+  context.serviceReliabilityDashboard = serviceReliabilityDashboard;
+  context.postExecutionEvaluation = postExecutionEvaluation;
+  context.postExecutionReport = postExecutionReport;
+  context.crossLayerFeedbackState = crossLayerFeedbackState;
+  context.adaptiveExecutionDecision = adaptiveExecutionDecision;
+  context.systemOptimizationPlan = systemOptimizationPlan;
   context.disasterRecoveryChecklist = disasterRecoveryChecklist;
   context.businessContinuityState = businessContinuityState;
   context.userJourneys = userJourneys;
   context.journeySteps = journeySteps;
+  context.journeyStateRegistry = journeyStateRegistry;
+  context.journeyTransitionRegistry = journeyTransitionRegistry;
   context.journeyMap = journeyMap;
   context.screenInventory = screenInventory;
   context.screenFlowMap = screenFlowMap;
@@ -3743,11 +5018,35 @@ export function buildProjectContext(
   context.workflowTemplate = workflowTemplate;
   context.managementTemplate = managementTemplate;
   context.templateVariants = templateVariants;
+  context.aiDesignRequest = aiDesignServiceResult.aiDesignRequest;
+  context.aiDesignProposal = aiDesignServiceResult.aiDesignProviderResult?.aiDesignProposal ?? null;
+  context.aiDesignProviderResult = aiDesignServiceResult.aiDesignProviderResult ?? null;
+  context.aiDesignServiceResult = aiDesignServiceResult;
+  context.aiDesignExecutionState = aiDesignExecutionState;
+  context.renderableScreenModel = renderableScreenModel;
+  context.screenComponentMapping = screenComponentMapping;
+  context.activeScreenVariantPlan = activeScreenVariantPlan;
+  context.layoutCompositionPlan = layoutCompositionPlan;
+  context.renderableScreenComposition = renderableScreenComposition;
+  context.renderableDesignProposal = renderableDesignProposal;
+  context.designProposalValidation = designProposalValidation;
+  context.designProposalPreviewState = designProposalPreviewState;
+  context.screenProposalDiff = screenProposalDiff;
+  context.designProposalReviewState = designProposalReviewState;
+  context.approvedScreenDelta = approvedScreenDelta;
+  context.proposalApplyDecision = proposalApplyDecision;
+  context.acceptedScreenState = acceptedScreenState;
+  context.integratedDesignProposalState = integratedDesignProposalState;
+  context.runtimeScreenRegistry = runtimeScreenRegistry;
+  context.activeScreenResolver = activeScreenResolver;
+  context.liveRuntimeScreenState = liveRuntimeScreenState;
+  context.previewScreenViewModel = previewScreenViewModel;
   context.primaryActionValidation = primaryActionValidation;
   context.mobileValidation = mobileValidation;
   context.stateCoverageValidation = stateCoverageValidation;
   context.consistencyValidation = consistencyValidation;
   context.screenReviewReport = screenReviewReport;
+  context.learningInsights = learningInsights;
   context.learningInsightViewModel = learningInsightViewModel;
   context.reasoningPanel = reasoningPanel;
   context.confidenceIndicator = confidenceIndicator;
@@ -3773,6 +5072,12 @@ export function buildProjectContext(
   context.projectWorkbenchLayout = projectWorkbenchLayout;
   context.fileEditorContract = fileEditorContract;
   context.commandConsoleView = commandConsoleView;
+  context.aiControlCenterSurface = aiControlCenterSurface;
+  context.dailyWorkspaceSurface = dailyWorkspaceSurface;
+  context.guidedTaskExecutionSurface = guidedTaskExecutionSurface;
+  context.taskStepFlowProgress = taskStepFlowProgress;
+  context.taskApprovalHandoffPanel = taskApprovalHandoffPanel;
+  context.settingsProfileSurface = settingsProfileSurface;
   context.liveLogStream = liveLogStream;
   context.branchDiffActivityPanel = branchDiffActivityPanel;
   context.reviewThreadState = reviewThreadState;
@@ -3821,12 +5126,86 @@ export function buildProjectContext(
   context.bootstrapExecutionGraph = bootstrapExecutionGraph;
   context.executionProgressSchema = executionProgressSchema;
   context.normalizedProgressInputs = normalizedProgressInputs;
+  context.blockedTaskOutcomes = blockedTaskOutcomes;
+  context.taskExecutionMetric = taskExecutionMetric;
+  context.taskExecutionCounters = taskExecutionCounters;
+  context.taskThroughputSummary = taskThroughputSummary;
+  context.baselineEstimate = baselineEstimate;
+  context.timeSavedMetric = timeSavedMetric;
+  context.timeSaved = timeSaved;
+  context.productivitySummary = productivitySummary;
+  context.outcomeEvaluation = outcomeEvaluation;
+  context.actionSuccessScore = actionSuccessScore;
+  context.outcomeFeedbackState = outcomeFeedbackState;
   context.progressPhase = progressPhase;
   context.progressPercent = progressPercent;
   context.completionEstimate = completionEstimate;
   context.progressState = progressState;
+  context.goalProgressState = goalProgressState;
   context.realityProgress = realityProgress;
   context.firstValueSummary = firstValueSummary;
+  context.activationFunnel = activationFunnel;
+  context.activationMilestones = activationMilestones;
+  context.milestoneTracking = milestoneTracking;
+  context.productIterationInsights = productIterationInsights;
+  context.onboardingMarketingFlow = onboardingMarketingFlow;
+  context.activationDropOffs = activationDropOffs;
+  context.reEngagementPlan = reEngagementPlan;
+  context.nexusContentStrategy = nexusContentStrategy;
+  context.launchContentCalendar = launchContentCalendar;
+  context.storyAssets = storyAssets;
+  context.socialCommunityPack = socialCommunityPack;
+  context.productProofPlan = productProofPlan;
+  context.launchCampaignBrief = launchCampaignBrief;
+  context.launchRolloutPlan = launchRolloutPlan;
+  context.launchReadinessChecklist = launchReadinessChecklist;
+  context.launchPublishingPlan = launchPublishingPlan;
+  context.launchFeedbackSummary = launchFeedbackSummary;
+  context.goToMarketPlan = goToMarketPlan;
+  context.promotionExecutionPlan = promotionExecutionPlan;
+  context.launchMarketingExecution = launchMarketingExecution;
+  context.gtmMetricSchema = gtmMetricSchema;
+  context.acquisitionSourceMetrics = acquisitionSourceMetrics;
+  context.firstTouchAttribution = firstTouchAttribution;
+  context.preAuthConversionEvents = preAuthConversionEvents;
+  context.websiteActivationFunnel = websiteActivationFunnel;
+  context.conversionAnalytics = conversionAnalytics;
+  context.launchPerformanceDashboard = launchPerformanceDashboard;
+  context.gtmOptimizationPlan = gtmOptimizationPlan;
+  context.growthLoopManagement = growthLoopManagement;
+  context.ownerControlPlane = ownerControlPlane;
+  context.ownerControlCenter = ownerControlCenter;
+  context.dailyOwnerOverview = dailyOwnerOverview;
+  context.ownerPriorityQueue = ownerPriorityQueue;
+  context.ownerActionRecommendations = ownerActionRecommendations;
+  context.ownerDecisionDashboard = ownerDecisionDashboard;
+  context.ownerDailyWorkflow = ownerDailyWorkflow;
+  context.ownerFocusArea = ownerFocusArea;
+  context.ownerTaskList = ownerTaskList;
+  context.ownerRoutinePlan = ownerRoutinePlan;
+  context.dashboardHomeSurface = dashboardHomeSurface;
+  context.unifiedHomeDashboard = unifiedHomeDashboard;
+  context.todayPrioritiesFeed = todayPrioritiesFeed;
+  context.ownerVisibilityStrip = ownerVisibilityStrip;
+  context.ownerRevenueView = ownerRevenueView;
+  context.ownerCostView = ownerCostView;
+  context.profitMarginSummary = profitMarginSummary;
+  context.unitEconomicsDashboard = unitEconomicsDashboard;
+  context.cashFlowProjection = cashFlowProjection;
+  context.ownerUserAnalytics = ownerUserAnalytics;
+  context.featureUsageSummary = featureUsageSummary;
+  context.decisionAccuracySummary = decisionAccuracySummary;
+  context.automationImpactSummary = automationImpactSummary;
+  context.roadmapTracking = roadmapTracking;
+  context.ownerOperationsSignals = ownerOperationsSignals;
+  context.prioritizedOwnerAlerts = prioritizedOwnerAlerts;
+  context.ownerAlertFeed = ownerAlertFeed;
+  context.ownerIncident = ownerIncident;
+  context.outageResponsePlan = outageResponsePlan;
+  context.incidentTimeline = incidentTimeline;
+  context.rootCauseSummary = rootCauseSummary;
+  context.liveProjectMonitoring = liveProjectMonitoring;
+  context.maintenanceBacklog = maintenanceBacklog;
   context.realtimeEventStream = realtimeEventStream;
   context.liveUpdateChannel = liveUpdateChannel;
   context.formattedLogs = formattedLogs;
@@ -3841,10 +5220,14 @@ export function buildProjectContext(
   context.projectAuditRecord = projectAuditRecord;
   context.actorActionTrace = actorActionTrace;
   context.projectAuditPayload = projectAuditPayload;
+  context.ownerAuditView = ownerAuditView;
+  context.systemActivityFeed = systemActivityFeed;
+  context.criticalChangeHistory = criticalChangeHistory;
   context.notificationPayload = notificationPayload;
   context.notificationEvent = notificationEvent;
   context.notificationCenterState = notificationCenterState;
   context.notificationPreferences = notificationPreferences;
+  context.userPreferenceProfile = userPreferenceProfile;
   context.complianceConsentState = complianceConsentState;
   context.complianceAuditSummary = complianceAuditSummary;
   context.emailDeliveryResult = emailDeliveryResult;

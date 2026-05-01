@@ -13,10 +13,6 @@ test("companion interruption guard suppresses interruptions during critical exec
       },
       reasons: ["The companion wants to interrupt."],
     },
-    gatingDecision: {
-      decision: "allowed",
-      requiresApproval: false,
-    },
     progressState: {
       status: "running-critical",
     },
@@ -34,13 +30,9 @@ test("companion interruption guard keeps approval-sensitive flows guarded", () =
       decisionType: "interrupt",
       summary: {
         executionMode: "interactive",
+        requiresApproval: true,
       },
       reasons: ["Approval is still required."],
-    },
-    gatingDecision: {
-      decision: "requires-approval",
-      requiresApproval: true,
-      reason: "Approval is still pending.",
     },
     progressState: {
       status: "waiting",
@@ -50,4 +42,75 @@ test("companion interruption guard keeps approval-sensitive flows guarded", () =
   assert.equal(interruptionDecision.decision, "guarded");
   assert.equal(interruptionDecision.allowed, false);
   assert.equal(interruptionDecision.summary.blockedByApprovalSensitivity, true);
+});
+
+test("companion interruption guard suppresses quiet trigger decisions", () => {
+  const { interruptionDecision } = createCompanionInterruptionGuard({
+    companionTriggerDecision: {
+      decisionId: "trigger-3",
+      decisionType: "stay-quiet",
+      summary: {
+        executionMode: "interactive",
+        requiresApproval: false,
+      },
+      reasons: ["The companion should remain quiet."],
+    },
+    progressState: {
+      status: "idle",
+    },
+  });
+
+  assert.equal(interruptionDecision.decision, "suppress");
+  assert.equal(interruptionDecision.allowed, false);
+  assert.equal(interruptionDecision.summary.blockedByQuietMode, true);
+  assert.equal(interruptionDecision.summary.canInterrupt, false);
+});
+
+test("companion interruption guard allows canonical warning interruptions", () => {
+  const { interruptionDecision } = createCompanionInterruptionGuard({
+    companionTriggerDecision: {
+      decisionId: "trigger-4",
+      decisionType: "interrupt",
+      summary: {
+        executionMode: "interactive",
+        requiresApproval: false,
+      },
+      reasons: ["A warning condition needs attention."],
+    },
+    progressState: {
+      status: "waiting",
+    },
+  });
+
+  assert.equal(interruptionDecision.decision, "allow");
+  assert.equal(interruptionDecision.allowed, true);
+  assert.equal(interruptionDecision.summary.blockedByCriticalExecution, false);
+  assert.equal(interruptionDecision.summary.canInterrupt, true);
+});
+
+test("companion interruption guard normalizes malformed identifiers and control strings", () => {
+  const { interruptionDecision } = createCompanionInterruptionGuard({
+    companionTriggerDecision: {
+      decisionId: "  ",
+      decisionType: " interrupt ",
+      summary: {
+        executionMode: " INTERACTIVE ",
+        requiresApproval: false,
+      },
+      reasons: ["   "],
+    },
+    progressState: {
+      status: " waiting ",
+    },
+  });
+
+  assert.equal(interruptionDecision.decisionId, "companion-interruption:project");
+  assert.equal(interruptionDecision.decision, "allow");
+  assert.equal(interruptionDecision.allowed, true);
+  assert.deepEqual(interruptionDecision.reasons, [
+    "The companion may interrupt with actionable guidance.",
+  ]);
+  assert.equal(interruptionDecision.summary.blockedByCriticalExecution, false);
+  assert.equal(interruptionDecision.summary.blockedByQuietMode, false);
+  assert.equal(interruptionDecision.summary.canInterrupt, true);
 });
