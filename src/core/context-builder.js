@@ -307,6 +307,7 @@ import { definePackagingRequirementsSchema } from "./packaging-requirements-sche
 import { createOwnerConsentRecorder } from "./owner-consent-recorder.js";
 import { createOwnershipAwareReleaseGuard } from "./ownership-aware-release-guard.js";
 import { createOwnershipPolicyModel } from "./ownership-policy-model.js";
+import { createUserAgentOwnershipMappingModel } from "./user-agent-ownership-mapping-model.js";
 import { createCredentialVaultInterface } from "./credential-vault-interface.js";
 import { createProviderCapabilityDescriptor } from "./provider-capability-descriptor.js";
 import { createProviderConnectorAssembler } from "./provider-connector-assembler.js";
@@ -1739,6 +1740,16 @@ export function buildProjectContext(
   });
   const { taskExecutionCounters } = createTaskExecutionTracker({
     taskExecutionMetric,
+  });
+  const { userAgentMapping } = createUserAgentOwnershipMappingModel({
+    projectId: project.id ?? null,
+    userIdentity,
+    workspaceModel,
+    membershipRecord,
+    projectOwnershipBinding,
+    ownerAuthState,
+    taskExecutionMetric,
+    taskResults: canonicalTaskResults,
   });
   const { taskThroughputSummary } = createTaskThroughputAggregator({
     taskExecutionMetric,
@@ -4978,6 +4989,7 @@ export function buildProjectContext(
   context.userActivityHistory = userActivityHistory;
   context.userSessionMetric = userSessionMetric;
   context.userSessionHistory = userSessionHistory;
+  context.userAgentMapping = userAgentMapping;
   context.returningUserMetric = returningUserMetric;
   context.retentionSummary = retentionSummary;
   context.invitationRecord = invitationRecord;

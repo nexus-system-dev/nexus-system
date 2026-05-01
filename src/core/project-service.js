@@ -2793,6 +2793,7 @@ export class ProjectService {
       userActivityHistory: project.context?.userActivityHistory ?? null,
       userSessionMetric: project.context?.userSessionMetric ?? project.manualContext?.userSessionMetric ?? null,
       userSessionHistory: project.context?.userSessionHistory ?? null,
+      userAgentMapping: project.context?.userAgentMapping ?? null,
       returningUserMetric: project.context?.returningUserMetric ?? null,
       retentionSummary: project.context?.retentionSummary ?? null,
       blockedTaskOutcomes: project.context?.blockedTaskOutcomes ?? project.state?.blockedTaskOutcomes ?? [],

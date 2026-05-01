@@ -1030,8 +1030,8 @@
       "execution_order": "035",
       "taskName": "Create user-agent ownership mapping model",
       "lane": "Behavioral Analytics & User Truth",
-      "state": "blocked",
-      "blocker": "Turn Zero downgrade: workspaceModel, membershipRecord, and projectOwnershipBinding exist, but no repository implementation, direct tests, or downstream consumers for userAgentMapping exist yet; inherited in-progress state was placeholder progress.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

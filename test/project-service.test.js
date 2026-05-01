@@ -295,6 +295,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(project.state.workspaceModeDefinitions?.["user-only"]?.actor, "user");
   assert.equal(typeof project.state.membershipRecord?.membershipId, "string");
   assert.equal(Array.isArray(project.state.membershipRecord?.roles), true);
+  assert.equal(typeof project.userAgentMapping?.userAgentMappingId, "string");
+  assert.equal(typeof project.userAgentMapping?.summary?.totalMappedAgents, "number");
   assert.equal(typeof project.state.accessDecision?.decision, "string");
   assert.equal(typeof project.state.accessDecision?.canView, "boolean");
   assert.equal(typeof project.state.collaborationEvent?.eventId, "string");

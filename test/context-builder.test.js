@@ -464,6 +464,9 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.stateBootstrapPayload?.summary?.canBootstrap, "boolean");
   assert.equal(typeof context.membershipRecord?.membershipId, "string");
   assert.equal(Array.isArray(context.membershipRecord?.roles), true);
+  assert.equal(typeof context.userAgentMapping?.userAgentMappingId, "string");
+  assert.equal(typeof context.userAgentMapping?.status, "string");
+  assert.equal(typeof context.userAgentMapping?.summary?.totalMappedAgents, "number");
   assert.equal(typeof context.accessDecision?.decision, "string");
   assert.equal(typeof context.accessDecision?.canRun, "boolean");
   assert.equal(typeof context.collaborationEvent?.eventId, "string");
@@ -1686,6 +1689,14 @@ test("context builder learns baseline estimates from prior execution history bef
       executionDurationMs: 1200000,
     },
   ]);
+  assert.deepEqual(context.userAgentMapping.byAgent["dev-agent"], {
+    humanUserId: "anonymous-user",
+    ownerUserId: "anonymous-user",
+    workspaceId: "workspace-anonymous-user",
+    projectId: "giftwallet",
+    relationship: "delegated-agent",
+    mappingStatus: "owned",
+  });
 });
 
 test("context builder exposes ready nexus positioning when manual competitive context exists", () => {
