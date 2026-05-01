@@ -2803,6 +2803,7 @@ export class ProjectService {
       baselineEstimate: project.context?.baselineEstimate ?? null,
       timeSavedMetric: project.context?.timeSavedMetric ?? null,
       timeSaved: project.context?.timeSaved ?? null,
+      humanUserProductivity: project.context?.humanUserProductivity ?? null,
       productivitySummary: project.context?.productivitySummary ?? null,
       outcomeEvaluation: project.context?.outcomeEvaluation ?? null,
       actionSuccessScore: project.context?.actionSuccessScore ?? null,

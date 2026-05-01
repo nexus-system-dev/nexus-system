@@ -308,6 +308,7 @@ import { createOwnerConsentRecorder } from "./owner-consent-recorder.js";
 import { createOwnershipAwareReleaseGuard } from "./ownership-aware-release-guard.js";
 import { createOwnershipPolicyModel } from "./ownership-policy-model.js";
 import { createUserAgentOwnershipMappingModel } from "./user-agent-ownership-mapping-model.js";
+import { createHumanUserProductivityResolver } from "./human-user-productivity-resolver.js";
 import { createCredentialVaultInterface } from "./credential-vault-interface.js";
 import { createProviderCapabilityDescriptor } from "./provider-capability-descriptor.js";
 import { createProviderConnectorAssembler } from "./provider-connector-assembler.js";
@@ -1775,6 +1776,11 @@ export function buildProjectContext(
   const { timeSaved } = createTimeSavedCalculator({
     projectId: project.id ?? null,
     timeSavedMetric,
+  });
+  const { humanUserProductivity } = createHumanUserProductivityResolver({
+    projectId: project.id ?? null,
+    timeSaved,
+    userAgentMapping,
   });
   const { productivitySummary } = createProductivitySummaryAggregator({
     timeSaved,
@@ -5166,6 +5172,7 @@ export function buildProjectContext(
   context.baselineEstimate = baselineEstimate;
   context.timeSavedMetric = timeSavedMetric;
   context.timeSaved = timeSaved;
+  context.humanUserProductivity = humanUserProductivity;
   context.productivitySummary = productivitySummary;
   context.outcomeEvaluation = outcomeEvaluation;
   context.actionSuccessScore = actionSuccessScore;

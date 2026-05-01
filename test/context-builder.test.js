@@ -904,6 +904,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(Array.isArray(context.timeSavedMetric?.entries), true);
   assert.equal(typeof context.timeSaved?.timeSavedId, "string");
   assert.equal(Array.isArray(context.timeSaved?.entries), true);
+  assert.equal(typeof context.humanUserProductivity?.humanUserProductivityId, "string");
+  assert.equal(typeof context.humanUserProductivity?.summary?.totalResolvedEntries, "number");
   assert.equal(typeof context.outcomeEvaluation?.outcomeEvaluationId, "string");
   assert.equal(typeof context.outcomeEvaluation?.status, "string");
   assert.equal(Array.isArray(context.outcomeEvaluation?.evidence), true);
@@ -1696,6 +1698,12 @@ test("context builder learns baseline estimates from prior execution history bef
     projectId: "giftwallet",
     relationship: "delegated-agent",
     mappingStatus: "owned",
+  });
+  assert.deepEqual(context.humanUserProductivity.byHumanUser, {
+    "anonymous-user": 1200000,
+  });
+  assert.deepEqual(context.humanUserProductivity.agentBreakdown["anonymous-user"], {
+    "dev-agent": 1200000,
   });
 });
 

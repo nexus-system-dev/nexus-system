@@ -1013,6 +1013,8 @@ test("project service can run additional cycles against persisted events", () =>
   assert.equal(Array.isArray(project.timeSavedMetric?.entries), true);
   assert.equal(typeof project.timeSaved?.timeSavedId, "string");
   assert.equal(Array.isArray(project.timeSaved?.entries), true);
+  assert.equal(typeof project.humanUserProductivity?.humanUserProductivityId, "string");
+  assert.equal(typeof project.humanUserProductivity?.summary?.totalResolvedEntries, "number");
   assert.equal(typeof project.productivitySummary?.totalTimeSavedMs, "number");
   assert.equal(typeof project.outcomeEvaluation?.outcomeEvaluationId, "string");
   assert.equal(typeof project.outcomeEvaluation?.status, "string");
