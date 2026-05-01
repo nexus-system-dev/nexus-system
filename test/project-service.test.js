@@ -2703,6 +2703,8 @@ test("project service normalizes imported business assets after onboarding intak
   assert.equal(finished.project.importedAnalyticsNormalization.summary.importedAssetCount, 1);
   assert.equal(finished.project.importedAssetTaskExtraction.status, "ready");
   assert.equal(finished.project.importedAssetTaskExtraction.summary.totalExtractedTasks >= 5, true);
+  assert.equal(finished.project.importAndContinueRoadmap.status, "ready");
+  assert.equal(finished.project.importAndContinueRoadmap.summary.roadmapItemCount >= 5, true);
   assert.equal(
     finished.project.existingBusinessAssets.importAndContinueSeed.nextCapabilities.includes("repository-diagnosis"),
     true,
@@ -2727,6 +2729,10 @@ test("project service normalizes imported business assets after onboarding intak
   );
   assert.equal(
     finished.project.state.importedAssetTaskExtraction.summary.sourceCoverage.includes("analytics"),
+    true,
+  );
+  assert.equal(
+    finished.project.state.importAndContinueRoadmap.roadmapItems[1].dependencyIds.length > 0,
     true,
   );
   assert.equal(

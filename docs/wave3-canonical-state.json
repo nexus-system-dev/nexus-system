@@ -966,8 +966,8 @@
       "execution_order": "027",
       "taskName": "Create import-and-continue roadmap assembler",
       "lane": "Existing Business Intake & Diagnosis",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create imported asset task extraction module.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

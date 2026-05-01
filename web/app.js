@@ -1708,6 +1708,9 @@ function renderExternal(elements, project) {
   const importedAssetTaskExtraction = normalizeObject(
     project.importedAssetTaskExtraction ?? project.state?.importedAssetTaskExtraction,
   );
+  const importAndContinueRoadmap = normalizeObject(
+    project.importAndContinueRoadmap ?? project.state?.importAndContinueRoadmap,
+  );
 
   if (
     !project.externalSnapshot
@@ -1717,6 +1720,7 @@ function renderExternal(elements, project) {
     && !liveWebsiteDiagnosis.status
     && !importedAnalyticsNormalization.status
     && !importedAssetTaskExtraction.status
+    && !importAndContinueRoadmap.status
   ) {
     elements.external.innerHTML = `<p class="empty">עדיין לא בוצע חיבור חיצוני.</p>`;
     return;
@@ -1835,6 +1839,27 @@ function renderExternal(elements, project) {
             .slice(0, 2)
             .map((task) => task.title)
             .join(" | ") || "Imported task extraction available",
+      },
+    );
+  }
+
+  if (importAndContinueRoadmap.status === "ready") {
+    items.push(
+      {
+        title: `Import roadmap: ${importAndContinueRoadmap.summary?.roadmapItemCount ?? 0} tasks`,
+        body: `${importAndContinueRoadmap.summary?.sourceCount ?? 0} sources | highest priority: ${importAndContinueRoadmap.summary?.highestPriorityAction ?? "n/a"}`,
+      },
+      {
+        title: "Next import-and-continue action",
+        body: importAndContinueRoadmap.summary?.nextAction ?? "Review import-and-continue roadmap",
+      },
+      {
+        title: "Roadmap dependency chain",
+        body:
+          normalizeArray(importAndContinueRoadmap.roadmapItems)
+            .slice(0, 2)
+            .map((task) => task.title)
+            .join(" | ") || "Import-and-continue roadmap available",
       },
     );
   }

@@ -636,5 +636,23 @@ After each execution turn, report:
 - whether hostile reality or generated-surface proof was required
 - the exact final state write-back
 - the next scan point
+- Wave 3 completion progress as:
+  - remaining task count
+  - completed task count
+  - rounded completion percentage
+
+## Push completion doctrine
+
+At the end of every successful change-bearing execution turn:
+
+- commit the exact validated change set
+- push it to the active remote branch
+- verify that local `HEAD` and the pushed remote ref match
+
+If push fails:
+- report the exact failure
+- do not claim the turn is fully completed until push truth is known
+
+Pure read-only investigation turns do not require a push.
 
 Do NOT claim Wave 3 progress from markdown counts alone.

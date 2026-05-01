@@ -864,6 +864,20 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
         { title: "Unblock website flow: registration: onboarding CTA missing" },
       ],
     },
+    importAndContinueRoadmap: {
+      roadmapId: "import-and-continue-roadmap:giftwallet",
+      status: "ready",
+      summary: {
+        roadmapItemCount: 6,
+        sourceCount: 4,
+        highestPriorityAction: "Resolve repository gap: missing CI workflow",
+        nextAction: "Resolve repository gap: missing CI workflow",
+      },
+      roadmapItems: [
+        { title: "Resolve repository gap: missing CI workflow", dependencyIds: [] },
+        { title: "Unblock website flow: registration: onboarding CTA missing", dependencyIds: ["import-continue:repository:1:resolve-repository-gap-missing-ci-workflow"] },
+      ],
+    },
   };
 
   async function fetchImpl(url) {

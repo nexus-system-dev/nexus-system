@@ -1201,6 +1201,9 @@ test("context builder exposes normalized existing business assets for imported-p
   assert.equal(context.importedAssetTaskExtraction.status, "ready");
   assert.equal(context.importedAssetTaskExtraction.summary.totalExtractedTasks >= 5, true);
   assert.equal(context.importedAssetTaskExtraction.summary.sourceCoverage.includes("website"), true);
+  assert.equal(context.importAndContinueRoadmap.status, "ready");
+  assert.equal(context.importAndContinueRoadmap.summary.roadmapItemCount >= 5, true);
+  assert.equal(context.importAndContinueRoadmap.roadmapItems[1].dependencyIds.length > 0, true);
   assert.equal(
     context.existingBusinessAssets.assets.some((asset) => asset.path === "README.md" && asset.sourceStages.length === 2),
     true,

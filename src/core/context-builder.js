@@ -85,6 +85,7 @@ import { createRepositoryImportAndCodebaseDiagnosisBridge } from "./repository-i
 import { createLiveWebsiteIngestionFunnelDiagnosisModel } from "./live-website-ingestion-funnel-diagnosis-model.js";
 import { createImportedAnalyticsNormalizationLayer } from "./imported-analytics-normalization-layer.js";
 import { createImportedAssetTaskExtractionModule } from "./imported-asset-task-extraction-module.js";
+import { createImportAndContinueRoadmapAssembler } from "./import-and-continue-roadmap-assembler.js";
 import { defineActivationFunnelSchema } from "./activation-funnel-schema.js";
 import { createFirstValueMilestoneMapper } from "./first-value-milestone-mapper.js";
 import { createOnboardingMarketingCopyFlow } from "./onboarding-marketing-copy-flow.js";
@@ -1422,6 +1423,14 @@ export function buildProjectContext(
     repositoryImportAndCodebaseDiagnosis,
     liveWebsiteIngestionAndFunnelDiagnosis,
     importedAnalyticsNormalization,
+  });
+  const { importAndContinueRoadmap } = createImportAndContinueRoadmapAssembler({
+    projectId: project.id,
+    existingBusinessAssets,
+    repositoryImportAndCodebaseDiagnosis,
+    liveWebsiteIngestionAndFunnelDiagnosis,
+    importedAnalyticsNormalization,
+    importedAssetTaskExtraction,
   });
   const { projectIdentityProfile, identityCompleteness } = createProjectIdentityAssembler({
     projectIdentity,
@@ -4913,6 +4922,7 @@ export function buildProjectContext(
   context.liveWebsiteIngestionAndFunnelDiagnosis = liveWebsiteIngestionAndFunnelDiagnosis;
   context.importedAnalyticsNormalization = importedAnalyticsNormalization;
   context.importedAssetTaskExtraction = importedAssetTaskExtraction;
+  context.importAndContinueRoadmap = importAndContinueRoadmap;
   context.atomicExecutionEnvelope = atomicExecutionEnvelope;
   context.externalExecutionResult = externalExecutionResult;
   context.executionConsistencyReport = executionConsistencyReport;
