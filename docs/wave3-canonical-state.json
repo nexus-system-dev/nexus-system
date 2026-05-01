@@ -998,8 +998,8 @@
       "execution_order": "031",
       "taskName": "Create durable session continuity store",
       "lane": "Persistence & Return Continuity",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define persistence and continuity schema and Create durable user account store.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

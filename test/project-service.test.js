@@ -2509,6 +2509,29 @@ test("project service persists durable project and workspace state across restar
   assert.equal(Array.isArray(rerun.cycle.roadmap), true);
 });
 
+test("project service persists durable session continuity state across restart", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-service-"));
+  const firstService = createProjectService(directory);
+
+  const signedUp = firstService.signupUser({
+    userInput: {
+      email: "continuity-user@example.com",
+      displayName: "Continuity User",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const restartedService = createProjectService(directory);
+  const restored = restartedService.getUserAuthPayload(signedUp.authPayload.userIdentity.userId);
+
+  assert.equal(restored.sessionState.status, "active");
+  assert.equal(typeof restored.sessionState.sessionId, "string");
+  assert.equal(typeof restored.tokenBundle.accessToken, "string");
+  assert.equal(restored.postAuthRedirect.destination, "workbench");
+});
+
 test("project service blocks onboarding finish when intake is incomplete instead of crashing", () => {
   const service = createProjectService();
 

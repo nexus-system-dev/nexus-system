@@ -63,6 +63,7 @@ import { createProjectReviewThreadStore } from "./project-review-thread-store.js
 import { createPersistentUserActivitySessionHistoryStore } from "./user-activity-session-history-store.js";
 import { createDurableUserAccountStore } from "./durable-user-account-store.js";
 import { createDurableProjectWorkspaceStore } from "./durable-project-workspace-store.js";
+import { createDurableSessionContinuityStore } from "./durable-session-continuity-store.js";
 import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
 import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
 import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
@@ -101,6 +102,7 @@ export class ProjectService {
     userActivityHistoryStore = null,
     userAccountStore = null,
     projectWorkspaceStore = null,
+    sessionContinuityStore = null,
   }) {
     this.eventBus = new EventBus({
       eventLog: new FileEventLog({
@@ -152,6 +154,25 @@ export class ProjectService {
         filePath: eventLogPath.replace(/events\\.ndjson$/, "project-workspaces.ndjson"),
       });
     this.projects = new Map(this.projectWorkspaceStore.readAll().map((record) => [record.projectId, record.project]));
+    this.sessionContinuityStore = sessionContinuityStore
+      ?? createDurableSessionContinuityStore({
+        filePath: eventLogPath.replace(/events\\.ndjson$/, "session-continuity.ndjson"),
+      });
+    for (const [userId, authPayload] of this.users.entries()) {
+      const continuityRecord = this.sessionContinuityStore.getByUserId(userId);
+      if (!continuityRecord) {
+        continue;
+      }
+
+      this.users.set(userId, {
+        ...authPayload,
+        sessionState: continuityRecord.sessionState ?? authPayload.sessionState ?? null,
+        tokenBundle: continuityRecord.tokenBundle ?? authPayload.tokenBundle ?? null,
+        postAuthRedirect: continuityRecord.postAuthRedirect ?? authPayload.postAuthRedirect ?? null,
+        authenticationRouteDecision:
+          continuityRecord.authenticationRouteDecision ?? authPayload.authenticationRouteDecision ?? null,
+      });
+    }
     this.snapshotBackupTimers = new Map();
   }
 
@@ -302,6 +323,14 @@ export class ProjectService {
     if (!persistedRecord) {
       return null;
     }
+
+    this.sessionContinuityStore.upsert({
+      userId: persistedRecord.userIdentity.userId,
+      sessionState: persistedRecord.sessionState ?? null,
+      tokenBundle: persistedRecord.tokenBundle ?? null,
+      postAuthRedirect: persistedRecord.postAuthRedirect ?? null,
+      authenticationRouteDecision: persistedRecord.authenticationRouteDecision ?? null,
+    });
 
     this.users.set(persistedRecord.userIdentity.userId, persistedRecord);
     return persistedRecord;
