@@ -2487,6 +2487,28 @@ test("project service persists durable user account state across restart", () =>
   assert.equal(loggedIn.authPayload.sessionState.status, "active");
 });
 
+test("project service persists durable project and workspace state across restart", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-service-"));
+  const firstService = createProjectService(directory);
+  firstService.seedDemoProject();
+
+  const seeded = firstService.getProject("giftwallet");
+  const workspaceId = seeded.state.workspaceModel.workspaceId;
+
+  const restartedService = createProjectService(directory);
+  const restored = restartedService.getProject("giftwallet");
+  const byWorkspace = restartedService.getProjectByWorkspaceId(workspaceId);
+
+  assert.equal(restored.id, "giftwallet");
+  assert.equal(restored.state.workspaceModel.workspaceId, workspaceId);
+  assert.equal(Array.isArray(restored.cycle.roadmap), true);
+  assert.equal(byWorkspace.id, "giftwallet");
+
+  const rerun = restartedService.runCycle("giftwallet");
+  assert.equal(rerun.id, "giftwallet");
+  assert.equal(Array.isArray(rerun.cycle.roadmap), true);
+});
+
 test("project service blocks onboarding finish when intake is incomplete instead of crashing", () => {
   const service = createProjectService();
 

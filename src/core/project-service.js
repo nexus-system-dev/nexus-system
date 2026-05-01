@@ -62,6 +62,7 @@ import { createSecurityAuditLogStore } from "./security-audit-log-store.js";
 import { createProjectReviewThreadStore } from "./project-review-thread-store.js";
 import { createPersistentUserActivitySessionHistoryStore } from "./user-activity-session-history-store.js";
 import { createDurableUserAccountStore } from "./durable-user-account-store.js";
+import { createDurableProjectWorkspaceStore } from "./durable-project-workspace-store.js";
 import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
 import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
 import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
@@ -99,6 +100,7 @@ export class ProjectService {
     projectReviewThreadStore = null,
     userActivityHistoryStore = null,
     userAccountStore = null,
+    projectWorkspaceStore = null,
   }) {
     this.eventBus = new EventBus({
       eventLog: new FileEventLog({
@@ -145,6 +147,11 @@ export class ProjectService {
         filePath: eventLogPath.replace(/events\\.ndjson$/, "user-accounts.ndjson"),
       });
     this.users = new Map(this.userAccountStore.readAll().map((record) => [record.userIdentity.userId, record]));
+    this.projectWorkspaceStore = projectWorkspaceStore
+      ?? createDurableProjectWorkspaceStore({
+        filePath: eventLogPath.replace(/events\\.ndjson$/, "project-workspaces.ndjson"),
+      });
+    this.projects = new Map(this.projectWorkspaceStore.readAll().map((record) => [record.projectId, record.project]));
     this.snapshotBackupTimers = new Map();
   }
 
@@ -298,6 +305,16 @@ export class ProjectService {
 
     this.users.set(persistedRecord.userIdentity.userId, persistedRecord);
     return persistedRecord;
+  }
+
+  persistProjectRecord(project) {
+    const persistedRecord = this.projectWorkspaceStore.upsert(project);
+    if (!persistedRecord) {
+      return null;
+    }
+
+    this.projects.set(persistedRecord.projectId, persistedRecord.project);
+    return persistedRecord.project;
   }
 
   findProjectRecordByWorkspaceId(workspaceId) {
@@ -3182,6 +3199,7 @@ export class ProjectService {
         hasPaymentIntegration: project.context.capabilities.payments.value,
       },
     };
+    this.persistProjectRecord(project);
 
     return project.context;
   }
@@ -3907,6 +3925,7 @@ export class ProjectService {
       };
     });
     project.status = cycle.assignments.length > 0 ? "active" : "blocked";
+    this.persistProjectRecord(project);
 
     return this.serializeProject(project);
   }
