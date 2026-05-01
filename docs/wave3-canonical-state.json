@@ -1014,8 +1014,8 @@
       "execution_order": "033",
       "taskName": "Create durable project creation event history store",
       "lane": "Behavioral Analytics & User Truth",
-      "state": "blocked",
-      "blocker": "Turn Zero downgrade: projectCreationEvents exist only in in-memory ProjectService state; no durable history store implementation, direct tests, or downstream durable consumers exist yet.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

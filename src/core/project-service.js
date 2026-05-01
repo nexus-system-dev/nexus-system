@@ -64,6 +64,7 @@ import { createPersistentUserActivitySessionHistoryStore } from "./user-activity
 import { createDurableUserAccountStore } from "./durable-user-account-store.js";
 import { createDurableProjectWorkspaceStore } from "./durable-project-workspace-store.js";
 import { createDurableSessionContinuityStore } from "./durable-session-continuity-store.js";
+import { createDurableProjectCreationEventHistoryStore } from "./durable-project-creation-event-history-store.js";
 import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
 import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
 import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
@@ -103,6 +104,7 @@ export class ProjectService {
     userAccountStore = null,
     projectWorkspaceStore = null,
     sessionContinuityStore = null,
+    projectCreationEventHistoryStore = null,
   }) {
     this.eventBus = new EventBus({
       eventLog: new FileEventLog({
@@ -158,6 +160,10 @@ export class ProjectService {
       ?? createDurableSessionContinuityStore({
         filePath: eventLogPath.replace(/events\\.ndjson$/, "session-continuity.ndjson"),
       });
+    this.projectCreationEventHistoryStore = projectCreationEventHistoryStore
+      ?? createDurableProjectCreationEventHistoryStore({
+        filePath: eventLogPath.replace(/events\\.ndjson$/, "project-creation-events.ndjson"),
+      });
     for (const [userId, authPayload] of this.users.entries()) {
       const continuityRecord = this.sessionContinuityStore.getByUserId(userId);
       if (!continuityRecord) {
@@ -173,6 +179,12 @@ export class ProjectService {
           continuityRecord.authenticationRouteDecision ?? authPayload.authenticationRouteDecision ?? null,
       });
     }
+    this.projectCreationEvents = new Map(
+      this.projectCreationEventHistoryStore.readAll().map((event) => [event.projectId, event]),
+    );
+    this.projectCreationMetric = {
+      totalProjectsCreated: this.projectCreationEvents.size,
+    };
     this.snapshotBackupTimers = new Map();
   }
 
@@ -514,7 +526,8 @@ export class ProjectService {
     });
 
     this.projectDrafts.set(projectDraftId, projectDraft);
-    this.projectCreationEvents.set(projectDraftId, projectCreationEvent);
+    const persistedProjectCreationEvent = this.projectCreationEventHistoryStore.append(projectCreationEvent) ?? projectCreationEvent;
+    this.projectCreationEvents.set(projectDraftId, persistedProjectCreationEvent);
     this.projectCreationMetric = projectCreationMetric;
     const projectCreationEvents = this.listProjectCreationEvents();
     const projectCreationSummary = this.buildProjectCreationSummary(projectCreationEvents);
@@ -522,7 +535,7 @@ export class ProjectService {
     return {
       projectDraft,
       projectDraftId,
-      projectCreationEvent,
+      projectCreationEvent: persistedProjectCreationEvent,
       projectCreationEvents,
       projectCreationMetric,
       projectCreationSummary,

@@ -2533,6 +2533,38 @@ test("project service persists durable session continuity state across restart",
   assert.equal(restored.postAuthRedirect.destination, "workbench");
 });
 
+test("project service persists durable project creation event history across restart", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-service-"));
+  const firstService = createProjectService(directory);
+
+  firstService.signupUser({
+    userInput: {
+      email: "creation-history@example.com",
+      displayName: "Creation History",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const created = firstService.createProjectDraft({
+    userInput: {
+      email: "creation-history@example.com",
+    },
+    projectCreationInput: {
+      projectName: "History Draft",
+      visionText: "Persist creation events",
+    },
+  });
+
+  const restartedService = createProjectService(directory);
+  const events = restartedService.listProjectCreationEvents();
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0].projectCreationEventId, created.projectCreationEvent.projectCreationEventId);
+  assert.deepEqual(restartedService.projectCreationMetric, { totalProjectsCreated: 1 });
+});
+
 test("project service blocks onboarding finish when intake is incomplete instead of crashing", () => {
   const service = createProjectService();
 
