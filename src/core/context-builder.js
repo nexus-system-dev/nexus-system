@@ -38,6 +38,7 @@ import { createGoalProgressEvaluator } from "./goal-progress-evaluator.js";
 import { defineUserActivityEventSchema } from "./user-activity-event-schema.js";
 import { createSessionActivityTracker } from "./session-activity-tracker.js";
 import { createReturningUserResolver } from "./returning-user-resolver.js";
+import { createReturnTomorrowContinuityResolver } from "./return-tomorrow-continuity-resolver.js";
 import { createRetentionMetricsAggregator } from "./retention-metrics-aggregator.js";
 import { createDurableUserActivitySessionHistory } from "./user-activity-session-history-store.js";
 import { createRunProgressNormalizer } from "./run-progress-normalizer.js";
@@ -3152,10 +3153,18 @@ export function buildProjectContext(
   const { retentionSummary } = createRetentionMetricsAggregator({
     returningUserMetric,
   });
+  const { returnTomorrowContinuity } = createReturnTomorrowContinuityResolver({
+    sessionState,
+    projectState: project.state ?? null,
+    postAuthRedirect,
+    userSessionHistory,
+    returningUserMetric,
+  });
   const { postLoginDestination } = createPostLoginDestinationResolver({
     appEntryDecision,
     userSessionMetric,
     projectState: project.state ?? null,
+    returnTomorrowContinuity,
   });
   const { appLandingEntry } = createAppLandingEntryExperience({
     siteAppBoundary,
@@ -4810,6 +4819,7 @@ export function buildProjectContext(
   context.landingAuthHandoff = landingAuthHandoff;
   context.appEntryDecision = appEntryDecision;
   context.postLoginDestination = postLoginDestination;
+  context.returnTomorrowContinuity = returnTomorrowContinuity;
   context.appLandingEntry = appLandingEntry;
   context.entryStateVariants = entryStateVariants;
   context.entryRecoveryState = entryRecoveryState;

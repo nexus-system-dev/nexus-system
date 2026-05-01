@@ -1161,6 +1161,7 @@ test("project service serialization preserves nexus positioning", () => {
   assert.equal(result.appEntryDecision?.decision, "direct-app");
   assert.equal(result.postLoginDestination?.status, "ready");
   assert.equal(result.postLoginDestination?.destination, "first-project-kickoff");
+  assert.equal(result.returnTomorrowContinuity?.status, "ready");
   assert.equal(result.appLandingEntry?.status, "ready");
   assert.equal(result.entryStateVariants?.status, "ready");
   assert.equal(result.entryRecoveryState?.status, "ready");

@@ -793,6 +793,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.workspaceNavigationModel?.projectId, "string");
   assert.equal(Array.isArray(context.workspaceNavigationModel?.availableWorkspaces), true);
   assert.equal(typeof context.workspaceNavigationModel?.summary?.totalWorkspaces, "number");
+  assert.equal(context.returnTomorrowContinuity?.status, "ready");
+  assert.equal(typeof context.returnTomorrowContinuity?.recommendedDestination, "string");
   assert.equal(typeof context.acceptanceScenario?.acceptanceScenarioId, "string");
   assert.equal(Array.isArray(context.acceptanceScenario?.scenarios), true);
   assert.equal(typeof context.acceptanceResult?.acceptanceResultId, "string");

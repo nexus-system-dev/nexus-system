@@ -1006,8 +1006,8 @@
       "execution_order": "032",
       "taskName": "Create return-tomorrow continuity resolver",
       "lane": "Persistence & Return Continuity",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create durable user account store, Create durable project and workspace store, Create durable session continuity store, and Create unified home dashboard model.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

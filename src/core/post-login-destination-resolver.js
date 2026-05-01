@@ -22,10 +22,12 @@ export function createPostLoginDestinationResolver({
   appEntryDecision = null,
   userSessionMetric = null,
   projectState = null,
+  returnTomorrowContinuity = null,
 } = {}) {
   const normalizedDecision = normalizeObject(appEntryDecision);
   const normalizedSessionMetric = normalizeObject(userSessionMetric);
   const normalizedProjectState = normalizeObject(projectState);
+  const normalizedReturnTomorrowContinuity = normalizeObject(returnTomorrowContinuity);
   const missingInputs = buildMissingInputs(normalizedDecision);
 
   if (missingInputs.length > 0) {
@@ -43,6 +45,11 @@ export function createPostLoginDestinationResolver({
     destination = "waitlist-status";
   } else if (normalizedDecision.decision === "access-gate") {
     destination = "approval-inbox";
+  } else if (
+    normalizedReturnTomorrowContinuity?.status === "ready"
+    && normalizedReturnTomorrowContinuity?.canResumeTomorrow === true
+  ) {
+    destination = normalizedReturnTomorrowContinuity.recommendedDestination ?? "workbench";
   } else if (!normalizedProjectState?.projectIdentity && (normalizedSessionMetric?.totalSessions ?? 0) <= 1) {
     destination = "first-project-kickoff";
   } else if ((normalizedSessionMetric?.totalSessions ?? 0) <= 1) {
@@ -56,6 +63,10 @@ export function createPostLoginDestinationResolver({
       missingInputs: [],
       destination,
       entryDecision: normalizedDecision.decision,
+      continuitySource:
+        normalizedReturnTomorrowContinuity?.status === "ready"
+          ? normalizedReturnTomorrowContinuity.continuitySource ?? null
+          : null,
     },
   };
 }
