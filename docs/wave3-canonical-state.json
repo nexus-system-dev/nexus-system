@@ -1,0 +1,1582 @@
+{
+  "metadata": {
+    "version": 1,
+    "generatedAt": "2026-05-01",
+    "wave": "Wave 3",
+    "purpose": "Canonical Wave 3 execution ledger and readiness audit.",
+    "notes": [
+      "Wave 3 planning docs were audited against repository reality before execution began.",
+      "Wave 3 scope was narrowed to unfinished work only.",
+      "Tasks already owned and completed by Wave 2 were removed from the active Wave 3 execution map and recorded as satisfied prerequisites instead.",
+      "Several Wave 3 dependency labels were non-canonical lane names rather than executable tasks; those dependencies were repaired into exact repository-backed prerequisites."
+    ]
+  },
+  "laneDefinitions": [
+    {
+      "laneId": "design-runtime-foundations",
+      "name": "Design Runtime Foundations",
+      "taskCount": 7,
+      "purpose": "Create the boundary, capability, reliability, and consistency foundations required before higher-order Wave 3 generation and adaptive loops."
+    },
+    {
+      "laneId": "nexus-core-product-experience",
+      "name": "Nexus Core Product Experience & Surface Delivery",
+      "taskCount": 13,
+      "purpose": "Own the live Nexus product shell, route/navigation surfaces, unified home dashboard, guided execution surfaces, first-user experience, and the backend-to-frontend bridge that turns canonical state into usable product screens."
+    },
+    {
+      "laneId": "existing-business-intake-diagnosis",
+      "name": "Existing Business Intake & Diagnosis",
+      "taskCount": 7,
+      "purpose": "Turn uploaded assets, repositories, live sites, and analytics exports into normalized current-state diagnosis and executable import-and-continue plans."
+    },
+    {
+      "laneId": "persistence-return-continuity",
+      "name": "Persistence & Return Continuity",
+      "taskCount": 5,
+      "purpose": "Replace memory-only user, project, and session continuity with durable persistence and reliable return-tomorrow product behavior."
+    },
+    {
+      "laneId": "behavioral-analytics-user-truth",
+      "name": "Behavioral Analytics & User Truth",
+      "taskCount": 8,
+      "purpose": "Replace heuristic analytics with durable history, true user attribution, and retention truth."
+    },
+    {
+      "laneId": "autonomous-product-ops",
+      "name": "Autonomous Product Ops",
+      "taskCount": 9,
+      "purpose": "Turn post-execution evidence into measurable feedback, goal evaluation, and adaptive optimization loops."
+    },
+    {
+      "laneId": "external-capability-fabric",
+      "name": "External Capability Fabric",
+      "taskCount": 7,
+      "purpose": "Own the registry, credential binding, webhook intake, provider health, and external-tool bridges that let Nexus connect safely to repos, providers, and imported design assets."
+    },
+    {
+      "laneId": "execution-surface-real-execution",
+      "name": "Execution Surface / Real Execution",
+      "taskCount": 11,
+      "purpose": "Turn canonical execution intent into real provider, IDE-agent, and artifact-producing execution with strict routing, session, invocation, and result truth."
+    },
+    {
+      "laneId": "deployment-reality",
+      "name": "Deployment Reality",
+      "taskCount": 3,
+      "purpose": "Turn execution outputs into real deployment attempts and canonical deployment evidence instead of assuming release side effects."
+    },
+    {
+      "laneId": "live-release-verification",
+      "name": "Live Release Verification",
+      "taskCount": 3,
+      "purpose": "Validate real post-deploy production health and release readiness before Wave 3 can claim live launch truth."
+    },
+    {
+      "laneId": "ai-generation-engine",
+      "name": "AI Generation Engine",
+      "taskCount": 6,
+      "purpose": "Establish the request, provider, service, execution, and normalization pipeline for controlled AI-generated design proposals."
+    },
+    {
+      "laneId": "ai-observability-safety-ops",
+      "name": "AI Observability & Safety Ops",
+      "taskCount": 5,
+      "purpose": "Measure generation health, provider reliability, prompt-contract failures, and review acceptance so AI output is governed by runtime truth rather than hopeful tests."
+    },
+    {
+      "laneId": "owner-creative-control-plane",
+      "name": "Owner Creative Control Plane & Generated Surface Proof",
+      "taskCount": 11,
+      "purpose": "Prove generated surfaces are renderable, accessible, on-brand, reviewable, editable, attributable, and safely integrated."
+    },
+    {
+      "laneId": "growth-monetization-expansion",
+      "name": "Growth & Monetization Expansion",
+      "taskCount": 8,
+      "purpose": "Expand Wave 2 billing foundations into true self-serve monetization state and lifecycle actions."
+    }
+  ],
+  "externalSatisfiedPrerequisites": [
+    {
+      "name": "Context Relevance & Reduction",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "Human Editing & Partial Acceptance",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "Contract-Driven Screen Runtime",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "UI / UX Foundation",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "Application Runtime Layer",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "Project Permission Matrix",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "Platform Observability",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "Execution Safety & Idempotency",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "Universal Project Lifecycle",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "Decision Intelligence Layer",
+      "source": "Wave 2",
+      "status": "trueGreen"
+    },
+    {
+      "name": "Build & Release System",
+      "source": "Wave 2",
+      "status": "partial",
+      "note": "Wave 2 still carries unresolved build/deploy cost truth. Wave 3 billing expansion is scoped to self-serve state and lifecycle, not full build/deploy monetization truth."
+    }
+  ],
+  "phantomTasksRemoved": [
+    {
+      "name": "External Model Integration",
+      "type": "dependency-label",
+      "reason": "Planning section only, not a canonical executable task."
+    },
+    {
+      "name": "Nexus Product Go-To-Market",
+      "type": "dependency-label",
+      "reason": "Planning section only, not a canonical executable task."
+    },
+    {
+      "name": "Extensibility Framework",
+      "type": "dependency-label",
+      "reason": "Planning section only, not a canonical executable task."
+    },
+    {
+      "name": "Project Permission Matrix",
+      "type": "dependency-label",
+      "reason": "Satisfied cross-wave prerequisite, not a Wave 3 task candidate."
+    },
+    {
+      "name": "UI / UX Foundation",
+      "type": "dependency-label",
+      "reason": "Satisfied cross-wave prerequisite, not a Wave 3 task candidate."
+    }
+  ],
+  "duplicateRepairs": [
+    {
+      "removedTask": "Define project creation event schema",
+      "reason": "Already completed in Wave 2; retained as prerequisite rather than re-executed in Wave 3."
+    },
+    {
+      "removedTask": "Create project creation tracker",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create project creation aggregation module",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Define task execution metric schema",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create task execution tracker",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create task throughput aggregator",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Define time saved estimation schema",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create baseline effort estimator",
+      "reason": "Already completed in Wave 2; Wave 3 keeps only the durable learned estimator follow-on."
+    },
+    {
+      "removedTask": "Create time saved calculator",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create productivity summary aggregator",
+      "reason": "Already completed in Wave 2; Wave 3 keeps only the true byUser upgrade."
+    },
+    {
+      "removedTask": "Define user activity event schema",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create session activity tracker",
+      "reason": "Already completed in Wave 2; Wave 3 keeps only the durable history store follow-on."
+    },
+    {
+      "removedTask": "Create returning user resolver",
+      "reason": "Already completed in Wave 2; Wave 3 keeps only true retention follow-ons."
+    },
+    {
+      "removedTask": "Define analytics dashboard schema",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create analytics summary assembler",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create analytics API",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create analytics dashboard screen",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Define outcome evaluation schema",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create action success scoring engine",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Define feature success schema",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create feature success tracker",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create product iteration feedback engine",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Define platform usage cost schema",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create AI usage meter",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create workspace compute cost tracker",
+      "reason": "Already completed in Wave 2 under workspace compute usage tracking."
+    },
+    {
+      "removedTask": "Create storage and artifact cost tracker",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create cost summary aggregator",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create usage budget guard",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create cost visibility API and dashboard model",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create cost-aware action selector",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create budget constraint engine",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Define billing plan schema",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create entitlement resolver",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create subscription lifecycle module",
+      "reason": "Already completed in Wave 2; Wave 3 keeps only self-serve lifecycle expansion."
+    },
+    {
+      "removedTask": "Create usage-to-billing mapper",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create checkout and subscription API",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create billing enforcement guard",
+      "reason": "Already completed in Wave 2."
+    },
+    {
+      "removedTask": "Create AI design request builder",
+      "reason": "Merged into Create AI design service to avoid a duplicate orchestration split."
+    },
+    {
+      "removedTask": "Define design provider contract",
+      "reason": "Merged into Define AI design response schema plus Create AI design provider adapter to avoid a synthetic contract-only split."
+    },
+    {
+      "removedTask": "Create design response normalizer",
+      "reason": "Merged into Create renderable design proposal normalizer."
+    },
+    {
+      "removedTask": "Create design proposal schema and store",
+      "reason": "Merged into Create design proposal state integration and generated asset provenance recording."
+    },
+    {
+      "removedTask": "Create design enforcement guard",
+      "reason": "Merged into design validation plus review/apply control-plane tasks."
+    },
+    {
+      "removedTask": "Create design review assembler",
+      "reason": "Merged into preview, diff, and review handoff tasks."
+    },
+    {
+      "removedTask": "Create rejected proposal regeneration loop",
+      "reason": "Removed from initial Wave 3 canon; regeneration belongs after first safe end-to-end design proof exists."
+    }
+  ],
+  "dependencyRepairs": [
+    {
+      "taskName": "Create service reliability dashboard model",
+      "repairedFrom": [
+        "Platform Observability"
+      ],
+      "repairedTo": [
+        "reliabilitySlaModel",
+        "continuityPlan",
+        "incidentAlert",
+        "systemBottleneckSummary"
+      ],
+      "reason": "Repository already exposes canonical observability-derived reliability inputs through context-builder."
+    },
+    {
+      "taskName": "Define product boundary schema",
+      "repairedFrom": [
+        "Nexus Product Go-To-Market"
+      ],
+      "repairedTo": [
+        "productVision",
+        "nexusPositioning",
+        "projectAuthorizationDecision",
+        "decisionIntelligence"
+      ],
+      "reason": "Go-to-market is a planning lane label, not an executable prerequisite."
+    },
+    {
+      "taskName": "Define system capability registry schema",
+      "repairedFrom": [
+        "Extensibility Framework"
+      ],
+      "repairedTo": [
+        "productBoundaryModel",
+        "existing internal capability sources",
+        "optional extension registry when it exists"
+      ],
+      "reason": "Wave 3 must be able to start with internal capability truth instead of waiting on a non-canonical lane label."
+    },
+    {
+      "taskName": "Create AI design provider adapter",
+      "repairedFrom": [
+        "External Model Integration"
+      ],
+      "repairedTo": [
+        "providerConfig",
+        "canonical AI design request",
+        "canonical AI design response schema"
+      ],
+      "reason": "The external integration label is not a task; the real executable dependency is a strict provider adapter contract."
+    },
+    {
+      "taskName": "Create billing plan catalog and selection model",
+      "repairedFrom": [
+        "Create subscription lifecycle module (partial)"
+      ],
+      "repairedTo": [
+        "workspaceBillingState",
+        "subscriptionState",
+        "billingPlanSchema",
+        "checkoutAndSubscriptionApi"
+      ],
+      "reason": "Wave 2 already ships enough billing state to start self-serve plan selection."
+    },
+    {
+      "taskName": "Create post-execution evaluation pipeline",
+      "repairedFrom": [
+        "Create system bottleneck detector (stale doc status)"
+      ],
+      "repairedTo": [
+        "Create execution consistency validator",
+        "systemBottleneckSummary",
+        "outcomeEvaluation"
+      ],
+      "reason": "The detector already exists in repo; only the consistency validator and evaluation schema remain unfinished."
+    },
+    {
+      "taskName": "Nexus Core Product Experience & Surface Delivery",
+      "repairedFrom": [
+        "UI / UX Foundation",
+        "Application Runtime Layer",
+        "Contract-Driven Screen Runtime"
+      ],
+      "repairedTo": [
+        "authenticationViewState",
+        "workspaceNavigationModel",
+        "aiCompanionTemplate",
+        "analyticsDashboardScreen",
+        "billingSettingsModel",
+        "ownerDecisionDashboard"
+      ],
+      "reason": "The repository already has fragmented screen/runtime primitives and isolated surface models, but Wave 3 had no canonical owner for composing them into the live Nexus product experience."
+    },
+    {
+      "taskName": "AI Observability & Safety Ops",
+      "repairedFrom": [
+        "AI Design Pipeline (implicit quality ownership)"
+      ],
+      "repairedTo": [
+        "providerDegradationState",
+        "providerRecoveryProbe",
+        "fallbackStrategy",
+        "editableProposal",
+        "approvalOutcome"
+      ],
+      "reason": "The repo has provider health and review primitives, but no canonical Wave 3 lane owned prompt failures, provider latency/failure metrics, generation success, or acceptance truth."
+    },
+    {
+      "taskName": "Existing Business Intake & Diagnosis",
+      "repairedFrom": [
+        "greenfield onboarding only"
+      ],
+      "repairedTo": [
+        "onboardingIntakeState",
+        "uploaded files",
+        "gitConnector",
+        "projectScanner",
+        "knowledgeReader"
+      ],
+      "reason": "The repo already accepts files, links, and connected repositories, but Wave 3 had no canonical owner for converting imported business assets into diagnosis, executable tasks, and continue-from-current-state plans."
+    },
+    {
+      "taskName": "Persistence & Return Continuity",
+      "repairedFrom": [
+        "memory-only project service continuity"
+      ],
+      "repairedTo": [
+        "nexusPersistenceSchema",
+        "project state snapshots",
+        "durable user activity history",
+        "serialized project payload"
+      ],
+      "reason": "The repo already exposes persistence contracts and some durable analytics history, but Wave 3 had no canonical owner for durable users, projects, sessions, and true next-day continuity."
+    },
+    {
+      "taskName": "External Capability Fabric",
+      "repairedFrom": [
+        "provider primitives spread across backlog lanes"
+      ],
+      "repairedTo": [
+        "providerConnectorSchema",
+        "providerConnectorContract",
+        "providerConnectorAssembler",
+        "providerDegradationState",
+        "providerRecoveryProbe",
+        "gitConnector",
+        "encryptedCredential"
+      ],
+      "reason": "The repo already contains fragmented connector/runtime primitives, but Wave 3 had no canonical owner for binding credentials, inbound provider events, source-control connectivity, or cross-provider health into a coherent product-facing fabric."
+    }
+  ],
+  "proactiveAdditions": [
+    {
+      "taskName": "Define Nexus app shell schema",
+      "reason": "Wave 3 lacked canonical ownership for the authenticated Nexus shell even though repo reality already includes auth screens, workspace navigation, companion surfaces, and owner-facing dashboards."
+    },
+    {
+      "taskName": "Create authenticated app shell model",
+      "reason": "Backend state already reaches isolated views, but no Wave 3 task owns assembling the live authenticated product shell."
+    },
+    {
+      "taskName": "Create Nexus navigation and route surface binder",
+      "reason": "Backend-to-frontend route binding exists only as scattered runtime/view models; Wave 3 needed an explicit bridge owner."
+    },
+    {
+      "taskName": "Create dashboard home surface model",
+      "reason": "Repo reality has owner and analytics surfaces, but no canonical Wave 3 task owns the default home entry surface for an authenticated Nexus user."
+    },
+    {
+      "taskName": "Create daily workspace surface model",
+      "reason": "Wave 3 needs a single owner for the daily work surface that binds companion, recommendations, monitoring, and task state into a real user-facing workspace."
+    },
+    {
+      "taskName": "Create settings and profile surface model",
+      "reason": "Account/profile/settings state exists in fragments, but no Wave 3 task owns rendering it as a canonical Nexus product surface."
+    },
+    {
+      "taskName": "Create AI control center and generated surface delivery binder",
+      "reason": "The plan previously generated proposals without assigning ownership for surfacing accepted/generated Nexus screens inside the product itself."
+    },
+    {
+      "taskName": "Create unified home dashboard model",
+      "reason": "The repo has fragmented workspace summaries, owner dashboards, and analytics panels, but no single Wave 3 owner for the main logged-in wow-value home."
+    },
+    {
+      "taskName": "Create today priorities and next action feed",
+      "reason": "A product-grade home needs an explicit owner for priorities today and next best actions instead of relying on scattered roadmap panels."
+    },
+    {
+      "taskName": "Create owner visibility strip for home dashboard",
+      "reason": "Owner visibility exists in operational dashboards, but Wave 3 lacked a product-facing summary layer that brings it into the main home experience."
+    },
+    {
+      "taskName": "Create guided task execution surface",
+      "reason": "The repo can orchestrate tasks and show queues, but there was no canonical Wave 3 owner for a focused task-doing experience."
+    },
+    {
+      "taskName": "Create task step flow and progress binder",
+      "reason": "Product-grade execution requires a step-by-step task flow bound to real progress state, not just background cycle status."
+    },
+    {
+      "taskName": "Create task approval handoff panel",
+      "reason": "Approvals already exist in runtime state, but Wave 3 lacked a user-facing execution handoff surface when a task needs approval."
+    },
+    {
+      "taskName": "Define AI generation observability schema",
+      "reason": "Wave 3 needed runtime truth for prompt failures, provider latency, generation success, review acceptance, and rejection causes."
+    },
+    {
+      "taskName": "Create provider latency and failure tracker",
+      "reason": "Provider health primitives already exist, but Wave 3 had no canonical tracker for design-generation provider reliability."
+    },
+    {
+      "taskName": "Create generation success and acceptance tracker",
+      "reason": "Generated output cannot be governed truthfully without measuring produced proposals, accepted proposals, rejected proposals, and owner/operator acceptance."
+    },
+    {
+      "taskName": "Create prompt contract failure tracker",
+      "reason": "Prompt contract doctrine in the permanent orchestrator needs a concrete telemetry owner in the canonical execution map."
+    },
+    {
+      "taskName": "Create AI generation review dashboard model",
+      "reason": "Wave 3 needs a surface that turns AI-generation telemetry into operator-visible truth instead of burying failures in low-level runtime state."
+    },
+    {
+      "taskName": "Define generated surface proof schema",
+      "reason": "Wave 3 adds generated UI surfaces. Safe execution requires a canonical proof contract for accessibility, performance, brand, provenance, and renderability evidence."
+    },
+    {
+      "taskName": "Create generated accessibility validation engine",
+      "reason": "Generated surfaces need accessibility proof before they can be marked green."
+    },
+    {
+      "taskName": "Create generated surface performance budget validator",
+      "reason": "Wave 3 needs real render/performance protection, not only structural validation."
+    },
+    {
+      "taskName": "Create generated brand consistency validator",
+      "reason": "Generated surfaces must respect product tokens and positioning, not merely render."
+    },
+    {
+      "taskName": "Create generated asset provenance record",
+      "reason": "Wave 3 needs explicit ownership/history for accepted generated assets and proposals."
+    },
+    {
+      "taskName": "Create uploaded intake to scanner handoff",
+      "reason": "The repo already stores onboarding uploads and has a project scanner, but the bridge from imported assets to diagnostic scanning was still missing and blocks true import-and-continue onboarding."
+    },
+    {
+      "taskName": "Create existing business asset normalization layer",
+      "reason": "Wave 3 needs a canonical intake layer that turns mixed files, links, repositories, and exports into normalized imported business evidence instead of treating them as loose attachments."
+    },
+    {
+      "taskName": "Create repository import and codebase diagnosis bridge",
+      "reason": "Git connectivity and project scanning exist, but no canonical Wave 3 task owns turning connected repositories into a current-state diagnosis flow."
+    },
+    {
+      "taskName": "Create live website ingestion and funnel diagnosis model",
+      "reason": "Wave 3 lacked any owner for crawling an existing business website and turning it into structural UX/funnel diagnosis."
+    },
+    {
+      "taskName": "Create imported analytics normalization layer",
+      "reason": "Analytics dashboards exist, but there is no canonical owner for importing external analytics exports and converting them into trusted product/growth signals."
+    },
+    {
+      "taskName": "Create imported asset task extraction module",
+      "reason": "Imported files, sites, analytics, and repositories must become executable tasks rather than passive reference material."
+    },
+    {
+      "taskName": "Create import-and-continue roadmap assembler",
+      "reason": "Wave 3 needs a product path for continuing from an existing business reality instead of restarting every user from a greenfield journey."
+    },
+    {
+      "taskName": "Create canonical backlog regeneration bridge",
+      "reason": "Wave 3 needs one canonical owner for converting validated learning, feedback, and optimization outputs into real canonical tasks with execution_order and dependency truth instead of sidecar roadmap suggestions."
+    },
+    {
+      "taskName": "Define persistence and continuity schema",
+      "reason": "Wave 3 needs a canonical contract for which user, session, project, and workspace records must survive restart and power true return-tomorrow continuity."
+    },
+    {
+      "taskName": "Create durable user account store",
+      "reason": "Signup/login exists, but user identity currently remains process-bound instead of being product-grade durable state."
+    },
+    {
+      "taskName": "Create durable project and workspace store",
+      "reason": "Projects and workspaces need durable persistence beyond process memory for a real product experience."
+    },
+    {
+      "taskName": "Create durable session continuity store",
+      "reason": "Return-tomorrow continuity needs durable session truth instead of ephemeral in-memory auth/session state."
+    },
+    {
+      "taskName": "Create return-tomorrow continuity resolver",
+      "reason": "Wave 3 needs an explicit owner for restoring a user to the right project, screen, and next action after restart or next-day return."
+    },
+    {
+      "taskName": "Define external capability registry schema",
+      "reason": "Wave 3 needed a canonical owner for describing which external systems Nexus can bind to, under what auth modes, scopes, and operational guarantees."
+    },
+    {
+      "taskName": "Create source control integration binder",
+      "reason": "Git connectivity exists in isolation, but no canonical Wave 3 task owns binding repository state into live Nexus import and continuation flows."
+    },
+    {
+      "taskName": "Create secret resolution module",
+      "reason": "Encrypted credential storage exists, but Wave 3 still lacked a canonical secret-resolution owner needed for real provider connectivity."
+    },
+    {
+      "taskName": "Create connector credential binding resolver",
+      "reason": "Provider contracts and encrypted credentials exist separately, but Wave 3 had no canonical owner for binding usable provider credentials into runtime connectors safely."
+    },
+    {
+      "taskName": "Create inbound provider webhook ingestion gateway",
+      "reason": "Provider events can only become product truth when external webhook deliveries are normalized into canonical inbound runtime state."
+    },
+    {
+      "taskName": "Create external provider health and failover orchestrator",
+      "reason": "Provider degradation and recovery primitives exist, but no single Wave 3 owner governs connector-level degraded-mode behavior across imported external capabilities."
+    },
+    {
+      "taskName": "Create design tool import adapter",
+      "reason": "Wave 3 AI/design flows need a real bridge for imported design assets instead of relying on generic file uploads and Figma-like attachment heuristics."
+    },
+    {
+      "taskName": "Define execution action routing schema",
+      "reason": "Wave 3 needs a canonical action-routing contract before external execution can move from UI state into real provider actions."
+    },
+    {
+      "taskName": "Create action-to-provider mapping resolver",
+      "reason": "Provider selection and execution-surface routing cannot remain implicit once Nexus starts dispatching real actions."
+    },
+    {
+      "taskName": "Create external execution dispatch module",
+      "reason": "Wave 3 needs an owned bridge that turns canonical execution plans into real provider invocations instead of stopping at planning state."
+    },
+    {
+      "taskName": "Define IDE agent executor contract",
+      "reason": "Local and IDE-based coding executors need a strict contract before they can participate in controlled Wave 3 execution."
+    },
+    {
+      "taskName": "Create local coding agent adapter",
+      "reason": "Wave 3 needs a canonical adapter for safe local coding-agent execution instead of ad hoc external agent assumptions."
+    },
+    {
+      "taskName": "Create execution provider capability sync",
+      "reason": "Execution providers must expose normalized capabilities before Nexus can route or constrain real execution truthfully."
+    },
+    {
+      "taskName": "Create external execution session manager",
+      "reason": "Real provider execution needs canonical session lifecycle ownership for resume, cancel, and cross-provider correlation."
+    },
+    {
+      "taskName": "Create IDE agent result normalizer",
+      "reason": "External executor results must be normalized into one Nexus runtime shape before they can update state safely."
+    },
+    {
+      "taskName": "Create execution invocation contract",
+      "reason": "Wave 3 needs a canonical invocation envelope for real execution attempts, approval posture, and expected side effects."
+    },
+    {
+      "taskName": "Create artifact collection pipeline",
+      "reason": "Real execution must collect artifacts, diffs, logs, and previews as first-class evidence instead of side effects."
+    },
+    {
+      "taskName": "Create canonical execution result envelope",
+      "reason": "Wave 3 needs a single owned execution-result surface that downstream validation, deployment, and feedback loops can trust."
+    },
+    {
+      "taskName": "Create deployment invoker",
+      "reason": "The execution path still lacks a canonical owner for turning prepared release artifacts into a real deployment action."
+    },
+    {
+      "taskName": "Create deployment evidence collector",
+      "reason": "Deployment truth is incomplete without an owned evidence collector for endpoints, environment identifiers, and provider metadata."
+    },
+    {
+      "taskName": "Create deployment result envelope",
+      "reason": "Deployment output needs a canonical normalized result surface before release truth can be validated safely."
+    },
+    {
+      "taskName": "Create production health validation module",
+      "reason": "Wave 3 needs a post-deploy health gate that proves launch reality instead of assuming deployment success implies release readiness."
+    },
+    {
+      "taskName": "Create launch confirmation state",
+      "reason": "Users need a canonical launch-confirmation state that reflects real post-deploy evidence rather than provider optimism."
+    },
+    {
+      "taskName": "Create release readiness evaluator",
+      "reason": "Release truth needs a canonical evaluator that combines validation, approvals, deployment, and production-health evidence."
+    }
+  ],
+  "wave3OrderedExecutionMap": [
+    {
+      "execution_order": "001",
+      "taskName": "Create service reliability dashboard model",
+      "lane": "Design Runtime Foundations",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "002",
+      "taskName": "Define product boundary schema",
+      "lane": "Design Runtime Foundations",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "003",
+      "taskName": "Create capability promise and limit map",
+      "lane": "Design Runtime Foundations",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "004",
+      "taskName": "Create boundary disclosure and expectation model",
+      "lane": "Design Runtime Foundations",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "005",
+      "taskName": "Define system capability registry schema",
+      "lane": "Design Runtime Foundations",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "006",
+      "taskName": "Create system capability resolver",
+      "lane": "Design Runtime Foundations",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "007",
+      "taskName": "Create execution consistency validator",
+      "lane": "Design Runtime Foundations",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "008",
+      "taskName": "Define Nexus app shell schema",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "009",
+      "taskName": "Create authenticated app shell model",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "010",
+      "taskName": "Create Nexus navigation and route surface binder",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "011",
+      "taskName": "Create dashboard home surface model",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "012",
+      "taskName": "Create unified home dashboard model",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "013",
+      "taskName": "Create today priorities and next action feed",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "014",
+      "taskName": "Create owner visibility strip for home dashboard",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "015",
+      "taskName": "Create daily workspace surface model",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "016",
+      "taskName": "Create guided task execution surface",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "017",
+      "taskName": "Create task step flow and progress binder",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "018",
+      "taskName": "Create task approval handoff panel",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "019",
+      "taskName": "Create settings and profile surface model",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "020",
+      "taskName": "Create AI control center and generated surface delivery binder",
+      "lane": "Nexus Core Product Experience & Surface Delivery",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "021",
+      "taskName": "Create uploaded intake to scanner handoff",
+      "lane": "Existing Business Intake & Diagnosis",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "022",
+      "taskName": "Create existing business asset normalization layer",
+      "lane": "Existing Business Intake & Diagnosis",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "023",
+      "taskName": "Create repository import and codebase diagnosis bridge",
+      "lane": "Existing Business Intake & Diagnosis",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "024",
+      "taskName": "Create live website ingestion and funnel diagnosis model",
+      "lane": "Existing Business Intake & Diagnosis",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "025",
+      "taskName": "Create imported analytics normalization layer",
+      "lane": "Existing Business Intake & Diagnosis",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "026",
+      "taskName": "Create imported asset task extraction module",
+      "lane": "Existing Business Intake & Diagnosis",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "027",
+      "taskName": "Create import-and-continue roadmap assembler",
+      "lane": "Existing Business Intake & Diagnosis",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create imported asset task extraction module.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "028",
+      "taskName": "Define persistence and continuity schema",
+      "lane": "Persistence & Return Continuity",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define product boundary schema and Define Nexus app shell schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "029",
+      "taskName": "Create durable user account store",
+      "lane": "Persistence & Return Continuity",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define persistence and continuity schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "030",
+      "taskName": "Create durable project and workspace store",
+      "lane": "Persistence & Return Continuity",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define persistence and continuity schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "031",
+      "taskName": "Create durable session continuity store",
+      "lane": "Persistence & Return Continuity",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define persistence and continuity schema and Create durable user account store.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "032",
+      "taskName": "Create return-tomorrow continuity resolver",
+      "lane": "Persistence & Return Continuity",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create durable user account store, Create durable project and workspace store, Create durable session continuity store, and Create unified home dashboard model.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "033",
+      "taskName": "Create durable project creation event history store",
+      "lane": "Behavioral Analytics & User Truth",
+      "state": "blocked",
+      "blocker": "Turn Zero downgrade: projectCreationEvents exist only in in-memory ProjectService state; no durable history store implementation, direct tests, or downstream durable consumers exist yet.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "034",
+      "taskName": "Create learned baseline estimator from execution history",
+      "lane": "Behavioral Analytics & User Truth",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create durable project creation event history store.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "035",
+      "taskName": "Create user-agent ownership mapping model",
+      "lane": "Behavioral Analytics & User Truth",
+      "state": "blocked",
+      "blocker": "Turn Zero downgrade: workspaceModel, membershipRecord, and projectOwnershipBinding exist, but no repository implementation, direct tests, or downstream consumers for userAgentMapping exist yet; inherited in-progress state was placeholder progress.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "036",
+      "taskName": "Create human user productivity resolver",
+      "lane": "Behavioral Analytics & User Truth",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create user-agent ownership mapping model.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "037",
+      "taskName": "Upgrade productivity summary to true byUser aggregation",
+      "lane": "Behavioral Analytics & User Truth",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create human user productivity resolver.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "038",
+      "taskName": "Create durable user activity and session history store",
+      "lane": "Behavioral Analytics & User Truth",
+      "state": "trueGreen",
+      "blocker": null,
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "039",
+      "taskName": "Create true retention metrics aggregator",
+      "lane": "Behavioral Analytics & User Truth",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create durable user activity and session history store.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "040",
+      "taskName": "Create retention curve analyzer",
+      "lane": "Behavioral Analytics & User Truth",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create durable user activity and session history store and Create true retention metrics aggregator.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "041",
+      "taskName": "Create outcome feedback loop",
+      "lane": "Autonomous Product Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create durable project creation event history store and Create execution consistency validator.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "042",
+      "taskName": "Create goal progress evaluator",
+      "lane": "Autonomous Product Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create outcome feedback loop.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "043",
+      "taskName": "Create milestone tracking system",
+      "lane": "Autonomous Product Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create goal progress evaluator.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "044",
+      "taskName": "Define post-execution evaluation schema",
+      "lane": "Autonomous Product Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create execution consistency validator.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "045",
+      "taskName": "Create post-execution evaluation pipeline",
+      "lane": "Autonomous Product Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define post-execution evaluation schema and Create execution consistency validator.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "046",
+      "taskName": "Create cross-layer feedback orchestrator",
+      "lane": "Autonomous Product Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create post-execution evaluation pipeline and Create outcome feedback loop.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "047",
+      "taskName": "Create adaptive execution loop",
+      "lane": "Autonomous Product Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create cross-layer feedback orchestrator.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "048",
+      "taskName": "Create system optimization cycle",
+      "lane": "Autonomous Product Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create adaptive execution loop and Create service reliability dashboard model.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "049",
+      "taskName": "Create canonical backlog regeneration bridge",
+      "lane": "Autonomous Product Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create import-and-continue roadmap assembler, Define post-execution evaluation schema, Create post-execution evaluation pipeline, Create cross-layer feedback orchestrator, Create adaptive execution loop, and Create system optimization cycle.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "050",
+      "taskName": "Define external capability registry schema",
+      "lane": "External Capability Fabric",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define system capability registry schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "051",
+      "taskName": "Create source control integration binder",
+      "lane": "External Capability Fabric",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define external capability registry schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "052",
+      "taskName": "Create secret resolution module",
+      "lane": "External Capability Fabric",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define external capability registry schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "053",
+      "taskName": "Create connector credential binding resolver",
+      "lane": "External Capability Fabric",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define external capability registry schema and Create secret resolution module.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "054",
+      "taskName": "Create inbound provider webhook ingestion gateway",
+      "lane": "External Capability Fabric",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define external capability registry schema and Create connector credential binding resolver.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "055",
+      "taskName": "Create external provider health and failover orchestrator",
+      "lane": "External Capability Fabric",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define external capability registry schema and Create connector credential binding resolver.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "056",
+      "taskName": "Create design tool import adapter",
+      "lane": "External Capability Fabric",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define external capability registry schema and Create connector credential binding resolver.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "057",
+      "taskName": "Define execution action routing schema",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define external capability registry schema, Create source control integration binder, Create secret resolution module, Create connector credential binding resolver, Create inbound provider webhook ingestion gateway, Create external provider health and failover orchestrator, and Create design tool import adapter.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "058",
+      "taskName": "Create action-to-provider mapping resolver",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define execution action routing schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "059",
+      "taskName": "Create external execution dispatch module",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create action-to-provider mapping resolver and Create connector credential binding resolver.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "060",
+      "taskName": "Define IDE agent executor contract",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define execution action routing schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "061",
+      "taskName": "Create local coding agent adapter",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define IDE agent executor contract and Create connector credential binding resolver.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "062",
+      "taskName": "Create execution provider capability sync",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create local coding agent adapter.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "063",
+      "taskName": "Create external execution session manager",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create local coding agent adapter.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "064",
+      "taskName": "Create IDE agent result normalizer",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create execution provider capability sync and Create external execution session manager.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "065",
+      "taskName": "Create execution invocation contract",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create external execution dispatch module and Create external execution session manager.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "066",
+      "taskName": "Create artifact collection pipeline",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create execution invocation contract and Create IDE agent result normalizer.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "067",
+      "taskName": "Create canonical execution result envelope",
+      "lane": "Execution Surface / Real Execution",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create artifact collection pipeline and Create IDE agent result normalizer.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "068",
+      "taskName": "Create deployment invoker",
+      "lane": "Deployment Reality",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create canonical execution result envelope.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "069",
+      "taskName": "Create deployment evidence collector",
+      "lane": "Deployment Reality",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create deployment invoker.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "070",
+      "taskName": "Create deployment result envelope",
+      "lane": "Deployment Reality",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create deployment evidence collector.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "071",
+      "taskName": "Create production health validation module",
+      "lane": "Live Release Verification",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create deployment result envelope.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "072",
+      "taskName": "Create launch confirmation state",
+      "lane": "Live Release Verification",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create production health validation module.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "073",
+      "taskName": "Create release readiness evaluator",
+      "lane": "Live Release Verification",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create launch confirmation state and Create production health validation module.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "074",
+      "taskName": "Define AI design request schema",
+      "lane": "AI Generation Engine",
+      "state": "blocked",
+      "blocker": "Turn Zero downgrade: dependencies are materially satisfied, but no repository implementation, direct tests, or downstream aiDesignRequest consumers exist yet; inherited in-progress state was placeholder progress and this is not the current lowest executable task.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "075",
+      "taskName": "Define AI design response schema",
+      "lane": "AI Generation Engine",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define AI design request schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "076",
+      "taskName": "Create AI design provider adapter",
+      "lane": "AI Generation Engine",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI design request schema and Define AI design response schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "077",
+      "taskName": "Create AI design service",
+      "lane": "AI Generation Engine",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create AI design provider adapter.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "078",
+      "taskName": "Create AI design execution hook",
+      "lane": "AI Generation Engine",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create AI design service.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "079",
+      "taskName": "Create renderable design proposal normalizer",
+      "lane": "AI Generation Engine",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define AI design response schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "080",
+      "taskName": "Define AI generation observability schema",
+      "lane": "AI Observability & Safety Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI design request schema and Define AI design response schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "081",
+      "taskName": "Create provider latency and failure tracker",
+      "lane": "AI Observability & Safety Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI generation observability schema and Create AI design provider adapter.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "082",
+      "taskName": "Create generation success and acceptance tracker",
+      "lane": "AI Observability & Safety Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI generation observability schema, Create AI design service, and Create design proposal review handoff.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "083",
+      "taskName": "Create prompt contract failure tracker",
+      "lane": "AI Observability & Safety Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI generation observability schema and Create AI design execution hook.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "084",
+      "taskName": "Create AI generation review dashboard model",
+      "lane": "AI Observability & Safety Ops",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create provider latency and failure tracker, Create generation success and acceptance tracker, and Create prompt contract failure tracker.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "085",
+      "taskName": "Define generated surface proof schema",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI design response schema and Create renderable design proposal normalizer.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "086",
+      "taskName": "Create generated accessibility validation engine",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define generated surface proof schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "087",
+      "taskName": "Create generated surface performance budget validator",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define generated surface proof schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "088",
+      "taskName": "Create generated brand consistency validator",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define generated surface proof schema.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "089",
+      "taskName": "Create design proposal validation flow",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create renderable design proposal normalizer, Create generated accessibility validation engine, Create generated surface performance budget validator, and Create generated brand consistency validator.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "090",
+      "taskName": "Create design proposal preview pipeline",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create design proposal validation flow.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "091",
+      "taskName": "Create screen proposal diff model",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create design proposal preview pipeline.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "092",
+      "taskName": "Create design proposal review handoff",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create screen proposal diff model and Create design proposal validation flow.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "093",
+      "taskName": "Create generated asset provenance record",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create AI design service and Create design proposal review handoff.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "094",
+      "taskName": "Create design proposal edit/apply binder",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create design proposal review handoff.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "095",
+      "taskName": "Create design proposal state integration",
+      "lane": "Owner Creative Control Plane & Generated Surface Proof",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create design proposal edit/apply binder and Create generated asset provenance record.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "096",
+      "taskName": "Create billing plan catalog and selection model",
+      "lane": "Growth & Monetization Expansion",
+      "state": "blocked",
+      "blocker": "Turn Zero downgrade: Wave 2 billing foundations exist, but no repository implementation, direct tests, or downstream billingPlanSelectionModel consumers exist yet; inherited in-progress state was placeholder progress and this is not the current lowest executable task.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "097",
+      "taskName": "Create payment method state model",
+      "lane": "Growth & Monetization Expansion",
+      "state": "blocked",
+      "blocker": "Turn Zero downgrade: normalized billing events and billing state exist, but no repository implementation, direct tests, or downstream paymentMethodState consumers exist yet; current billing screen tests explicitly prove the field is absent.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "098",
+      "taskName": "Create billing details state model",
+      "lane": "Growth & Monetization Expansion",
+      "state": "blocked",
+      "blocker": "Turn Zero downgrade: normalized billing events and billing state exist, but no repository implementation, direct tests, or downstream billingDetailsState consumers exist yet; current billing screen tests explicitly prove the field is absent.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "099",
+      "taskName": "Create self-serve invoice state model",
+      "lane": "Growth & Monetization Expansion",
+      "state": "blocked",
+      "blocker": "Turn Zero downgrade: subscription and billing evidence inputs exist, but no repository implementation, direct tests, or downstream invoiceState consumers exist yet; current billing screen tests explicitly prove invoices are absent.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "100",
+      "taskName": "Expand billing settings and plan selection screen model",
+      "lane": "Growth & Monetization Expansion",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create billing plan catalog and selection model, Create payment method state model, Create billing details state model, and Create self-serve invoice state model.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "101",
+      "taskName": "Create pause subscription action",
+      "lane": "Growth & Monetization Expansion",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Expand billing settings and plan selection screen model.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "102",
+      "taskName": "Create reactivate subscription action",
+      "lane": "Growth & Monetization Expansion",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create pause subscription action and Expand billing settings and plan selection screen model.",
+      "bridgeCondition": null
+    },
+    {
+      "execution_order": "103",
+      "taskName": "Create renew subscription action",
+      "lane": "Growth & Monetization Expansion",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished Wave 3 prerequisite: Expand billing settings and plan selection screen model.",
+      "bridgeCondition": null
+    }
+  ]
+}
