@@ -1070,8 +1070,8 @@
       "execution_order": "040",
       "taskName": "Create retention curve analyzer",
       "lane": "Behavioral Analytics & User Truth",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create durable user activity and session history store and Create true retention metrics aggregator.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

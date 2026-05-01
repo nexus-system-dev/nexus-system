@@ -1042,6 +1042,8 @@ test("project service can run additional cycles against persisted events", () =>
   assert.equal(project.userSessionHistory?.entries.length >= 1, true);
   assert.equal(typeof project.returningUserMetric?.isReturningUser, "boolean");
   assert.equal(typeof project.retentionSummary?.totalReturningUsers, "number");
+  assert.equal(typeof project.retentionCurveAnalysis?.retentionCurveAnalysisId, "string");
+  assert.equal(Array.isArray(project.retentionCurveAnalysis?.dayCurve), true);
   assert.deepEqual(Object.keys(project.retentionSummary ?? {}), [
     "retentionMetricsId",
     "status",

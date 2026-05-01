@@ -1509,6 +1509,38 @@ test("context builder exposes task execution metric with dependency-blocked entr
     },
     source: "user-session-history:giftwallet",
   });
+  assert.deepEqual(context.retentionCurveAnalysis, {
+    retentionCurveAnalysisId: "retention-curve:giftwallet",
+    status: "ready",
+    dayCurve: [
+      {
+        day: context.userSessionMetric.lastSeenAt.slice(0, 10),
+        totalSessions: 1,
+        returningUsers: 0,
+        nonReturningUsers: 1,
+        repeatUsageCount: 0,
+        retentionRate: 0,
+      },
+    ],
+    userCurves: [
+      {
+        userId: "anonymous",
+        totalSessions: 1,
+        returningSessions: 0,
+        nonReturningSessions: 1,
+        repeatUsageCount: 0,
+        retentionRate: 0,
+        latestTimestamp: context.userSessionMetric.lastSeenAt,
+      },
+    ],
+    trend: "stable",
+    summary: {
+      totalCurvePoints: 1,
+      totalUsersTracked: 1,
+      bestDay: context.userSessionMetric.lastSeenAt.slice(0, 10),
+      worstDay: context.userSessionMetric.lastSeenAt.slice(0, 10),
+    },
+  });
   assert.deepEqual(context.nexusPositioning, {
     nexusPositioningId: "nexus-positioning-early-users-focused-digital-product",
     status: "missing-inputs",

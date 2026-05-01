@@ -40,6 +40,7 @@ import { createSessionActivityTracker } from "./session-activity-tracker.js";
 import { createReturningUserResolver } from "./returning-user-resolver.js";
 import { createReturnTomorrowContinuityResolver } from "./return-tomorrow-continuity-resolver.js";
 import { createRetentionMetricsAggregator } from "./retention-metrics-aggregator.js";
+import { createRetentionCurveAnalyzer } from "./retention-curve-analyzer.js";
 import { createDurableUserActivitySessionHistory } from "./user-activity-session-history-store.js";
 import { createRunProgressNormalizer } from "./run-progress-normalizer.js";
 import { createProgressPhaseResolver } from "./progress-phase-resolver.js";
@@ -3174,6 +3175,10 @@ export function buildProjectContext(
     userSessionHistory,
     returningUserMetric,
   });
+  const { retentionCurveAnalysis } = createRetentionCurveAnalyzer({
+    projectId: project.id,
+    retentionSummary,
+  });
   const { returnTomorrowContinuity } = createReturnTomorrowContinuityResolver({
     sessionState,
     projectState: project.state ?? null,
@@ -5001,6 +5006,7 @@ export function buildProjectContext(
   context.userAgentMapping = userAgentMapping;
   context.returningUserMetric = returningUserMetric;
   context.retentionSummary = retentionSummary;
+  context.retentionCurveAnalysis = retentionCurveAnalysis;
   context.invitationRecord = invitationRecord;
   context.roleAssignment = roleAssignment;
   context.workspaceSettings = workspaceSettings;
