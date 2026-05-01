@@ -1022,8 +1022,8 @@
       "execution_order": "034",
       "taskName": "Create learned baseline estimator from execution history",
       "lane": "Behavioral Analytics & User Truth",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create durable project creation event history store.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

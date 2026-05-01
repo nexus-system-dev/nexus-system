@@ -1747,6 +1747,7 @@ export function buildProjectContext(
   const { baselineEstimate } = createBaselineEffortEstimator({
     projectId: project.id ?? null,
     taskResults: canonicalTaskResults,
+    events: project.events ?? [],
     domain,
     context: project.context ?? null,
   });

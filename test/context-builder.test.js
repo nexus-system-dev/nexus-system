@@ -1293,6 +1293,7 @@ test("context builder exposes task execution metric with dependency-blocked entr
     },
   });
   assert.equal(context.baselineEstimate.baselineEstimateId, "baseline-estimate:giftwallet");
+  assert.equal(context.baselineEstimate.contextUsed, false);
   assert.deepEqual(context.baselineEstimate.entries, [
     {
       baselineEstimateEntryId: "baseline-estimate-entry:evt-1",
@@ -1300,6 +1301,8 @@ test("context builder exposes task execution metric with dependency-blocked entr
       taskType: "growth",
       assignmentEventId: "assign-3",
       baselineEstimateMs: 1200000,
+      estimationSource: "task-type-default",
+      evidenceCount: 0,
     },
   ]);
   assert.equal(context.timeSavedMetric.timeSavedMetricId, "time-saved-metric:giftwallet");
@@ -1545,6 +1548,144 @@ test("context builder exposes task execution metric with dependency-blocked entr
   ]);
   assert.equal(context.trustProofBlocks?.status, "missing-inputs");
   assert.deepEqual(context.trustProofBlocks?.missingInputs, ["messagingFramework", "objectionMap"]);
+});
+
+test("context builder learns baseline estimates from prior execution history before calculating time saved", () => {
+  const context = buildProjectContext({
+    id: "giftwallet",
+    events: [
+      {
+        id: "assign-1",
+        type: "task.assigned",
+        timestamp: "2026-01-01T00:00:00.000Z",
+        payload: {
+          projectId: "giftwallet",
+          agentId: "dev-agent",
+          task: { id: "task-1", taskType: "backend" },
+        },
+      },
+      {
+        id: "assign-2",
+        type: "task.assigned",
+        timestamp: "2026-01-01T00:20:00.000Z",
+        payload: {
+          projectId: "giftwallet",
+          agentId: "dev-agent",
+          task: { id: "task-2", taskType: "backend" },
+        },
+      },
+      {
+        id: "assign-3",
+        type: "task.assigned",
+        timestamp: "2026-01-01T01:00:00.000Z",
+        payload: {
+          projectId: "giftwallet",
+          agentId: "dev-agent",
+          task: { id: "task-3", taskType: "backend" },
+        },
+      },
+    ],
+    taskResults: [
+      {
+        id: "evt-1",
+        projectId: "giftwallet",
+        taskId: "task-1",
+        taskType: "backend",
+        agentId: "dev-agent",
+        assignmentEventId: "assign-1",
+        status: "completed",
+        timestamp: "2026-01-01T00:10:00.000Z",
+      },
+      {
+        id: "evt-2",
+        projectId: "giftwallet",
+        taskId: "task-2",
+        taskType: "backend",
+        agentId: "dev-agent",
+        assignmentEventId: "assign-2",
+        status: "completed",
+        timestamp: "2026-01-01T00:40:00.000Z",
+      },
+      {
+        id: "evt-3",
+        projectId: "giftwallet",
+        taskId: "task-3",
+        taskType: "backend",
+        agentId: "dev-agent",
+        assignmentEventId: "assign-3",
+        status: "completed",
+        timestamp: "2026-01-01T01:20:00.000Z",
+      },
+    ],
+    cycle: {
+      roadmap: [
+        { id: "task-1", lane: "backend" },
+        { id: "task-2", lane: "backend" },
+        { id: "task-3", lane: "backend" },
+      ],
+      executionGraph: {
+        nodes: [
+          { id: "task-1", lane: "backend", status: "completed", blockedBy: [] },
+          { id: "task-2", lane: "backend", status: "completed", blockedBy: [] },
+          { id: "task-3", lane: "backend", status: "completed", blockedBy: [] },
+        ],
+      },
+    },
+  });
+
+  assert.equal(context.baselineEstimate.contextUsed, true);
+  assert.deepEqual(context.baselineEstimate.entries.map((entry) => ({
+    taskId: entry.taskId,
+    baselineEstimateMs: entry.baselineEstimateMs,
+    estimationSource: entry.estimationSource,
+    evidenceCount: entry.evidenceCount,
+  })), [
+    {
+      taskId: "task-1",
+      baselineEstimateMs: 1800000,
+      estimationSource: "task-type-default",
+      evidenceCount: 0,
+    },
+    {
+      taskId: "task-2",
+      baselineEstimateMs: 600000,
+      estimationSource: "execution-history",
+      evidenceCount: 1,
+    },
+    {
+      taskId: "task-3",
+      baselineEstimateMs: 900000,
+      estimationSource: "execution-history",
+      evidenceCount: 2,
+    },
+  ]);
+  assert.deepEqual(context.baselineEstimate.learnedTaskTypes, {
+    backend: {
+      sampleSize: 3,
+      learnedBaselineMs: 1000000,
+    },
+  });
+  assert.deepEqual(context.timeSavedMetric.entries.map((entry) => ({
+    taskId: entry.taskId,
+    baselineEstimateMs: entry.baselineEstimateMs,
+    executionDurationMs: entry.executionDurationMs,
+  })), [
+    {
+      taskId: "task-1",
+      baselineEstimateMs: 1800000,
+      executionDurationMs: 600000,
+    },
+    {
+      taskId: "task-2",
+      baselineEstimateMs: 600000,
+      executionDurationMs: 1200000,
+    },
+    {
+      taskId: "task-3",
+      baselineEstimateMs: 900000,
+      executionDurationMs: 1200000,
+    },
+  ]);
 });
 
 test("context builder exposes ready nexus positioning when manual competitive context exists", () => {
