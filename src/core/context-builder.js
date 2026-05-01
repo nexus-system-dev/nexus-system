@@ -3170,6 +3170,8 @@ export function buildProjectContext(
     historyStore: userActivityHistoryStore,
   });
   const { retentionSummary } = createRetentionMetricsAggregator({
+    projectId: project.id,
+    userSessionHistory,
     returningUserMetric,
   });
   const { returnTomorrowContinuity } = createReturnTomorrowContinuityResolver({

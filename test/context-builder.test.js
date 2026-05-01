@@ -1484,9 +1484,13 @@ test("context builder exposes task execution metric with dependency-blocked entr
     isReturningUser: false,
   });
   assert.deepEqual(context.retentionSummary, {
+    retentionMetricsId: "retention-metrics:giftwallet",
+    status: "ready",
+    totalSessions: 1,
     totalReturningUsers: 0,
     totalNonReturningUsers: 1,
     repeatUsageCount: 0,
+    retentionRate: 0,
     byDay: {
       [context.userSessionMetric.lastSeenAt.slice(0, 10)]: {
         totalReturningUsers: 0,
@@ -1494,6 +1498,16 @@ test("context builder exposes task execution metric with dependency-blocked entr
         repeatUsageCount: 0,
       },
     },
+    byUser: {
+      anonymous: {
+        totalSessions: 1,
+        returningSessions: 0,
+        nonReturningSessions: 1,
+        repeatUsageCount: 0,
+        latestTimestamp: context.userSessionMetric.lastSeenAt,
+      },
+    },
+    source: "user-session-history:giftwallet",
   });
   assert.deepEqual(context.nexusPositioning, {
     nexusPositioningId: "nexus-positioning-early-users-focused-digital-product",

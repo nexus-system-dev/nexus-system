@@ -1062,8 +1062,8 @@
       "execution_order": "039",
       "taskName": "Create true retention metrics aggregator",
       "lane": "Behavioral Analytics & User Truth",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create durable user activity and session history store.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

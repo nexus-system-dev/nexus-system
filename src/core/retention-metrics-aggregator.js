@@ -40,6 +40,10 @@ function isRepeatUsage(entry) {
   return Boolean(currentSessionId && previousSessionId && currentSessionId !== previousSessionId);
 }
 
+function buildSessionHistoryEntries(userSessionHistory = null) {
+  return normalizeArray(normalizeObject(userSessionHistory).entries).map((entry) => normalizeObject(entry));
+}
+
 function buildDayBucket(entries) {
   const bucket = {};
 
@@ -71,21 +75,74 @@ function buildDayBucket(entries) {
   return bucket;
 }
 
+function buildUserBucket(entries) {
+  const bucket = {};
+
+  for (const entry of entries) {
+    const userKey = normalizeString(entry?.userId, "anonymous");
+    bucket[userKey] = bucket[userKey] ?? {
+      totalSessions: 0,
+      returningSessions: 0,
+      nonReturningSessions: 0,
+      repeatUsageCount: 0,
+      latestTimestamp: null,
+    };
+
+    bucket[userKey].totalSessions += 1;
+    if (entry.isReturningUser === true) {
+      bucket[userKey].returningSessions += 1;
+    } else {
+      bucket[userKey].nonReturningSessions += 1;
+    }
+    if (isRepeatUsage(entry)) {
+      bucket[userKey].repeatUsageCount += 1;
+    }
+
+    const timestamp = normalizeString(entry?.currentLastSeenAt)
+      ?? normalizeString(entry?.lastSeenAt)
+      ?? normalizeString(entry?.previousLastSeenAt);
+    if (timestamp) {
+      bucket[userKey].latestTimestamp = timestamp;
+    }
+  }
+
+  return bucket;
+}
+
 export function createRetentionMetricsAggregator({
+  projectId = null,
+  userSessionHistory = null,
   returningUserMetric = null,
   returningUserMetrics = null,
 } = {}) {
-  const entries = buildReturningUserEntries({
+  const historyEntries = buildSessionHistoryEntries(userSessionHistory);
+  const fallbackEntries = buildReturningUserEntries({
     returningUserMetric,
     returningUserMetrics,
   });
+  const entries = historyEntries.length > 0 ? historyEntries : fallbackEntries;
+  const totalReturningUsers = entries.filter((entry) => entry.isReturningUser === true).length;
+  const totalNonReturningUsers = entries.filter((entry) => entry.isReturningUser !== true).length;
+  const totalSessions = entries.length;
+  const repeatUsageCount = entries.filter((entry) => isRepeatUsage(entry)).length;
+  const retentionRate = totalSessions > 0 ? Math.round((totalReturningUsers / totalSessions) * 100) : 0;
+  const normalizedHistory = normalizeObject(userSessionHistory);
 
   return {
     retentionSummary: {
-      totalReturningUsers: entries.filter((entry) => entry.isReturningUser === true).length,
-      totalNonReturningUsers: entries.filter((entry) => entry.isReturningUser !== true).length,
-      repeatUsageCount: entries.filter((entry) => isRepeatUsage(entry)).length,
+      retentionMetricsId: `retention-metrics:${normalizeString(projectId) ?? "unknown-project"}`,
+      status: entries.length > 0 ? "ready" : "missing-inputs",
+      totalSessions,
+      totalReturningUsers,
+      totalNonReturningUsers,
+      repeatUsageCount,
+      retentionRate,
       byDay: buildDayBucket(entries),
+      byUser: buildUserBucket(entries),
+      source:
+        historyEntries.length > 0
+          ? normalizeString(normalizedHistory.userSessionHistoryId) ?? "user-session-history"
+          : "returning-user-metrics",
     },
   };
 }
