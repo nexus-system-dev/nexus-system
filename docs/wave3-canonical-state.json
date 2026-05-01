@@ -982,8 +982,8 @@
       "execution_order": "029",
       "taskName": "Create durable user account store",
       "lane": "Persistence & Return Continuity",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define persistence and continuity schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

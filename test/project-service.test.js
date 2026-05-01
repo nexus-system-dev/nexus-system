@@ -2453,6 +2453,40 @@ test("project service supports signup login and logout auth flows", () => {
   assert.equal(updatedSettings.authPayload.workspaceSettings.teamPreferences.notifications, "instant");
 });
 
+test("project service persists durable user account state across restart", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-service-"));
+  const firstService = createProjectService(directory);
+
+  const signedUp = firstService.signupUser({
+    userInput: {
+      email: "durable-user@example.com",
+      displayName: "Durable User",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  const restartedService = createProjectService(directory);
+  const restored = restartedService.getUserAuthPayload(signedUp.authPayload.userIdentity.userId);
+
+  assert.equal(restored.userIdentity.email, "durable-user@example.com");
+  assert.equal(restored.workspaceModel.ownerUserId, signedUp.authPayload.userIdentity.userId);
+  assert.equal(restored.membershipRecord.role, "owner");
+
+  const loggedIn = restartedService.loginUser({
+    userInput: {
+      email: "durable-user@example.com",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+
+  assert.equal(loggedIn.authPayload.authenticationState.status, "authenticated");
+  assert.equal(loggedIn.authPayload.sessionState.status, "active");
+});
+
 test("project service blocks onboarding finish when intake is incomplete instead of crashing", () => {
   const service = createProjectService();
 

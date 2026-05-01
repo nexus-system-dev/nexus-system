@@ -61,6 +61,7 @@ import { createSystemAuditLogStore } from "./system-audit-log-store.js";
 import { createSecurityAuditLogStore } from "./security-audit-log-store.js";
 import { createProjectReviewThreadStore } from "./project-review-thread-store.js";
 import { createPersistentUserActivitySessionHistoryStore } from "./user-activity-session-history-store.js";
+import { createDurableUserAccountStore } from "./durable-user-account-store.js";
 import { createProjectRollbackExecutionModule } from "./project-rollback-execution-module.js";
 import { createSnapshotBackupSchedulingModule } from "./snapshot-backup-scheduling-module.js";
 import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
@@ -97,6 +98,7 @@ export class ProjectService {
     projectSnapshotStore = null,
     projectReviewThreadStore = null,
     userActivityHistoryStore = null,
+    userAccountStore = null,
   }) {
     this.eventBus = new EventBus({
       eventLog: new FileEventLog({
@@ -126,7 +128,6 @@ export class ProjectService {
     this.projectDrafts = new Map();
     this.projectCreationEvents = new Map();
     this.projectCreationMetric = null;
-    this.users = new Map();
     this.projectPresenceRegistry = new Map();
     this.platformObservabilityTransport = platformObservabilityTransport ?? createPlatformObservabilityTransport();
     this.systemAuditLogStore = systemAuditLogStore ?? createSystemAuditLogStore({ filePath: auditLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "system-audit.ndjson") });
@@ -139,6 +140,11 @@ export class ProjectService {
       ?? createPersistentUserActivitySessionHistoryStore({
         filePath: userActivityHistoryLogPath ?? eventLogPath.replace(/events\\.ndjson$/, "user-activity-session-history.ndjson"),
       });
+    this.userAccountStore = userAccountStore
+      ?? createDurableUserAccountStore({
+        filePath: eventLogPath.replace(/events\\.ndjson$/, "user-accounts.ndjson"),
+      });
+    this.users = new Map(this.userAccountStore.readAll().map((record) => [record.userIdentity.userId, record]));
     this.snapshotBackupTimers = new Map();
   }
 
@@ -282,6 +288,16 @@ export class ProjectService {
     return [...this.users.values()].find((item) => item.userIdentity?.email === profile.email)
       ?? [...this.users.values()].find((item) => item.userIdentity?.userId === profile.userId)
       ?? null;
+  }
+
+  persistUserAuthPayload(authPayload) {
+    const persistedRecord = this.userAccountStore.upsert(authPayload);
+    if (!persistedRecord) {
+      return null;
+    }
+
+    this.users.set(persistedRecord.userIdentity.userId, persistedRecord);
+    return persistedRecord;
   }
 
   findProjectRecordByWorkspaceId(workspaceId) {
@@ -1637,8 +1653,8 @@ export class ProjectService {
       credentialVaultRecord,
     };
 
-    this.users.set(userId, authPayload);
-    return { authPayload };
+    const persistedAuthPayload = this.persistUserAuthPayload(authPayload);
+    return { authPayload: persistedAuthPayload ?? authPayload };
   }
 
   loginUser({ userInput, credentials } = {}) {
@@ -1702,8 +1718,8 @@ export class ProjectService {
       authenticationViewState,
       postAuthRedirect,
     };
-    this.users.set(existing.userIdentity.userId, authPayload);
-    return { authPayload };
+    const persistedAuthPayload = this.persistUserAuthPayload(authPayload);
+    return { authPayload: persistedAuthPayload ?? authPayload };
   }
 
   logoutUser({ userInput } = {}) {
@@ -1764,8 +1780,8 @@ export class ProjectService {
       authenticationViewState,
       postAuthRedirect,
     };
-    this.users.set(existing.userIdentity.userId, authPayload);
-    return { authPayload };
+    const persistedAuthPayload = this.persistUserAuthPayload(authPayload);
+    return { authPayload: persistedAuthPayload ?? authPayload };
   }
 
   requestEmailVerification({ userInput, verificationRequest } = {}) {
@@ -1807,8 +1823,8 @@ export class ProjectService {
       authenticationViewState,
       postAuthRedirect,
     };
-    this.users.set(existing.userIdentity.userId, authPayload);
-    return { authPayload };
+    const persistedAuthPayload = this.persistUserAuthPayload(authPayload);
+    return { authPayload: persistedAuthPayload ?? authPayload };
   }
 
   requestPasswordReset({ userInput, verificationRequest } = {}) {
@@ -1850,8 +1866,8 @@ export class ProjectService {
       authenticationViewState,
       postAuthRedirect,
     };
-    this.users.set(existing.userIdentity.userId, authPayload);
-    return { authPayload };
+    const persistedAuthPayload = this.persistUserAuthPayload(authPayload);
+    return { authPayload: persistedAuthPayload ?? authPayload };
   }
 
   inviteWorkspaceMember({ userInput, invitationRequest } = {}) {
@@ -1872,8 +1888,8 @@ export class ProjectService {
       invitationRecord,
       roleAssignment,
     };
-    this.users.set(existing.userIdentity.userId, authPayload);
-    return { authPayload };
+    const persistedAuthPayload = this.persistUserAuthPayload(authPayload);
+    return { authPayload: persistedAuthPayload ?? authPayload };
   }
 
   updateWorkspaceSettings({ userInput, settingsInput } = {}) {
@@ -1893,8 +1909,8 @@ export class ProjectService {
       ...existing,
       workspaceSettings,
     };
-    this.users.set(existing.userIdentity.userId, authPayload);
-    return { authPayload };
+    const persistedAuthPayload = this.persistUserAuthPayload(authPayload);
+    return { authPayload: persistedAuthPayload ?? authPayload };
   }
 
   seedDemoProject() {
