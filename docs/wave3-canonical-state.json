@@ -974,8 +974,8 @@
       "execution_order": "028",
       "taskName": "Define persistence and continuity schema",
       "lane": "Persistence & Return Continuity",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define product boundary schema and Define Nexus app shell schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
