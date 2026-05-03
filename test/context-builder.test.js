@@ -172,6 +172,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.ideAgentResultNormalization?.summary?.canPromoteToArtifactCollection, "boolean");
   assert.equal(typeof context.executionInvocationContract?.executionInvocationContractId, "string");
   assert.equal(typeof context.executionInvocationContract?.summary?.canInvoke, "boolean");
+  assert.equal(typeof context.artifactCollectionPipeline?.artifactCollectionPipelineId, "string");
+  assert.equal(typeof context.artifactCollectionPipeline?.summary?.canPromoteToResultEnvelope, "boolean");
   assert.equal(typeof context.executionConsistencyReport?.executionConsistencyReportId, "string");
   assert.equal(typeof context.executionConsistencyReport?.summary?.isConsistent, "boolean");
   assert.equal(typeof context.projectIdentity?.name, "string");

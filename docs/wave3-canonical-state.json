@@ -1278,8 +1278,8 @@
       "execution_order": "066",
       "taskName": "Create artifact collection pipeline",
       "lane": "Execution Surface / Real Execution",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create execution invocation contract and Create IDE agent result normalizer.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
