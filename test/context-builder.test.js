@@ -158,6 +158,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(Array.isArray(context.boundaryDisclosureModel?.disclosureCards), true);
   assert.equal(typeof context.systemCapabilityRegistry?.systemCapabilityRegistryId, "string");
   assert.equal(Array.isArray(context.systemCapabilityRegistry?.capabilities), true);
+  assert.equal(typeof context.externalCapabilityRegistry?.externalCapabilityRegistryId, "string");
+  assert.equal(Array.isArray(context.externalCapabilityRegistry?.providerEntries), true);
   assert.equal(typeof context.capabilityDecision?.capabilityDecisionId, "string");
   assert.equal(typeof context.capabilityDecision?.decision, "string");
   assert.equal(typeof context.atomicExecutionEnvelope?.atomicExecutionEnvelopeId, "string");
@@ -1055,6 +1057,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(Array.isArray(context.providerConnectorSchema?.authenticationModes), true);
   assert.equal(typeof context.providerCapabilities?.providerType, "string");
   assert.equal(Array.isArray(context.providerCapabilities?.capabilities), true);
+  assert.equal(typeof context.externalCapabilityRegistry?.summary?.providerCount, "number");
+  assert.equal(context.externalCapabilityRegistry?.providerEntries?.[0]?.authModes.includes("oauth"), true);
   assert.equal(Array.isArray(context.providerOperations), true);
   assert.equal(typeof context.providerOperations?.[0]?.operationType, "string");
   assert.equal(typeof context.providerConnector?.providerType, "string");

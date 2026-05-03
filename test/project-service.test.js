@@ -53,6 +53,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.boundaryDisclosureModel?.disclosureCards), true);
   assert.equal(typeof project.state.systemCapabilityRegistry?.systemCapabilityRegistryId, "string");
   assert.equal(Array.isArray(project.state.systemCapabilityRegistry?.capabilities), true);
+  assert.equal(typeof project.state.externalCapabilityRegistry?.externalCapabilityRegistryId, "string");
+  assert.equal(Array.isArray(project.state.externalCapabilityRegistry?.providerEntries), true);
   assert.equal(typeof project.state.capabilityDecision?.capabilityDecisionId, "string");
   assert.equal(typeof project.state.capabilityDecision?.decision, "string");
   assert.equal(typeof project.state.atomicExecutionEnvelope?.atomicExecutionEnvelopeId, "string");
@@ -904,6 +906,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(Array.isArray(project.state.providerConnectorSchema?.authenticationModes), true);
   assert.equal(typeof project.state.providerCapabilities?.providerType, "string");
   assert.equal(Array.isArray(project.state.providerCapabilities?.capabilities), true);
+  assert.equal(typeof project.state.externalCapabilityRegistry?.summary?.providerCount, "number");
   assert.equal(Array.isArray(project.state.providerOperations), true);
   assert.equal(typeof project.state.providerOperations?.[0]?.operationType, "string");
   assert.equal(typeof project.state.providerConnector?.providerType, "string");

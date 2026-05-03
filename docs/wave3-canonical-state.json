@@ -1150,8 +1150,8 @@
       "execution_order": "050",
       "taskName": "Define external capability registry schema",
       "lane": "External Capability Fabric",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define system capability registry schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
