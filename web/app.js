@@ -601,6 +601,9 @@ function renderProposalReview(elements, project) {
   const aiDesignProposal = normalizeObject(project.aiDesignProposal ?? state.aiDesignProposal);
   const aiGenerationObservability = normalizeObject(project.aiGenerationObservability ?? state.aiGenerationObservability);
   const providerLatencyFailureTracker = normalizeObject(project.providerLatencyFailureTracker ?? state.providerLatencyFailureTracker);
+  const generationSuccessAcceptanceTracker = normalizeObject(
+    project.generationSuccessAcceptanceTracker ?? state.generationSuccessAcceptanceTracker,
+  );
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -744,6 +747,22 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const generationSuccessItems = generationSuccessAcceptanceTracker.trackerId
+    ? [
+        {
+          title: `produced ${generationSuccessAcceptanceTracker.summary?.producedProposalCount ?? 0} | accepted ${generationSuccessAcceptanceTracker.summary?.acceptedProposalCount ?? 0}`,
+          body: `rejected ${generationSuccessAcceptanceTracker.summary?.rejectedProposalCount ?? 0} | pending ${generationSuccessAcceptanceTracker.summary?.pendingProposalCount ?? 0}`,
+        },
+        {
+          title: "Owner / operator",
+          body: `${generationSuccessAcceptanceTracker.summary?.ownerAcceptanceStatus ?? "unknown"} | ${generationSuccessAcceptanceTracker.summary?.applyStatus ?? "unknown"}`,
+        },
+        {
+          title: "Acceptance rate",
+          body: `${Math.round((generationSuccessAcceptanceTracker.summary?.acceptanceRate ?? 0) * 100)}% | review ${generationSuccessAcceptanceTracker.summary?.reviewStatus ?? "unknown"}`,
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -776,6 +795,7 @@ function renderProposalReview(elements, project) {
       ${stackHtml("AI design chain", aiDesignItems, "עדיין אין שרשרת AI Design קנונית זמינה.")}
       ${stackHtml("AI generation observability", aiObservabilityItems, "עדיין אין observability קנוני לשרשרת ה־AI.")}
       ${stackHtml("Provider latency & failure", providerLatencyItems, "עדיין אין מעקב latency/failure קנוני עבור ספק ה־AI.")}
+      ${stackHtml("Generation success & acceptance", generationSuccessItems, "עדיין אין מעקב קנוני להצלחה ולקבלה של generation.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}

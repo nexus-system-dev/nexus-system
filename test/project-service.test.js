@@ -1349,6 +1349,8 @@ test("project service serialization preserves nexus positioning", () => {
   assert.equal(typeof result.aiGenerationObservability?.summary?.reviewStatus, "string");
   assert.equal(typeof result.providerLatencyFailureTracker?.trackerId, "string");
   assert.equal(typeof result.providerLatencyFailureTracker?.summary?.failureCount, "number");
+  assert.equal(typeof result.generationSuccessAcceptanceTracker?.trackerId, "string");
+  assert.equal(typeof result.generationSuccessAcceptanceTracker?.summary?.acceptanceRate, "number");
   assert.equal(typeof result.renderableDesignProposal?.proposalId, "string");
   assert.equal(result.designProposalValidation?.status, "valid");
   assert.equal(result.designProposalReviewState?.status, "ready-for-review");
