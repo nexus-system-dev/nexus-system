@@ -604,6 +604,7 @@ function renderProposalReview(elements, project) {
   const generationSuccessAcceptanceTracker = normalizeObject(
     project.generationSuccessAcceptanceTracker ?? state.generationSuccessAcceptanceTracker,
   );
+  const promptContractFailureTracker = normalizeObject(project.promptContractFailureTracker ?? state.promptContractFailureTracker);
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -763,6 +764,22 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const promptContractFailureItems = promptContractFailureTracker.trackerId
+    ? [
+        {
+          title: `blocking ${promptContractFailureTracker.failureSummary?.blockingFailureCount ?? 0} | missing ${promptContractFailureTracker.failureSummary?.missingContractCount ?? 0}`,
+          body: `invalid ${promptContractFailureTracker.failureSummary?.invalidContractCount ?? 0} | blocked ${promptContractFailureTracker.failureSummary?.blockedContractCount ?? 0}`,
+        },
+        {
+          title: "Execution / provider",
+          body: `${promptContractFailureTracker.failureSummary?.executionStatus ?? "unknown"} | ${promptContractFailureTracker.failureSummary?.providerStatus ?? "unknown"}`,
+        },
+        {
+          title: "Latest failure",
+          body: promptContractFailureTracker.latestFailure?.reason ?? "No prompt contract failure is active.",
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -796,6 +813,7 @@ function renderProposalReview(elements, project) {
       ${stackHtml("AI generation observability", aiObservabilityItems, "עדיין אין observability קנוני לשרשרת ה־AI.")}
       ${stackHtml("Provider latency & failure", providerLatencyItems, "עדיין אין מעקב latency/failure קנוני עבור ספק ה־AI.")}
       ${stackHtml("Generation success & acceptance", generationSuccessItems, "עדיין אין מעקב קנוני להצלחה ולקבלה של generation.")}
+      ${stackHtml("Prompt contract failures", promptContractFailureItems, "עדיין אין מעקב קנוני לכשלי prompt contract.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}

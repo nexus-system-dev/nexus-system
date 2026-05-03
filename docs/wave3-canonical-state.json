@@ -1414,8 +1414,8 @@
       "execution_order": "083",
       "taskName": "Create prompt contract failure tracker",
       "lane": "AI Observability & Safety Ops",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI generation observability schema and Create AI design execution hook.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

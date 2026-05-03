@@ -244,6 +244,7 @@ import { createAiDesignExecutionHook } from "./ai-design-execution-hook.js";
 import { defineAiGenerationObservabilitySchema } from "./ai-generation-observability-schema.js";
 import { createProviderLatencyFailureTracker } from "./provider-latency-failure-tracker.js";
 import { createGenerationSuccessAcceptanceTracker } from "./generation-success-acceptance-tracker.js";
+import { createPromptContractFailureTracker } from "./prompt-contract-failure-tracker.js";
 import { createRenderableDesignProposalNormalizer } from "./renderable-design-proposal-normalizer.js";
 import { createDesignProposalValidationFlow } from "./design-proposal-validation-flow.js";
 import { createDesignProposalPreviewPipeline } from "./design-proposal-preview-pipeline.js";
@@ -4295,6 +4296,11 @@ export function buildProjectContext(
     proposalApplyDecision,
     partialAcceptanceDecision,
   });
+  const { promptContractFailureTracker } = createPromptContractFailureTracker({
+    aiGenerationObservability,
+    aiDesignExecutionState,
+    aiDesignServiceResult,
+  });
   const { dailyWorkspaceSurface } = createDailyWorkspaceSurfaceModel({
     authenticatedAppShell,
     navigationRouteSurface,
@@ -5365,6 +5371,7 @@ export function buildProjectContext(
   context.aiGenerationObservability = aiGenerationObservability;
   context.providerLatencyFailureTracker = providerLatencyFailureTracker;
   context.generationSuccessAcceptanceTracker = generationSuccessAcceptanceTracker;
+  context.promptContractFailureTracker = promptContractFailureTracker;
   context.renderableScreenModel = renderableScreenModel;
   context.screenComponentMapping = screenComponentMapping;
   context.activeScreenVariantPlan = activeScreenVariantPlan;
