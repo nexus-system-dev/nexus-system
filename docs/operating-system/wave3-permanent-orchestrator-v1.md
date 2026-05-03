@@ -224,6 +224,64 @@ Before marking any visual-impacting task `trueGreen`, the `Self-Enforcement Gate
 
 If this report is missing, `trueGreen` is forbidden.
 
+### 8. Guided Visual Proof & User Confirmation Doctrine
+For every visual-impacting task:
+
+- guided navigation is mandatory
+- open the live preview
+- navigate to the exact screen where the change appears
+- scroll to the precise location of the affected visual element
+- identify the element clearly by text, section name, id, or visible label
+
+Explicit visual pointing is mandatory. State exactly what the user should see, for example:
+- look at the section showing the exact blocker or risk values
+- verify the exact visible string that proves the change is live
+- identify which panel the section appears under
+
+Live visual proof is mandatory. The system must ensure the element is:
+- visible on screen
+- rendered correctly
+- not a fallback or placeholder
+- part of real runtime state
+
+User confirmation is a hard gate. Before continuing, the system must stop and ask:
+- `Do you see this section on your screen?`
+
+Allowed responses:
+- `Yes` -> continue
+- `No` -> fix required
+
+The system must not continue execution without explicit user confirmation.
+
+Continuous correction loop is mandatory when the user reports:
+- element not visible
+- incorrect values
+- wrong layout
+- missing section
+
+In that case the system must:
+- stop forward progress
+- fix the issue
+- rerun live preview
+- guide the user back to the exact location
+- repeat until the user confirms
+
+No visual-impacting task may become `trueGreen` unless:
+- guided navigation was completed
+- the user explicitly confirmed visual proof
+
+Exact location proof is mandatory. Always provide:
+- screen name
+- navigation path, for example `create -> onboarding -> workspace -> release`
+- exact section location on screen
+- exact text or values to verify
+
+Hard rule:
+- no visual-impacting task may skip guided navigation
+- no visual-impacting task may skip scrolling or pointing
+- no visual-impacting task may skip user confirmation
+- no visual-impacting task may assume visual correctness
+
 Gate result:
 - `PASS` -> task may proceed
 - `FAIL` -> task may not execute; record `blocked` / `in-progress` truthfully
