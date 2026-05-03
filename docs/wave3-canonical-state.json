@@ -1230,8 +1230,8 @@
       "execution_order": "060",
       "taskName": "Define IDE agent executor contract",
       "lane": "Execution Surface / Real Execution",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define execution action routing schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

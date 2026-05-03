@@ -449,6 +449,7 @@ import { defineExecutionTopologySchema } from "./execution-topology-schema.js";
 import { createCloudExecutionWorkspaceModel } from "./cloud-execution-workspace-model.js";
 import { createLocalDevelopmentBridgeContract } from "./local-development-bridge-contract.js";
 import { createRemoteMacRunnerContract } from "./remote-mac-runner-contract.js";
+import { defineIdeAgentExecutorContract } from "./ide-agent-executor-contract.js";
 import { createExecutionModeResolver } from "./execution-mode-resolver.js";
 import { defineTestExecutionSchema } from "./test-execution-schema.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
@@ -4758,6 +4759,13 @@ export function buildProjectContext(
     externalProviderHealthAndFailover,
     credentialReference,
   });
+  const { ideAgentExecutorContract } = defineIdeAgentExecutorContract({
+    executionModeDecision,
+    localDevelopmentBridge,
+    remoteMacRunner,
+    actionToProviderMapping,
+    commandConsoleView,
+  });
   const { atomicExecutionEnvelope } = createAtomicExternalActionEnvelope({
     executionRequest: externalExecutionRequest,
     resolvedActionProvider: actionToProviderMapping,
@@ -5261,6 +5269,7 @@ export function buildProjectContext(
   context.cloudWorkspaceModel = cloudWorkspaceModel;
   context.localDevelopmentBridge = localDevelopmentBridge;
   context.remoteMacRunner = remoteMacRunner;
+  context.ideAgentExecutorContract = ideAgentExecutorContract;
   context.executionModeDecision = executionModeDecision;
   context.sandboxDecision = sandboxDecision;
   context.agentLimitDecision = agentLimitDecision;
