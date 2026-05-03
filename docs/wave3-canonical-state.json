@@ -1302,8 +1302,8 @@
       "execution_order": "069",
       "taskName": "Create deployment evidence collector",
       "lane": "Deployment Reality",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create deployment invoker.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
