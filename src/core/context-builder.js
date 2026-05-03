@@ -326,6 +326,7 @@ import { defineProviderDegradationSchema } from "./provider-degradation-schema.j
 import { createProviderCircuitBreakerResolver } from "./provider-circuit-breaker-resolver.js";
 import { createProviderRecoveryProbeFlow } from "./provider-recovery-probe-flow.js";
 import { createExternalProviderHealthFailoverOrchestrator } from "./external-provider-health-failover-orchestrator.js";
+import { createDesignToolImportAdapter } from "./design-tool-import-adapter.js";
 import { createProviderOperationContract } from "./provider-operation-contract.js";
 import { createProviderSessionFactory } from "./provider-session-factory.js";
 import { createReleaseValidationAssembler } from "./release-validation-assembler.js";
@@ -3939,6 +3940,13 @@ export function buildProjectContext(
     providerRecoveryProbe,
     continuityPlan,
   });
+  const { designToolImportAdapter } = createDesignToolImportAdapter({
+    projectId: project.id,
+    projectIntake: project.projectIntake ?? project.onboardingSession?.projectIntake ?? null,
+    externalCapabilityRegistry,
+    connectorCredentialBinding,
+    externalProviderHealthAndFailover,
+  });
   const { businessContinuityState } = createBusinessContinuityLifecycleManager({
     backupStrategy,
     continuityPlan,
@@ -5407,6 +5415,7 @@ export function buildProjectContext(
   context.circuitBreakerDecision = circuitBreakerDecision;
   context.providerRecoveryProbe = providerRecoveryProbe;
   context.externalProviderHealthAndFailover = externalProviderHealthAndFailover;
+  context.designToolImportAdapter = designToolImportAdapter;
   context.verificationResult = verificationResult;
   context.ownershipPolicy = ownershipPolicy;
   context.consentRecord = consentRecord;

@@ -1198,8 +1198,8 @@
       "execution_order": "056",
       "taskName": "Create design tool import adapter",
       "lane": "External Capability Fabric",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define external capability registry schema and Create connector credential binding resolver.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
