@@ -1062,6 +1062,7 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.sourceControlIntegration?.status, "string");
   assert.equal(typeof context.secretResolutionState?.summary?.safeForConnectorUse, "boolean");
   assert.equal(typeof context.connectorCredentialBinding?.summary?.safeForRuntimeUse, "boolean");
+  assert.equal(typeof context.inboundWebhookIngestion?.summary?.canIngestWebhook, "boolean");
   assert.equal(Array.isArray(context.providerOperations), true);
   assert.equal(typeof context.providerOperations?.[0]?.operationType, "string");
   assert.equal(typeof context.providerConnector?.providerType, "string");
@@ -1230,6 +1231,7 @@ test("context builder exposes normalized existing business assets for imported-p
   assert.equal(context.sourceControlIntegration.binding.providerType, "github");
   assert.equal(typeof context.secretResolutionState?.status, "string");
   assert.equal(typeof context.connectorCredentialBinding?.status, "string");
+  assert.equal(typeof context.inboundWebhookIngestion?.status, "string");
   assert.equal(context.importAndContinueRoadmap.status, "ready");
   assert.equal(context.importAndContinueRoadmap.summary.roadmapItemCount >= 5, true);
   assert.equal(context.importAndContinueRoadmap.roadmapItems[1].dependencyIds.length > 0, true);

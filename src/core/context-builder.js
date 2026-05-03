@@ -154,6 +154,7 @@ import { defineExternalCapabilityRegistrySchema } from "./external-capability-re
 import { createSourceControlIntegrationBinder } from "./source-control-integration-binder.js";
 import { createSecretResolutionModule } from "./secret-resolution-module.js";
 import { createConnectorCredentialBindingResolver } from "./connector-credential-binding-resolver.js";
+import { createInboundProviderWebhookIngestionGateway } from "./inbound-provider-webhook-ingestion-gateway.js";
 import { createSystemCapabilityResolver } from "./system-capability-resolver.js";
 import { createExistingBusinessAssetNormalizationLayer } from "./existing-business-asset-normalization-layer.js";
 import { createAtomicExternalActionEnvelope } from "./atomic-external-action-envelope.js";
@@ -3080,6 +3081,20 @@ export function buildProjectContext(
     providerConnector,
     linkedAccounts: project.linkedAccounts ?? [],
   });
+  const { inboundWebhookIngestion } = createInboundProviderWebhookIngestionGateway({
+    projectId: project.id,
+    notificationEvent,
+    externalCapabilityRegistry,
+    connectorCredentialBinding,
+    channelConfig: {
+      channelType: project.manualContext?.channelConfig?.channelType ?? "webhook",
+      provider: project.manualContext?.channelConfig?.provider ?? "external-webhook",
+      webhookUrl: project.manualContext?.channelConfig?.webhookUrl ?? null,
+      target: project.manualContext?.channelConfig?.target ?? null,
+      providerSessionId: project.manualContext?.channelConfig?.providerSessionId ?? null,
+      idempotencyKey: project.manualContext?.channelConfig?.idempotencyKey ?? null,
+    },
+  });
   const { capabilityDecision } = createSystemCapabilityResolver({
     systemCapabilityRegistry,
     requestedAction: project.manualContext?.projectAction ?? policyDecision?.actionType ?? "view",
@@ -4920,6 +4935,7 @@ export function buildProjectContext(
   context.sourceControlIntegration = sourceControlIntegration;
   context.secretResolutionState = secretResolutionState;
   context.connectorCredentialBinding = connectorCredentialBinding;
+  context.inboundWebhookIngestion = inboundWebhookIngestion;
   context.capabilityDecision = capabilityDecision;
   context.nexusAppShellSchema = nexusAppShellSchema;
   context.authenticatedAppShell = authenticatedAppShell;

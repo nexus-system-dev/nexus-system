@@ -1182,8 +1182,8 @@
       "execution_order": "054",
       "taskName": "Create inbound provider webhook ingestion gateway",
       "lane": "External Capability Fabric",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define external capability registry schema and Create connector credential binding resolver.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
