@@ -77,6 +77,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.deploymentEvidence?.summary?.canAdvanceToDeploymentResult, "boolean");
   assert.equal(typeof project.state.deploymentResultEnvelope?.deploymentResultEnvelopeId, "string");
   assert.equal(typeof project.state.deploymentResultEnvelope?.summary?.isReadyForLaunchVerification, "boolean");
+  assert.equal(typeof project.state.productionHealthValidation?.productionHealthValidationId, "string");
+  assert.equal(typeof project.state.productionHealthValidation?.summary?.canConfirmLaunch, "boolean");
   assert.equal(typeof project.state.executionConsistencyReport?.executionConsistencyReportId, "string");
   assert.equal(typeof project.state.executionConsistencyReport?.summary?.isConsistent, "boolean");
   assert.equal(typeof project.atomicExecutionEnvelope?.atomicExecutionEnvelopeId, "string");
@@ -89,6 +91,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.deploymentInvocation?.deploymentInvocationId, "string");
   assert.equal(typeof project.deploymentEvidence?.deploymentEvidenceId, "string");
   assert.equal(typeof project.deploymentResultEnvelope?.deploymentResultEnvelopeId, "string");
+  assert.equal(typeof project.productionHealthValidation?.productionHealthValidationId, "string");
   assert.equal(typeof project.executionConsistencyReport?.executionConsistencyReportId, "string");
   assert.equal(typeof project.state.projectDraft?.id, "string");
   assert.equal(typeof project.state.projectDraft?.owner?.displayName, "string");
@@ -744,6 +747,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.deploymentInvocation?.deploymentInvocationId, "string");
   assert.equal(typeof project.state.deploymentEvidence?.deploymentEvidenceId, "string");
   assert.equal(typeof project.state.deploymentResultEnvelope?.deploymentResultEnvelopeId, "string");
+  assert.equal(typeof project.state.productionHealthValidation?.productionHealthValidationId, "string");
   assert.equal(typeof project.state.executionProviderCapabilitySync?.executionProviderCapabilitySyncId, "string");
   assert.equal(typeof project.state.executionProviderCapabilitySync?.summary?.isSynchronized, "boolean");
   assert.equal(typeof project.state.executionModeDecision?.decisionId, "string");
@@ -961,6 +965,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.deploymentInvocation?.invocationSummary?.canCollectEvidenceNext, "boolean");
   assert.equal(typeof project.state.deploymentEvidence?.summary?.canAdvanceToDeploymentResult, "boolean");
   assert.equal(typeof project.state.deploymentResultEnvelope?.summary?.isReadyForLaunchVerification, "boolean");
+  assert.equal(typeof project.state.productionHealthValidation?.summary?.canConfirmLaunch, "boolean");
   assert.equal(typeof project.state.executionProviderCapabilitySync?.executionProviderCapabilitySyncId, "string");
   assert.equal(typeof project.state.designToolImportAdapter?.status, "string");
   assert.equal(typeof project.state.designToolImportAdapter?.summary?.hasDesignInput, "boolean");
@@ -990,6 +995,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.deploymentInvocation?.deploymentInvocationId, "string");
   assert.equal(typeof project.deploymentEvidence?.deploymentEvidenceId, "string");
   assert.equal(typeof project.deploymentResultEnvelope?.deploymentResultEnvelopeId, "string");
+  assert.equal(typeof project.productionHealthValidation?.productionHealthValidationId, "string");
   assert.equal(typeof project.executionProviderCapabilitySync?.executionProviderCapabilitySyncId, "string");
   assert.equal(typeof project.state.verificationResult?.isVerified, "boolean");
   assert.equal(typeof project.state.verificationResult?.status, "string");

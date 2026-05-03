@@ -182,6 +182,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.deploymentEvidence?.summary?.canAdvanceToDeploymentResult, "boolean");
   assert.equal(typeof context.deploymentResultEnvelope?.deploymentResultEnvelopeId, "string");
   assert.equal(typeof context.deploymentResultEnvelope?.summary?.isReadyForLaunchVerification, "boolean");
+  assert.equal(typeof context.productionHealthValidation?.productionHealthValidationId, "string");
+  assert.equal(typeof context.productionHealthValidation?.summary?.canConfirmLaunch, "boolean");
   assert.equal(typeof context.executionConsistencyReport?.executionConsistencyReportId, "string");
   assert.equal(typeof context.executionConsistencyReport?.summary?.isConsistent, "boolean");
   assert.equal(typeof context.projectIdentity?.name, "string");

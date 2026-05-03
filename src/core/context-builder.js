@@ -460,6 +460,7 @@ import { createCanonicalExecutionResultEnvelope } from "./canonical-execution-re
 import { createDeploymentInvoker } from "./deployment-invoker.js";
 import { createDeploymentEvidenceCollector } from "./deployment-evidence-collector.js";
 import { createDeploymentResultEnvelope } from "./deployment-result-envelope.js";
+import { createProductionHealthValidationModule } from "./production-health-validation-module.js";
 import { createExecutionModeResolver } from "./execution-mode-resolver.js";
 import { defineTestExecutionSchema } from "./test-execution-schema.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
@@ -4864,6 +4865,12 @@ export function buildProjectContext(
     deploymentEvidence,
     canonicalExecutionResultEnvelope,
   });
+  const { productionHealthValidation } = createProductionHealthValidationModule({
+    deploymentResultEnvelope,
+    validationReport,
+    liveProjectMonitoring,
+    observedHealth: project.state?.observed?.health ?? null,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5156,6 +5163,7 @@ export function buildProjectContext(
   context.deploymentInvocation = deploymentInvocation;
   context.deploymentEvidence = deploymentEvidence;
   context.deploymentResultEnvelope = deploymentResultEnvelope;
+  context.productionHealthValidation = productionHealthValidation;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;

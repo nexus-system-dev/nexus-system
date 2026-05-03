@@ -1318,8 +1318,8 @@
       "execution_order": "071",
       "taskName": "Create production health validation module",
       "lane": "Live Release Verification",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create deployment result envelope.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
