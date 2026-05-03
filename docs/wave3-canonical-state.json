@@ -1270,8 +1270,8 @@
       "execution_order": "065",
       "taskName": "Create execution invocation contract",
       "lane": "Execution Surface / Real Execution",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create external execution dispatch module and Create external execution session manager.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

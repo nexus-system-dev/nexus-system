@@ -454,6 +454,7 @@ import { createLocalCodingAgentAdapter } from "./local-coding-agent-adapter.js";
 import { createExecutionProviderCapabilitySync } from "./execution-provider-capability-sync.js";
 import { createExternalExecutionSessionManager } from "./external-execution-session-manager.js";
 import { createIdeAgentResultNormalizer } from "./ide-agent-result-normalizer.js";
+import { createExecutionInvocationContract } from "./execution-invocation-contract.js";
 import { createExecutionModeResolver } from "./execution-mode-resolver.js";
 import { defineTestExecutionSchema } from "./test-execution-schema.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
@@ -4823,6 +4824,12 @@ export function buildProjectContext(
     externalExecutionSession,
     commandConsoleView,
   });
+  const { executionInvocationContract } = createExecutionInvocationContract({
+    atomicExecutionEnvelope,
+    externalExecutionSession,
+    ideAgentResultNormalization,
+    ideAgentExecutorContract,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5109,6 +5116,7 @@ export function buildProjectContext(
   context.externalExecutionResult = externalExecutionResult;
   context.externalExecutionSession = externalExecutionSession;
   context.ideAgentResultNormalization = ideAgentResultNormalization;
+  context.executionInvocationContract = executionInvocationContract;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;
