@@ -3195,6 +3195,7 @@ export class ProjectService {
       providerDegradationState: project.context?.providerDegradationState ?? null,
       circuitBreakerDecision: project.context?.circuitBreakerDecision ?? null,
       providerRecoveryProbe: project.context?.providerRecoveryProbe ?? null,
+      externalProviderHealthAndFailover: project.context?.externalProviderHealthAndFailover ?? null,
       verificationResult: project.context?.verificationResult ?? null,
       ownershipPolicy: project.context?.ownershipPolicy ?? null,
       consentRecord: project.context?.consentRecord ?? null,

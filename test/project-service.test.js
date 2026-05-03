@@ -924,6 +924,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.providerRecoveryProbe?.providerType, "string");
   assert.equal(typeof project.state.providerRecoveryProbe?.status, "string");
   assert.equal(typeof project.state.providerRecoveryProbe?.summary?.canProbe, "boolean");
+  assert.equal(typeof project.state.externalProviderHealthAndFailover?.lifecycleState, "string");
+  assert.equal(typeof project.state.externalProviderHealthAndFailover?.summary?.canFailover, "boolean");
   assert.equal(typeof project.state.verificationResult?.isVerified, "boolean");
   assert.equal(typeof project.state.verificationResult?.status, "string");
   assert.equal(typeof project.state.ownershipPolicy?.ownerUserId, "string");

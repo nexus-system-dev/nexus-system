@@ -325,6 +325,7 @@ import { createProviderConnectorContract } from "./provider-connector-contract.j
 import { defineProviderDegradationSchema } from "./provider-degradation-schema.js";
 import { createProviderCircuitBreakerResolver } from "./provider-circuit-breaker-resolver.js";
 import { createProviderRecoveryProbeFlow } from "./provider-recovery-probe-flow.js";
+import { createExternalProviderHealthFailoverOrchestrator } from "./external-provider-health-failover-orchestrator.js";
 import { createProviderOperationContract } from "./provider-operation-contract.js";
 import { createProviderSessionFactory } from "./provider-session-factory.js";
 import { createReleaseValidationAssembler } from "./release-validation-assembler.js";
@@ -3930,6 +3931,14 @@ export function buildProjectContext(
       ...(project.manualContext?.continuityPlan?.failover ?? {}),
     },
   };
+  const { externalProviderHealthAndFailover } = createExternalProviderHealthFailoverOrchestrator({
+    externalCapabilityRegistry,
+    connectorCredentialBinding,
+    providerDegradationState,
+    circuitBreakerDecision,
+    providerRecoveryProbe,
+    continuityPlan,
+  });
   const { businessContinuityState } = createBusinessContinuityLifecycleManager({
     backupStrategy,
     continuityPlan,
@@ -5397,6 +5406,7 @@ export function buildProjectContext(
   context.providerDegradationState = providerDegradationState;
   context.circuitBreakerDecision = circuitBreakerDecision;
   context.providerRecoveryProbe = providerRecoveryProbe;
+  context.externalProviderHealthAndFailover = externalProviderHealthAndFailover;
   context.verificationResult = verificationResult;
   context.ownershipPolicy = ownershipPolicy;
   context.consentRecord = consentRecord;

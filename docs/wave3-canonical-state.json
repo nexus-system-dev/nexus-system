@@ -1190,8 +1190,8 @@
       "execution_order": "055",
       "taskName": "Create external provider health and failover orchestrator",
       "lane": "External Capability Fabric",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define external capability registry schema and Create connector credential binding resolver.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

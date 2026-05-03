@@ -1076,6 +1076,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.providerRecoveryProbe?.providerType, "string");
   assert.equal(typeof context.providerRecoveryProbe?.status, "string");
   assert.equal(typeof context.providerRecoveryProbe?.summary?.canProbe, "boolean");
+  assert.equal(typeof context.externalProviderHealthAndFailover?.lifecycleState, "string");
+  assert.equal(typeof context.externalProviderHealthAndFailover?.summary?.canFailover, "boolean");
   assert.equal(typeof context.verificationResult?.isVerified, "boolean");
   assert.equal(typeof context.verificationResult?.status, "string");
   assert.equal(typeof context.ownershipPolicy?.ownerUserId, "string");
