@@ -61,10 +61,13 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.atomicExecutionEnvelope?.status, "string");
   assert.equal(typeof project.state.externalExecutionResult?.externalExecutionResultId, "string");
   assert.equal(typeof project.state.externalExecutionResult?.dispatchDecision, "string");
+  assert.equal(typeof project.state.externalExecutionSession?.externalExecutionSessionId, "string");
+  assert.equal(typeof project.state.externalExecutionSession?.summary?.isDispatchActive, "boolean");
   assert.equal(typeof project.state.executionConsistencyReport?.executionConsistencyReportId, "string");
   assert.equal(typeof project.state.executionConsistencyReport?.summary?.isConsistent, "boolean");
   assert.equal(typeof project.atomicExecutionEnvelope?.atomicExecutionEnvelopeId, "string");
   assert.equal(typeof project.externalExecutionResult?.externalExecutionResultId, "string");
+  assert.equal(typeof project.externalExecutionSession?.externalExecutionSessionId, "string");
   assert.equal(typeof project.executionConsistencyReport?.executionConsistencyReportId, "string");
   assert.equal(typeof project.state.projectDraft?.id, "string");
   assert.equal(typeof project.state.projectDraft?.owner?.displayName, "string");

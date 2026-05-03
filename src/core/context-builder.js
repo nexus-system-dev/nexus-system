@@ -452,6 +452,7 @@ import { createRemoteMacRunnerContract } from "./remote-mac-runner-contract.js";
 import { defineIdeAgentExecutorContract } from "./ide-agent-executor-contract.js";
 import { createLocalCodingAgentAdapter } from "./local-coding-agent-adapter.js";
 import { createExecutionProviderCapabilitySync } from "./execution-provider-capability-sync.js";
+import { createExternalExecutionSessionManager } from "./external-execution-session-manager.js";
 import { createExecutionModeResolver } from "./execution-mode-resolver.js";
 import { defineTestExecutionSchema } from "./test-execution-schema.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
@@ -4809,6 +4810,11 @@ export function buildProjectContext(
       artifactCount: preparedArtifact?.artifacts?.length ?? 0,
     },
   });
+  const { externalExecutionSession } = createExternalExecutionSessionManager({
+    externalExecutionResult,
+    executionProviderCapabilitySync,
+    actionToProviderMapping,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5093,6 +5099,7 @@ export function buildProjectContext(
   context.importAndContinueRoadmap = importAndContinueRoadmap;
   context.atomicExecutionEnvelope = atomicExecutionEnvelope;
   context.externalExecutionResult = externalExecutionResult;
+  context.externalExecutionSession = externalExecutionSession;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;
