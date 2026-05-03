@@ -1430,8 +1430,8 @@
       "execution_order": "085",
       "taskName": "Define generated surface proof schema",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI design response schema and Create renderable design proposal normalizer.",
+      "state": "in-progress",
+      "blocker": "Awaiting guided visual proof user confirmation for the generated surface proof section on the live release proposal review surface.",
       "bridgeCondition": null
     },
     {

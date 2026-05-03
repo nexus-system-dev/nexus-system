@@ -606,6 +606,7 @@ function renderProposalReview(elements, project) {
   );
   const promptContractFailureTracker = normalizeObject(project.promptContractFailureTracker ?? state.promptContractFailureTracker);
   const aiGenerationReviewDashboard = normalizeObject(project.aiGenerationReviewDashboard ?? state.aiGenerationReviewDashboard);
+  const generatedSurfaceProofSchema = normalizeObject(project.generatedSurfaceProofSchema ?? state.generatedSurfaceProofSchema);
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -797,6 +798,22 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const generatedSurfaceProofItems = generatedSurfaceProofSchema.proofId
+    ? [
+        {
+          title: `proof ${generatedSurfaceProofSchema.summary?.proofStatus ?? "unknown"} | failed ${generatedSurfaceProofSchema.summary?.failedCheckCount ?? 0}`,
+          body: `warnings ${generatedSurfaceProofSchema.summary?.warningCheckCount ?? 0} | preview ${generatedSurfaceProofSchema.summary?.previewStatus ?? "unknown"}`,
+        },
+        {
+          title: "Evidence",
+          body: `regions ${generatedSurfaceProofSchema.evidence?.regionCount ?? 0} | previewable ${generatedSurfaceProofSchema.evidence?.isPreviewable ? "yes" : "no"} | ctas ${generatedSurfaceProofSchema.evidence?.hasCtaAnchors ? "yes" : "no"}`,
+        },
+        {
+          title: "Provenance / validation",
+          body: `${generatedSurfaceProofSchema.evidence?.sourceProposalId ?? "no-source"} | ${generatedSurfaceProofSchema.summary?.validationStatus ?? "unknown"}`,
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -832,6 +849,7 @@ function renderProposalReview(elements, project) {
       ${stackHtml("Generation success & acceptance", generationSuccessItems, "עדיין אין מעקב קנוני להצלחה ולקבלה של generation.")}
       ${stackHtml("Prompt contract failures", promptContractFailureItems, "עדיין אין מעקב קנוני לכשלי prompt contract.")}
       ${stackHtml("AI generation review dashboard", aiGenerationDashboardItems, "עדיין אין dashboard קנוני ל־AI generation review.")}
+      ${stackHtml("Generated surface proof", generatedSurfaceProofItems, "עדיין אין proof קנוני ל־generated surface.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}
