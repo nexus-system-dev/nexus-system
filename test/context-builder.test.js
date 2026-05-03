@@ -796,6 +796,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.generationSuccessAcceptanceTracker?.summary?.acceptedProposalCount, "number");
   assert.equal(typeof context.promptContractFailureTracker?.trackerId, "string");
   assert.equal(typeof context.promptContractFailureTracker?.failureSummary?.blockingFailureCount, "number");
+  assert.equal(typeof context.aiGenerationReviewDashboard?.dashboardId, "string");
+  assert.equal(typeof context.aiGenerationReviewDashboard?.summary?.blockerCount, "number");
   assert.equal(typeof context.renderableDesignProposal?.proposalId, "string");
   assert.equal(typeof context.designProposalValidation?.validationId, "string");
   assert.equal(typeof context.designProposalPreviewState?.previewStateId, "string");

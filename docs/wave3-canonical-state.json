@@ -1422,8 +1422,8 @@
       "execution_order": "084",
       "taskName": "Create AI generation review dashboard model",
       "lane": "AI Observability & Safety Ops",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create provider latency and failure tracker, Create generation success and acceptance tracker, and Create prompt contract failure tracker.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

@@ -605,6 +605,7 @@ function renderProposalReview(elements, project) {
     project.generationSuccessAcceptanceTracker ?? state.generationSuccessAcceptanceTracker,
   );
   const promptContractFailureTracker = normalizeObject(project.promptContractFailureTracker ?? state.promptContractFailureTracker);
+  const aiGenerationReviewDashboard = normalizeObject(project.aiGenerationReviewDashboard ?? state.aiGenerationReviewDashboard);
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -780,6 +781,22 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const aiGenerationDashboardItems = aiGenerationReviewDashboard.dashboardId
+    ? [
+        {
+          title: `blockers ${aiGenerationReviewDashboard.summary?.blockerCount ?? 0} | risks ${aiGenerationReviewDashboard.summary?.riskSignalCount ?? 0}`,
+          body: `${aiGenerationReviewDashboard.summary?.providerHealth ?? "unknown"} | review ${aiGenerationReviewDashboard.summary?.reviewStatus ?? "unknown"}`,
+        },
+        {
+          title: "Acceptance / prompt failures",
+          body: `${Math.round((aiGenerationReviewDashboard.summary?.acceptanceRate ?? 0) * 100)}% | prompt ${aiGenerationReviewDashboard.summary?.promptFailureCount ?? 0}`,
+        },
+        {
+          title: "Primary action",
+          body: aiGenerationReviewDashboard.summary?.primaryAction ?? "No action available.",
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -814,6 +831,7 @@ function renderProposalReview(elements, project) {
       ${stackHtml("Provider latency & failure", providerLatencyItems, "עדיין אין מעקב latency/failure קנוני עבור ספק ה־AI.")}
       ${stackHtml("Generation success & acceptance", generationSuccessItems, "עדיין אין מעקב קנוני להצלחה ולקבלה של generation.")}
       ${stackHtml("Prompt contract failures", promptContractFailureItems, "עדיין אין מעקב קנוני לכשלי prompt contract.")}
+      ${stackHtml("AI generation review dashboard", aiGenerationDashboardItems, "עדיין אין dashboard קנוני ל־AI generation review.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}
