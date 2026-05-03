@@ -156,6 +156,7 @@ import { createSecretResolutionModule } from "./secret-resolution-module.js";
 import { createConnectorCredentialBindingResolver } from "./connector-credential-binding-resolver.js";
 import { createInboundProviderWebhookIngestionGateway } from "./inbound-provider-webhook-ingestion-gateway.js";
 import { defineExecutionActionRoutingSchema } from "./execution-action-routing-schema.js";
+import { createActionToProviderMappingResolver } from "./action-to-provider-mapping-resolver.js";
 import { createSystemCapabilityResolver } from "./system-capability-resolver.js";
 import { createExistingBusinessAssetNormalizationLayer } from "./existing-business-asset-normalization-layer.js";
 import { createAtomicExternalActionEnvelope } from "./atomic-external-action-envelope.js";
@@ -4732,18 +4733,6 @@ export function buildProjectContext(
     targetSurface: executionModeDecision?.selectedMode ?? sandboxDecision?.selectedSurface ?? null,
     buildTarget: buildTargets[0] ?? null,
   };
-  const resolvedActionProvider = {
-    providerType: providerAdapter?.provider ?? providerSession?.providerType ?? "generic",
-    providerStatus: circuitBreakerDecision?.decision === "blocked"
-      ? "degraded"
-      : (providerConnector?.status ?? providerSession?.status ?? "unknown"),
-    executionMode: executionModeDecision?.selectedMode ?? providerAdapter?.executionModes?.[0] ?? "manual",
-    targetSurface: sandboxDecision?.selectedSurface ?? executionModeDecision?.selectedMode ?? null,
-    buildTarget: buildTargets[0] ?? null,
-    capabilities: providerCapabilities?.capabilities ?? providerAdapter?.capabilities ?? [],
-    operationTypes: providerOperations.map((operation) => operation.operationType),
-    credentialReference,
-  };
   const { executionActionRouting } = defineExecutionActionRoutingSchema({
     executionRequest: externalExecutionRequest,
     sourceControlIntegration,
@@ -4756,17 +4745,22 @@ export function buildProjectContext(
     executionModeDecision,
     sandboxDecision,
   });
+  const { actionToProviderMapping } = createActionToProviderMappingResolver({
+    executionActionRouting,
+    providerAdapter,
+    providerSession,
+    providerConnector,
+    providerCapabilities,
+    providerOperations,
+    connectorCredentialBinding,
+    executionModeDecision,
+    sandboxDecision,
+    externalProviderHealthAndFailover,
+    credentialReference,
+  });
   const { atomicExecutionEnvelope } = createAtomicExternalActionEnvelope({
     executionRequest: externalExecutionRequest,
-    resolvedActionProvider: {
-      ...resolvedActionProvider,
-      targetSurface: executionActionRouting.resolvedRoute?.targetSurface ?? resolvedActionProvider.targetSurface,
-      executionMode: executionActionRouting.resolvedRoute?.executionMode ?? resolvedActionProvider.executionMode,
-      operationTypes: [
-        executionActionRouting.resolvedRoute?.requestedOperation ?? null,
-        ...resolvedActionProvider.operationTypes,
-      ].filter(Boolean),
-    },
+    resolvedActionProvider: actionToProviderMapping,
     executionPolicy: {
       policyDecision,
       approvalStatus,
@@ -4975,6 +4969,7 @@ export function buildProjectContext(
   context.connectorCredentialBinding = connectorCredentialBinding;
   context.inboundWebhookIngestion = inboundWebhookIngestion;
   context.executionActionRouting = executionActionRouting;
+  context.actionToProviderMapping = actionToProviderMapping;
   context.capabilityDecision = capabilityDecision;
   context.nexusAppShellSchema = nexusAppShellSchema;
   context.authenticatedAppShell = authenticatedAppShell;

@@ -1214,8 +1214,8 @@
       "execution_order": "058",
       "taskName": "Create action-to-provider mapping resolver",
       "lane": "Execution Surface / Real Execution",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define execution action routing schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
