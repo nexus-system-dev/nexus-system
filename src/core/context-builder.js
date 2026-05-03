@@ -457,6 +457,7 @@ import { createIdeAgentResultNormalizer } from "./ide-agent-result-normalizer.js
 import { createExecutionInvocationContract } from "./execution-invocation-contract.js";
 import { createArtifactCollectionPipeline } from "./artifact-collection-pipeline.js";
 import { createCanonicalExecutionResultEnvelope } from "./canonical-execution-result-envelope.js";
+import { createDeploymentInvoker } from "./deployment-invoker.js";
 import { createExecutionModeResolver } from "./execution-mode-resolver.js";
 import { defineTestExecutionSchema } from "./test-execution-schema.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
@@ -4845,6 +4846,11 @@ export function buildProjectContext(
     externalExecutionResult,
     externalExecutionSession,
   });
+  const { deploymentInvocation } = createDeploymentInvoker({
+    canonicalExecutionResultEnvelope,
+    deploymentRequest,
+    providerAdapter,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5134,6 +5140,7 @@ export function buildProjectContext(
   context.executionInvocationContract = executionInvocationContract;
   context.artifactCollectionPipeline = artifactCollectionPipeline;
   context.canonicalExecutionResultEnvelope = canonicalExecutionResultEnvelope;
+  context.deploymentInvocation = deploymentInvocation;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;
