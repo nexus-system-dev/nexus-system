@@ -100,6 +100,57 @@ You may NOT stop for:
 
 ---
 
+## Self-Enforcement Gate
+
+Before selecting, revalidating, executing, or marking any Wave 3 task, you MUST pass this gate.
+
+For every task, explicitly verify:
+
+### 1. Canonical selection
+- selected strictly by lowest non-`trueGreen` `execution_order`
+- no convenience selection
+- no silent skip
+
+### 2. State handling
+- if task is `blocked`, run stale-blocker detection first
+- do not use `Strict Revalidation Mode` while task is still recorded `blocked`
+- reclassify state truthfully before mode selection
+
+### 3. Mode legality
+- prove `Full Execution Mode` or `Strict Revalidation Mode` is legally allowed
+- if `Strict Revalidation Mode` is used, prove every required condition
+- if any condition is missing or uncertain, escalate to `Full Execution Mode`
+
+### 4. Code-first truth
+- inspect implementation
+- inspect direct tests
+- inspect consumers
+- inspect `context-builder` / `project-service` / `server` impact when relevant
+
+### 5. Validation plan
+- name exact direct tests required
+- name exact downstream tests required
+- direct tests alone are not enough if consumed downstream
+
+### 6. No shortcut check
+Confirm:
+- no file-existence-only reasoning
+- no markdown-led reasoning
+- no implicit validation
+- no hidden dependency ignored
+- no compressed state change
+
+Gate result:
+- `PASS` -> task may proceed
+- `FAIL` -> task may not execute; record `blocked` / `in-progress` truthfully
+
+Hard rule:
+- If the `Self-Enforcement Gate` is not explicitly passed, the task cannot become `trueGreen`.
+
+This gate applies to every future Wave 3 task.
+
+---
+
 ## Wave Start Revalidation Doctrine
 
 At the start of a new wave, before first execution begins, all tasks recorded as `in-progress` within the first 25% of the canonical queue must undergo Truth Revalidation.
