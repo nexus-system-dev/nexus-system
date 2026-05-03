@@ -456,6 +456,7 @@ import { createExternalExecutionSessionManager } from "./external-execution-sess
 import { createIdeAgentResultNormalizer } from "./ide-agent-result-normalizer.js";
 import { createExecutionInvocationContract } from "./execution-invocation-contract.js";
 import { createArtifactCollectionPipeline } from "./artifact-collection-pipeline.js";
+import { createCanonicalExecutionResultEnvelope } from "./canonical-execution-result-envelope.js";
 import { createExecutionModeResolver } from "./execution-mode-resolver.js";
 import { defineTestExecutionSchema } from "./test-execution-schema.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
@@ -4837,6 +4838,13 @@ export function buildProjectContext(
     preparedArtifact,
     externalExecutionResult,
   });
+  const { canonicalExecutionResultEnvelope } = createCanonicalExecutionResultEnvelope({
+    executionInvocationContract,
+    ideAgentResultNormalization,
+    artifactCollectionPipeline,
+    externalExecutionResult,
+    externalExecutionSession,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5125,6 +5133,7 @@ export function buildProjectContext(
   context.ideAgentResultNormalization = ideAgentResultNormalization;
   context.executionInvocationContract = executionInvocationContract;
   context.artifactCollectionPipeline = artifactCollectionPipeline;
+  context.canonicalExecutionResultEnvelope = canonicalExecutionResultEnvelope;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;
