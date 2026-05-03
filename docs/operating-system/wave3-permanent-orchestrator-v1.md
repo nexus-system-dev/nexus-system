@@ -164,6 +164,22 @@ For every visual-impacting task:
 - request user permission if required for local or external preview
 - identify the exact visual surface affected
 
+Preview priority is mandatory:
+- if Codex Web Preview, browser-connected preview, or sandboxed app preview is available, it is the required first-choice path
+- start the dev server when needed
+- detect the actual running URL
+- open the rendered app in that preview
+- visually inspect the affected surface
+- test interactions there
+- fix issues immediately
+- repeat preview validation until clean
+
+Only if that stronger preview path is genuinely unavailable:
+- fall back to a local URL plus user manual confirmation
+- report the exact reason the stronger preview path is unavailable
+
+No visual-impacting task may become `trueGreen` while a stronger available preview path was skipped.
+
 Visual verification is mandatory. Confirm:
 - the screen renders correctly
 - components appear as expected

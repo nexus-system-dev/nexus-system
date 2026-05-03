@@ -1998,6 +1998,7 @@ export function createCockpitApp({
   let onboardingFlow = null;
   let onboardingConversation = null;
   let currentProjectAuditPayload = null;
+  let activeAppUser = null;
   const presenceParticipantId = `presence-${Math.random().toString(36).slice(2, 10)}`;
   const appStorage = storageImpl && typeof storageImpl.getItem === "function" && typeof storageImpl.setItem === "function"
     ? storageImpl
@@ -2063,7 +2064,24 @@ export function createCockpitApp({
   }
 
   async function fetchJson(url, options) {
-    const response = await fetchImpl(url, options);
+    const storedAppUser = readStoredAppUser();
+    const headers = {
+      ...(options?.headers ?? {}),
+    };
+
+    if (
+      typeof url === "string"
+      && url.startsWith("/api/")
+      && storedAppUser?.userId
+      && !headers["x-user-id"]
+    ) {
+      headers["x-user-id"] = storedAppUser.userId;
+    }
+
+    const response = await fetchImpl(url, {
+      ...options,
+      headers,
+    });
     if (!response.ok) {
       throw new Error(`Request failed: ${response.status}`);
     }
@@ -2308,21 +2326,28 @@ export function createCockpitApp({
   }
 
   function readStoredAppUser() {
+    if (activeAppUser?.userId || activeAppUser?.email) {
+      return activeAppUser;
+    }
+
     try {
       const raw = appStorage.getItem("nexus.appUser");
-      return raw ? JSON.parse(raw) : null;
+      activeAppUser = raw ? JSON.parse(raw) : null;
+      return activeAppUser;
     } catch {
-      return null;
+      return activeAppUser;
     }
   }
 
   function writeStoredAppUser(appUser) {
+    activeAppUser = appUser ?? null;
     try {
       appStorage.setItem("nexus.appUser", JSON.stringify(appUser));
     } catch {}
   }
 
   function clearStoredAppUser() {
+    activeAppUser = null;
     try {
       appStorage.removeItem("nexus.appUser");
     } catch {}
@@ -3050,11 +3075,11 @@ export function createCockpitApp({
           answers: onboardingConversation?.answers ?? {},
         }),
       });
-    } catch {
+    } catch (error) {
       renderEmptyAppState({
         mode: "onboarding",
         message: "סיום onboarding נכשל",
-        status: "לא הצלחנו לסיים onboarding כרגע. נסה שוב או השלם את שדות החובה.",
+        status: `לא הצלחנו לסיים onboarding כרגע. ${error?.message ?? "נסה שוב או השלם את שדות החובה."}`,
       });
     }
   }
@@ -3729,6 +3754,17 @@ async function runSnapshotWorkerTickFromUi() {
   });
 
   const ready = loadProjects().catch((error) => {
+    if (error?.message === "Request failed: 401") {
+      currentProjectId = null;
+      currentProject = null;
+      renderEmptyAppState({
+        mode: "create",
+        message: "אין פרויקטים",
+        status: "כדי להתחיל צריך ליצור פרויקט ראשון ולעבור onboarding קצר.",
+      });
+      return [];
+    }
+
     elements.now.innerHTML = `<p class="empty">טעינת המסך נכשלה: ${escapeHtml(error.message)}</p>`;
     throw error;
   });

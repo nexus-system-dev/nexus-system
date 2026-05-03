@@ -1773,13 +1773,71 @@ export function buildProjectContext(
   const { taskExecutionCounters } = createTaskExecutionTracker({
     taskExecutionMetric,
   });
+  const { userIdentity } = defineUserIdentitySchema({
+    userProfile: {
+      userId: project.userId ?? project.manualContext?.userId ?? null,
+      email: project.manualContext?.userProfile?.email ?? null,
+      displayName: project.manualContext?.userProfile?.displayName ?? null,
+      status: project.manualContext?.userProfile?.status ?? "active",
+      verificationStatus: project.manualContext?.userProfile?.verificationStatus ?? null,
+    },
+    authMetadata: {
+      provider: project.manualContext?.authMetadata?.provider ?? "password",
+      sessionStatus: project.manualContext?.authMetadata?.sessionStatus ?? "authenticated",
+      hasMfa: project.manualContext?.authMetadata?.hasMfa ?? false,
+      lastLoginAt: project.manualContext?.authMetadata?.lastLoginAt ?? null,
+    },
+  });
+  const { authenticationState: earlyAuthenticationState } = createAuthenticationSystem({
+    userIdentity,
+    credentials: {
+      authMethod: project.manualContext?.credentials?.authMethod ?? null,
+      password: project.manualContext?.credentials?.password ?? null,
+      providerToken: project.manualContext?.credentials?.providerToken ?? null,
+      isLoggedOut: project.manualContext?.credentials?.isLoggedOut ?? false,
+    },
+  });
+  const { securitySignals: earlySecuritySignals } = createSecuritySignals({
+    rateLimitSignals: project.manualContext?.rateLimitSignals ?? null,
+    authSignals: project.manualContext?.authSignals ?? null,
+    anomalySignals: project.manualContext?.anomalySignals ?? null,
+  });
+  const { sessionState: earlySessionState } = createSessionAndTokenManagement({
+    userIdentity,
+    authenticationState: earlyAuthenticationState,
+  });
+  const { sessionSecurityDecision: earlySessionSecurityDecision } = createSessionSecurityControls({
+    sessionState: {
+      ...earlySessionState,
+      ...(project.manualContext?.sessionSecurityContext ?? {}),
+    },
+    securitySignals: earlySecuritySignals,
+  });
+  const { workspaceModel: earlyWorkspaceModel, membershipRecord: earlyMembershipRecord } = defineWorkspaceAndMembershipModel({
+    userIdentity,
+    workspaceMetadata: project.manualContext?.workspaceMetadata ?? null,
+  });
+  const { ownerAuthState: earlyOwnerAuthState } = createOwnerSecureAuthenticationSystem({
+    userIdentity,
+    authenticationState: earlyAuthenticationState,
+    sessionSecurityDecision: earlySessionSecurityDecision,
+    membershipRecord: earlyMembershipRecord,
+    workspaceModel: earlyWorkspaceModel,
+  });
+  const earlyProjectOwnershipBinding = {
+    bindingId: `project-ownership:${project.id ?? projectDraft.id ?? "unknown"}`,
+    projectId: project.id ?? projectDraft.id ?? null,
+    ownerUserId: project.userId ?? userIdentity.userId ?? projectDraft.owner?.userId ?? null,
+    workspaceId: earlyWorkspaceModel?.workspaceId ?? null,
+    role: earlyMembershipRecord?.role ?? earlyMembershipRecord?.roles?.[0] ?? "owner",
+  };
   const { userAgentMapping } = createUserAgentOwnershipMappingModel({
     projectId: project.id ?? null,
     userIdentity,
-    workspaceModel,
-    membershipRecord,
-    projectOwnershipBinding,
-    ownerAuthState,
+    workspaceModel: earlyWorkspaceModel,
+    membershipRecord: earlyMembershipRecord,
+    projectOwnershipBinding: earlyProjectOwnershipBinding,
+    ownerAuthState: earlyOwnerAuthState,
     taskExecutionMetric,
     taskResults: canonicalTaskResults,
   });
@@ -2610,21 +2668,6 @@ export function buildProjectContext(
     approvalRecords,
     approvalStatus,
     workspaceModel: project.context?.workspaceModel ?? project.state?.workspaceModel ?? null,
-  });
-  const { userIdentity } = defineUserIdentitySchema({
-    userProfile: {
-      userId: project.userId ?? project.manualContext?.userId ?? null,
-      email: project.manualContext?.userProfile?.email ?? null,
-      displayName: project.manualContext?.userProfile?.displayName ?? null,
-      status: project.manualContext?.userProfile?.status ?? "active",
-      verificationStatus: project.manualContext?.userProfile?.verificationStatus ?? null,
-    },
-    authMetadata: {
-      provider: project.manualContext?.authMetadata?.provider ?? "password",
-      sessionStatus: project.manualContext?.authMetadata?.sessionStatus ?? "authenticated",
-      hasMfa: project.manualContext?.authMetadata?.hasMfa ?? false,
-      lastLoginAt: project.manualContext?.authMetadata?.lastLoginAt ?? null,
-    },
   });
   const { notificationPreferences } = createNotificationPreferenceSettings({
     userIdentity,

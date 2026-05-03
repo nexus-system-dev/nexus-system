@@ -2382,24 +2382,29 @@ export class ProjectService {
   }
 
   summarizeEvents(events) {
-    return events.map((event) => ({
-      id: event.id,
-      type: event.type,
-      timestamp: event.timestamp,
-      payload: {
-        projectId: event.payload.projectId ?? null,
-        agentId: event.payload.agentId ?? null,
-        taskId: event.payload.taskId ?? event.payload.task?.id ?? null,
-        task: event.payload.task
-          ? {
-              id: event.payload.task.id,
-              taskType: event.payload.task.taskType ?? null,
-              summary: event.payload.task.summary,
-              lane: event.payload.task.lane,
-            }
-          : null,
-      },
-    }));
+    return events.map((event) => {
+      const payload = event?.payload ?? {};
+      const task = payload.task ?? null;
+
+      return {
+        id: event.id,
+        type: event.type,
+        timestamp: event.timestamp,
+        payload: {
+          projectId: payload.projectId ?? null,
+          agentId: payload.agentId ?? null,
+          taskId: payload.taskId ?? task?.id ?? null,
+          task: task
+            ? {
+                id: task.id,
+                taskType: task.taskType ?? null,
+                summary: task.summary,
+                lane: task.lane,
+              }
+            : null,
+        },
+      };
+    });
   }
 
   summarizeAssignments(assignments = []) {

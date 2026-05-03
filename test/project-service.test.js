@@ -3801,3 +3801,29 @@ test("project service serializes compliance consent state into state payload", (
   assert.equal(Array.isArray(project.state.complianceConsentState.processingScopes), true);
   assert.equal(Array.isArray(project.state.complianceConsentState.activeRestrictions), true);
 });
+
+test("project service summarizes events without crashing when payload is missing", () => {
+  const service = createProjectService();
+
+  const summary = service.summarizeEvents([
+    {
+      id: "event-1",
+      type: "custom.event",
+      timestamp: "2026-05-03T15:00:00.000Z",
+    },
+  ]);
+
+  assert.deepEqual(summary, [
+    {
+      id: "event-1",
+      type: "custom.event",
+      timestamp: "2026-05-03T15:00:00.000Z",
+      payload: {
+        projectId: null,
+        agentId: null,
+        taskId: null,
+        task: null,
+      },
+    },
+  ]);
+});

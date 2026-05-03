@@ -2924,6 +2924,173 @@ test("cockpit supports proposal editing and partial acceptance through the relea
   assert.equal(requests.some((request) => request.url === `/api/projects/${projectId}/partial-acceptance` && request.method === "POST"), true);
 });
 
+test("cockpit falls back to the create screen when project bootstrap is unauthenticated", async () => {
+  const fakeDocument = createFakeDocument();
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    async fetchImpl(url) {
+      if (url === "/api/projects") {
+        return {
+          ok: false,
+          status: 401,
+          async json() {
+            return { error: "Authentication required" };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await app.ready;
+
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
+  assert.match(fakeDocument.elements.get("#empty-project-status").textContent, /onboarding קצר/);
+});
+
+test("cockpit attaches the stored app user to authenticated project requests", async () => {
+  const fakeDocument = createFakeDocument();
+  let receivedUserId = null;
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    async fetchImpl(url, options = {}) {
+      if (url === "/api/projects") {
+        receivedUserId = options.headers?.["x-user-id"] ?? null;
+        return {
+          ok: true,
+          async json() {
+            return { projects: [] };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem(key) {
+        if (key === "nexus.appUser") {
+          return JSON.stringify({ userId: "user-123", email: "local@example.com" });
+        }
+        return null;
+      },
+      setItem() {},
+      removeItem() {},
+    },
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+
+  await app.ready;
+
+  assert.equal(receivedUserId, "user-123");
+});
+
+test("cockpit keeps the app user available even when storage writes fail", async () => {
+  const fakeDocument = createFakeDocument();
+  const requests = [];
+  const timers = createShortDelayTimers();
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    async fetchImpl(url, options = {}) {
+      requests.push({ url, method: options.method ?? "GET", headers: options.headers ?? {}, body: options.body ?? null });
+
+      if (url === "/api/projects") {
+        return {
+          ok: false,
+          status: 401,
+          async json() {
+            return { error: "Authentication required" };
+          },
+        };
+      }
+
+      if (url === "/api/auth/signup") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              authPayload: {
+                userIdentity: {
+                  userId: "user-456",
+                  email: "local@example.com",
+                  displayName: "Local operator",
+                },
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/project-drafts") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projectDraftId: "draft-1",
+              projectCreationRedirect: { target: "onboarding" },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              onboardingSession: {
+                sessionId: "session-1",
+              },
+            };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    appStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {
+        throw new Error("storage disabled");
+      },
+      removeItem() {},
+    },
+    setTimeoutImpl: timers.setTimeoutImpl,
+    clearTimeoutImpl: timers.clearTimeoutImpl,
+  });
+
+  await app.ready;
+
+  fakeDocument.elements.get("#create-project-name-input").value = "Offline Storage";
+  fakeDocument.elements.get("#create-project-vision-input").value = "Flow should still keep the current app user in memory";
+
+  await fakeDocument.elements.get("#create-project-button").listeners.click();
+
+  const draftRequest = requests.find((request) => request.url === "/api/project-drafts");
+  assert.equal(draftRequest?.headers?.["x-user-id"], "user-456");
+});
+
 test("cockpit supports rollback execution and project audit filtering from the workspace", async () => {
   const fakeDocument = createFakeDocument();
   const service = createProjectService();
