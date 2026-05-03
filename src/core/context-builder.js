@@ -459,6 +459,7 @@ import { createArtifactCollectionPipeline } from "./artifact-collection-pipeline
 import { createCanonicalExecutionResultEnvelope } from "./canonical-execution-result-envelope.js";
 import { createDeploymentInvoker } from "./deployment-invoker.js";
 import { createDeploymentEvidenceCollector } from "./deployment-evidence-collector.js";
+import { createDeploymentResultEnvelope } from "./deployment-result-envelope.js";
 import { createExecutionModeResolver } from "./execution-mode-resolver.js";
 import { defineTestExecutionSchema } from "./test-execution-schema.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
@@ -4858,6 +4859,11 @@ export function buildProjectContext(
     canonicalExecutionResultEnvelope,
     providerAdapter,
   });
+  const { deploymentResultEnvelope } = createDeploymentResultEnvelope({
+    deploymentInvocation,
+    deploymentEvidence,
+    canonicalExecutionResultEnvelope,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5149,6 +5155,7 @@ export function buildProjectContext(
   context.canonicalExecutionResultEnvelope = canonicalExecutionResultEnvelope;
   context.deploymentInvocation = deploymentInvocation;
   context.deploymentEvidence = deploymentEvidence;
+  context.deploymentResultEnvelope = deploymentResultEnvelope;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;
