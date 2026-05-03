@@ -462,6 +462,7 @@ import { createDeploymentEvidenceCollector } from "./deployment-evidence-collect
 import { createDeploymentResultEnvelope } from "./deployment-result-envelope.js";
 import { createProductionHealthValidationModule } from "./production-health-validation-module.js";
 import { createLaunchConfirmationState } from "./launch-confirmation-state.js";
+import { createReleaseReadinessEvaluator } from "./release-readiness-evaluator.js";
 import { createExecutionModeResolver } from "./execution-mode-resolver.js";
 import { defineTestExecutionSchema } from "./test-execution-schema.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
@@ -4877,6 +4878,12 @@ export function buildProjectContext(
     deploymentResultEnvelope,
     releaseWorkspace,
   });
+  const { releaseReadinessEvaluation } = createReleaseReadinessEvaluator({
+    launchConfirmationState,
+    productionHealthValidation,
+    deploymentResultEnvelope,
+    releaseWorkspace,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5171,6 +5178,7 @@ export function buildProjectContext(
   context.deploymentResultEnvelope = deploymentResultEnvelope;
   context.productionHealthValidation = productionHealthValidation;
   context.launchConfirmationState = launchConfirmationState;
+  context.releaseReadinessEvaluation = releaseReadinessEvaluation;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;
