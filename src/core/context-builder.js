@@ -153,6 +153,7 @@ import { defineSystemCapabilityRegistrySchema } from "./system-capability-regist
 import { defineExternalCapabilityRegistrySchema } from "./external-capability-registry-schema.js";
 import { createSourceControlIntegrationBinder } from "./source-control-integration-binder.js";
 import { createSecretResolutionModule } from "./secret-resolution-module.js";
+import { createConnectorCredentialBindingResolver } from "./connector-credential-binding-resolver.js";
 import { createSystemCapabilityResolver } from "./system-capability-resolver.js";
 import { createExistingBusinessAssetNormalizationLayer } from "./existing-business-asset-normalization-layer.js";
 import { createAtomicExternalActionEnvelope } from "./atomic-external-action-envelope.js";
@@ -3072,6 +3073,13 @@ export function buildProjectContext(
     externalCapabilityRegistry,
     sourceControlIntegration,
   });
+  const { connectorCredentialBinding } = createConnectorCredentialBindingResolver({
+    projectId: project.id,
+    externalCapabilityRegistry,
+    secretResolutionState,
+    providerConnector,
+    linkedAccounts: project.linkedAccounts ?? [],
+  });
   const { capabilityDecision } = createSystemCapabilityResolver({
     systemCapabilityRegistry,
     requestedAction: project.manualContext?.projectAction ?? policyDecision?.actionType ?? "view",
@@ -4911,6 +4919,7 @@ export function buildProjectContext(
   context.externalCapabilityRegistry = externalCapabilityRegistry;
   context.sourceControlIntegration = sourceControlIntegration;
   context.secretResolutionState = secretResolutionState;
+  context.connectorCredentialBinding = connectorCredentialBinding;
   context.capabilityDecision = capabilityDecision;
   context.nexusAppShellSchema = nexusAppShellSchema;
   context.authenticatedAppShell = authenticatedAppShell;

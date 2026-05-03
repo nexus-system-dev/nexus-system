@@ -909,6 +909,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.externalCapabilityRegistry?.summary?.providerCount, "number");
   assert.equal(typeof project.state.sourceControlIntegration?.status, "string");
   assert.equal(typeof project.state.secretResolutionState?.summary?.safeForConnectorUse, "boolean");
+  assert.equal(typeof project.state.connectorCredentialBinding?.summary?.safeForRuntimeUse, "boolean");
   assert.equal(Array.isArray(project.state.providerOperations), true);
   assert.equal(typeof project.state.providerOperations?.[0]?.operationType, "string");
   assert.equal(typeof project.state.providerConnector?.providerType, "string");
@@ -1994,6 +1995,7 @@ test("project service connects a project to git hosting and stores repo snapshot
   assert.equal(project.sourceControlIntegration.status, "ready");
   assert.equal(project.sourceControlIntegration.repository.fullName, "openai/nexus");
   assert.equal(typeof project.secretResolutionState?.status, "string");
+  assert.equal(typeof project.connectorCredentialBinding?.status, "string");
   assert.equal(project.overview.gitSummary.includes("openai/nexus"), true);
   assert.equal(project.state.integrations.git.connected, true);
   assert.equal(project.state.knowledge.git.repo, "openai/nexus");
