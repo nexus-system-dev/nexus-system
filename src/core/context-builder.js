@@ -451,6 +451,7 @@ import { createLocalDevelopmentBridgeContract } from "./local-development-bridge
 import { createRemoteMacRunnerContract } from "./remote-mac-runner-contract.js";
 import { defineIdeAgentExecutorContract } from "./ide-agent-executor-contract.js";
 import { createLocalCodingAgentAdapter } from "./local-coding-agent-adapter.js";
+import { createExecutionProviderCapabilitySync } from "./execution-provider-capability-sync.js";
 import { createExecutionModeResolver } from "./execution-mode-resolver.js";
 import { defineTestExecutionSchema } from "./test-execution-schema.js";
 import { defineUserIdentitySchema } from "./user-identity-schema.js";
@@ -4775,6 +4776,13 @@ export function buildProjectContext(
     fileEditorContract,
     developmentWorkspace,
   });
+  const { executionProviderCapabilitySync } = createExecutionProviderCapabilitySync({
+    providerCapabilities,
+    providerConnector,
+    actionToProviderMapping,
+    localCodingAgentAdapter,
+    ideAgentExecutorContract,
+  });
   const { atomicExecutionEnvelope } = createAtomicExternalActionEnvelope({
     executionRequest: externalExecutionRequest,
     resolvedActionProvider: actionToProviderMapping,
@@ -5280,6 +5288,7 @@ export function buildProjectContext(
   context.remoteMacRunner = remoteMacRunner;
   context.ideAgentExecutorContract = ideAgentExecutorContract;
   context.localCodingAgentAdapter = localCodingAgentAdapter;
+  context.executionProviderCapabilitySync = executionProviderCapabilitySync;
   context.executionModeDecision = executionModeDecision;
   context.sandboxDecision = sandboxDecision;
   context.agentLimitDecision = agentLimitDecision;

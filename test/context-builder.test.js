@@ -835,6 +835,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.ideAgentExecutorContract?.summary?.canExecuteInIde, "boolean");
   assert.equal(typeof context.localCodingAgentAdapter?.localCodingAgentAdapterId, "string");
   assert.equal(typeof context.localCodingAgentAdapter?.summary?.canRunLocalCodingAgent, "boolean");
+  assert.equal(typeof context.executionProviderCapabilitySync?.executionProviderCapabilitySyncId, "string");
+  assert.equal(typeof context.executionProviderCapabilitySync?.summary?.isSynchronized, "boolean");
   assert.equal(typeof context.executionModeDecision?.decisionId, "string");
   assert.equal(typeof context.executionModeDecision?.selectedMode, "string");
   assert.equal(typeof context.executionModeDecision?.summary?.isControlled, "boolean");
