@@ -1398,8 +1398,8 @@
       "execution_order": "081",
       "taskName": "Create provider latency and failure tracker",
       "lane": "AI Observability & Safety Ops",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI generation observability schema and Create AI design provider adapter.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

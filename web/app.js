@@ -600,6 +600,7 @@ function renderProposalReview(elements, project) {
   const aiDesignRequest = normalizeObject(project.aiDesignRequest ?? state.aiDesignRequest);
   const aiDesignProposal = normalizeObject(project.aiDesignProposal ?? state.aiDesignProposal);
   const aiGenerationObservability = normalizeObject(project.aiGenerationObservability ?? state.aiGenerationObservability);
+  const providerLatencyFailureTracker = normalizeObject(project.providerLatencyFailureTracker ?? state.providerLatencyFailureTracker);
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -727,6 +728,22 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const providerLatencyItems = providerLatencyFailureTracker.trackerId
+    ? [
+        {
+          title: providerLatencyFailureTracker.providerId ?? "provider",
+          body: `latency ${providerLatencyFailureTracker.latency?.latencyStatus ?? "unknown"} | failures ${providerLatencyFailureTracker.failure?.failureCount ?? 0}`,
+        },
+        {
+          title: "Health / circuit",
+          body: `${providerLatencyFailureTracker.providerHealth?.providerHealth ?? "unknown"} | ${providerLatencyFailureTracker.providerHealth?.circuitState ?? "unknown"}`,
+        },
+        {
+          title: "Latest reason",
+          body: providerLatencyFailureTracker.failure?.latestReason ?? "No provider failure reason is active.",
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -758,6 +775,7 @@ function renderProposalReview(elements, project) {
       ${stackHtml("Current proposal scope", reviewScope, "עדיין אין scope זמין לעריכה.")}
       ${stackHtml("AI design chain", aiDesignItems, "עדיין אין שרשרת AI Design קנונית זמינה.")}
       ${stackHtml("AI generation observability", aiObservabilityItems, "עדיין אין observability קנוני לשרשרת ה־AI.")}
+      ${stackHtml("Provider latency & failure", providerLatencyItems, "עדיין אין מעקב latency/failure קנוני עבור ספק ה־AI.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}

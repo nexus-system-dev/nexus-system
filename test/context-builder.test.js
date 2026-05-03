@@ -790,6 +790,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.aiDesignExecutionState?.executionStateId, "string");
   assert.equal(typeof context.aiGenerationObservability?.observabilityId, "string");
   assert.equal(typeof context.aiGenerationObservability?.summary?.validationStatus, "string");
+  assert.equal(typeof context.providerLatencyFailureTracker?.trackerId, "string");
+  assert.equal(typeof context.providerLatencyFailureTracker?.summary?.latencyStatus, "string");
   assert.equal(typeof context.renderableDesignProposal?.proposalId, "string");
   assert.equal(typeof context.designProposalValidation?.validationId, "string");
   assert.equal(typeof context.designProposalPreviewState?.previewStateId, "string");

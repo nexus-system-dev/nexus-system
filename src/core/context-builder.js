@@ -242,6 +242,7 @@ import { createAiControlCenterAndGeneratedSurfaceDeliveryBinder } from "./ai-con
 import { createAiDesignService } from "./ai-design-service.js";
 import { createAiDesignExecutionHook } from "./ai-design-execution-hook.js";
 import { defineAiGenerationObservabilitySchema } from "./ai-generation-observability-schema.js";
+import { createProviderLatencyFailureTracker } from "./provider-latency-failure-tracker.js";
 import { createRenderableDesignProposalNormalizer } from "./renderable-design-proposal-normalizer.js";
 import { createDesignProposalValidationFlow } from "./design-proposal-validation-flow.js";
 import { createDesignProposalPreviewPipeline } from "./design-proposal-preview-pipeline.js";
@@ -4278,6 +4279,13 @@ export function buildProjectContext(
     designProposalReviewState,
     proposalApplyDecision,
   });
+  const { providerLatencyFailureTracker } = createProviderLatencyFailureTracker({
+    aiGenerationObservability,
+    aiDesignProviderResult: aiDesignServiceResult.aiDesignProviderResult ?? null,
+    aiDesignServiceResult,
+    aiDesignExecutionState,
+    externalProviderHealthAndFailover,
+  });
   const { dailyWorkspaceSurface } = createDailyWorkspaceSurfaceModel({
     authenticatedAppShell,
     navigationRouteSurface,
@@ -5346,6 +5354,7 @@ export function buildProjectContext(
   context.aiDesignServiceResult = aiDesignServiceResult;
   context.aiDesignExecutionState = aiDesignExecutionState;
   context.aiGenerationObservability = aiGenerationObservability;
+  context.providerLatencyFailureTracker = providerLatencyFailureTracker;
   context.renderableScreenModel = renderableScreenModel;
   context.screenComponentMapping = screenComponentMapping;
   context.activeScreenVariantPlan = activeScreenVariantPlan;

@@ -2895,6 +2895,7 @@ test("cockpit supports proposal editing and partial acceptance through the relea
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Current proposal scope/);
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /AI design chain/);
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /AI generation observability/);
+  assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Provider latency & failure/);
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Generated preview/);
 
   fakeDocument.elements.get("#proposal-section-title-input").value = "Approval Handoff";
