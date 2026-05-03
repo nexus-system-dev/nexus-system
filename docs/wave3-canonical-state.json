@@ -1238,8 +1238,8 @@
       "execution_order": "061",
       "taskName": "Create local coding agent adapter",
       "lane": "Execution Surface / Real Execution",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define IDE agent executor contract and Create connector credential binding resolver.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

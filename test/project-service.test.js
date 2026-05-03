@@ -711,6 +711,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.remoteMacRunner?.capabilities?.supportsSigning, "boolean");
   assert.equal(typeof project.state.ideAgentExecutorContract?.ideAgentExecutorContractId, "string");
   assert.equal(typeof project.state.ideAgentExecutorContract?.summary?.canExecuteInIde, "boolean");
+  assert.equal(typeof project.state.localCodingAgentAdapter?.localCodingAgentAdapterId, "string");
+  assert.equal(typeof project.state.localCodingAgentAdapter?.summary?.canRunLocalCodingAgent, "boolean");
   assert.equal(typeof project.state.executionModeDecision?.decisionId, "string");
   assert.equal(typeof project.state.executionModeDecision?.selectedMode, "string");
   assert.equal(typeof project.state.executionModeDecision?.summary?.isControlled, "boolean");
@@ -918,6 +920,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.actionToProviderMapping?.providerType, "string");
   assert.equal(typeof project.state.actionToProviderMapping?.summary?.isMapped, "boolean");
   assert.equal(typeof project.state.ideAgentExecutorContract?.ideAgentExecutorContractId, "string");
+  assert.equal(typeof project.state.localCodingAgentAdapter?.localCodingAgentAdapterId, "string");
   assert.equal(typeof project.state.designToolImportAdapter?.status, "string");
   assert.equal(typeof project.state.designToolImportAdapter?.summary?.hasDesignInput, "boolean");
   assert.equal(Array.isArray(project.state.providerOperations), true);
@@ -938,6 +941,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.executionActionRouting?.routeType, "string");
   assert.equal(typeof project.actionToProviderMapping?.providerType, "string");
   assert.equal(typeof project.ideAgentExecutorContract?.ideAgentExecutorContractId, "string");
+  assert.equal(typeof project.localCodingAgentAdapter?.localCodingAgentAdapterId, "string");
   assert.equal(typeof project.state.verificationResult?.isVerified, "boolean");
   assert.equal(typeof project.state.verificationResult?.status, "string");
   assert.equal(typeof project.state.ownershipPolicy?.ownerUserId, "string");
