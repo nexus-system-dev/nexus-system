@@ -1063,6 +1063,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.secretResolutionState?.summary?.safeForConnectorUse, "boolean");
   assert.equal(typeof context.connectorCredentialBinding?.summary?.safeForRuntimeUse, "boolean");
   assert.equal(typeof context.inboundWebhookIngestion?.summary?.canIngestWebhook, "boolean");
+  assert.equal(typeof context.executionActionRouting?.routeType, "string");
+  assert.equal(typeof context.executionActionRouting?.summary?.isRoutable, "boolean");
   assert.equal(typeof context.designToolImportAdapter?.status, "string");
   assert.equal(typeof context.designToolImportAdapter?.summary?.hasDesignInput, "boolean");
   assert.equal(Array.isArray(context.providerOperations), true);

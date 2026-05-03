@@ -911,6 +911,8 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.secretResolutionState?.summary?.safeForConnectorUse, "boolean");
   assert.equal(typeof project.state.connectorCredentialBinding?.summary?.safeForRuntimeUse, "boolean");
   assert.equal(typeof project.state.inboundWebhookIngestion?.summary?.canIngestWebhook, "boolean");
+  assert.equal(typeof project.state.executionActionRouting?.routeType, "string");
+  assert.equal(typeof project.state.executionActionRouting?.summary?.isRoutable, "boolean");
   assert.equal(typeof project.state.designToolImportAdapter?.status, "string");
   assert.equal(typeof project.state.designToolImportAdapter?.summary?.hasDesignInput, "boolean");
   assert.equal(Array.isArray(project.state.providerOperations), true);
@@ -928,6 +930,7 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.providerRecoveryProbe?.summary?.canProbe, "boolean");
   assert.equal(typeof project.state.externalProviderHealthAndFailover?.lifecycleState, "string");
   assert.equal(typeof project.state.externalProviderHealthAndFailover?.summary?.canFailover, "boolean");
+  assert.equal(typeof project.executionActionRouting?.routeType, "string");
   assert.equal(typeof project.state.verificationResult?.isVerified, "boolean");
   assert.equal(typeof project.state.verificationResult?.status, "string");
   assert.equal(typeof project.state.ownershipPolicy?.ownerUserId, "string");

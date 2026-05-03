@@ -155,6 +155,7 @@ import { createSourceControlIntegrationBinder } from "./source-control-integrati
 import { createSecretResolutionModule } from "./secret-resolution-module.js";
 import { createConnectorCredentialBindingResolver } from "./connector-credential-binding-resolver.js";
 import { createInboundProviderWebhookIngestionGateway } from "./inbound-provider-webhook-ingestion-gateway.js";
+import { defineExecutionActionRoutingSchema } from "./execution-action-routing-schema.js";
 import { createSystemCapabilityResolver } from "./system-capability-resolver.js";
 import { createExistingBusinessAssetNormalizationLayer } from "./existing-business-asset-normalization-layer.js";
 import { createAtomicExternalActionEnvelope } from "./atomic-external-action-envelope.js";
@@ -4743,9 +4744,29 @@ export function buildProjectContext(
     operationTypes: providerOperations.map((operation) => operation.operationType),
     credentialReference,
   };
+  const { executionActionRouting } = defineExecutionActionRoutingSchema({
+    executionRequest: externalExecutionRequest,
+    sourceControlIntegration,
+    designToolImportAdapter,
+    connectorCredentialBinding,
+    externalProviderHealthAndFailover,
+    providerSession,
+    providerAdapter,
+    providerOperations,
+    executionModeDecision,
+    sandboxDecision,
+  });
   const { atomicExecutionEnvelope } = createAtomicExternalActionEnvelope({
     executionRequest: externalExecutionRequest,
-    resolvedActionProvider,
+    resolvedActionProvider: {
+      ...resolvedActionProvider,
+      targetSurface: executionActionRouting.resolvedRoute?.targetSurface ?? resolvedActionProvider.targetSurface,
+      executionMode: executionActionRouting.resolvedRoute?.executionMode ?? resolvedActionProvider.executionMode,
+      operationTypes: [
+        executionActionRouting.resolvedRoute?.requestedOperation ?? null,
+        ...resolvedActionProvider.operationTypes,
+      ].filter(Boolean),
+    },
     executionPolicy: {
       policyDecision,
       approvalStatus,
@@ -4953,6 +4974,7 @@ export function buildProjectContext(
   context.secretResolutionState = secretResolutionState;
   context.connectorCredentialBinding = connectorCredentialBinding;
   context.inboundWebhookIngestion = inboundWebhookIngestion;
+  context.executionActionRouting = executionActionRouting;
   context.capabilityDecision = capabilityDecision;
   context.nexusAppShellSchema = nexusAppShellSchema;
   context.authenticatedAppShell = authenticatedAppShell;
