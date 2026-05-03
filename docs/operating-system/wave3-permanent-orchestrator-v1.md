@@ -140,6 +140,74 @@ Confirm:
 - no hidden dependency ignored
 - no compressed state change
 
+### 7. Self-Enforced Visual Execution & Live Validation
+First determine whether the task is visual-impacting.
+
+A task is visual-impacting if it touches or affects:
+- UI
+- visual components
+- screens
+- layouts
+- generated design
+- preview surfaces
+- dashboards
+- editor surfaces
+- design import or output
+- user-facing rendering
+- interactive buttons, actions, or navigation
+
+For every visual-impacting task:
+
+- live visual execution is mandatory
+- run or use a real preview environment
+- render the affected surface in a browser or equivalent live preview
+- request user permission if required for local or external preview
+- identify the exact visual surface affected
+
+Visual verification is mandatory. Confirm:
+- the screen renders correctly
+- components appear as expected
+- layout is valid
+- no broken visual states exist
+- no runtime UI errors appear
+
+Interactive validation is mandatory. Verify:
+- buttons work
+- actions trigger correctly
+- navigation works
+- dynamic states behave correctly
+
+Continuous correction loop is mandatory:
+- if any visual or interaction issue is detected, stop forward progress
+- fix the issue immediately
+- re-run live preview
+- re-check the affected surface
+- repeat until correct
+
+No visual-impacting task may proceed while visual defects remain.
+
+No visual-impacting task may become `trueGreen` from:
+- schema-only proof
+- unit tests only
+- integration tests only
+- "component exists" proof
+- screenshots not tied to real rendered state
+
+If live preview cannot be executed:
+- keep the task `in-progress` or `blocked`
+- state the exact missing preview or runtime requirement
+- do not mark `trueGreen`
+
+Before marking any visual-impacting task `trueGreen`, the `Self-Enforcement Gate` must explicitly report:
+- `visual-impacting: yes/no`
+- `preview executed: yes/no`
+- `visual defects found: yes/no`
+- `interaction defects found: yes/no`
+- `defects fixed and revalidated: yes/no`
+- `final visual verdict`
+
+If this report is missing, `trueGreen` is forbidden.
+
 Gate result:
 - `PASS` -> task may proceed
 - `FAIL` -> task may not execute; record `blocked` / `in-progress` truthfully
