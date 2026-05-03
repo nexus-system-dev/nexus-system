@@ -1158,8 +1158,8 @@
       "execution_order": "051",
       "taskName": "Create source control integration binder",
       "lane": "External Capability Fabric",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define external capability registry schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

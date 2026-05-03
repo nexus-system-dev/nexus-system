@@ -1059,6 +1059,7 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(Array.isArray(context.providerCapabilities?.capabilities), true);
   assert.equal(typeof context.externalCapabilityRegistry?.summary?.providerCount, "number");
   assert.equal(context.externalCapabilityRegistry?.providerEntries?.[0]?.authModes.includes("oauth"), true);
+  assert.equal(typeof context.sourceControlIntegration?.status, "string");
   assert.equal(Array.isArray(context.providerOperations), true);
   assert.equal(typeof context.providerOperations?.[0]?.operationType, "string");
   assert.equal(typeof context.providerConnector?.providerType, "string");
@@ -1222,6 +1223,9 @@ test("context builder exposes normalized existing business assets for imported-p
   assert.equal(context.importedAssetTaskExtraction.status, "ready");
   assert.equal(context.importedAssetTaskExtraction.summary.totalExtractedTasks >= 5, true);
   assert.equal(context.importedAssetTaskExtraction.summary.sourceCoverage.includes("website"), true);
+  assert.equal(context.sourceControlIntegration.status, "ready");
+  assert.equal(context.sourceControlIntegration.repository.fullName, "example/scanner-intake-app");
+  assert.equal(context.sourceControlIntegration.binding.providerType, "github");
   assert.equal(context.importAndContinueRoadmap.status, "ready");
   assert.equal(context.importAndContinueRoadmap.summary.roadmapItemCount >= 5, true);
   assert.equal(context.importAndContinueRoadmap.roadmapItems[1].dependencyIds.length > 0, true);

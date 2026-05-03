@@ -151,6 +151,7 @@ import { createCapabilityPromiseAndLimitMap } from "./capability-promise-limit-m
 import { createBoundaryDisclosureAndExpectationModel } from "./boundary-disclosure-expectation-model.js";
 import { defineSystemCapabilityRegistrySchema } from "./system-capability-registry-schema.js";
 import { defineExternalCapabilityRegistrySchema } from "./external-capability-registry-schema.js";
+import { createSourceControlIntegrationBinder } from "./source-control-integration-binder.js";
 import { createSystemCapabilityResolver } from "./system-capability-resolver.js";
 import { createExistingBusinessAssetNormalizationLayer } from "./existing-business-asset-normalization-layer.js";
 import { createAtomicExternalActionEnvelope } from "./atomic-external-action-envelope.js";
@@ -3056,6 +3057,12 @@ export function buildProjectContext(
     verificationResult,
     linkedAccounts: project.linkedAccounts ?? [],
   });
+  const { sourceControlIntegration } = createSourceControlIntegrationBinder({
+    projectId: project.id,
+    externalCapabilityRegistry,
+    gitSnapshot: project.gitSnapshot ?? null,
+    linkedAccounts: project.linkedAccounts ?? [],
+  });
   const { capabilityDecision } = createSystemCapabilityResolver({
     systemCapabilityRegistry,
     requestedAction: project.manualContext?.projectAction ?? policyDecision?.actionType ?? "view",
@@ -4893,6 +4900,7 @@ export function buildProjectContext(
   context.boundaryDisclosureModel = boundaryDisclosureModel;
   context.systemCapabilityRegistry = systemCapabilityRegistry;
   context.externalCapabilityRegistry = externalCapabilityRegistry;
+  context.sourceControlIntegration = sourceControlIntegration;
   context.capabilityDecision = capabilityDecision;
   context.nexusAppShellSchema = nexusAppShellSchema;
   context.authenticatedAppShell = authenticatedAppShell;
