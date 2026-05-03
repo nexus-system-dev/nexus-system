@@ -1350,40 +1350,40 @@
       "execution_order": "075",
       "taskName": "Define AI design response schema",
       "lane": "AI Generation Engine",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define AI design request schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
       "execution_order": "076",
       "taskName": "Create AI design provider adapter",
       "lane": "AI Generation Engine",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI design request schema and Define AI design response schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
       "execution_order": "077",
       "taskName": "Create AI design service",
       "lane": "AI Generation Engine",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create AI design provider adapter.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
       "execution_order": "078",
       "taskName": "Create AI design execution hook",
       "lane": "AI Generation Engine",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create AI design service.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
       "execution_order": "079",
       "taskName": "Create renderable design proposal normalizer",
       "lane": "AI Generation Engine",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define AI design response schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
@@ -1391,7 +1391,7 @@
       "taskName": "Define AI generation observability schema",
       "lane": "AI Observability & Safety Ops",
       "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Define AI design request schema and Define AI design response schema.",
+      "blocker": "All cited prerequisites are now trueGreen, but repo reality still lacks a canonical AI generation observability implementation. There is no repository-backed aiGenerationObservability schema module, no direct tests for that contract, and no downstream context-builder/project-service/web-app consumer path for AI observability state yet.",
       "bridgeCondition": null
     },
     {
