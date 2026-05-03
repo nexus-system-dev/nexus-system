@@ -1262,8 +1262,8 @@
       "execution_order": "064",
       "taskName": "Create IDE agent result normalizer",
       "lane": "Execution Surface / Real Execution",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create execution provider capability sync and Create external execution session manager.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
