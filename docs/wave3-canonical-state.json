@@ -1390,8 +1390,8 @@
       "execution_order": "080",
       "taskName": "Define AI generation observability schema",
       "lane": "AI Observability & Safety Ops",
-      "state": "blocked",
-      "blocker": "All cited prerequisites are now trueGreen, but repo reality still lacks a canonical AI generation observability implementation. There is no repository-backed aiGenerationObservability schema module, no direct tests for that contract, and no downstream context-builder/project-service/web-app consumer path for AI observability state yet.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

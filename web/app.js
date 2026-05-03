@@ -599,6 +599,7 @@ function renderProposalReview(elements, project) {
   const aiControlCenterSurface = normalizeObject(project.aiControlCenterSurface ?? state.aiControlCenterSurface);
   const aiDesignRequest = normalizeObject(project.aiDesignRequest ?? state.aiDesignRequest);
   const aiDesignProposal = normalizeObject(project.aiDesignProposal ?? state.aiDesignProposal);
+  const aiGenerationObservability = normalizeObject(project.aiGenerationObservability ?? state.aiGenerationObservability);
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -710,6 +711,22 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const aiObservabilityItems = aiGenerationObservability.observabilityId
+    ? [
+        {
+          title: aiGenerationObservability.providerId ?? "provider",
+          body: `status ${aiGenerationObservability.status ?? "unknown"} | checks ${aiGenerationObservability.summary?.readyCheckCount ?? 0}/${aiGenerationObservability.summary?.totalCheckCount ?? 0}`,
+        },
+        {
+          title: "Validation / review",
+          body: `${aiGenerationObservability.summary?.validationStatus ?? "unknown"} | ${aiGenerationObservability.summary?.reviewStatus ?? "unknown"}`,
+        },
+        {
+          title: "Apply / attention",
+          body: `${aiGenerationObservability.summary?.applyStatus ?? "unknown"} | blockers ${aiGenerationObservability.summary?.blockingCheckCount ?? 0}`,
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -740,6 +757,7 @@ function renderProposalReview(elements, project) {
       ])}
       ${stackHtml("Current proposal scope", reviewScope, "עדיין אין scope זמין לעריכה.")}
       ${stackHtml("AI design chain", aiDesignItems, "עדיין אין שרשרת AI Design קנונית זמינה.")}
+      ${stackHtml("AI generation observability", aiObservabilityItems, "עדיין אין observability קנוני לשרשרת ה־AI.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}
@@ -2967,6 +2985,8 @@ export function createCockpitApp({
       mode: draftResult.projectCreationRedirect?.target === "onboarding" ? "onboarding" : "create",
       sessionId: session.onboardingSession?.sessionId ?? null,
       projectDraftId: draftResult.projectDraftId,
+      projectName,
+      visionText,
     };
     onboardingConversation = createOnboardingConversationState();
 
@@ -3005,8 +3025,8 @@ export function createCockpitApp({
       return;
     }
 
-    const projectName = elements.createProjectNameInput?.value?.trim() ?? "";
-    const visionText = elements.createProjectVisionInput?.value?.trim() ?? "";
+    const projectName = elements.createProjectNameInput?.value?.trim() || onboardingFlow?.projectName?.trim?.() || "";
+    const visionText = elements.createProjectVisionInput?.value?.trim() || onboardingFlow?.visionText?.trim?.() || "";
     const supportingLink = elements.createProjectLinkInput?.value?.trim() ?? "";
     const uploadedFiles = buildOnboardingUploadedFiles();
 
