@@ -152,6 +152,7 @@ import { createBoundaryDisclosureAndExpectationModel } from "./boundary-disclosu
 import { defineSystemCapabilityRegistrySchema } from "./system-capability-registry-schema.js";
 import { defineExternalCapabilityRegistrySchema } from "./external-capability-registry-schema.js";
 import { createSourceControlIntegrationBinder } from "./source-control-integration-binder.js";
+import { createSecretResolutionModule } from "./secret-resolution-module.js";
 import { createSystemCapabilityResolver } from "./system-capability-resolver.js";
 import { createExistingBusinessAssetNormalizationLayer } from "./existing-business-asset-normalization-layer.js";
 import { createAtomicExternalActionEnvelope } from "./atomic-external-action-envelope.js";
@@ -3063,6 +3064,14 @@ export function buildProjectContext(
     gitSnapshot: project.gitSnapshot ?? null,
     linkedAccounts: project.linkedAccounts ?? [],
   });
+  const { secretResolutionState } = createSecretResolutionModule({
+    projectId: project.id,
+    credentialReference,
+    credentialVaultRecord,
+    linkedAccounts: project.linkedAccounts ?? [],
+    externalCapabilityRegistry,
+    sourceControlIntegration,
+  });
   const { capabilityDecision } = createSystemCapabilityResolver({
     systemCapabilityRegistry,
     requestedAction: project.manualContext?.projectAction ?? policyDecision?.actionType ?? "view",
@@ -4901,6 +4910,7 @@ export function buildProjectContext(
   context.systemCapabilityRegistry = systemCapabilityRegistry;
   context.externalCapabilityRegistry = externalCapabilityRegistry;
   context.sourceControlIntegration = sourceControlIntegration;
+  context.secretResolutionState = secretResolutionState;
   context.capabilityDecision = capabilityDecision;
   context.nexusAppShellSchema = nexusAppShellSchema;
   context.authenticatedAppShell = authenticatedAppShell;

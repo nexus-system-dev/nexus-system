@@ -1166,8 +1166,8 @@
       "execution_order": "052",
       "taskName": "Create secret resolution module",
       "lane": "External Capability Fabric",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define external capability registry schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
