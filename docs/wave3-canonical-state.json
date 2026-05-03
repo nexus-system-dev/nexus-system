@@ -1343,7 +1343,7 @@
       "taskName": "Define AI design request schema",
       "lane": "AI Generation Engine",
       "state": "in-progress",
-      "blocker": "Live visual proof required by Self-Enforced Visual Execution & Live Validation doctrine: aiDesignRequest is materially implemented and tested, but no real browser-connected preview inspection is currently available in this environment to verify rendered AI design surface and interaction state.",
+      "blocker": "Live visual proof required by Self-Enforced Visual Execution & Live Validation doctrine: aiDesignRequest is materially implemented and tested, but this session lacks a usable browser-connected preview inspection path for localhost rendering and interaction validation. The local server can be started, and code plus tests prove the proposal review surface exists, but the available runtime cannot connect to the live surface through curl, the browser-use plugin is not exposed as a callable tool in this session, and Playwright is unavailable; trueGreen remains forbidden until real browser preview execution is available.",
       "bridgeCondition": null
     },
     {
