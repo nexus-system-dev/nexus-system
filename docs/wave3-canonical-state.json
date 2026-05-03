@@ -1222,8 +1222,8 @@
       "execution_order": "059",
       "taskName": "Create external execution dispatch module",
       "lane": "Execution Surface / Real Execution",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create action-to-provider mapping resolver and Create connector credential binding resolver.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
