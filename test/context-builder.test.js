@@ -8,6 +8,15 @@ import { buildProjectContext } from "../src/core/context-builder.js";
 import { createPlatformObservabilityTransport } from "../src/core/platform-observability-transport.js";
 import { createSecurityAuditLogStore } from "../src/core/security-audit-log-store.js";
 
+const TEST_CANONICAL_TASK_INVENTORY = Array.from({ length: 103 }, (_, index) => ({
+  execution_order: String(index + 1).padStart(3, "0"),
+  taskName: `Canonical Task ${String(index + 1).padStart(3, "0")}`,
+  lane: "Test Lane",
+  state: "trueGreen",
+  blocker: null,
+  bridgeCondition: null,
+}));
+
 test("context builder merges scan and external diagnostics into canonical context", () => {
   const context = buildProjectContext({
     id: "royal-casino",
@@ -86,6 +95,7 @@ test("context builder merges scan and external diagnostics into canonical contex
         knownMissingParts: ["Wallet and treasury implementation"],
       },
     },
+    canonicalTaskInventory: TEST_CANONICAL_TASK_INVENTORY,
   });
 
   assert.equal(context.domain, "casino");
@@ -1211,6 +1221,10 @@ test("context builder exposes normalized existing business assets for imported-p
   assert.equal(context.importAndContinueRoadmap.status, "ready");
   assert.equal(context.importAndContinueRoadmap.summary.roadmapItemCount >= 5, true);
   assert.equal(context.importAndContinueRoadmap.roadmapItems[1].dependencyIds.length > 0, true);
+  assert.equal(context.canonicalBacklogRegeneration.status, "ready");
+  assert.equal(context.canonicalBacklogRegeneration.proposedCanonicalTasks[0].execution_order, "104");
+  assert.equal(context.canonicalBacklogRegeneration.proposedCanonicalTasks[0].dependencies.upstreamExecutionOrders[0], "103");
+  assert.equal(context.canonicalBacklogRegeneration.proposedCanonicalTasks.length >= 5, true);
   assert.equal(
     context.existingBusinessAssets.assets.some((asset) => asset.path === "README.md" && asset.sourceStages.length === 2),
     true,
@@ -1908,6 +1922,7 @@ test("context builder exposes ready nexus positioning when manual competitive co
   assert.equal(typeof context.crossLayerFeedbackState?.status, "string");
   assert.equal(typeof context.adaptiveExecutionDecision?.loopMode, "string");
   assert.equal(typeof context.systemOptimizationPlan?.status, "string");
+  assert.equal(typeof context.canonicalBacklogRegeneration?.status, "string");
   assert.equal(context.ownerControlPlane?.status, "ready");
   assert.equal(context.ownerControlCenter?.status, "ready");
   assert.equal(context.dailyOwnerOverview?.status, "ready");

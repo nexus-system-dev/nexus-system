@@ -175,6 +175,8 @@ import { createPostExecutionEvaluationPipeline } from "./post-execution-evaluati
 import { createCrossLayerFeedbackOrchestrator } from "./cross-layer-feedback-orchestrator.js";
 import { createAdaptiveExecutionLoop } from "./adaptive-execution-loop.js";
 import { createSystemOptimizationCycle } from "./system-optimization-cycle.js";
+import { createCanonicalBacklogRegenerationBridge } from "./canonical-backlog-regeneration-bridge.js";
+import { loadWave3CanonicalTaskInventory } from "./wave3-canonical-task-inventory-source.js";
 import { defineNotificationEventSchema } from "./notification-event-schema.js";
 import { createInAppNotificationCenter } from "./in-app-notification-center.js";
 import { createEmailNotificationDeliveryModule } from "./email-notification-delivery-module.js";
@@ -1302,6 +1304,11 @@ export function buildProjectContext(
     userActivityHistoryStore = null,
   } = {},
 ) {
+  const canonicalTaskInventory = Array.isArray(project.canonicalTaskInventory)
+    ? project.canonicalTaskInventory
+    : Array.isArray(project.state?.canonicalTaskInventory)
+      ? project.state.canonicalTaskInventory
+      : loadWave3CanonicalTaskInventory();
   const baseTaskResults = project.taskResults ?? project.state?.taskResults ?? [];
   const { blockedTaskOutcomes } = createBlockedTaskOutcomeCanonicalizer({
     projectId: project.id ?? null,
@@ -4736,6 +4743,17 @@ export function buildProjectContext(
     serviceReliabilityDashboard,
     systemBottleneckSummary,
   });
+  const { canonicalBacklogRegeneration } = createCanonicalBacklogRegenerationBridge({
+    projectId: project.id ?? null,
+    canonicalTaskInventory,
+    importAndContinueRoadmap,
+    postExecutionEvaluation,
+    postExecutionReport,
+    crossLayerFeedbackState,
+    adaptiveExecutionDecision,
+    systemOptimizationPlan,
+    productIterationInsights,
+  });
   const { ownerAuditView } = createOwnerAuditLogViewer({
     auditLogRecord,
     projectAuditPayload,
@@ -5036,6 +5054,7 @@ export function buildProjectContext(
   context.crossLayerFeedbackState = crossLayerFeedbackState;
   context.adaptiveExecutionDecision = adaptiveExecutionDecision;
   context.systemOptimizationPlan = systemOptimizationPlan;
+  context.canonicalBacklogRegeneration = canonicalBacklogRegeneration;
   context.disasterRecoveryChecklist = disasterRecoveryChecklist;
   context.businessContinuityState = businessContinuityState;
   context.userJourneys = userJourneys;

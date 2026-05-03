@@ -2829,6 +2829,12 @@ test("project service normalizes imported business assets after onboarding intak
   assert.equal(finished.project.importedAssetTaskExtraction.summary.totalExtractedTasks >= 5, true);
   assert.equal(finished.project.importAndContinueRoadmap.status, "ready");
   assert.equal(finished.project.importAndContinueRoadmap.summary.roadmapItemCount >= 5, true);
+  assert.equal(finished.project.canonicalBacklogRegeneration.status, "ready");
+  assert.equal(finished.project.canonicalBacklogRegeneration.proposedCanonicalTasks[0].execution_order.length, 3);
+  assert.equal(
+    finished.project.canonicalBacklogRegeneration.proposedCanonicalTasks[0].dependencies.upstreamExecutionOrders.length > 0,
+    true,
+  );
   assert.equal(
     finished.project.existingBusinessAssets.importAndContinueSeed.nextCapabilities.includes("repository-diagnosis"),
     true,
@@ -2859,6 +2865,8 @@ test("project service normalizes imported business assets after onboarding intak
     finished.project.state.importAndContinueRoadmap.roadmapItems[1].dependencyIds.length > 0,
     true,
   );
+  assert.equal(finished.project.state.canonicalBacklogRegeneration.status, "ready");
+  assert.equal(finished.project.state.canonicalBacklogRegeneration.proposedCanonicalTasks.length >= 1, true);
   assert.equal(
     finished.project.state.existingBusinessAssets.assets.some(
       (asset) => asset.path === "README.md" && asset.sourceStages.includes("uploaded-intake"),
