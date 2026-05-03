@@ -1342,8 +1342,8 @@
       "execution_order": "074",
       "taskName": "Define AI design request schema",
       "lane": "AI Generation Engine",
-      "state": "in-progress",
-      "blocker": "Live browser-connected preview is now available and was executed. The create and onboarding surfaces render correctly, but the fresh onboarding-to-workspace path still crashes before the proposal review surface becomes reachable. In live validation on http://127.0.0.1:4011, finishing onboarding triggers backend runtime failures inside buildProjectContext, currently a ReferenceError on executionModeDecision before initialization after earlier TDZ fixes for userIdentity and workspaceModel. Because the proposal review surface cannot yet be reached in a real running app, visual proof for task 074 remains incomplete and trueGreen is forbidden.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

@@ -1,3 +1,7 @@
+function normalizeObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
 export class AgentMemoryStore {
   constructor() {
     this.memories = new Map();
@@ -22,20 +26,25 @@ export class AgentMemoryStore {
       },
       recentEvents: recentEvents
         .filter(
-          (event) =>
-            event.payload.projectId === projectSnapshot.projectId &&
-            ((event.payload.taskId && event.payload.taskId === task.id) ||
-              (event.payload.task && event.payload.task.id === task.id) ||
-              event.payload.agentId === agent.id ||
-              (event.payload.task && event.payload.task.lane === task.lane)),
+          (event) => {
+            const payload = normalizeObject(event?.payload);
+            return payload.projectId === projectSnapshot.projectId &&
+              ((payload.taskId && payload.taskId === task.id) ||
+                (payload.task && payload.task.id === task.id) ||
+                payload.agentId === agent.id ||
+                (payload.task && payload.task.lane === task.lane));
+          },
         )
-        .map((event) => ({
-          id: event.id,
-          type: event.type,
-          timestamp: event.timestamp,
-          taskId: event.payload.taskId ?? event.payload.task?.id ?? null,
-          agentId: event.payload.agentId ?? null,
-        })),
+        .map((event) => {
+          const payload = normalizeObject(event?.payload);
+          return {
+            id: event.id,
+            type: event.type,
+            timestamp: event.timestamp,
+            taskId: payload.taskId ?? payload.task?.id ?? null,
+            agentId: payload.agentId ?? null,
+          };
+        }),
     };
 
     this.memories.set(`${projectSnapshot.projectId}:${agent.id}:${task.id}`, memory);

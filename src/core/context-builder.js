@@ -4366,6 +4366,61 @@ export function buildProjectContext(
     cloudWorkspaceModel,
     platformTrace,
   });
+  const { localDevelopmentBridge } = createLocalDevelopmentBridgeContract({
+    executionTopology,
+    localEnvironmentMetadata: {
+      isConnected: executionModes.includes("local-terminal"),
+      workspacePath: project.source?.rootDir ?? null,
+      os: project.runtimeSource?.platform ?? null,
+      ide: {
+        name: executionModes.includes("xcode") ? "Xcode" : executionModes.includes("local-terminal") ? "Local Terminal" : null,
+        type: executionModes.includes("xcode") ? "apple-ide" : executionModes.includes("local-terminal") ? "terminal" : null,
+      },
+      runtime: {
+        name: project.runtimeSource?.kind ?? "local-runtime",
+      },
+      sync: {
+        enabled: executionModes.includes("local-terminal"),
+        writeback: executionModes.includes("temp-branch"),
+      },
+      handoffMode: "optional-bridge",
+    },
+  });
+  const { remoteMacRunner } = createRemoteMacRunnerContract({
+    executionTopology,
+    appleBuildConfig: {
+      host: executionModes.includes("xcode") ? "remote-mac-host" : null,
+      platform: domain === "mobile-app" ? "ios" : null,
+      xcodeVersion: executionModes.includes("xcode") ? "latest-supported" : null,
+      bundleId: recommendedDefaults?.metadata?.bundleId ?? null,
+      scheme: domain === "mobile-app" ? "App" : null,
+      signing: {
+        teamId: recommendedDefaults?.credentials?.appleTeamId ?? null,
+        signingStyle: "automatic",
+        provisioningProfile: null,
+        requiresManualApproval: approvalTrigger?.requiresApproval ?? false,
+      },
+      archive: {
+        exportMethod: domain === "mobile-app" ? "app-store" : null,
+        artifactPath: domain === "mobile-app" ? "artifacts/ios/app.ipa" : null,
+        shouldArchive: domain === "mobile-app",
+      },
+    },
+  });
+  const { executionModeDecision } = createExecutionModeResolver({
+    executionTopology,
+    taskType: domainCapabilities.taskTypes?.[0] ?? "generic",
+    projectState: {
+      projectId: project.id,
+      domain,
+      riskFlags,
+      policyTrace,
+      decisionIntelligence,
+    },
+    cloudWorkspaceModel,
+    localDevelopmentBridge,
+    remoteMacRunner,
+  });
   const { buildDeployCostMetric } = createBuildDeployCostTracker({
     projectId: project.id,
     workspaceId: workspaceModel?.workspaceId ?? null,
@@ -4596,61 +4651,6 @@ export function buildProjectContext(
     candidateActions,
     budgetDecision,
     decisionIntelligence,
-  });
-  const { localDevelopmentBridge } = createLocalDevelopmentBridgeContract({
-    executionTopology,
-    localEnvironmentMetadata: {
-      isConnected: executionModes.includes("local-terminal"),
-      workspacePath: project.source?.rootDir ?? null,
-      os: project.runtimeSource?.platform ?? null,
-      ide: {
-        name: executionModes.includes("xcode") ? "Xcode" : executionModes.includes("local-terminal") ? "Local Terminal" : null,
-        type: executionModes.includes("xcode") ? "apple-ide" : executionModes.includes("local-terminal") ? "terminal" : null,
-      },
-      runtime: {
-        name: project.runtimeSource?.kind ?? "local-runtime",
-      },
-      sync: {
-        enabled: executionModes.includes("local-terminal"),
-        writeback: executionModes.includes("temp-branch"),
-      },
-      handoffMode: "optional-bridge",
-    },
-  });
-  const { remoteMacRunner } = createRemoteMacRunnerContract({
-    executionTopology,
-    appleBuildConfig: {
-      host: executionModes.includes("xcode") ? "remote-mac-host" : null,
-      platform: domain === "mobile-app" ? "ios" : null,
-      xcodeVersion: executionModes.includes("xcode") ? "latest-supported" : null,
-      bundleId: recommendedDefaults?.metadata?.bundleId ?? null,
-      scheme: domain === "mobile-app" ? "App" : null,
-      signing: {
-        teamId: recommendedDefaults?.credentials?.appleTeamId ?? null,
-        signingStyle: "automatic",
-        provisioningProfile: null,
-        requiresManualApproval: approvalTrigger?.requiresApproval ?? false,
-      },
-      archive: {
-        exportMethod: domain === "mobile-app" ? "app-store" : null,
-        artifactPath: domain === "mobile-app" ? "artifacts/ios/app.ipa" : null,
-        shouldArchive: domain === "mobile-app",
-      },
-    },
-  });
-  const { executionModeDecision } = createExecutionModeResolver({
-    executionTopology,
-    taskType: domainCapabilities.taskTypes?.[0] ?? "generic",
-    projectState: {
-      projectId: project.id,
-      domain,
-      riskFlags,
-      policyTrace,
-      decisionIntelligence,
-    },
-    cloudWorkspaceModel,
-    localDevelopmentBridge,
-    remoteMacRunner,
   });
   const { sandboxDecision } = createAgentSandboxPolicyResolver({
     agentGovernancePolicy,

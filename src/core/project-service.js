@@ -3947,6 +3947,9 @@ export class ProjectService {
     if (!project) {
       return null;
     }
+    if (!Array.isArray(project.agents)) {
+      project.agents = this.createDefaultAgents();
+    }
     this.rebuildContext(projectId);
 
     const completedTaskIds = new Set(

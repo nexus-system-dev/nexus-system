@@ -2427,6 +2427,34 @@ test("project service supports onboarding intake updates file uploads current st
   assert.equal(service.listProjects().some((project) => project.id === "launch-app"), true);
 });
 
+test("project service restores default agents before rerunning a finished onboarding project cycle", () => {
+  const service = createProjectService();
+  const session = service.createOnboardingSession({
+    userId: "user-agents",
+    projectDraftId: "launch-agents",
+    initialInput: "",
+  });
+
+  service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: Launch Agents\nאפליקציה עם התחברות",
+    uploadedFiles: [],
+    externalLinks: [],
+  });
+
+  const finished = service.finishOnboardingSession(session.sessionId);
+  assert.equal(finished.blocked, false);
+
+  const storedProject = service.projects.get(finished.project.id);
+  storedProject.agents = undefined;
+
+  const rerun = service.runCycle(finished.project.id);
+
+  assert.equal(Array.isArray(service.projects.get(finished.project.id).agents), true);
+  assert.equal(service.projects.get(finished.project.id).agents.length > 0, true);
+  assert.equal(Array.isArray(rerun.assignments), true);
+});
+
 test("project service supports signup login and logout auth flows", () => {
   const service = createProjectService();
 

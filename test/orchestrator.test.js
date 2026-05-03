@@ -155,6 +155,39 @@ test("orchestrator emits the core event stream", () => {
   assert.equal(eventBus.getEvents().filter((event) => event.type === "task.assigned").every((event) => typeof event.payload.task.taskType === "string"), true);
 });
 
+test("orchestrator tolerates recent records without payload when building agent memory", () => {
+  const eventBus = createTestEventBus();
+  eventBus.eventLog.append({
+    recordType: "non-event-record",
+    projectId: "project-mixed-events",
+    timestamp: new Date().toISOString(),
+  });
+  const orchestrator = new NexusOrchestrator({ eventBus });
+
+  const result = orchestrator.runCycle({
+    projectId: "project-mixed-events",
+    projectState: {
+      businessGoal: "Grow paid users",
+      product: {
+        hasAuth: false,
+        hasStagingEnvironment: true,
+        hasLandingPage: false,
+        hasPaymentIntegration: true,
+      },
+      analytics: {
+        hasBaselineCampaign: false,
+      },
+    },
+    agents: [
+      { id: "backend-1", capabilities: ["backend", "security"] },
+      { id: "marketing-agent", capabilities: ["frontend", "copywriting"] },
+    ],
+  });
+
+  assert.equal(Array.isArray(result.assignments), true);
+  assert.equal(result.assignments.length > 0, true);
+});
+
 test("agent runtime consumes assignments and emits completions", () => {
   const eventBus = createTestEventBus();
   const orchestrator = new NexusOrchestrator({ eventBus });
