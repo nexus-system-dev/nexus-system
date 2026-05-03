@@ -1342,8 +1342,8 @@
       "execution_order": "074",
       "taskName": "Define AI design request schema",
       "lane": "AI Generation Engine",
-      "state": "blocked",
-      "blocker": "Turn Zero downgrade: dependencies are materially satisfied, but no repository implementation, direct tests, or downstream aiDesignRequest consumers exist yet; inherited in-progress state was placeholder progress and this is not the current lowest executable task.",
+      "state": "in-progress",
+      "blocker": "Live visual proof required by Self-Enforced Visual Execution & Live Validation doctrine: aiDesignRequest is materially implemented and tested, but no real browser-connected preview inspection is currently available in this environment to verify rendered AI design surface and interaction state.",
       "bridgeCondition": null
     },
     {
