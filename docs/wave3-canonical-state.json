@@ -1470,8 +1470,8 @@
       "execution_order": "090",
       "taskName": "Create design proposal preview pipeline",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create design proposal validation flow.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
