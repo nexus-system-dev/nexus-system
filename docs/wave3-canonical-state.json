@@ -1486,8 +1486,8 @@
       "execution_order": "092",
       "taskName": "Create design proposal review handoff",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create screen proposal diff model and Create design proposal validation flow.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
