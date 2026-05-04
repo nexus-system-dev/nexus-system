@@ -800,6 +800,8 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.aiGenerationReviewDashboard?.summary?.blockerCount, "number");
   assert.equal(typeof context.generatedSurfaceProofSchema?.proofId, "string");
   assert.equal(typeof context.generatedSurfaceProofSchema?.summary?.failedCheckCount, "number");
+  assert.equal(typeof context.generatedSurfacePerformanceBudgetValidator?.performanceBudgetValidatorId, "string");
+  assert.equal(typeof context.generatedSurfacePerformanceBudgetValidator?.summary?.budgetStatus, "string");
   assert.equal(typeof context.renderableDesignProposal?.proposalId, "string");
   assert.equal(typeof context.designProposalValidation?.validationId, "string");
   assert.equal(typeof context.designProposalPreviewState?.previewStateId, "string");

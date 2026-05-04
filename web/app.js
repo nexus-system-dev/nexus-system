@@ -610,6 +610,9 @@ function renderProposalReview(elements, project) {
   const generatedAccessibilityValidationEngine = normalizeObject(
     project.generatedAccessibilityValidationEngine ?? state.generatedAccessibilityValidationEngine,
   );
+  const generatedSurfacePerformanceBudgetValidator = normalizeObject(
+    project.generatedSurfacePerformanceBudgetValidator ?? state.generatedSurfacePerformanceBudgetValidator,
+  );
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -833,6 +836,22 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const generatedPerformanceBudgetItems = generatedSurfacePerformanceBudgetValidator.performanceBudgetValidatorId
+    ? [
+        {
+          title: `budget ${generatedSurfacePerformanceBudgetValidator.summary?.budgetStatus ?? "unknown"} | failed ${generatedSurfacePerformanceBudgetValidator.summary?.failedCheckCount ?? 0}`,
+          body: `warnings ${generatedSurfacePerformanceBudgetValidator.summary?.warningCheckCount ?? 0} | performance ${generatedSurfacePerformanceBudgetValidator.summary?.performanceStatus ?? "unknown"}`,
+        },
+        {
+          title: "Surface load",
+          body: `weight ${generatedSurfacePerformanceBudgetValidator.evidence?.weightedSurfaceLoad ?? 0}/${generatedSurfacePerformanceBudgetValidator.evidence?.weightBudget ?? 0} | regions ${generatedSurfacePerformanceBudgetValidator.evidence?.regionCount ?? 0}/${generatedSurfacePerformanceBudgetValidator.evidence?.regionBudget ?? 0}`,
+        },
+        {
+          title: "CTA / preview",
+          body: `ctas ${generatedSurfacePerformanceBudgetValidator.evidence?.visibleCtaCount ?? 0}/${generatedSurfacePerformanceBudgetValidator.evidence?.ctaBudget ?? 0} | previewable ${generatedSurfacePerformanceBudgetValidator.evidence?.previewable ? "yes" : "no"}`,
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -870,6 +889,7 @@ function renderProposalReview(elements, project) {
       ${stackHtml("AI generation review dashboard", aiGenerationDashboardItems, "עדיין אין dashboard קנוני ל־AI generation review.")}
       ${stackHtml("Generated surface proof", generatedSurfaceProofItems, "עדיין אין proof קנוני ל־generated surface.")}
       ${stackHtml("Generated accessibility validation", generatedAccessibilityItems, "עדיין אין accessibility validation קנוני ל־generated surface.")}
+      ${stackHtml("Generated surface performance budget", generatedPerformanceBudgetItems, "עדיין אין performance budget קנוני ל־generated surface.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}

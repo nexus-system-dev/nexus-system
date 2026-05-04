@@ -248,6 +248,7 @@ import { createPromptContractFailureTracker } from "./prompt-contract-failure-tr
 import { createAiGenerationReviewDashboardModel } from "./ai-generation-review-dashboard-model.js";
 import { defineGeneratedSurfaceProofSchema } from "./generated-surface-proof-schema.js";
 import { createGeneratedAccessibilityValidationEngine } from "./generated-accessibility-validation-engine.js";
+import { createGeneratedSurfacePerformanceBudgetValidator } from "./generated-surface-performance-budget-validator.js";
 import { createRenderableDesignProposalNormalizer } from "./renderable-design-proposal-normalizer.js";
 import { createDesignProposalValidationFlow } from "./design-proposal-validation-flow.js";
 import { createDesignProposalPreviewPipeline } from "./design-proposal-preview-pipeline.js";
@@ -4322,6 +4323,12 @@ export function buildProjectContext(
     previewScreenViewModel,
     generatedSurfaceProofSchema,
   });
+  const { generatedSurfacePerformanceBudgetValidator } = createGeneratedSurfacePerformanceBudgetValidator({
+    renderableDesignProposal,
+    previewScreenViewModel,
+    generatedSurfaceProofSchema,
+    generatedAccessibilityValidationEngine,
+  });
   const { dailyWorkspaceSurface } = createDailyWorkspaceSurfaceModel({
     authenticatedAppShell,
     navigationRouteSurface,
@@ -5396,6 +5403,7 @@ export function buildProjectContext(
   context.aiGenerationReviewDashboard = aiGenerationReviewDashboard;
   context.generatedSurfaceProofSchema = generatedSurfaceProofSchema;
   context.generatedAccessibilityValidationEngine = generatedAccessibilityValidationEngine;
+  context.generatedSurfacePerformanceBudgetValidator = generatedSurfacePerformanceBudgetValidator;
   context.renderableScreenModel = renderableScreenModel;
   context.screenComponentMapping = screenComponentMapping;
   context.activeScreenVariantPlan = activeScreenVariantPlan;

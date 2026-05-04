@@ -1446,8 +1446,8 @@
       "execution_order": "087",
       "taskName": "Create generated surface performance budget validator",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define generated surface proof schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
