@@ -1430,16 +1430,16 @@
       "execution_order": "085",
       "taskName": "Define generated surface proof schema",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "in-progress",
-      "blocker": "Awaiting guided visual proof user confirmation for the generated surface proof section on the live release proposal review surface.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
       "execution_order": "086",
       "taskName": "Create generated accessibility validation engine",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Define generated surface proof schema.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

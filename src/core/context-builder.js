@@ -247,6 +247,7 @@ import { createGenerationSuccessAcceptanceTracker } from "./generation-success-a
 import { createPromptContractFailureTracker } from "./prompt-contract-failure-tracker.js";
 import { createAiGenerationReviewDashboardModel } from "./ai-generation-review-dashboard-model.js";
 import { defineGeneratedSurfaceProofSchema } from "./generated-surface-proof-schema.js";
+import { createGeneratedAccessibilityValidationEngine } from "./generated-accessibility-validation-engine.js";
 import { createRenderableDesignProposalNormalizer } from "./renderable-design-proposal-normalizer.js";
 import { createDesignProposalValidationFlow } from "./design-proposal-validation-flow.js";
 import { createDesignProposalPreviewPipeline } from "./design-proposal-preview-pipeline.js";
@@ -4316,6 +4317,11 @@ export function buildProjectContext(
     previewScreenViewModel,
     aiControlCenterSurface,
   });
+  const { generatedAccessibilityValidationEngine } = createGeneratedAccessibilityValidationEngine({
+    renderableDesignProposal,
+    previewScreenViewModel,
+    generatedSurfaceProofSchema,
+  });
   const { dailyWorkspaceSurface } = createDailyWorkspaceSurfaceModel({
     authenticatedAppShell,
     navigationRouteSurface,
@@ -5389,6 +5395,7 @@ export function buildProjectContext(
   context.promptContractFailureTracker = promptContractFailureTracker;
   context.aiGenerationReviewDashboard = aiGenerationReviewDashboard;
   context.generatedSurfaceProofSchema = generatedSurfaceProofSchema;
+  context.generatedAccessibilityValidationEngine = generatedAccessibilityValidationEngine;
   context.renderableScreenModel = renderableScreenModel;
   context.screenComponentMapping = screenComponentMapping;
   context.activeScreenVariantPlan = activeScreenVariantPlan;

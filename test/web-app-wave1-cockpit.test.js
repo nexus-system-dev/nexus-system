@@ -2900,6 +2900,7 @@ test("cockpit supports proposal editing and partial acceptance through the relea
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Prompt contract failures/);
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /AI generation review dashboard/);
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Generated surface proof/);
+  assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Generated accessibility validation/);
   assert.match(fakeDocument.elements.get("#proposal-review-content").innerHTML, /Generated preview/);
 
   fakeDocument.elements.get("#proposal-section-title-input").value = "Approval Handoff";
@@ -3010,6 +3011,114 @@ test("cockpit attaches the stored app user to authenticated project requests", a
   await app.ready;
 
   assert.equal(receivedUserId, "user-123");
+});
+
+test("cockpit replaces a stale stored app user before starting a new project flow", async () => {
+  const fakeDocument = createFakeDocument();
+  const requests = [];
+  const storage = new Map([
+    ["nexus.appUser", JSON.stringify({ userId: "stale-user", email: "stale@example.com" })],
+  ]);
+  const timers = createShortDelayTimers();
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    async fetchImpl(url, options = {}) {
+      requests.push({ url, method: options.method ?? "GET", headers: options.headers ?? {}, body: options.body ?? null });
+
+      if (url === "/api/projects") {
+        if (options.headers?.["x-user-id"] === "fresh-user") {
+          return {
+            ok: true,
+            async json() {
+              return { projects: [] };
+            },
+          };
+        }
+
+        return {
+          ok: false,
+          status: 401,
+          async json() {
+            return { error: "Authentication required" };
+          },
+        };
+      }
+
+      if (url === "/api/auth/signup") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              authPayload: {
+                userIdentity: {
+                  userId: "fresh-user",
+                  email: "fresh@example.com",
+                  displayName: "Local operator",
+                },
+              },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/project-drafts") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              projectDraftId: "draft-fresh",
+              projectCreationRedirect: { target: "onboarding" },
+            };
+          },
+        };
+      }
+
+      if (url === "/api/onboarding/sessions") {
+        return {
+          ok: true,
+          async json() {
+            return {
+              onboardingSession: {
+                sessionId: "session-fresh",
+              },
+            };
+          },
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    },
+    storageImpl: {
+      getItem(key) {
+        return storage.get(key) ?? null;
+      },
+      setItem(key, value) {
+        storage.set(key, value);
+      },
+      removeItem(key) {
+        storage.delete(key);
+      },
+    },
+    setTimeoutImpl: timers.setTimeoutImpl,
+    clearTimeoutImpl: timers.clearTimeoutImpl,
+  });
+
+  await app.ready;
+
+  fakeDocument.elements.get("#create-project-name-input").value = "Fresh Runtime Project";
+  fakeDocument.elements.get("#create-project-vision-input").value = "Replace stale browser app users before onboarding";
+
+  await fakeDocument.elements.get("#create-project-button").listeners.click();
+
+  const signupRequest = requests.find((request) => request.url === "/api/auth/signup");
+  const draftRequest = requests.find((request) => request.url === "/api/project-drafts");
+  const sessionRequest = requests.find((request) => request.url === "/api/onboarding/sessions");
+
+  assert.equal(Boolean(signupRequest), true);
+  assert.equal(draftRequest?.headers?.["x-user-id"], "fresh-user");
+  assert.equal(JSON.parse(sessionRequest?.body ?? "{}").userId, "fresh-user");
+  assert.equal(JSON.parse(storage.get("nexus.appUser")).userId, "fresh-user");
 });
 
 test("cockpit keeps the app user available even when storage writes fail", async () => {

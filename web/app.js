@@ -607,6 +607,9 @@ function renderProposalReview(elements, project) {
   const promptContractFailureTracker = normalizeObject(project.promptContractFailureTracker ?? state.promptContractFailureTracker);
   const aiGenerationReviewDashboard = normalizeObject(project.aiGenerationReviewDashboard ?? state.aiGenerationReviewDashboard);
   const generatedSurfaceProofSchema = normalizeObject(project.generatedSurfaceProofSchema ?? state.generatedSurfaceProofSchema);
+  const generatedAccessibilityValidationEngine = normalizeObject(
+    project.generatedAccessibilityValidationEngine ?? state.generatedAccessibilityValidationEngine,
+  );
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -814,6 +817,22 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const generatedAccessibilityItems = generatedAccessibilityValidationEngine.validationEngineId
+    ? [
+        {
+          title: `accessibility ${generatedAccessibilityValidationEngine.summary?.accessibilityStatus ?? "unknown"} | failed ${generatedAccessibilityValidationEngine.summary?.failedCheckCount ?? 0}`,
+          body: `warnings ${generatedAccessibilityValidationEngine.summary?.warningCheckCount ?? 0} | proof ${generatedAccessibilityValidationEngine.summary?.proofStatus ?? "unknown"}`,
+        },
+        {
+          title: "Regions / CTA labels",
+          body: `regions ${generatedAccessibilityValidationEngine.evidence?.labeledRegionCount ?? 0}/${generatedAccessibilityValidationEngine.evidence?.regionCount ?? 0} | ctas ${generatedAccessibilityValidationEngine.evidence?.labeledCtaCount ?? 0}/${generatedAccessibilityValidationEngine.evidence?.visibleCtaCount ?? 0}`,
+        },
+        {
+          title: "Readable baseline",
+          body: `font ${generatedAccessibilityValidationEngine.evidence?.baseFontSize ?? 0}px | previewable ${generatedAccessibilityValidationEngine.evidence?.previewable ? "yes" : "no"}`,
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -850,6 +869,7 @@ function renderProposalReview(elements, project) {
       ${stackHtml("Prompt contract failures", promptContractFailureItems, "עדיין אין מעקב קנוני לכשלי prompt contract.")}
       ${stackHtml("AI generation review dashboard", aiGenerationDashboardItems, "עדיין אין dashboard קנוני ל־AI generation review.")}
       ${stackHtml("Generated surface proof", generatedSurfaceProofItems, "עדיין אין proof קנוני ל־generated surface.")}
+      ${stackHtml("Generated accessibility validation", generatedAccessibilityItems, "עדיין אין accessibility validation קנוני ל־generated surface.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}
@@ -2985,7 +3005,20 @@ export function createCockpitApp({
   async function ensureAppUser() {
     const stored = readStoredAppUser();
     if (stored?.email) {
-      return stored;
+      if (!stored.userId) {
+        clearStoredAppUser();
+      } else {
+        try {
+          await fetchJson("/api/projects");
+          return stored;
+        } catch (error) {
+          if (error?.message === "Request failed: 401" || error?.message === "Request failed: 403") {
+            clearStoredAppUser();
+          } else {
+            throw error;
+          }
+        }
+      }
     }
 
     const email = `local-operator-${Date.now()}@nexus.local`;
