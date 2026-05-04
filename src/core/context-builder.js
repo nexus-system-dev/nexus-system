@@ -4240,7 +4240,7 @@ export function buildProjectContext(
     renderableScreenModel,
     screenComponentMapping,
   });
-  const { designProposalValidation } = createDesignProposalValidationFlow({
+  const { designProposalValidation: baseDesignProposalValidation } = createDesignProposalValidationFlow({
     renderableDesignProposal,
     screenTemplateSchema,
     screenValidationChecklist: renderableScreenModel,
@@ -4248,7 +4248,7 @@ export function buildProjectContext(
   });
   const { designProposalPreviewState } = createDesignProposalPreviewPipeline({
     renderableDesignProposal,
-    designProposalValidation,
+    designProposalValidation: baseDesignProposalValidation,
     designTokens,
     layoutSystem,
     colorRules,
@@ -4256,6 +4256,41 @@ export function buildProjectContext(
   const { screenProposalDiff } = createScreenProposalDiffModel({
     renderableScreenComposition,
     designProposalPreviewState,
+  });
+  const { generatedSurfaceProofSchema } = defineGeneratedSurfaceProofSchema({
+    renderableDesignProposal,
+    designProposalValidation: baseDesignProposalValidation,
+    designProposalPreviewState,
+    previewScreenViewModel,
+    aiControlCenterSurface,
+  });
+  const { generatedAccessibilityValidationEngine } = createGeneratedAccessibilityValidationEngine({
+    renderableDesignProposal,
+    previewScreenViewModel,
+    generatedSurfaceProofSchema,
+  });
+  const { generatedSurfacePerformanceBudgetValidator } = createGeneratedSurfacePerformanceBudgetValidator({
+    renderableDesignProposal,
+    previewScreenViewModel,
+    generatedSurfaceProofSchema,
+    generatedAccessibilityValidationEngine,
+  });
+  const { generatedBrandConsistencyValidator } = createGeneratedBrandConsistencyValidator({
+    designTokens,
+    colorRules,
+    typographySystem,
+    renderableDesignProposal,
+    previewScreenViewModel,
+    generatedSurfaceProofSchema,
+  });
+  const { designProposalValidation } = createDesignProposalValidationFlow({
+    renderableDesignProposal,
+    screenTemplateSchema,
+    screenValidationChecklist: renderableScreenModel,
+    screenContract: renderableScreenModel,
+    generatedAccessibilityValidationEngine,
+    generatedSurfacePerformanceBudgetValidator,
+    generatedBrandConsistencyValidator,
   });
   const { designProposalReviewState } = createDesignProposalReviewHandoff({
     renderableDesignProposal,
@@ -4311,32 +4346,6 @@ export function buildProjectContext(
     providerLatencyFailureTracker,
     generationSuccessAcceptanceTracker,
     promptContractFailureTracker,
-  });
-  const { generatedSurfaceProofSchema } = defineGeneratedSurfaceProofSchema({
-    renderableDesignProposal,
-    designProposalValidation,
-    designProposalPreviewState,
-    previewScreenViewModel,
-    aiControlCenterSurface,
-  });
-  const { generatedAccessibilityValidationEngine } = createGeneratedAccessibilityValidationEngine({
-    renderableDesignProposal,
-    previewScreenViewModel,
-    generatedSurfaceProofSchema,
-  });
-  const { generatedSurfacePerformanceBudgetValidator } = createGeneratedSurfacePerformanceBudgetValidator({
-    renderableDesignProposal,
-    previewScreenViewModel,
-    generatedSurfaceProofSchema,
-    generatedAccessibilityValidationEngine,
-  });
-  const { generatedBrandConsistencyValidator } = createGeneratedBrandConsistencyValidator({
-    designTokens,
-    colorRules,
-    typographySystem,
-    renderableDesignProposal,
-    previewScreenViewModel,
-    generatedSurfaceProofSchema,
   });
   const { dailyWorkspaceSurface } = createDailyWorkspaceSurfaceModel({
     authenticatedAppShell,

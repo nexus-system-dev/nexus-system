@@ -11,10 +11,16 @@ export function createDesignProposalValidationFlow({
   screenTemplateSchema = null,
   screenValidationChecklist = null,
   screenContract = null,
+  generatedAccessibilityValidationEngine = null,
+  generatedSurfacePerformanceBudgetValidator = null,
+  generatedBrandConsistencyValidator = null,
 } = {}) {
   const normalizedProposal = normalizeObject(renderableDesignProposal);
   const normalizedContract = normalizeObject(screenContract);
   const normalizedChecklist = normalizeObject(screenValidationChecklist);
+  const normalizedAccessibility = normalizeObject(generatedAccessibilityValidationEngine);
+  const normalizedPerformance = normalizeObject(generatedSurfacePerformanceBudgetValidator);
+  const normalizedBrand = normalizeObject(generatedBrandConsistencyValidator);
   const proposalRegions = normalizeArray(normalizedProposal.regions);
   const allowedRegionCount = normalizeArray(normalizedContract.regions).length;
   const issues = [];
@@ -28,6 +34,15 @@ export function createDesignProposalValidationFlow({
   if (allowedRegionCount > 0 && proposalRegions.length > allowedRegionCount) {
     issues.push("region-overflow");
   }
+  if (normalizedAccessibility.validationEngineId && normalizedAccessibility.status !== "ready") {
+    issues.push("accessibility-failed");
+  }
+  if (normalizedPerformance.performanceBudgetValidatorId && normalizedPerformance.status !== "ready") {
+    issues.push("performance-budget-failed");
+  }
+  if (normalizedBrand.brandConsistencyValidatorId && normalizedBrand.status !== "ready") {
+    issues.push("brand-consistency-failed");
+  }
 
   return {
     designProposalValidation: {
@@ -40,6 +55,9 @@ export function createDesignProposalValidationFlow({
         regionCount: proposalRegions.length,
         checklistSignalCount: Object.keys(normalizedChecklist.signals ?? {}).length,
         hasTemplateSchema: Boolean(normalizeObject(screenTemplateSchema).templateId),
+        accessibilityStatus: normalizedAccessibility.status ?? "not-required",
+        performanceStatus: normalizedPerformance.status ?? "not-required",
+        brandStatus: normalizedBrand.status ?? "not-required",
       },
     },
   };
