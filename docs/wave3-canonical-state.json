@@ -1478,8 +1478,8 @@
       "execution_order": "091",
       "taskName": "Create screen proposal diff model",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create design proposal preview pipeline.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
