@@ -613,6 +613,9 @@ function renderProposalReview(elements, project) {
   const generatedSurfacePerformanceBudgetValidator = normalizeObject(
     project.generatedSurfacePerformanceBudgetValidator ?? state.generatedSurfacePerformanceBudgetValidator,
   );
+  const generatedBrandConsistencyValidator = normalizeObject(
+    project.generatedBrandConsistencyValidator ?? state.generatedBrandConsistencyValidator,
+  );
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -852,6 +855,22 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const generatedBrandConsistencyItems = generatedBrandConsistencyValidator.brandConsistencyValidatorId
+    ? [
+        {
+          title: `brand ${generatedBrandConsistencyValidator.summary?.brandStatus ?? "unknown"} | failed ${generatedBrandConsistencyValidator.summary?.failedCheckCount ?? 0}`,
+          body: `warnings ${generatedBrandConsistencyValidator.summary?.warningCheckCount ?? 0} | proof ${generatedBrandConsistencyValidator.summary?.proofStatus ?? "unknown"}`,
+        },
+        {
+          title: "Typography / accent",
+          body: `font ${generatedBrandConsistencyValidator.evidence?.previewFontFamily ?? "unknown"} | accent ${generatedBrandConsistencyValidator.evidence?.previewPrimaryColor ?? "unknown"}`,
+        },
+        {
+          title: "Coverage / copy",
+          body: `regions ${generatedBrandConsistencyValidator.evidence?.accentMatchedRegions ?? 0}/${generatedBrandConsistencyValidator.evidence?.previewRegionCount ?? 0} | copy ${generatedBrandConsistencyValidator.evidence?.proposalCopyCount ?? 0}`,
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -890,6 +909,7 @@ function renderProposalReview(elements, project) {
       ${stackHtml("Generated surface proof", generatedSurfaceProofItems, "עדיין אין proof קנוני ל־generated surface.")}
       ${stackHtml("Generated accessibility validation", generatedAccessibilityItems, "עדיין אין accessibility validation קנוני ל־generated surface.")}
       ${stackHtml("Generated surface performance budget", generatedPerformanceBudgetItems, "עדיין אין performance budget קנוני ל־generated surface.")}
+      ${stackHtml("Generated brand consistency", generatedBrandConsistencyItems, "עדיין אין brand consistency קנוני ל־generated surface.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}

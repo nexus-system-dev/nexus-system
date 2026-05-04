@@ -249,6 +249,7 @@ import { createAiGenerationReviewDashboardModel } from "./ai-generation-review-d
 import { defineGeneratedSurfaceProofSchema } from "./generated-surface-proof-schema.js";
 import { createGeneratedAccessibilityValidationEngine } from "./generated-accessibility-validation-engine.js";
 import { createGeneratedSurfacePerformanceBudgetValidator } from "./generated-surface-performance-budget-validator.js";
+import { createGeneratedBrandConsistencyValidator } from "./generated-brand-consistency-validator.js";
 import { createRenderableDesignProposalNormalizer } from "./renderable-design-proposal-normalizer.js";
 import { createDesignProposalValidationFlow } from "./design-proposal-validation-flow.js";
 import { createDesignProposalPreviewPipeline } from "./design-proposal-preview-pipeline.js";
@@ -4329,6 +4330,14 @@ export function buildProjectContext(
     generatedSurfaceProofSchema,
     generatedAccessibilityValidationEngine,
   });
+  const { generatedBrandConsistencyValidator } = createGeneratedBrandConsistencyValidator({
+    designTokens,
+    colorRules,
+    typographySystem,
+    renderableDesignProposal,
+    previewScreenViewModel,
+    generatedSurfaceProofSchema,
+  });
   const { dailyWorkspaceSurface } = createDailyWorkspaceSurfaceModel({
     authenticatedAppShell,
     navigationRouteSurface,
@@ -5404,6 +5413,7 @@ export function buildProjectContext(
   context.generatedSurfaceProofSchema = generatedSurfaceProofSchema;
   context.generatedAccessibilityValidationEngine = generatedAccessibilityValidationEngine;
   context.generatedSurfacePerformanceBudgetValidator = generatedSurfacePerformanceBudgetValidator;
+  context.generatedBrandConsistencyValidator = generatedBrandConsistencyValidator;
   context.renderableScreenModel = renderableScreenModel;
   context.screenComponentMapping = screenComponentMapping;
   context.activeScreenVariantPlan = activeScreenVariantPlan;
