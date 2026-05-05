@@ -1,0 +1,243 @@
+{
+  "blockName": "Nexus Loop Productization",
+  "blockVersion": 1,
+  "status": "planned-not-started",
+  "canonicalLedgerType": "dedicated-productization-block",
+  "createdFrom": {
+    "sourceOrchestrator": "docs/operating-system/wave3-permanent-orchestrator-v1.md",
+    "wave3StopPoint": {
+      "completedThroughExecutionOrder": "095",
+      "nextFrozenWave3Task": "096"
+    }
+  },
+  "hardConstraints": {
+    "doNotContinueWave3Tasks": [
+      "096",
+      "097",
+      "098",
+      "099",
+      "100",
+      "101",
+      "102",
+      "103"
+    ],
+    "doNotStartWave4": true,
+    "useExistingBackendSystemsOnly": true,
+    "doNotAddNewBackendCapabilities": true,
+    "uiFirstProductizationOnly": true,
+    "noDashboardFragmentation": true
+  },
+  "mission": "Turn Nexus into a single working loop UI using existing backend systems only.",
+  "targetLoop": [
+    "Project creation",
+    "File upload / intake",
+    "Intelligent onboarding agent",
+    "Deep project understanding",
+    "Task breakdown",
+    "Next task with clear explanation",
+    "Execute button",
+    "Visible live execution",
+    "Visible product/UI change",
+    "User confirmation",
+    "State update",
+    "Next task",
+    "Repeat"
+  ],
+  "doneCriteria": {
+    "loopIsDoneOnlyIfVisibleInLiveUi": true,
+    "requiredFlow": [
+      "User creates a project",
+      "User completes intake or onboarding inputs",
+      "System shows a clear understanding summary",
+      "System shows a real task list",
+      "System shows one clearly selected next task",
+      "System explains why this is the next task",
+      "User sees one explicit execute button",
+      "Execution progress is visible in one focused place",
+      "A resulting product/UI change is shown in one focused place",
+      "User can confirm or reject the result",
+      "State updates visibly after the decision",
+      "A newly promoted next task appears",
+      "The loop can repeat again from the updated state"
+    ],
+    "failureConditions": [
+      "Any step is not visible in the live UI",
+      "Any step is visible but not actionable",
+      "Any step is actionable but disconnected from the next step",
+      "Any visible task lacks guided visual proof and explicit user confirmation"
+    ]
+  },
+  "visualProofRequiredSurfaces": [
+    "Project creation handoff",
+    "Intake/upload handoff",
+    "Onboarding completion handoff",
+    "Understanding summary card",
+    "Task queue panel",
+    "Next-task explanation card",
+    "Execute-next-task action surface",
+    "Live execution console",
+    "Task-to-result proof panel",
+    "Visible product/UI change evidence viewer",
+    "User confirmation action surface",
+    "Post-confirmation state update presenter",
+    "Next-task promotion surface"
+  ],
+  "existingBackendCapabilitiesToExpose": [
+    "Project creation state",
+    "Onboarding question flow",
+    "Onboarding completion evaluator",
+    "Uploaded intake to scanner handoff",
+    "Repository import and codebase diagnosis",
+    "Live website diagnosis",
+    "Imported analytics normalization",
+    "Imported asset task extraction",
+    "Import-and-continue roadmap assembler",
+    "Next-task selection resolver",
+    "Next-task presentation model",
+    "Cockpit recommendation surface",
+    "Guided task execution surface",
+    "Task step flow progress binder",
+    "Task approval handoff panel",
+    "External execution dispatch/session/result chain",
+    "Canonical execution result envelope",
+    "Deployment result envelope",
+    "Release readiness evaluator",
+    "AI design request / proposal / preview chain",
+    "Design proposal validation / review / apply / integration chain",
+    "Generated surface proof / accessibility / performance / brand validation",
+    "Generated asset provenance",
+    "Return-tomorrow continuity"
+  ],
+  "currentUiPolicy": {
+    "replaceAsPrimaryExperience": [
+      "Dashboard-style top-shell as the main user journey",
+      "Fragmented proposal-review-first flow as the main product path"
+    ],
+    "mergeIntoSingleLoop": [
+      "Developer Workspace runtime activity",
+      "Developer Workspace execution flow",
+      "Project Brain missing/existing/learning/companion panels",
+      "Release Workspace proposal review",
+      "Release Workspace generated proof surfaces",
+      "Workspace overview status/action cards"
+    ],
+    "hideOrDeprioritizeFromPrimaryFlow": [
+      "Continuity and rollback controls",
+      "Project audit",
+      "Access and isolation",
+      "Growth workspace",
+      "Secondary dashboards not required for the active loop"
+    ]
+  },
+  "canonicalTaskList": [
+    {
+      "execution_order": "NLP-001",
+      "taskName": "Create Nexus Loop shell and route",
+      "state": "blocked",
+      "blocker": "Execution has not started yet. Canonical block definition was just created.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-002",
+      "taskName": "Create project creation to loop handoff",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-001.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-003",
+      "taskName": "Create intake/upload to loop handoff",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-002.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-004",
+      "taskName": "Create intelligent onboarding loop surface",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisites: NLP-001 and NLP-002.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-005",
+      "taskName": "Create deep understanding summary card",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisites: NLP-003 and NLP-004.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-006",
+      "taskName": "Create task breakdown and queue panel",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-005.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-007",
+      "taskName": "Create next-task explanation card",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-006.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-008",
+      "taskName": "Create execute-next-task action surface",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-007.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-009",
+      "taskName": "Create live execution console surface",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-008.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-010",
+      "taskName": "Create task-to-visible-change proof panel",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisites: NLP-008 and NLP-009.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-011",
+      "taskName": "Create user confirmation action surface",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-010.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-012",
+      "taskName": "Create post-confirmation state update presenter",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-011.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-013",
+      "taskName": "Create next-task promotion binder in UI",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-012.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-014",
+      "taskName": "Create repeat-loop timeline strip",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisite: NLP-013.",
+      "visualImpacting": true
+    },
+    {
+      "execution_order": "NLP-015",
+      "taskName": "Create end-to-end loop acceptance and visual proof coverage",
+      "state": "blocked",
+      "blocker": "Blocked on unfinished productization prerequisites: NLP-001 through NLP-014.",
+      "visualImpacting": true
+    }
+  ],
+  "lowestTruthfulExecutableTask": {
+    "execution_order": "NLP-001",
+    "taskName": "Create Nexus Loop shell and route"
+  }
+}
