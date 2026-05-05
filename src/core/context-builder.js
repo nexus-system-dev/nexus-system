@@ -255,6 +255,7 @@ import { createDesignProposalValidationFlow } from "./design-proposal-validation
 import { createDesignProposalPreviewPipeline } from "./design-proposal-preview-pipeline.js";
 import { createScreenProposalDiffModel } from "./screen-proposal-diff-model.js";
 import { createDesignProposalReviewHandoff } from "./design-proposal-review-handoff.js";
+import { createGeneratedAssetProvenanceRecord } from "./generated-asset-provenance-record.js";
 import { createDesignProposalEditApplyBinder } from "./design-proposal-edit-apply-binder.js";
 import { createDesignProposalStateIntegration } from "./design-proposal-state-integration.js";
 import { createOnboardingProgressModel } from "./onboarding-progress-model.js";
@@ -4297,6 +4298,11 @@ export function buildProjectContext(
     designProposalValidation,
     screenProposalDiff,
   });
+  const { generatedAssetProvenanceRecord } = createGeneratedAssetProvenanceRecord({
+    aiDesignServiceResult,
+    renderableDesignProposal,
+    designProposalReviewState,
+  });
   const { approvedScreenDelta, proposalApplyDecision } = createDesignProposalEditApplyBinder({
     designProposalReviewState,
     editableProposal,
@@ -5433,6 +5439,7 @@ export function buildProjectContext(
   context.designProposalPreviewState = designProposalPreviewState;
   context.screenProposalDiff = screenProposalDiff;
   context.designProposalReviewState = designProposalReviewState;
+  context.generatedAssetProvenanceRecord = generatedAssetProvenanceRecord;
   context.approvedScreenDelta = approvedScreenDelta;
   context.proposalApplyDecision = proposalApplyDecision;
   context.acceptedScreenState = acceptedScreenState;

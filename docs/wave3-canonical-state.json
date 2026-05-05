@@ -1494,24 +1494,24 @@
       "execution_order": "093",
       "taskName": "Create generated asset provenance record",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create AI design service and Create design proposal review handoff.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
       "execution_order": "094",
       "taskName": "Create design proposal edit/apply binder",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisite: Create design proposal review handoff.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {
       "execution_order": "095",
       "taskName": "Create design proposal state integration",
       "lane": "Owner Creative Control Plane & Generated Surface Proof",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished Wave 3 prerequisites: Create design proposal edit/apply binder and Create generated asset provenance record.",
+      "state": "trueGreen",
+      "blocker": null,
       "bridgeCondition": null
     },
     {

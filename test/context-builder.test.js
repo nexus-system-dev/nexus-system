@@ -809,6 +809,7 @@ test("context builder merges scan and external diagnostics into canonical contex
   assert.equal(typeof context.designProposalPreviewState?.previewStateId, "string");
   assert.equal(typeof context.screenProposalDiff?.diffId, "string");
   assert.equal(typeof context.designProposalReviewState?.reviewStateId, "string");
+  assert.equal(typeof context.generatedAssetProvenanceRecord?.provenanceRecordId, "string");
   assert.equal(typeof context.approvedScreenDelta?.deltaId, "string");
   assert.equal(typeof context.proposalApplyDecision?.decisionId, "string");
   assert.equal(typeof context.acceptedScreenState?.acceptedScreenStateId, "string");

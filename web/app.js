@@ -618,6 +618,9 @@ function renderProposalReview(elements, project) {
   );
   const designProposalValidation = normalizeObject(project.designProposalValidation ?? state.designProposalValidation);
   const designProposalReviewState = normalizeObject(project.designProposalReviewState ?? state.designProposalReviewState);
+  const generatedAssetProvenanceRecord = normalizeObject(
+    project.generatedAssetProvenanceRecord ?? state.generatedAssetProvenanceRecord,
+  );
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
   const editableProposal = normalizeObject(project.editableProposal ?? state.editableProposal);
   const editedProposal = normalizeObject(project.editedProposal ?? state.editedProposal);
@@ -871,6 +874,24 @@ function renderProposalReview(elements, project) {
         },
       ]
     : [];
+  const generatedAssetProvenanceItems = generatedAssetProvenanceRecord.provenanceRecordId
+    ? [
+        {
+          title: `lineage ${generatedAssetProvenanceRecord.status ?? "unknown"} | assets ${generatedAssetProvenanceRecord.summary?.assetCount ?? 0}`,
+          body: `review ${generatedAssetProvenanceRecord.summary?.reviewStatus ?? "unknown"} | provider ${generatedAssetProvenanceRecord.summary?.providerId ?? "unknown"}`,
+        },
+        {
+          title: "Selected task",
+          body: generatedAssetProvenanceRecord.evidence?.selectedTaskSummary ?? "No selected task summary is linked.",
+        },
+        {
+          title: "Region lineage",
+          body:
+            normalizeArray(generatedAssetProvenanceRecord.evidence?.regionSlots).join(" | ")
+            || "No generated region lineage is recorded.",
+        },
+      ]
+    : [];
 
   if (elements.proposalSectionTitleInput) {
     elements.proposalSectionTitleInput.value = firstSection.label ?? firstSection.title ?? "";
@@ -910,6 +931,7 @@ function renderProposalReview(elements, project) {
       ${stackHtml("Generated accessibility validation", generatedAccessibilityItems, "עדיין אין accessibility validation קנוני ל־generated surface.")}
       ${stackHtml("Generated surface performance budget", generatedPerformanceBudgetItems, "עדיין אין performance budget קנוני ל־generated surface.")}
       ${stackHtml("Generated brand consistency", generatedBrandConsistencyItems, "עדיין אין brand consistency קנוני ל־generated surface.")}
+      ${stackHtml("Generated asset provenance", generatedAssetProvenanceItems, "עדיין אין provenance קנוני ל־generated assets.")}
       ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}
