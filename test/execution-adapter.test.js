@@ -100,6 +100,25 @@ test("execution adapter keeps internal-tool continuity alive when no roadmap tas
           packagingPath: "workspace-preview -> workspace-package",
         },
       },
+      classAwarePackagingPreviewContract: {
+        previewFamily: "workspace-preview",
+        previewMode: "workspace-preview",
+        previewSurface: "private-ops-workspace-preview",
+        previewArtifact: "queue-and-ownership-workspace",
+        packageMode: "private-workspace-package",
+        packagingFamily: "workspace-package",
+        packageArtifactType: "authenticated-web-workspace-bundle",
+        preferredReleaseTarget: "private-deployment",
+        shellPath: "browser-backed-local-workspace",
+        packagingExpectation: "private workspace package stays aligned to authenticated team usage",
+        visiblePreviewRule: "preview must feel like a working internal workspace with queue, ownership, and next action",
+        visiblePackagingRule: "packaging must stay visible as a private workspace release rather than public web export",
+        continuityRule: "preview/package mode must persist as project-facing class truth across reopen and return",
+        summary: {
+          previewPath: "workspace-preview -> workspace-preview",
+          packagePath: "workspace-package -> private-deployment",
+        },
+      },
       buildProgressionStateMachine: {
         summary: {
           currentLabel: "השלד נראה על המסך",
@@ -168,6 +187,9 @@ test("execution adapter keeps internal-tool continuity alive when no roadmap tas
   assert.equal(viewModel.desktopShellScopeContract.currentWave4Path, "browser-backed-local-workspace");
   assert.equal(viewModel.classAwareRuntimeResolver.runtimeFamily, "web-app-runtime");
   assert.equal(viewModel.classAwareRuntimeResolver.projectFacingPath, "web-app-runtime -> private-workspace-release");
+  assert.equal(viewModel.classAwarePackagingPreviewContract.previewMode, "workspace-preview");
+  assert.equal(viewModel.classAwarePackagingPreviewContract.packageArtifactType, "authenticated-web-workspace-bundle");
+  assert.equal(viewModel.classAwarePackagingPreviewContract.packagePath, "workspace-package -> private-deployment");
 });
 
 test("execution adapter hides runtime shell leak during repeated-loop continuation", () => {

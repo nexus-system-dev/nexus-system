@@ -99,6 +99,15 @@ function resolveClassAwareRuntimeResolver(project = null) {
   );
 }
 
+function resolveClassAwarePackagingPreviewContract(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.classAwarePackagingPreviewContract
+      ?? safeProject.context?.classAwarePackagingPreviewContract
+      ?? safeProject.state?.classAwarePackagingPreviewContract,
+  );
+}
+
 function resolveLoopTaskSignal(project) {
   const approvals = normalizeArray(project.approvals);
   const roadmap = normalizeArray(project.cycle?.roadmap);
@@ -222,6 +231,7 @@ export function buildExecutionLiveViewModel({ project = null, qaMode = false } =
   const localWorkspaceContract = resolveLocalWorkspaceContract(safeProject);
   const desktopShellScopeContract = resolveDesktopShellScopeContract(safeProject);
   const classAwareRuntimeResolver = resolveClassAwareRuntimeResolver(safeProject);
+  const classAwarePackagingPreviewContract = resolveClassAwarePackagingPreviewContract(safeProject);
   const repeatedLoopContinuation = resolveRepeatedLoopContinuation(safeProject);
   const splitWorkspaceLiveBuildSurfaceModel = resolveSplitWorkspaceLiveBuildSurfaceModel(safeProject);
   const buildProgressionStateMachine = resolveBuildProgressionStateMachine(safeProject);
@@ -393,6 +403,24 @@ export function buildExecutionLiveViewModel({ project = null, qaMode = false } =
       visibleRuntimeRule: escapeText(classAwareRuntimeResolver.visibleRuntimeRule, "runtime path must stay visible before execution advances"),
       projectFacingPath: escapeText(classAwareRuntimeResolver.summary?.projectFacingPath, "generic-runtime -> private-deployment"),
       packagingPath: escapeText(classAwareRuntimeResolver.summary?.packagingPath, "generic-preview -> generic-package"),
+    },
+    classAwarePackagingPreviewContract: {
+      previewFamily: escapeText(classAwarePackagingPreviewContract.previewFamily, "generic-preview"),
+      previewMode: escapeText(classAwarePackagingPreviewContract.previewMode, "generic-preview"),
+      previewSurface: escapeText(classAwarePackagingPreviewContract.previewSurface, "generic-preview-surface"),
+      previewArtifact: escapeText(classAwarePackagingPreviewContract.previewArtifact, "generic-surface-preview"),
+      packageMode: escapeText(classAwarePackagingPreviewContract.packageMode, "generic-package"),
+      packagingFamily: escapeText(classAwarePackagingPreviewContract.packagingFamily, "generic-package"),
+      packageArtifactType: escapeText(classAwarePackagingPreviewContract.packageArtifactType, "generic-delivery-bundle"),
+      preferredReleaseTarget: escapeText(classAwarePackagingPreviewContract.preferredReleaseTarget, "private-deployment"),
+      shellPath: escapeText(classAwarePackagingPreviewContract.shellPath, "browser-backed-local-workspace"),
+      mobileArchivePath: escapeText(classAwarePackagingPreviewContract.mobileArchivePath),
+      packagingExpectation: escapeText(classAwarePackagingPreviewContract.packagingExpectation, "preview/package mode remains explicit per class"),
+      visiblePreviewRule: escapeText(classAwarePackagingPreviewContract.visiblePreviewRule, "preview must stay explicit before execution advances"),
+      visiblePackagingRule: escapeText(classAwarePackagingPreviewContract.visiblePackagingRule, "packaging must stay explicit before release claims advance"),
+      continuityRule: escapeText(classAwarePackagingPreviewContract.continuityRule, "preview/package mode must persist across reopen"),
+      previewPath: escapeText(classAwarePackagingPreviewContract.summary?.previewPath, "generic-preview -> generic-preview"),
+      packagePath: escapeText(classAwarePackagingPreviewContract.summary?.packagePath, "generic-package -> private-deployment"),
     },
     progressPercent: reactiveWorkspaceState.progressBar?.percent ?? progressState.percent ?? 0,
     stats: [

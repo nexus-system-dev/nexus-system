@@ -256,6 +256,49 @@ export function renderExecutionLiveScreen(viewModel) {
                   <span>${escapeHtml(viewModel.classAwareRuntimeResolver.preferredReleaseTarget)}</span>
                 </div>
               </div>
+              <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--package-preview">
+                <div class="nexus-execution-screen__workspace-contract-head">
+                  <strong>Packaging / preview contract</strong>
+                  <span>${escapeHtml(viewModel.classAwarePackagingPreviewContract.previewMode)}</span>
+                </div>
+                <p>${escapeHtml(viewModel.classAwarePackagingPreviewContract.packagingExpectation)}</p>
+                <div class="nexus-execution-screen__workspace-contract-grid">
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Preview path</span>
+                    <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.previewPath)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Package path</span>
+                    <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.packagePath)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Package artifact</span>
+                    <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.packageArtifactType)}</strong>
+                  </div>
+                </div>
+                <div class="nexus-execution-screen__workspace-contract-grid">
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Preview surface</span>
+                    <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.previewSurface)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Preview artifact</span>
+                    <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.previewArtifact)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Shell path</span>
+                    <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.shellPath)}</strong>
+                  </div>
+                </div>
+                <div class="nexus-execution-screen__workspace-contract-milestones">
+                  <span>${escapeHtml(viewModel.classAwarePackagingPreviewContract.visiblePreviewRule)}</span>
+                  <span>${escapeHtml(viewModel.classAwarePackagingPreviewContract.visiblePackagingRule)}</span>
+                  <span>${escapeHtml(viewModel.classAwarePackagingPreviewContract.continuityRule)}</span>
+                  ${viewModel.classAwarePackagingPreviewContract.mobileArchivePath
+                    ? `<span>${escapeHtml(viewModel.classAwarePackagingPreviewContract.mobileArchivePath)}</span>`
+                    : ""}
+                </div>
+              </div>
               <div id="execution-live-list" class="nexus-execution-live-list">
                 ${viewModel.liveItems.map((item) => `<div>${escapeHtml(item)}</div>`).join("")}
                 <div class="execution-route-spinner" aria-hidden="true"></div>

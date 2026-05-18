@@ -48,6 +48,7 @@ import { createClassSpecificSurfaceEvolutionRules } from "./class-specific-surfa
 import { createLocalWorkspaceContract } from "./local-workspace-contract.js";
 import { createDesktopShellScopeContract } from "./desktop-shell-scope-contract.js";
 import { createClassAwareRuntimeResolver } from "./class-aware-runtime-resolver.js";
+import { createClassAwarePackagingPreviewContract } from "./class-aware-packaging-preview-contract.js";
 import { createRetentionMetricsAggregator } from "./retention-metrics-aggregator.js";
 import { createRetentionCurveAnalyzer } from "./retention-curve-analyzer.js";
 import { createDurableUserActivitySessionHistory } from "./user-activity-session-history-store.js";
@@ -4605,6 +4606,12 @@ export function buildProjectContext(
     desktopShellScopeContract,
     localWorkspaceContract,
   });
+  const { classAwarePackagingPreviewContract } = createClassAwarePackagingPreviewContract({
+    productClass,
+    classAwareRuntimeResolver,
+    remoteMacRunner,
+    desktopShellScopeContract,
+  });
   const { executionModeDecision } = createExecutionModeResolver({
     executionTopology,
     taskType: domainCapabilities.taskTypes?.[0] ?? "generic",
@@ -5431,6 +5438,7 @@ export function buildProjectContext(
   context.localWorkspaceContract = localWorkspaceContract;
   context.desktopShellScopeContract = desktopShellScopeContract;
   context.classAwareRuntimeResolver = classAwareRuntimeResolver;
+  context.classAwarePackagingPreviewContract = classAwarePackagingPreviewContract;
   context.projectPermissionSchema = projectPermissionSchema;
   context.roleCapabilityMatrix = roleCapabilityMatrix;
   context.projectAuthorizationDecision = projectAuthorizationDecision;

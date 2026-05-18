@@ -642,8 +642,17 @@ Tasks:
   - preview/package mode persists per project
 - trueGreen:
   - explicit package/preview contract exists
+  - one governing implementation model exists across context and execution surface
 - not trueGreen:
   - no class-aware preview logic
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-18`
+  - contract artifact: `docs/operating-system/wave4-packaging-preview-contract.md`
+  - governing implementation anchors:
+    - `src/core/class-aware-packaging-preview-contract.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/execution-adapter.js`
+    - `web/nexus-ui/screens/ExecutionLiveScreen.js`
 
 ### Lane 7 — Releaseable Output
 

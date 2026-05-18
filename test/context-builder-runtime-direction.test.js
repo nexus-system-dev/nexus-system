@@ -51,4 +51,7 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.classAwareRuntimeResolver.runtimeFamily, "web-static");
   assert.equal(context.classAwareRuntimeResolver.releasePathFamily, "web-deployment");
   assert.equal(context.classAwareRuntimeResolver.summary.projectFacingPath, "web-static -> web-deployment");
+  assert.equal(context.classAwarePackagingPreviewContract.previewMode, "live-browser-preview");
+  assert.equal(context.classAwarePackagingPreviewContract.packageMode, "static-web-build");
+  assert.equal(context.classAwarePackagingPreviewContract.summary.packagePath, "web-build -> private-deployment");
 });

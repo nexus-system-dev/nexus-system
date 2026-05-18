@@ -604,6 +604,7 @@ Nexus חייבת להציג:
 - browser-backed local workspace continuity before Electron shell closure
 - explicit desktop shell scope before shell implementation
 - deterministic runtime family assignment per core class
+- deterministic packaging and preview contract per core class
 - runtime-aware product shaping
 - local workspace continuity
 - releaseable product loop

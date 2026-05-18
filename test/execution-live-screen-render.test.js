@@ -69,6 +69,23 @@ test("execution live screen renders workspace contract inside visible surface", 
       projectFacingPath: "web-app-runtime -> web-product-release",
       packagingPath: "product-workspace-preview -> saas-package",
     },
+    classAwarePackagingPreviewContract: {
+      previewFamily: "product-workspace-preview",
+      previewMode: "product-workspace-preview",
+      previewSurface: "customer-facing-product-preview",
+      previewArtifact: "product-workflow-preview",
+      packageMode: "saas-web-package",
+      packagingFamily: "saas-package",
+      packageArtifactType: "deployable-product-web-bundle",
+      preferredReleaseTarget: "web-deployment",
+      shellPath: "browser-backed-local-workspace",
+      packagingExpectation: "SaaS package stays aligned to product runtime, activation path, and web release",
+      visiblePreviewRule: "preview must feel like a product workflow users can move through, not a static artifact",
+      visiblePackagingRule: "packaging must stay visible as a product web bundle ready for releaseable runtime",
+      continuityRule: "preview/package mode must persist as project-facing class truth across reopen and return",
+      previewPath: "product-workspace-preview -> product-workspace-preview",
+      packagePath: "saas-package -> web-deployment",
+    },
     buildProgressionStateMachine: {
       currentLabel: "ה־surface מתפתח",
       currentRouteKey: "execution",
@@ -99,4 +116,8 @@ test("execution live screen renders workspace contract inside visible surface", 
   assert.match(html, /Runtime path/);
   assert.match(html, /web-app-runtime/);
   assert.match(html, /web-app-runtime -&gt; web-product-release|web-app-runtime -> web-product-release/);
+  assert.match(html, /Packaging \/ preview contract/);
+  assert.match(html, /deployable-product-web-bundle/);
+  assert.match(html, /saas-package -&gt; web-deployment|saas-package -> web-deployment/);
+  assert.match(html, /product-workspace-preview -&gt; product-workspace-preview|product-workspace-preview -> product-workspace-preview/);
 });
