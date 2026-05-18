@@ -200,6 +200,7 @@ import { createEmailNotificationDeliveryModule } from "./email-notification-deli
 import { createNotificationPreferenceSettings } from "./notification-preference-settings.js";
 import { createWebhookExternalNotificationAdapter } from "./webhook-external-notification-adapter.js";
 import { createReleasePlanGenerator } from "./release-plan-generator.js";
+import { createReleaseableProductStateContract } from "./releaseable-product-state-contract.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -5132,6 +5133,15 @@ export function buildProjectContext(
     deploymentResultEnvelope,
     releaseWorkspace,
   });
+  const { releaseableProductStateContract } = createReleaseableProductStateContract({
+    productClass,
+    projectStage,
+    releasePlan,
+    classAwareRuntimeResolver,
+    classAwarePackagingPreviewContract,
+    launchConfirmationState,
+    releaseReadinessEvaluation,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5427,6 +5437,7 @@ export function buildProjectContext(
   context.productionHealthValidation = productionHealthValidation;
   context.launchConfirmationState = launchConfirmationState;
   context.releaseReadinessEvaluation = releaseReadinessEvaluation;
+  context.releaseableProductStateContract = releaseableProductStateContract;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;

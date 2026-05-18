@@ -119,6 +119,28 @@ test("execution adapter keeps internal-tool continuity alive when no roadmap tas
           packagePath: "workspace-package -> private-deployment",
         },
       },
+      releaseableProductStateContract: {
+        stateFamily: "releaseable-product-state",
+        status: "active",
+        readinessDecision: "needs-launch-confirmation",
+        releaseTarget: "private-deployment",
+        packageArtifactType: "authenticated-web-workspace-bundle",
+        packagePath: "workspace-package -> private-deployment",
+        previewPath: "workspace-preview -> workspace-preview",
+        packagingExpectation: "private workspace package stays aligned to authenticated team usage",
+        continuityRule: "releaseable state must survive reopen, route restore, and the next continuation loop",
+        visibleStateRule: "releaseable state is not proof text alone; it must reflect runtime, package, checks, and release target visibly",
+        visibleChecks: [
+          { checkId: "build-surface-visible", status: "passed", reason: "workspace remains visible" },
+          { checkId: "launch-confirmed", status: "pending", reason: "awaiting launch confirmation" },
+        ],
+        blockedReasons: ["launch confirmation missing"],
+        summary: {
+          label: "Release prep active",
+          nextAction: "launch-confirmation-required",
+          readinessScore: 80,
+        },
+      },
       buildProgressionStateMachine: {
         summary: {
           currentLabel: "השלד נראה על המסך",
@@ -190,6 +212,11 @@ test("execution adapter keeps internal-tool continuity alive when no roadmap tas
   assert.equal(viewModel.classAwarePackagingPreviewContract.previewMode, "workspace-preview");
   assert.equal(viewModel.classAwarePackagingPreviewContract.packageArtifactType, "authenticated-web-workspace-bundle");
   assert.equal(viewModel.classAwarePackagingPreviewContract.packagePath, "workspace-package -> private-deployment");
+  assert.equal(viewModel.releaseableProductStateContract.status, "active");
+  assert.equal(viewModel.releaseableProductStateContract.releaseTarget, "private-deployment");
+  assert.equal(viewModel.releaseableProductStateContract.packageArtifactType, "authenticated-web-workspace-bundle");
+  assert.equal(viewModel.releaseableProductStateContract.label, "Release prep active");
+  assert.equal(viewModel.releaseableProductStateContract.visibleChecks[1].checkId, "launch-confirmed");
 });
 
 test("execution adapter hides runtime shell leak during repeated-loop continuation", () => {

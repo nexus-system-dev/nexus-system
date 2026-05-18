@@ -86,6 +86,26 @@ test("execution live screen renders workspace contract inside visible surface", 
       previewPath: "product-workspace-preview -> product-workspace-preview",
       packagePath: "saas-package -> web-deployment",
     },
+    releaseableProductStateContract: {
+      status: "active",
+      stateFamily: "releaseable-product-state",
+      readinessDecision: "needs-release-handoff",
+      releaseTarget: "web-deployment",
+      packageArtifactType: "deployable-product-web-bundle",
+      packagePath: "saas-package -> web-deployment",
+      previewPath: "product-workspace-preview -> product-workspace-preview",
+      packagingExpectation: "SaaS package stays aligned to runtime, release path, and user-facing workflow continuity",
+      continuityRule: "releaseable state must survive reopen, route restore, and the next continuation loop",
+      visibleStateRule: "releaseable state is not proof text alone; it must reflect runtime, package, checks, and release target visibly",
+      blockedReasons: ["release handoff still missing"],
+      visibleChecks: [
+        { checkId: "build-surface-visible", status: "passed", reason: "surface remains visible" },
+        { checkId: "launch-confirmed", status: "pending", reason: "waiting for release handoff" },
+      ],
+      label: "Release prep active",
+      nextAction: "complete-release-handoff",
+      readinessScore: "84",
+    },
     buildProgressionStateMachine: {
       currentLabel: "ה־surface מתפתח",
       currentRouteKey: "execution",
@@ -120,4 +140,9 @@ test("execution live screen renders workspace contract inside visible surface", 
   assert.match(html, /deployable-product-web-bundle/);
   assert.match(html, /saas-package -&gt; web-deployment|saas-package -> web-deployment/);
   assert.match(html, /product-workspace-preview -&gt; product-workspace-preview|product-workspace-preview -> product-workspace-preview/);
+  assert.match(html, /Releaseable state/);
+  assert.match(html, /Release prep active/);
+  assert.match(html, /complete-release-handoff/);
+  assert.match(html, /launch-confirmed/);
+  assert.match(html, /84%/);
 });

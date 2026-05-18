@@ -121,6 +121,7 @@
     "canonicalDesktopShellScopeContractPath": "docs/operating-system/wave4-desktop-shell-scope-contract.md",
     "canonicalClassAwareRuntimeResolverPath": "docs/operating-system/wave4-class-aware-runtime-resolver.md",
     "canonicalPackagingPreviewContractPath": "docs/operating-system/wave4-packaging-preview-contract.md",
+    "canonicalReleaseableProductStateContractPath": "docs/operating-system/wave4-releaseable-product-state-contract.md",
     "canonicalExternalIntelligencePath": "docs/operating-system/wave4-external-product-intelligence-pass-2026-05-18.md",
     "planningMode": "minimum-believable-nexus-first",
     "nonNegotiableRequirements": [
@@ -166,8 +167,8 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "W4-MBN-013",
-      "title": "Define releaseable product state contract",
+      "taskId": "W4-MBN-014",
+      "title": "Define release evidence and handoff model",
       "source": "docs/operating-system/wave4-minimum-believable-core-planning-track.md",
       "status": "selected-not-started"
     },
@@ -346,6 +347,23 @@
           "web/nexus-ui/adapters/execution-adapter.js",
           "web/nexus-ui/screens/ExecutionLiveScreen.js",
           "test/class-aware-packaging-preview-contract.test.js",
+          "test/execution-adapter.test.js",
+          "test/execution-live-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-013",
+        "title": "Define releaseable product state contract",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-releaseable-product-state-contract.md",
+          "src/core/releaseable-product-state-contract.js",
+          "src/core/context-builder.js",
+          "web/nexus-ui/adapters/execution-adapter.js",
+          "web/nexus-ui/screens/ExecutionLiveScreen.js",
+          "test/releaseable-product-state-contract.test.js",
+          "test/context-builder-runtime-direction.test.js",
           "test/execution-adapter.test.js",
           "test/execution-live-screen-render.test.js"
         ]

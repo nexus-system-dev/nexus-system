@@ -1118,7 +1118,9 @@ function renderLive(elements, project) {
     })),
   ];
 
-  elements.live.innerHTML = listHtml(items, "כרגע אין פעילות מיוחדת.");
+  if (elements.live) {
+    elements.live.innerHTML = listHtml(items, "כרגע אין פעילות מיוחדת.");
+  }
 
   if (elements.executionMissionTitle) {
     elements.executionMissionTitle.textContent = executionViewModel.missionTitle;

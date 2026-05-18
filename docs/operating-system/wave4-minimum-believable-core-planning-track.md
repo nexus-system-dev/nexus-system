@@ -689,8 +689,17 @@ Tasks:
   - release state survives return
 - trueGreen:
   - explicit releaseable contract exists
+  - one governing implementation model exists across context and execution surface
 - not trueGreen:
   - release inferred from proof text only
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-18`
+  - contract artifact: `docs/operating-system/wave4-releaseable-product-state-contract.md`
+  - governing implementation anchors:
+    - `src/core/releaseable-product-state-contract.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/execution-adapter.js`
+    - `web/nexus-ui/screens/ExecutionLiveScreen.js`
 
 14. `W4-MBN-014 — Define release evidence and handoff model`
 - source of truth: Wave 4 end-state definition

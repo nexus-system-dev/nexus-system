@@ -42,6 +42,18 @@ function renderBuildStateRow(state) {
   `;
 }
 
+function renderReleaseCheck(item) {
+  return `
+    <div class="nexus-execution-build-state nexus-execution-build-state--${escapeHtml(item.status)}">
+      <div class="nexus-execution-build-state__main">
+        <strong>${escapeHtml(item.checkId)}</strong>
+        <span>${escapeHtml(item.reason || "passed")}</span>
+      </div>
+      <span class="nexus-execution-build-state__status">${escapeHtml(item.status)}</span>
+    </div>
+  `;
+}
+
 export function renderExecutionLiveScreen(viewModel) {
   const sidebar = {
     currentRoute: "/loop",
@@ -297,6 +309,51 @@ export function renderExecutionLiveScreen(viewModel) {
                   ${viewModel.classAwarePackagingPreviewContract.mobileArchivePath
                     ? `<span>${escapeHtml(viewModel.classAwarePackagingPreviewContract.mobileArchivePath)}</span>`
                     : ""}
+                </div>
+              </div>
+              <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--releaseable">
+                <div class="nexus-execution-screen__workspace-contract-head">
+                  <strong>Releaseable state</strong>
+                  <span>${escapeHtml(viewModel.releaseableProductStateContract.label)}</span>
+                </div>
+                <p>${escapeHtml(viewModel.releaseableProductStateContract.visibleStateRule)}</p>
+                <div class="nexus-execution-screen__workspace-contract-grid">
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Release target</span>
+                    <strong>${escapeHtml(viewModel.releaseableProductStateContract.releaseTarget)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Package path</span>
+                    <strong>${escapeHtml(viewModel.releaseableProductStateContract.packagePath)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Next action</span>
+                    <strong>${escapeHtml(viewModel.releaseableProductStateContract.nextAction)}</strong>
+                  </div>
+                </div>
+                <div class="nexus-execution-screen__workspace-contract-grid">
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Preview path</span>
+                    <strong>${escapeHtml(viewModel.releaseableProductStateContract.previewPath)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Package artifact</span>
+                    <strong>${escapeHtml(viewModel.releaseableProductStateContract.packageArtifactType)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Readiness score</span>
+                    <strong>${escapeHtml(viewModel.releaseableProductStateContract.readinessScore)}%</strong>
+                  </div>
+                </div>
+                <div class="nexus-execution-screen__build-state-list">
+                  ${viewModel.releaseableProductStateContract.visibleChecks.map(renderReleaseCheck).join("")}
+                </div>
+                <div class="nexus-execution-screen__workspace-contract-milestones">
+                  <span>${escapeHtml(viewModel.releaseableProductStateContract.packagingExpectation)}</span>
+                  <span>${escapeHtml(viewModel.releaseableProductStateContract.continuityRule)}</span>
+                  ${viewModel.releaseableProductStateContract.blockedReasons.map((item) => `
+                    <span>${escapeHtml(item)}</span>
+                  `).join("")}
                 </div>
               </div>
               <div id="execution-live-list" class="nexus-execution-live-list">

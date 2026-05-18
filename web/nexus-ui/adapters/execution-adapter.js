@@ -108,6 +108,15 @@ function resolveClassAwarePackagingPreviewContract(project = null) {
   );
 }
 
+function resolveReleaseableProductStateContract(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.releaseableProductStateContract
+      ?? safeProject.context?.releaseableProductStateContract
+      ?? safeProject.state?.releaseableProductStateContract,
+  );
+}
+
 function resolveLoopTaskSignal(project) {
   const approvals = normalizeArray(project.approvals);
   const roadmap = normalizeArray(project.cycle?.roadmap);
@@ -232,6 +241,7 @@ export function buildExecutionLiveViewModel({ project = null, qaMode = false } =
   const desktopShellScopeContract = resolveDesktopShellScopeContract(safeProject);
   const classAwareRuntimeResolver = resolveClassAwareRuntimeResolver(safeProject);
   const classAwarePackagingPreviewContract = resolveClassAwarePackagingPreviewContract(safeProject);
+  const releaseableProductStateContract = resolveReleaseableProductStateContract(safeProject);
   const repeatedLoopContinuation = resolveRepeatedLoopContinuation(safeProject);
   const splitWorkspaceLiveBuildSurfaceModel = resolveSplitWorkspaceLiveBuildSurfaceModel(safeProject);
   const buildProgressionStateMachine = resolveBuildProgressionStateMachine(safeProject);
@@ -421,6 +431,27 @@ export function buildExecutionLiveViewModel({ project = null, qaMode = false } =
       continuityRule: escapeText(classAwarePackagingPreviewContract.continuityRule, "preview/package mode must persist across reopen"),
       previewPath: escapeText(classAwarePackagingPreviewContract.summary?.previewPath, "generic-preview -> generic-preview"),
       packagePath: escapeText(classAwarePackagingPreviewContract.summary?.packagePath, "generic-package -> private-deployment"),
+    },
+    releaseableProductStateContract: {
+      status: escapeText(releaseableProductStateContract.status, "not-ready"),
+      stateFamily: escapeText(releaseableProductStateContract.stateFamily, "releaseable-product-state"),
+      readinessDecision: escapeText(releaseableProductStateContract.readinessDecision, "not-ready"),
+      releaseTarget: escapeText(releaseableProductStateContract.releaseTarget, "private-deployment"),
+      packageArtifactType: escapeText(releaseableProductStateContract.packageArtifactType, "generic-delivery-bundle"),
+      packagePath: escapeText(releaseableProductStateContract.packagePath, "generic-package -> private-deployment"),
+      previewPath: escapeText(releaseableProductStateContract.previewPath, "generic-preview -> generic-preview"),
+      packagingExpectation: escapeText(releaseableProductStateContract.packagingExpectation, "release path must stay visible as product-facing truth"),
+      continuityRule: escapeText(releaseableProductStateContract.continuityRule, "releaseable state must survive reopen, route restore, and the next continuation loop"),
+      visibleStateRule: escapeText(releaseableProductStateContract.visibleStateRule, "releaseable state must be visible before progression claims advance"),
+      blockedReasons: normalizeArray(releaseableProductStateContract.blockedReasons).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+      visibleChecks: normalizeArray(releaseableProductStateContract.visibleChecks).map((item) => ({
+        checkId: escapeText(item.checkId, "unknown-check"),
+        status: escapeText(item.status, "failed"),
+        reason: escapeText(item.reason),
+      })).slice(0, 4),
+      label: escapeText(releaseableProductStateContract.summary?.label, "Not releaseable yet"),
+      nextAction: escapeText(releaseableProductStateContract.summary?.nextAction, "resolve-release-readiness-gaps"),
+      readinessScore: String(releaseableProductStateContract.summary?.readinessScore ?? 0),
     },
     progressPercent: reactiveWorkspaceState.progressBar?.percent ?? progressState.percent ?? 0,
     stats: [

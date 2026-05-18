@@ -54,4 +54,9 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.classAwarePackagingPreviewContract.previewMode, "live-browser-preview");
   assert.equal(context.classAwarePackagingPreviewContract.packageMode, "static-web-build");
   assert.equal(context.classAwarePackagingPreviewContract.summary.packagePath, "web-build -> private-deployment");
+  assert.equal(context.releaseableProductStateContract.stateFamily, "releaseable-product-state");
+  assert.equal(context.releaseableProductStateContract.status, "not-ready");
+  assert.equal(context.releaseableProductStateContract.releaseTarget, "private-deployment");
+  assert.equal(context.releaseableProductStateContract.packageArtifactType, "deployable-web-bundle");
+  assert.equal(context.releaseableProductStateContract.summary.label, "Not releaseable yet");
 });
