@@ -1,3 +1,5 @@
+import { createClassAwareGenerationContract } from "./class-aware-generation-contract.js";
+
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
@@ -34,11 +36,23 @@ export function defineAiDesignRequestSchema({
   designTokens = null,
   componentContract = null,
   slimmedContextPayload = null,
+  artifactExpectation = null,
+  classAwareGenerationContract = null,
+  classSpecificSurfaceEvolutionRules = null,
 } = {}) {
   const normalizedScreenContract = normalizeObject(screenContract);
   const normalizedScreenModel = normalizeObject(renderableScreenModel);
   const normalizedComposition = normalizeObject(renderableScreenComposition);
   const normalizedSelectedTask = normalizeObject(selectedTask);
+  const resolvedGenerationContract = normalizeObject(classAwareGenerationContract).contractId
+    ? normalizeObject(classAwareGenerationContract)
+    : createClassAwareGenerationContract({
+        productClass: artifactExpectation?.projectType ?? artifactExpectation?.productClass ?? "unknown",
+        artifactExpectation,
+      });
+  const generationIntent = normalizeObject(resolvedGenerationContract.generationIntent).intentId
+    ? resolvedGenerationContract.generationIntent
+    : null;
 
   const screenId = normalizeString(
     normalizedScreenContract.screenId,
@@ -77,6 +91,23 @@ export function defineAiDesignRequestSchema({
         summary: normalizeObject(screenStates).summary ?? null,
         screens: normalizeArray(screenStates?.screens),
       },
+      classAwareGenerationContract: {
+        contractId: normalizeString(resolvedGenerationContract.contractId),
+        productClass: normalizeString(resolvedGenerationContract.productClass, "generic"),
+        generationMode: normalizeString(resolvedGenerationContract.generationMode, "generic-surface"),
+        surfaceMutationModel: normalizeString(resolvedGenerationContract.surfaceMutationModel, "overview-sequence"),
+        visibleMutationTargets: normalizeArray(resolvedGenerationContract.visibleMutationTargets),
+      },
+      classSpecificSurfaceEvolutionRules: {
+        contractId: normalizeString(normalizeObject(classSpecificSurfaceEvolutionRules).contractId),
+        evolutionFamily: normalizeString(normalizeObject(classSpecificSurfaceEvolutionRules).evolutionFamily),
+        frontendSurfaceType: normalizeString(normalizeObject(classSpecificSurfaceEvolutionRules).frontendSurfaceType),
+        backendStateType: normalizeString(normalizeObject(classSpecificSurfaceEvolutionRules).backendStateType),
+        sceneType: normalizeString(normalizeObject(classSpecificSurfaceEvolutionRules).sceneType),
+        visibleEvolutionRule: normalizeString(normalizeObject(classSpecificSurfaceEvolutionRules).visibleEvolutionRule),
+        requiredVisibleChanges: normalizeArray(normalizeObject(classSpecificSurfaceEvolutionRules).requiredVisibleChanges),
+      },
+      generationIntent,
       designSystem: {
         tokenSetId: normalizeString(designTokens?.tokenSetId),
         componentContractId: normalizeString(componentContract?.contractId),

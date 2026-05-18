@@ -1,0 +1,56 @@
+[
+  {
+    "bundle": "milan",
+    "files": [
+      "/Users/yogevlavian/Desktop/milan.co/README.md",
+      "/Users/yogevlavian/Desktop/milan.co/package.json",
+      "/Users/yogevlavian/Desktop/milan.co/tsconfig.json",
+      "/Users/yogevlavian/Desktop/milan.co/src/middleware.ts"
+    ],
+    "uploadMeta": "README, package.json, קבצי קוד, מסמכים וקבצי הקשר. אפשר לבחור כמה קבצים יחד.",
+    "uploadTitle": "גרור קבצים לכאן או לחץ להעלאה",
+    "createShot": "/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-final-hardening/evidence/upload-loop/milan-01-create.png",
+    "onboardingShot": "/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-final-hardening/evidence/upload-loop/milan-02-first-stage.png",
+    "finalShot": "/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-final-hardening/evidence/upload-loop/milan-03-final-stage.png",
+    "firstStage": "עברנו ל־onboarding של הפרויקט",
+    "usedQuestions": [
+      "?",
+      "?",
+      "?",
+      "?"
+    ],
+    "navigationState": "loop -> proof -> artifact -> confirmation -> state-update -> timeline",
+    "summary": {
+      "url": "http://127.0.0.1:4011/timeline",
+      "title": "The Nexus",
+      "text": "＋\nיצירה\n⌂\nהבנה\n▦\nלולאה\n◷\nציר זמן\n⌂\nבית\n⌘\nקבצים\n⚙\nהגדרות\n?\nעזרה\nMilan Existing Project Upload\n🔔\nM\n✓\nיצירה\n✓\nהכרת הפרויקט\n✓\nהבנה\n✓\nפעולה\nציר עבודה\nאיך התוצר התקדם עד כאן\n\nרצף ההתקדמות של הפרויקט, עם התוצר האחרון והאירועים שהביאו אותנו עד לכאן.\n\nחזור לצעד הנוכחי\nהתוצר האחרון בלולאה\nMilan Existing Project Upload commerce workspace\n\nמה שנשבר היום הוא מעבר לא ברור בין קטלוג, תוכן ותפעול הזמנות כך שהעבודה נמרחת ונוצרות טעויות.\n\nפתח את התוצר\nתצוגת מסחר ותפעול\nMilan Existing Project Upload commerce workspace\n\nמה שנשבר היום הוא מעבר לא ברור בין קטלוג, תוכן ותפעול הזמנות כך שהעבודה נמרחת ונוצרות טעויות.\n\nמרכז המסחר מוכן לבדיקה עם הזמנות, קטלוג ופעולה הבאה במקום אחד\nהזמנות דחופות\n5\nחריגות קטלוג\n3\nפריטי מלאי בסיכון\n2\nהצעד הבא\nלנעול owner על ההזמנה הדחופה ולסגור חריגת קטלוג אחת עוד היום\n\nהמוצר הוא פלטפורמת ecommerce פעילה עם קטלוג, הזמנות, תוכן והרשאות ניהול.\n\nלהקצות owner ברור להזמנה הקריטית ולסגור חריגת קטלוג אחת שמשפיעה על המכירה.\nלמי זה מיועד\nצוות התפעול והמסחר שמנהל קטלוג, הזמנות ותוכן בכל יום.\n\nבתצוגה שנפתח נרצה לראות Milan Existing Project Upload commerce workspace עם הזמנות דחופות, חריגות קטלוג ובעלות ברורה על הפעולה הבאה.\n\nהזמנה חדשה\nעדכון קטלוג\nשיוך owner\nסימון כטופל\nהזמנות לטיפול\n2\nאימות כתובת למשלוח מהיר\nרוני\nהיום\nגבוהה\nבדיקת תשלום שנכשל\nדנה\nהיום\nגבוהה\nקטלוג ומלאי\n2\nמוצר חסר תמונה בקטלוג\nמיכל\nמחר\nבינונית\nSKU עם מלאי שלילי\nאורי\nהיום\nגבוהה\nממתין להכרעה\n1\nאישור מבצע לפריט רגיש\nנועה\nמחכה למנהל\nבינונית\nפתיח כמשטח עצמאי\n3 עמודות עבודה חיות\nרצף ההתקדמות\n◫\nתוצר\nהשלב האחרון\nMilan Existing Project Upload commerce workspace\n\nמה שנשבר היום הוא מעבר לא ברור בין קטלוג, תוכן ותפעול הזמנות כך שהעבודה נמרחת ונוצרות טעויות.\n\n→\nמשימה\nלא ידוע\nהמשימה הושלמה בהצלחה\n\nהמשימה הושלמה בהצלחה\n\n◷\nאבן דרך\n2026-05-17T18:42:23.008Z\nmilan-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n✓\nעדכון מצב\n2026-05-17T18:42:23.008Z\nmilan-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n◷\nאבן דרך\n2026-05-17T18:42:17.079Z\nmilan-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n✓\nעדכון מצב\n2026-05-17T18:42:17.078Z\nmilan-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n◷\nאבן דרך\n2026-05-17T18:42:16.687Z\nmilan-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n✓\nעדכון מצב\n2026-05-17T18:42:16.687Z\nmilan-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\nמה כבר יש ביד\nמשימות הושלמו\n7\nאבני דרך\n6\nקבצים נוצרו\n0\nאירועים חיים\n8"
+    }
+  },
+  {
+    "bundle": "nexus",
+    "files": [
+      "/Users/yogevlavian/Desktop/The Nexus/README.md",
+      "/Users/yogevlavian/Desktop/The Nexus/package.json",
+      "/Users/yogevlavian/Desktop/The Nexus/src/server.js",
+      "/Users/yogevlavian/Desktop/The Nexus/docs/wave3-canonical-state.json"
+    ],
+    "uploadMeta": "README, package.json, קבצי קוד, מסמכים וקבצי הקשר. אפשר לבחור כמה קבצים יחד.",
+    "uploadTitle": "גרור קבצים לכאן או לחץ להעלאה",
+    "createShot": "/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-final-hardening/evidence/upload-loop/nexus-01-create.png",
+    "onboardingShot": "/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-final-hardening/evidence/upload-loop/nexus-02-first-stage.png",
+    "finalShot": "/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-final-hardening/evidence/upload-loop/nexus-03-final-stage.png",
+    "firstStage": "עברנו ל־onboarding של הפרויקט",
+    "usedQuestions": [
+      "?",
+      "?",
+      "?",
+      "?"
+    ],
+    "navigationState": "loop -> proof -> artifact -> confirmation -> state-update -> timeline",
+    "summary": {
+      "url": "http://127.0.0.1:4011/timeline",
+      "title": "The Nexus",
+      "text": "＋\nיצירה\n⌂\nהבנה\n▦\nלולאה\n◷\nציר זמן\n⌂\nבית\n⌘\nקבצים\n⚙\nהגדרות\n?\nעזרה\nNexus Existing Project Upload\n🔔\nN\n✓\nיצירה\n✓\nהכרת הפרויקט\n✓\nהבנה\n✓\nפעולה\nציר עבודה\nאיך התוצר התקדם עד כאן\n\nרצף ההתקדמות של הפרויקט, עם התוצר האחרון והאירועים שהביאו אותנו עד לכאן.\n\nחזור לצעד הנוכחי\nהתוצר האחרון בלולאה\nNexus Existing Project Upload workspace\n\nמה שנשבר הוא פער בין state קנוני, flow משתמש אמיתי, והוכחה חיה שהמוצר מתקדם נכון.\n\nפתח את התוצר\nתצוגת כלי פנימי\nNexus Existing Project Upload workspace\n\nמה שנשבר הוא פער בין state קנוני, flow משתמש אמיתי, והוכחה חיה שהמוצר מתקדם נכון.\n\nתור העבודה מוכן לבדיקה עם בעלות, SLA ופעולה הבאה\nבקשות פתוחות\n12\nדורש טיפול היום\n4\nבעלי משימה פעילים\n3\nהצעד הבא\nלקבע בעלות ולסגור צוואר בקבוק אחד\n\nזה מוצר workspace שמנהל פרויקטים, understanding, loop, proof וציר זמן.\n\nלהקצות owner ברור לבקשה הדחופה ביותר ולסגור SLA אחד עוד היום.\nלמי זה מיועד\nצוות המוצר שמחזיק את Nexus בכל יום ועובד על onboarding, loop ו-proof.\n\nבתצוגה שנפתח נרצה לראות Nexus Existing Project Upload workspace עם תור עבודה חי, בעלות גלויה ופעולה הבאה שכל נציג מבין מיד.\n\nבקשה חדשה\nשיוך owner\nסימון כהושלם\nהקפצת SLA\nחדש\n2\nפתיחת גישה לספק חדש\nרוני\nהיום\nגבוהה\nעדכון תהליך קליטה\nדנה\nמחר\nבינונית\nבטיפול\n2\nמיפוי בקשות שירות פתוחות\nאורי\nהיום\nגבוהה\nאיחוד טפסי קליטה\nמיכל\nמחרתיים\nנמוכה\nממתין לאישור\n1\nאישור SLA חדש לצוות\nנועה\nמחכה למנהל\nבינונית\nפתיח כמשטח עצמאי\n3 עמודות עבודה חיות\nרצף ההתקדמות\n◫\nתוצר\nהשלב האחרון\nNexus Existing Project Upload workspace\n\nמה שנשבר הוא פער בין state קנוני, flow משתמש אמיתי, והוכחה חיה שהמוצר מתקדם נכון.\n\n→\nמשימה\nלא ידוע\nהמשימה הושלמה בהצלחה\n\nהמשימה הושלמה בהצלחה\n\n◷\nאבן דרך\n2026-05-17T18:42:42.474Z\nnexus-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n✓\nעדכון מצב\n2026-05-17T18:42:42.473Z\nnexus-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n◷\nאבן דרך\n2026-05-17T18:42:36.555Z\nnexus-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n✓\nעדכון מצב\n2026-05-17T18:42:36.554Z\nnexus-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n◷\nאבן דרך\n2026-05-17T18:42:36.405Z\nnexus-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\n✓\nעדכון מצב\n2026-05-17T18:42:36.404Z\nnexus-existing-project-upload\n\nהאירוע נשמר בהיסטוריית הפרויקט ונשאר זמין לחזרה לאחור.\n\nמה כבר יש ביד\nמשימות הושלמו\n7\nאבני דרך\n6\nקבצים נוצרו\n0\nאירועים חיים\n8"
+    }
+  }
+]

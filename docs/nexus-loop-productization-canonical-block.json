@@ -1,10 +1,11 @@
 {
-  "blockName": "Nexus Loop Productization",
-  "blockVersion": 1,
-  "status": "planned-not-started",
-  "canonicalLedgerType": "dedicated-productization-block",
+  "blockName": "Nexus Wave 3 Product-Truth Hardening",
+  "blockVersion": 2,
+  "status": "wave3-product-truth-truegreen-wave4-planning-ready",
+  "canonicalLedgerType": "dedicated-product-truth-hardening-block",
   "createdFrom": {
     "sourceOrchestrator": "docs/operating-system/wave3-permanent-orchestrator-v1.md",
+    "sourcePlan": "docs/operating-system/wave3-product-truth-hardening-plan.md",
     "wave3StopPoint": {
       "completedThroughExecutionOrder": "095",
       "nextFrozenWave3Task": "096"
@@ -25,219 +26,556 @@
     "useExistingBackendSystemsOnly": true,
     "doNotAddNewBackendCapabilities": true,
     "uiFirstProductizationOnly": true,
-    "noDashboardFragmentation": true
+    "noDashboardFragmentation": true,
+    "sourceOfTruthUrl": "http://127.0.0.1:4011/"
   },
-  "mission": "Turn Nexus into a single working loop UI using existing backend systems only.",
-  "targetLoop": [
-    "Project creation",
-    "File upload / intake",
-    "Intelligent onboarding agent",
-    "Deep project understanding",
-    "Task breakdown",
-    "Next task with clear explanation",
-    "Execute button",
-    "Visible live execution",
-    "Visible product/UI change",
-    "User confirmation",
-    "State update",
-    "Next task",
-    "Repeat"
-  ],
-  "doneCriteria": {
-    "loopIsDoneOnlyIfVisibleInLiveUi": true,
-    "requiredFlow": [
-      "User creates a project",
-      "User completes intake or onboarding inputs",
-      "System shows a clear understanding summary",
-      "System shows a real task list",
-      "System shows one clearly selected next task",
-      "System explains why this is the next task",
-      "User sees one explicit execute button",
-      "Execution progress is visible in one focused place",
-      "A resulting product/UI change is shown in one focused place",
-      "User can confirm or reject the result",
-      "State updates visibly after the decision",
-      "A newly promoted next task appears",
-      "The loop can repeat again from the updated state"
+  "wave4ReadinessGate": {
+    "status": "planning-go",
+    "readinessVerdict": "planning-go",
+    "sourceOfTruthUrl": "http://127.0.0.1:4011/",
+    "planningInputs": [
+      "docs/v2-wave4-execution-plan.md",
+      "docs/operating-system/wave4-end-state-definition.md"
     ],
-    "failureConditions": [
-      "Any step is not visible in the live UI",
-      "Any step is visible but not actionable",
-      "Any step is actionable but disconnected from the next step",
-      "Any visible task lacks guided visual proof and explicit user confirmation"
+    "judgmentBasis": [
+      "live class coverage on 4011",
+      "product-truth hardening task states",
+      "visual product surface completion truth",
+      "canonical onboarding intelligence readiness input"
+    ],
+    "blockingReasons": [
+      "the Wave 3 second-loop closure gate is now trueGreen on the live Nexus site",
+      "the existing-project upload loop is now also proven truthfully on 4011 through real representative uploaded bundles and visible downstream progression",
+      "the live class sweep rerun is complete-clean on 4011",
+      "the Wave 3 reopener closure pass closed W3-PTH-012 through W3-PTH-016 with live browser evidence on 2026-05-18",
+      "Wave 3 product-truth hardening no longer blocks Wave 4 planning",
+      "Wave 4 planning must now treat Minimum Believable Nexus as the non-negotiable baseline, including automatic class-aware product skeleton generation, visible build progression, local workspace continuity, and runtime-aware release shaping",
+      "Meaningful capability work must now advance as coupled backend-to-surface product truth with live browser verification during development, not only at the end"
+    ],
+    "releasedOnlyWhen": [
+      "required classes are visibly product-credible on 4011",
+      "critical Wave 3 hardening tasks are trueGreen",
+      "the existing-project upload loop is proven truthfully on 4011",
+      "onboarding intelligence track no longer weakens truthful Wave 4 judgment"
     ]
   },
-  "visualProofRequiredSurfaces": [
-    "Project creation handoff",
-    "Intake/upload handoff",
-    "Onboarding completion handoff",
-    "Understanding summary card",
-    "Task queue panel",
-    "Next-task explanation card",
-    "Execute-next-task action surface",
-    "Live execution console",
-    "Task-to-result proof panel",
-    "Visible product/UI change evidence viewer",
-    "User confirmation action surface",
-    "Post-confirmation state update presenter",
-    "Next-task promotion surface"
-  ],
-  "existingBackendCapabilitiesToExpose": [
-    "Project creation state",
-    "Onboarding question flow",
-    "Onboarding completion evaluator",
-    "Uploaded intake to scanner handoff",
-    "Repository import and codebase diagnosis",
-    "Live website diagnosis",
-    "Imported analytics normalization",
-    "Imported asset task extraction",
-    "Import-and-continue roadmap assembler",
-    "Next-task selection resolver",
-    "Next-task presentation model",
-    "Cockpit recommendation surface",
-    "Guided task execution surface",
-    "Task step flow progress binder",
-    "Task approval handoff panel",
-    "External execution dispatch/session/result chain",
-    "Canonical execution result envelope",
-    "Deployment result envelope",
-    "Release readiness evaluator",
-    "AI design request / proposal / preview chain",
-    "Design proposal validation / review / apply / integration chain",
-    "Generated surface proof / accessibility / performance / brand validation",
-    "Generated asset provenance",
-    "Return-tomorrow continuity"
-  ],
-  "currentUiPolicy": {
-    "replaceAsPrimaryExperience": [
-      "Dashboard-style top-shell as the main user journey",
-      "Fragmented proposal-review-first flow as the main product path"
+  "mission": "Turn technically strong Wave 3 capabilities into canonical, product-credible, visual, loop-connected truth on the live Nexus site.",
+  "productTruthRules": {
+    "theOnlyProductTruth": "http://127.0.0.1:4011/",
+    "visualCapabilityRule": "Any capability that claims to produce a visual outcome must terminate in a real visual product surface inside Nexus on 127.0.0.1:4011, not at metadata, schema, regions, preview payloads, bullets, summaries, validation output, or internal renderer state.",
+    "trueGreenRequires": [
+      "runtime truth",
+      "route truth",
+      "renderer truth",
+      "handoff truth",
+      "restore truth",
+      "product-grade truth"
     ],
-    "mergeIntoSingleLoop": [
-      "Developer Workspace runtime activity",
-      "Developer Workspace execution flow",
-      "Project Brain missing/existing/learning/companion panels",
-      "Release Workspace proposal review",
-      "Release Workspace generated proof surfaces",
-      "Workspace overview status/action cards"
-    ],
-    "hideOrDeprioritizeFromPrimaryFlow": [
-      "Continuity and rollback controls",
-      "Project audit",
-      "Access and isolation",
-      "Growth workspace",
-      "Secondary dashboards not required for the active loop"
+    "surfaceQualityGates": [
+      "looks real enough",
+      "feels like a product",
+      "gives basic wow",
+      "avoids metadata/debug/admin feel",
+      "looks showable/shareable",
+      "makes the user understand what Nexus built"
     ]
   },
-  "canonicalTaskList": [
+  "parallelPlanningTracks": [
     {
-      "execution_order": "NLP-001",
-      "taskName": "Create Nexus Loop shell and route",
-      "state": "blocked",
-      "blocker": "Execution has not started yet. Canonical block definition was just created.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-002",
-      "taskName": "Create project creation to loop handoff",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-001.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-003",
-      "taskName": "Create intake/upload to loop handoff",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-002.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-004",
-      "taskName": "Create intelligent onboarding loop surface",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisites: NLP-001 and NLP-002.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-005",
-      "taskName": "Create deep understanding summary card",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisites: NLP-003 and NLP-004.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-006",
-      "taskName": "Create task breakdown and queue panel",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-005.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-007",
-      "taskName": "Create next-task explanation card",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-006.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-008",
-      "taskName": "Create execute-next-task action surface",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-007.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-009",
-      "taskName": "Create live execution console surface",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-008.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-010",
-      "taskName": "Create task-to-visible-change proof panel",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisites: NLP-008 and NLP-009.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-011",
-      "taskName": "Create user confirmation action surface",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-010.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-012",
-      "taskName": "Create post-confirmation state update presenter",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-011.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-013",
-      "taskName": "Create next-task promotion binder in UI",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-012.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-014",
-      "taskName": "Create repeat-loop timeline strip",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisite: NLP-013.",
-      "visualImpacting": true
-    },
-    {
-      "execution_order": "NLP-015",
-      "taskName": "Create end-to-end loop acceptance and visual proof coverage",
-      "state": "blocked",
-      "blocker": "Blocked on unfinished productization prerequisites: NLP-001 through NLP-014.",
-      "visualImpacting": true
+      "trackId": "W3-ONB-INTEL-PLAN",
+      "name": "AI-Guided Onboarding Intelligence",
+      "status": "execution-closed-for-current-wave3-scope",
+      "blockingMode": "non-blocking-for-active-W3-PTH-queue",
+      "canonicalPlanPath": "docs/operating-system/wave3-onboarding-intelligence-planning-track.md",
+      "reason": "Onboarding is still too generic and weakens question quality, flow steering, artifact quality, trust, and downstream loop quality.",
+      "requiredDesignOutputs": [
+        "architecture",
+        "orchestration",
+        "contracts",
+        "decision model",
+        "questioning strategy",
+        "stopping criteria",
+        "anti-generic behavior",
+        "grounding rules",
+        "loop-truth integration points",
+        "artifact-quality integration points"
+      ],
+      "wave4ReadinessEffect": "required-canonical-input",
+      "executionDiscipline": [
+        "must not pause the active W3-PTH queue",
+        "must stay grounded in live 4011 onboarding behavior",
+        "must not be treated as complete because generic question flow exists"
+      ],
+      "lowestTruthfulExecutableTask": {
+        "execution_order": "none",
+        "taskName": "No remaining canonical onboarding execution task is required before deeper Wave 4 work."
+      }
     }
   ],
+  "parallelExecutionTracks": [
+    {
+      "trackId": "W3-SL-CLOSURE",
+      "name": "Wave 3 Second-Loop Closure",
+      "status": "execution-promoted-blocking-wave4",
+      "blockingMode": "blocking-for-deeper-wave4",
+      "canonicalPlanPath": "docs/operating-system/wave3-second-loop-closure-track.md",
+      "reason": "Wave 3 can produce a strong first artifact, but the second loop is still too weak to count as truthful completion.",
+      "currentExecutionState": {
+        "taskId": "W3-SL-005",
+        "state": "trueGreen",
+        "lastValidatedAt": "2026-05-16",
+        "remainingGap": "",
+        "whyNotTrueGreen": "",
+        "returnWhen": "Return to this lane only if a fresh live rerun on 4011 reintroduces visible execution-first leakage, route/restore regression, or product-grade perception regression on the audited class matrix."
+      },
+      "lowestTruthfulExecutableTask": {
+        "execution_order": "W3-SL-005",
+        "taskName": "Install final Wave 3 closure gate"
+      }
+    },
+    {
+      "trackId": "W3-UPLOAD-CLOSURE",
+      "name": "Wave 3 Existing-Project Upload Closure",
+      "status": "execution-promoted-blocking-wave4",
+      "blockingMode": "blocking-for-deeper-wave4",
+      "canonicalPlanPath": "docs/operating-system/wave3-existing-project-upload-closure-track.md",
+      "reason": "Wave 3 still has no truthful live proof that an uploaded existing project can become a coherent product-guided loop on 4011.",
+      "currentExecutionState": {
+        "taskId": "W3-UP-001",
+        "state": "trueGreen",
+        "lastValidatedAt": "2026-05-17",
+        "remainingGap": "",
+        "whyNotTrueGreen": "",
+        "returnWhen": "Return to W3-UP-001 only if a fresh live rerun on 4011 reintroduces regression in uploaded-project continuity, route truth, comparative differentiation, or downstream Loop / Proof / Artifact / Timeline progression."
+      },
+      "lowestTruthfulExecutableTask": {
+        "execution_order": "W3-UP-001",
+        "taskName": "Prove existing-project upload loop on 4011"
+      }
+    }
+  ],
+  "auditScope": {
+    "auditDimensions": [
+      "technical existence",
+      "product existence",
+      "actionability",
+      "source-of-truth uniqueness",
+      "fallback leakage",
+      "handoff integrity",
+      "refresh / restore safety",
+      "state continuity",
+      "product-grade feel",
+      "dead-end detection",
+      "regression discipline",
+      "project-class coverage",
+      "expectation truth",
+      "quality threshold per capability",
+      "cross-screen semantic consistency",
+      "failure-mode truth",
+      "trust signal quality",
+      "visual product surface completion"
+    ],
+    "projectClasses": [
+      "small SaaS",
+      "internal tool",
+      "landing / marketing output",
+      "one additional repo-supported class"
+    ]
+  },
+  "capabilityToProductMap": [
+    {
+      "capabilityId": "create",
+      "technicalExistence": "alive",
+      "productExistence": "alive-and-credible",
+      "classCoverage": "broad",
+      "mainGap": null
+    },
+    {
+      "capabilityId": "onboarding",
+      "technicalExistence": "alive",
+      "productExistence": "alive-but-weak",
+      "classCoverage": "mixed",
+      "mainGap": "project-type clarification and continuity truth remain weak"
+    },
+    {
+      "capabilityId": "understanding",
+      "technicalExistence": "alive",
+      "productExistence": "alive-but-weak",
+      "classCoverage": "mixed",
+      "mainGap": "transition trust and decision framing remain shallow"
+    },
+    {
+      "capabilityId": "loop",
+      "technicalExistence": "alive",
+      "productExistence": "alive-but-weak",
+      "classCoverage": "mixed",
+      "mainGap": "task-forward experience still weakens product feel"
+    },
+    {
+      "capabilityId": "execution",
+      "technicalExistence": "alive",
+      "productExistence": "partially-product-alive",
+      "classCoverage": "mixed",
+      "mainGap": "actionability and artifact continuity remain incomplete"
+    },
+    {
+      "capabilityId": "proof",
+      "technicalExistence": "alive",
+      "productExistence": "partially-product-alive",
+      "classCoverage": "uneven",
+      "mainGap": "credible in follow-up class, metadata-heavy in other classes"
+    },
+    {
+      "capabilityId": "artifact-route",
+      "technicalExistence": "alive",
+      "productExistence": "credible-for-narrow-class",
+      "classCoverage": "narrow",
+      "mainGap": "not generalized and not fully adopted downstream"
+    },
+    {
+      "capabilityId": "confirmation",
+      "technicalExistence": "alive",
+      "productExistence": "product-alive-but-split-truth",
+      "classCoverage": "broad",
+      "mainGap": "does not center canonical artifact truth"
+    },
+    {
+      "capabilityId": "state-update",
+      "technicalExistence": "alive",
+      "productExistence": "product-alive-but-weak",
+      "classCoverage": "broad",
+      "mainGap": "summary/state truth dominates artifact continuity"
+    },
+    {
+      "capabilityId": "next-task",
+      "technicalExistence": "alive",
+      "productExistence": "product-alive-but-weak",
+      "classCoverage": "broad",
+      "mainGap": "continuity survives but product story weakens"
+    },
+    {
+      "capabilityId": "timeline",
+      "technicalExistence": "alive",
+      "productExistence": "partially-product-alive",
+      "classCoverage": "broad",
+      "mainGap": "state history is stronger than artifact history"
+    },
+    {
+      "capabilityId": "generated-surface-preview-stack",
+      "technicalExistence": "alive",
+      "productExistence": "technical-mostly",
+      "classCoverage": "uneven",
+      "mainGap": "signals, regions, and validation metadata stop short of product-shaped visual truth"
+    }
+  ],
+  "highestImpactGaps": [
+    {
+      "gapId": "PT-GAP-001",
+      "priority": "P0",
+      "title": "Canonical artifact truth is too narrow by project class",
+      "impact": "Wave 3 can look product-credible in one class and debug-like in another."
+    },
+    {
+      "gapId": "PT-GAP-002",
+      "priority": "P0",
+      "title": "Artifact truth does not survive downstream review surfaces",
+      "impact": "Proof can be strong while Confirmation, State Update, Next Task, and Timeline collapse back into summary truth."
+    },
+    {
+      "gapId": "PT-GAP-003",
+      "priority": "P0",
+      "title": "Landing / marketing onboarding truth still breaks continuity",
+      "impact": "Conversation completion can contradict executable continuation and weaken user trust."
+    },
+    {
+      "gapId": "PT-GAP-004",
+      "priority": "P1",
+      "title": "Fallback / QA / hidden-surface leakage still weakens the live path",
+      "impact": "The live product can still feel like scaffolding rather than one canonical experience."
+    },
+    {
+      "gapId": "PT-GAP-005",
+      "priority": "P1",
+      "title": "Actionability after Proof is still incomplete",
+      "impact": "Some visible surfaces remain passive or partially dead-end."
+    }
+  ],
+  "canonicalTaskList": [
+    {
+      "execution_order": "W3-PTH-001",
+      "taskName": "Unify canonical artifact truth across downstream loop surfaces",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P0",
+      "dependencies": [
+        "095"
+      ],
+      "acceptanceCriteria": [
+        "One canonical artifact identity survives Proof, Artifact, Confirmation, State Update, Next Task, and Timeline.",
+        "Downstream screens stop reconstructing conflicting artifact stories from overlapping runtime fragments.",
+        "Confirmation visibly centers the same artifact the user reviewed in Proof."
+      ],
+      "productTruthValidationCriteria": [
+        "The same artifact identity is visible across the downstream handoff chain.",
+        "No downstream screen downgrades artifact truth into summary-only truth."
+      ],
+      "verification4011Requirements": [
+        "Run a live project to Proof on http://127.0.0.1:4011/.",
+        "Open the artifact route.",
+        "Continue to Confirmation, State Update, Next Task, and Timeline.",
+        "Verify the same artifact story survives visibly."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-002",
+      "taskName": "Deliver a credible visual artifact path for internal-tool projects",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P0",
+      "dependencies": [
+        "W3-PTH-001"
+      ],
+      "acceptanceCriteria": [
+        "Internal-tool projects no longer terminate in region or CTA metadata.",
+        "Proof and Artifact show a believable product surface for internal-tool outputs.",
+        "The result looks like something a real user could review or show."
+      ],
+      "productTruthValidationCriteria": [
+        "The internal-tool artifact is visible, routeable, renderable, and actionable.",
+        "The output does not feel like generated-surface diagnostics."
+      ],
+      "verification4011Requirements": [
+        "Create an internal-tool project on the live site.",
+        "Run it to Proof.",
+        "Verify Proof and Artifact show product-shaped output."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-003",
+      "taskName": "Close landing and marketing onboarding truth gaps",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P0",
+      "dependencies": [
+        "W3-PTH-001"
+      ],
+      "acceptanceCriteria": [
+        "Landing and marketing projects no longer complete the onboarding conversation and then block on hidden project-type ambiguity.",
+        "User-facing clarification remains explicit if continuation still requires it."
+      ],
+      "productTruthValidationCriteria": [
+        "Expectation truth is preserved from onboarding through continuation.",
+        "The onboarding handoff does not contradict itself."
+      ],
+      "verification4011Requirements": [
+        "Create a landing or marketing project.",
+        "Complete onboarding.",
+        "Verify there is no contradictory complete-but-blocked path."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-004",
+      "taskName": "Eliminate fallback leakage from the live loop path",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P1",
+      "dependencies": [
+        "W3-PTH-001"
+      ],
+      "acceptanceCriteria": [
+        "Live loop surfaces no longer present fallback, demo, or QA truth as if it were canonical product truth.",
+        "Hidden-surface collisions are reduced in the primary live path."
+      ],
+      "productTruthValidationCriteria": [
+        "Visible truth on 4011 is clearly canonical.",
+        "QA and fallback logic is either removed from the main path or clearly separated."
+      ],
+      "verification4011Requirements": [
+        "Inspect the primary loop screens on the live site.",
+        "Verify no misleading QA or fallback wording leaks into the main product path."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-005",
+      "taskName": "Upgrade actionability of proof and artifact review surfaces",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P1",
+      "dependencies": [
+        "W3-PTH-001"
+      ],
+      "acceptanceCriteria": [
+        "Critical review surfaces are not passive-only.",
+        "Primary artifact review actions are real and meaningful.",
+        "No core visual artifact path ends in a dead-end."
+      ],
+      "productTruthValidationCriteria": [
+        "Users can do something meaningful with the surfaced artifact.",
+        "The surface advances the loop rather than merely describing it."
+      ],
+      "verification4011Requirements": [
+        "Run a live project to Proof.",
+        "Verify the primary artifact review actions work in the browser."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-006",
+      "taskName": "Harden downstream review surfaces against metadata and debug feel",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P1",
+      "dependencies": [
+        "W3-PTH-001"
+      ],
+      "acceptanceCriteria": [
+        "Confirmation, State Update, Next Task, and Timeline feel like product continuation rather than status consoles.",
+        "Wording and semantics stay consistent across the loop."
+      ],
+      "productTruthValidationCriteria": [
+        "The touched surfaces remain product-credible.",
+        "User trust increases instead of dropping after Proof."
+      ],
+      "verification4011Requirements": [
+        "Walk the live loop through downstream review surfaces.",
+        "Verify product-grade truth against the UI itself."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-007",
+      "taskName": "Create multi-class Wave 3 smoke matrix on 4011",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P1",
+      "dependencies": [
+        "W3-PTH-002",
+        "W3-PTH-003"
+      ],
+      "acceptanceCriteria": [
+        "Each required project class has a live smoke path and a product-truth verdict.",
+        "No class may be called trueGreen from one happy path alone."
+      ],
+      "productTruthValidationCriteria": [
+        "Class coverage is explicit and repository-grounded.",
+        "Weak classes remain visible in the ledger until hardened."
+      ],
+      "verification4011Requirements": [
+        "Run live browser checks for small SaaS, internal tool, landing or marketing, and one additional supported class."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-008",
+      "taskName": "Install Wave 3 product-truth readiness gate before Wave 4",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P0",
+      "dependencies": [
+        "W3-PTH-001",
+        "W3-PTH-002",
+        "W3-PTH-003",
+        "W3-PTH-004",
+        "W3-PTH-005",
+        "W3-PTH-006",
+        "W3-PTH-007"
+      ],
+      "acceptanceCriteria": [
+        "No deeper Wave 4 execution may proceed while critical Wave 3 product-truth gaps remain open.",
+        "The canonical execution doctrine explicitly enforces product-truth completion rules."
+      ],
+      "productTruthValidationCriteria": [
+        "Readiness is based on live product truth, not code presence or doc claims."
+      ],
+      "verification4011Requirements": [
+        "Confirm required Wave 3 surfaces are visible, routeable, renderable, loop-connected, actionable, restore-safe, canonical, product-credible, and trustable."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-009",
+      "taskName": "Deliver a credible landing / marketing artifact path through Proof",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P0",
+      "dependencies": [
+        "W3-PTH-008"
+      ],
+      "acceptanceCriteria": [
+        "Landing or marketing projects reach Proof on 4011 and show a credible landing-page artifact instead of Generated surface, regions, or preview composition metadata.",
+        "The landing artifact opens as its own real Nexus surface.",
+        "The artifact story stays understandable from onboarding expectation through proof review."
+      ],
+      "productTruthValidationCriteria": [
+        "Landing or marketing output ends as a visible product surface, not renderer-state representation.",
+        "The user can understand what page Nexus built and why it counts as the intended result."
+      ],
+      "verification4011Requirements": [
+        "Run a live landing or marketing flow on 4011.",
+        "Verify Proof and Artifact show the page itself rather than metadata/debug framing."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-010",
+      "taskName": "Deliver a credible mobile-app artifact path through Proof",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P0",
+      "dependencies": [
+        "W3-PTH-008"
+      ],
+      "acceptanceCriteria": [
+        "Mobile app projects reach Proof on 4011 and show a credible mobile product surface instead of generated-surface metadata.",
+        "The mobile artifact opens as its own real Nexus surface.",
+        "The product story stays coherent from onboarding expectation through proof review."
+      ],
+      "productTruthValidationCriteria": [
+        "The user can see the mobile product surface itself, not just schema, regions, or preview payload truth.",
+        "The visible result feels showable and product-shaped."
+      ],
+      "verification4011Requirements": [
+        "Run a live mobile flow on 4011.",
+        "Verify Proof and Artifact show a credible mobile surface and not metadata/debug output."
+      ]
+    },
+    {
+      "execution_order": "W3-PTH-011",
+      "taskName": "Harden internal-tool execution-to-proof continuity",
+      "state": "trueGreen",
+      "blocker": null,
+      "visualImpacting": true,
+      "priority": "P1",
+      "dependencies": [
+        "W3-PTH-008"
+      ],
+      "acceptanceCriteria": [
+        "The internal-tool path no longer lands on מבצעים את המשימה with כרגע אין משימה פעילה before proof truth becomes visible.",
+        "Execution truth stays believable until the internal workspace artifact is revealed."
+      ],
+      "productTruthValidationCriteria": [
+        "The handoff from Execution to Proof feels trustworthy and continuous, not manually rescued."
+      ],
+      "verification4011Requirements": [
+        "Run a live internal-tool flow on 4011.",
+        "Verify execution remains coherent through proof reveal without dead-air status truth."
+      ]
+    }
+  ],
+  "executionPlan": {
+    "phase1": "Full Wave 3 capability-to-product audit",
+    "phase2": "Canonical truth hardening",
+    "phase3": "Product-surface hardening",
+    "phase4": "Actionability and dead-end elimination",
+    "phase5": "Regression and coverage hardening"
+  },
   "lowestTruthfulExecutableTask": {
-    "execution_order": "NLP-001",
-    "taskName": "Create Nexus Loop shell and route"
+    "execution_order": "W3-SL-005",
+    "taskName": "Install final Wave 3 closure gate"
   }
 }

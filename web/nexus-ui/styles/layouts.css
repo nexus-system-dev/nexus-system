@@ -1,0 +1,170 @@
+.nexus-ui-shell {
+  min-height: 100vh;
+  background: var(--nexus-canvas);
+}
+
+.nexus-ui-route-shell {
+  min-width: 0;
+}
+
+.nexus-ui-workspace-shell {
+  display: grid;
+  grid-template-columns: 264px 1fr;
+  min-height: 100vh;
+}
+
+.nexus-ui-sidebar {
+  background: var(--nexus-sidebar-background);
+  border-left: 1px solid var(--nexus-sidebar-border);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.nexus-ui-sidebar__brand {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--nexus-sidebar-border);
+}
+
+.nexus-ui-sidebar__brand-image {
+  display: block;
+  width: auto;
+  height: 34px;
+  max-width: 100%;
+}
+
+.nexus-ui-sidebar__section {
+  padding: 18px 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.nexus-ui-sidebar__section--footer {
+  margin-top: auto;
+  border-top: 1px solid var(--nexus-sidebar-border);
+}
+
+.nexus-ui-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  color: var(--nexus-sidebar-foreground);
+  background: transparent;
+  border: 0;
+  width: 100%;
+  text-align: right;
+}
+
+.nexus-ui-sidebar__link[aria-current="page"] {
+  background: var(--nexus-sidebar-accent);
+  color: var(--nexus-sidebar-accent-foreground);
+  font-weight: 700;
+}
+
+.nexus-ui-sidebar__icon {
+  width: 22px;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+.nexus-ui-main {
+  display: grid;
+  grid-template-rows: 72px 1fr;
+  min-width: 0;
+}
+
+.nexus-ui-topbar {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--nexus-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nexus-space-5);
+  padding: 0 24px;
+}
+
+.nexus-ui-topbar__brand {
+  display: flex;
+  align-items: center;
+}
+
+.nexus-ui-topbar__brand-image {
+  display: block;
+  width: auto;
+  height: 28px;
+  max-width: 100%;
+}
+
+.nexus-ui-topbar__project {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--nexus-muted-foreground);
+  font-size: 0.95rem;
+}
+
+.nexus-ui-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nexus-ui-topbar__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--nexus-card);
+  border: 1px solid var(--nexus-border);
+}
+
+.nexus-ui-topbar__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+  background: linear-gradient(
+    135deg,
+    var(--nexus-primary-gradient-from),
+    var(--nexus-primary-gradient-to)
+  );
+}
+
+.nexus-ui-content {
+  padding: 32px 40px 56px;
+}
+
+.nexus-ui-flow-shell {
+  min-height: 100vh;
+  background: var(--nexus-canvas);
+}
+
+.nexus-ui-flow-topbar {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--nexus-border);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.nexus-ui-flow-content {
+  padding: 32px 40px 56px;
+}

@@ -34,7 +34,7 @@ function pruneEventWindow(events = [], nowMs, windowMs) {
 
 function resolveTier(routeDefinition = {}) {
   const tier = normalizeString(routeDefinition.tier, "standard");
-  return ["critical", "standard", "open"].includes(tier) ? tier : "standard";
+  return ["critical", "restore", "standard", "open"].includes(tier) ? tier : "standard";
 }
 
 function resolveIdentity({ tier, requestContext = {} }) {
@@ -42,7 +42,7 @@ function resolveIdentity({ tier, requestContext = {} }) {
     return normalizeString(requestContext.ipAddress, "unknown-ip");
   }
 
-  if (tier === "standard") {
+  if (tier === "standard" || tier === "restore") {
     return normalizeString(requestContext.userId, `anonymous:${normalizeString(requestContext.ipAddress, "unknown-ip")}`);
   }
 
@@ -64,6 +64,15 @@ function getTierPolicy(tier) {
       limit: 12,
       windowMs: 10_000,
       burstLimit: 18,
+      burstWindowMs: 2_000,
+    };
+  }
+
+  if (tier === "restore") {
+    return {
+      limit: 40,
+      windowMs: 10_000,
+      burstLimit: 60,
       burstWindowMs: 2_000,
     };
   }

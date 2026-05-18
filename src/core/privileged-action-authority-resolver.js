@@ -7,7 +7,7 @@ function normalizeApprovalStatus(approvalStatus) {
 }
 
 function isPrivilegedCapability(requiredCapability) {
-  return ["deploy", "approve", "connectAccounts", "manageCredentials"].includes(requiredCapability);
+  return ["deploy", "connectAccounts", "manageCredentials"].includes(requiredCapability);
 }
 
 function isBillingAction(projectAction) {

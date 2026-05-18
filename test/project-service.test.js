@@ -2472,6 +2472,53 @@ test("project service restores default agents before rerunning a finished onboar
   assert.equal(Array.isArray(rerun.assignments), true);
 });
 
+test("project service rebinds ownership when onboarding finish reuses an existing project id", () => {
+  const service = createProjectService();
+
+  const firstSession = service.createOnboardingSession({
+    userId: "user-owner-1",
+    projectDraftId: "shared-upload-project",
+    initialInput: "",
+  });
+  service.updateOnboardingIntake({
+    sessionId: firstSession.sessionId,
+    visionText: "שם הפרויקט: Shared Upload Project\nכלי פנימי לתור עבודה עם SLA ובעלות",
+    uploadedFiles: [],
+    externalLinks: [],
+  });
+  service.uploadOnboardingFiles({
+    sessionId: firstSession.sessionId,
+    uploadedFiles: [{ name: "spec.md", type: "markdown", content: "# Shared upload workspace" }],
+  });
+  const firstFinished = service.finishOnboardingSession(firstSession.sessionId);
+  assert.equal(firstFinished.project.id, "shared-upload-project");
+  assert.equal(service.projects.get("shared-upload-project").userId, "user-owner-1");
+
+  const secondSession = service.createOnboardingSession({
+    userId: "user-owner-2",
+    projectDraftId: "shared-upload-project",
+    initialInput: "",
+  });
+  service.updateOnboardingIntake({
+    sessionId: secondSession.sessionId,
+    visionText: "שם הפרויקט: Shared Upload Project\nכלי פנימי לתור עבודה עם SLA ובעלות",
+    uploadedFiles: [],
+    externalLinks: [],
+  });
+  service.uploadOnboardingFiles({
+    sessionId: secondSession.sessionId,
+    uploadedFiles: [{ name: "spec.md", type: "markdown", content: "# Shared upload workspace" }],
+  });
+  const secondFinished = service.finishOnboardingSession(secondSession.sessionId);
+  const reboundProject = service.projects.get("shared-upload-project");
+
+  assert.equal(secondFinished.project.id, "shared-upload-project");
+  assert.equal(reboundProject.userId, "user-owner-2");
+  assert.equal(reboundProject.state.workspaceModel.ownerUserId, "user-owner-2");
+  assert.equal(reboundProject.context.workspaceModel.ownerUserId, "user-owner-2");
+  assert.deepEqual(reboundProject.state.workspaceModel.roles, ["owner"]);
+});
+
 test("project service supports signup login and logout auth flows", () => {
   const service = createProjectService();
 
@@ -2753,8 +2800,12 @@ test("project service blocks onboarding finish when intake is incomplete instead
 
   assert.equal(finished.blocked, true);
   assert.equal(finished.error, "Onboarding is not ready to build project state");
+  assert.equal(finished.updatedSession.status, "needs-clarification");
+  assert.notEqual(finished.updatedSession.currentStep, "completed");
   assert.equal(finished.onboardingCompletionDecision.isComplete, false);
+  assert.equal(finished.onboardingCompletionDecision.completionStatus, "needs-clarification");
   assert.equal(finished.onboardingStateHandoff.handoffStatus, "needs-clarification");
+  assert.equal(finished.onboardingStateHandoff.completionStatus, "needs-clarification");
   assert.equal(service.listProjects().some((project) => project.id === draft.projectDraftId), false);
 });
 
@@ -3356,6 +3407,33 @@ test("project service lists approves rejects and revokes approval records", () =
   assert.equal(revoked.approvalPayload.approvalRecord.status, "revoked");
   assert.equal(revoked.approvalPayload.approvalStatus.status, "missing");
   assert.equal(Array.isArray(service.getProject("giftwallet").state.approvalAuditTrail?.entries), true);
+});
+
+test("project service can synthesize an artifact approval when confirmation has no approval request id", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const persistedProject = service.projects.get("giftwallet");
+  persistedProject.context = {
+    ...(persistedProject.context ?? {}),
+    approvalRequest: null,
+  };
+
+  const approved = service.captureApproval("giftwallet", {
+    approvalRequestId: null,
+    userInput: {
+      decision: "approved",
+      actorId: "demo-user",
+      actorRole: "owner",
+      actorName: "Demo Owner",
+    },
+  });
+
+  assert.equal(approved.approvalPayload.approvalRecord.status, "approved");
+  assert.match(approved.approvalPayload.approvalRecord.approvalRequestId, /^approval:giftwallet:/);
+  assert.equal(approved.approvalPayload.approvalStatus.status, "approved");
+  assert.equal(service.getProject("giftwallet").state.repeatedLoopContinuation?.active, true);
+  assert.match(service.getProject("giftwallet").state.repeatedLoopContinuation?.missionTitle ?? "", /לקדם את/);
 });
 
 test("project service keeps approval explanation availability aligned with approval blocker", () => {

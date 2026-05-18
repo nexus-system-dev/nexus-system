@@ -10,6 +10,7 @@ test("bootstrap plan generator builds bootstrap plan and tasks from domain intak
       requestedDeliverables: ["auth", "payments"],
     },
     domain: "saas",
+    productClass: "saas",
     recommendedDefaults: {
       stack: {
         frontend: "nextjs",
@@ -29,9 +30,17 @@ test("bootstrap plan generator builds bootstrap plan and tasks from domain intak
   });
 
   assert.equal(result.bootstrapPlan.domain, "saas");
+  assert.equal(result.bootstrapPlan.productClass, "saas");
+  assert.equal(result.bootstrapPlan.projectStage, "bootstrap");
   assert.equal(result.bootstrapPlan.targetPlatform, "web");
   assert.equal(result.bootstrapPlan.taskCount, 3);
   assert.equal(result.bootstrapPlan.executionMode, "temp-branch");
+  assert.equal(result.bootstrapPlan.runtimeDirection.runtimeFamily, "web-app-runtime");
+  assert.equal(result.bootstrapPlan.skeletonContract.autoStartPolicy, "automatic-after-class-resolution");
+  assert.equal(result.bootstrapPlan.skeletonContract.productClass, "saas");
+  assert.equal(result.bootstrapPlan.skeletonQualityBaseline.productClass, "saas");
+  assert.equal(result.bootstrapPlan.skeletonQualityBaseline.qualityBar, "minimum-believable-product-workspace");
+  assert.equal(result.bootstrapPlan.artifactManifest.visibleMilestones.includes("product-shell-visible"), true);
   assert.equal(result.bootstrapPlan.bootstrapTemplate.artifacts.includes("web-entrypoint"), true);
   assert.equal(result.bootstrapPlan.parameterizedTemplate.resolvedParams.projectName, "GiftWallet");
   assert.equal(result.bootstrapPlan.parameterizedTemplate.resolvedParams.routing, "app-router");

@@ -1,0 +1,52 @@
+Project: Closure Gate Internal Tool Live
+
+Evidence:
+- fresh create-to-onboarding handoff on `4011` is class-aware for internal tools
+- the ambiguous `project-class` step now stays aligned across heading, transcript, and placeholder
+- a fresh internal-tool session now reaches:
+  - onboarding
+  - understanding summary
+  - loop
+  - proof
+- the first artifact / proof path is now visibly product-shaped for the internal-tool class
+
+Proof truth seen live:
+- `Closure Gate Internal Tool Live 3 workspace מוכן לבדיקה`
+- `תצוגת כלי פנימי`
+- visible queue/workspace structure with:
+  - `בקשות פתוחות`
+  - `דורש טיפול היום`
+  - `בעלי משימה פעילים`
+  - queue columns like `חדש`, `בטיפול`, `ממתין לאישור`
+- action language tied to the actual workspace:
+  - `לקבע בעלות ולסגור צוואר בקבוק אחד`
+- after the latest copy pass, the fresh proof surface no longer showed:
+  - `Artifact truth`
+  - `Artifacts שנוצרו`
+  - `מדדי proof`
+  - `פתח artifact`
+  - `הורד artifact`
+  - `Generated surface`
+
+Latest live proof truth:
+- after the latest proof/loop language hardening, the fresh proof screen no longer showed:
+  - `ב-Proof`
+  - `Proof`
+  - `מה עושים עכשיו`
+  - `המשימה הכי חשובה כרגע בפרויקט שלך`
+  - `צעדים שמחכים בתמונה הרחבה`
+- reloading the same fresh proof path stayed on the same internal-tool proof context:
+  - after `500ms`
+  - after `1700ms`
+  - after `4200ms`
+  without flashing back to `Project Create`
+
+Important caution:
+- reopened stale onboarding sessions after a live server restart can still fail with `Request failed: 404`
+- that stale-session path must not be counted as the canonical closure-pass path
+- but the fresh project-backed internal-tool path now proves that the old onboarding-completion gating blocker and the fresh-proof reload blocker are no longer the main truth
+
+Verdict:
+- internal-tool first-artifact truth is now revalidated on a fresh live path and the visible proof surface is cleaner
+- internal-tool is no longer the main blocker on first-artifact product shape or fresh-proof reload truth
+- the remaining closure question is broader product-direction feel across the class matrix, not this internal-tool path by itself

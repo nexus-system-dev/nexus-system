@@ -498,7 +498,7 @@ Refinements מאושרים:
 
 משימות טכניות:
 
-1. `Create uploaded intake to scanner handoff`  | סטטוס: 🔴 לא בוצע
+1. `Create uploaded intake to scanner handoff`  | סטטוס: 🟢 בוצע
 - execution_order: `n/a`
 - description: לחבר `uploadedFiles`, `externalLinks` ו־connected repo מתוך `projectIntake` ל־scanner input usable, כך שחומר שהמשתמש הביא יוכל להפוך ל־source scanable ולא להישאר רק intake metadata
 - input:
@@ -513,7 +513,7 @@ Refinements מאושרים:
   - `Create repo connection handler`  | סטטוס: 🟢 בוצע
   - `Deep Code Scanner`  | סטטוס: 🟢 בוצע
 - connects_to: `Project State`
-- הערת מצב: זאת נקודת החיבור הראשונה שחסרה היום; בלי המשימה הזאת `uploadedFiles` נשארים ב־onboarding session ולא נכנסים למסלול `scan`.
+- הערת מצב: החיבור כבר קיים ריפוזיטורית ומופעל מתוך onboarding completion; `uploadedFiles` כבר נכנסים ל־`intakeScanHandoff` ולמסלול scanable downstream.
 
 2. `Create imported project analysis kickoff flow`  | סטטוס: 🔴 לא בוצע
 - execution_order: `n/a`
@@ -526,7 +526,7 @@ Refinements מאושרים:
   - `importAnalysisRun`
   - `analysisKickoffDecision`
 - dependencies:
-  - `Create uploaded intake to scanner handoff`  | סטטוס: 🔴 לא בוצע
+  - `Create uploaded intake to scanner handoff`  | סטטוס: 🟢 בוצע
   - `Structured Analysis Pipeline`  | סטטוס: 🟢 בוצע
   - `Create onboarding completion evaluator`  | סטטוס: 🔴 לא בוצע
 - connects_to: `Project State`
@@ -938,6 +938,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 
 9. `Create improvement execution loop manager`  | סטטוס: 🔴 לא בוצע
+- wave3_reclassification_note: בעקבות audit חי של repeated loop ב־`4011`, המשימה הזאת כבר לא נחשבת עומק Wave 4 בלבד. היא חלק מהסגירה האחרונה של Wave 3, כי בלי manager שמחזיר את Nexus שוב ללולאת improvement אמיתית, הלופ השני נשאר חלש וממחזר את אותו artifact.
 - description: לבנות manager שמחזיר את Nexus שוב ושוב ללולאת improvement של detect, triage, regenerate, approve ו־execute אחרי launch
 - input:
   - `postLaunchBacklog`
@@ -951,6 +952,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 
 10. `Create project implementation loop orchestrator`  | סטטוס: 🔴 לא בוצע
+- wave3_reclassification_note: המשימה הזאת נמשכת חזרה לקו הסיום של Wave 3. הלייב הראה שהמערכת יודעת לייצר artifact ראשון, אבל עוד לא orchestrates next increment אמיתי אחרי approval.
 - description: לבנות orchestrator שמחזיר את הפרויקט ללולאת build רציפה של select, approve, execute, update ו־continue עד השלמת milestones
 - input:
   - `schedulerDecision`
@@ -965,6 +967,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 
 11. `Create feature build loop manager`  | סטטוס: 🔴 לא בוצע
+- wave3_reclassification_note: צריך להישאר pre-Wave-4 עבור classes שבהם הלופ השני צריך לייצר increment מוצרי אמיתי ולא replay של אותו proof.
 - description: לבנות manager שמנהל לולאת בניית פיצ'רים מתוך backlog נבחר, כולל readiness, approvals, execution ו־completion tracking לכל feature increment
 - input:
   - `selectedTask`
@@ -993,6 +996,7 @@ Refinements מאושרים:
 - connects_to: `Execution Graph`
 
 13. `Create refactor and improvement loop manager`  | סטטוס: 🔴 לא בוצע
+- wave3_reclassification_note: נשאר בקו ה־Wave 3 closure עבור repeated-loop novelty ושיפור אמיתי של artifact מאושר.
 - description: לבנות manager ללולאת refactor ושיפור יזום שמזהה debt, improvement opportunities ו־safe rollout path בלי לחכות רק ל־incident או feature request
 - input:
   - `projectState`
@@ -1007,6 +1011,7 @@ Refinements מאושרים:
 - connects_to: `Project State`
 
 14. `Create clarification loop manager`  | סטטוס: 🔴 לא בוצע
+- wave3_reclassification_note: זו משימת Wave 3 closure, כי כשהמערכת לא יודעת לקדם increment שני אמיתי היא חייבת לבקש clarification במקום למחזר artifact כאילו התקדם.
 - description: לבנות manager שמחזיר את המשתמש או את המערכת ללולאת clarification כשחסר מידע לביצוע, לאישור, ל־state update או ל־replanning
 - input:
   - `initialStateClarification`
@@ -14017,3 +14022,152 @@ Refinements מאושרים:
 10. `Approval + Safety`
 11. `Real Agents`
 12. `Learning + Cross-Project Knowledge`
+
+---
+
+## Addendum — Clinic Call Triage Field-Test Follow-Ups
+
+הסעיפים הבאים נוספו בעקבות בדיקת שדה חיה של `Clinic Call Triage` על `127.0.0.1:4011/`.
+
+הם מחולקים במפורש בין:
+- `Wave 3` — תיקוני seam, truth, copy, class-binding, recovery
+- `Wave 4` — משימות מבניות עמוקות יותר שלא אמורות להידחף חזרה ל־Wave 3
+
+### Wave 3 — Seam-Level Truth Reopeners
+
+1. `Remove raw transport failure truth from onboarding submit`  | סטטוס: 🔴 לא בוצע
+- description: להסיר מה־UI טקסטים כמו `Request failed: 404` ולהחליף אותם ב־retry/recovery copy מוצרי בעברית
+- input:
+  - `onboarding answer submit`
+  - `transport failure state`
+- output:
+  - `user-safe failure surface`
+  - `preserved answer state`
+- connects_to: `Execution Surface`
+- green_criteria:
+  - כשל submit לא מוחק את התשובה שהוקלדה
+  - אין raw HTTP/status text ב־user-facing copy
+  - retry path נשאר אמין וברור
+
+2. `Lock resolved class truth across onboarding completion, missing-items, and Proof metrics`  | סטטוס: 🔴 לא בוצע
+- description: לנעול את ה־project class אחרי שהוכרע, כך ש־completion banner, `מה עדיין חסר`, `Proof`, ו־`Artifact` לא יחליפו class mid-flow
+- input:
+  - `projectClass`
+  - `onboardingCompletionState`
+  - `proofMetricBinding`
+- output:
+  - `class-locked downstream framing`
+- connects_to: `Execution Surface`
+- green_criteria:
+  - internal-tool לא נופל ל־landing wording ב־completion
+  - `Proof` לא מציג landing metrics על internal-tool
+  - `Artifact` ו־`Proof` נשארים class-consistent
+
+3. `Eliminate runtime and QA leakage from the shipped loop tree`  | סטטוס: 🔴 לא בוצע
+- description: להסיר מה־live tree slugים, `agent-runtime`, `stdout`, badgeים של closure, ו־QA/debug truth שנשלחים ל־DOM או ל־visible logs
+- input:
+  - `loop render tree`
+  - `execution render tree`
+  - `proof render tree`
+- output:
+  - `canonical production tree`
+- connects_to: `Execution Surface`
+- green_criteria:
+  - אין `journey-...`, `ai-design-proposal:...`, `agent-runtime`, `stdout`, `W3 ... Closure Live` ב־live tree
+  - ה־DOM המוגש עצמו נראה canonical, לא רק ה־pixels
+
+4. `Repair copy-integrity seams in internal-tool onboarding and execution`  | סטטוס: 🔴 לא בוצע
+- description: לתקן corruption כמו `נסו exus`, interpolation שבור של תשובות משתמש, ו־English bleed לא מכוון בתוך עברית מוצרית
+- input:
+  - `generated copy`
+  - `interpolated prompts`
+  - `execution log text`
+- output:
+  - `copy-integrity-safe surfaces`
+- connects_to: `Execution Surface`
+- green_criteria:
+  - אין mixed-script corruption
+  - אין title/subtitle contradiction באותו banner
+  - copy נשמע intentional ולא template seam
+
+5. `Repair stale-session recovery and create-to-onboarding misrestore`  | סטטוס: 🔴 לא בוצע
+- description: למנוע מצב שבו create חדש נוחת על onboarding של פרויקט קודם, ולוודא שההודעה הראשונה אחרי stale session היא ההודעה הכנה הנכונה
+- input:
+  - `create submit`
+  - `stale onboarding session`
+  - `persisted draft state`
+- output:
+  - `truthful recovery route`
+- connects_to: `Execution Surface`
+- green_criteria:
+  - create חדש לא מדליף session קודם
+  - recovery הראשון truthful בלי reload rescue ידני
+
+### Wave 4 — Deferred Structural Follow-Ups
+
+1. `Create real route truth for every loop stage`  | סטטוס: 🔴 לא בוצע
+- description: לבנות URL אמיתי ו־server-backed restore עבור `Understanding`, `Loop`, `Execution`, `Proof`, `Artifact`, `Timeline`
+- input:
+  - `stage identity`
+  - `project identity`
+  - `restore state`
+- output:
+  - `deep-linkable loop routes`
+- connects_to: `Execution Surface`
+
+2. `Render class-true product surfaces instead of structured artifact summaries`  | סטטוס: 🔴 לא בוצע
+- description: להפוך internal-tool / landing / mobile artifacts מ־summary cards או preview scaffolds ל־rendered product surfaces אמיתיים
+- input:
+  - `artifact identity`
+  - `project class`
+  - `proof result`
+- output:
+  - `class-true rendered artifact`
+- connects_to: `Execution Surface`
+
+3. `Expose meaningful multi-step orchestration depth as product truth`  | סטטוס: 🔴 לא בוצע
+- description: להפוך execution מ־checklist קצרה מסביב למנוע חבוי ל־multi-step progression שנראה מוצרי ואמיתי
+- input:
+  - `execution graph`
+  - `runtime steps`
+- output:
+  - `visible execution progression`
+- connects_to: `Execution Surface`
+
+4. `Separate production tree from QA, closure, and developer instrumentation`  | סטטוס: 🔴 לא בוצע
+- description: להפריד build/runtime production tree מ־QA badges, closure markers, ו־developer/internal trees
+- input:
+  - `render targets`
+  - `environment mode`
+- output:
+  - `production-only tree`
+- connects_to: `Application Runtime Layer`
+
+5. `Promote class inference from confirmation question to early class lock with safe override`  | סטטוס: 🔴 לא בוצע
+- description: להכריע class מוקדם יותר, עם override בטוח, במקום classifier question מלאה מאוחר יותר
+- input:
+  - `project intake`
+  - `class confidence`
+- output:
+  - `early class lock`
+  - `override path`
+- connects_to: `Onboarding Engine`
+
+6. `Make restore deterministic from any stage and any truthful URL`  | סטטוס: 🔴 לא בוצע
+- description: לוודא שכל reload / revisit חוזר לאותה זהות פרויקט ואותו artifact מכל שלב
+- input:
+  - `route state`
+  - `project state`
+  - `artifact identity`
+- output:
+  - `deterministic restore`
+- connects_to: `Nexus Persistence Layer`
+
+7. `Raise design quality of all loop surfaces to product-grade`  | סטטוס: 🔴 לא בוצע
+- description: לשדרג את Onboarding / Understanding / Loop / Proof / Artifact / Timeline כך שלא יהיו רק תקינים אלא גם חזקים ויזואלית ומוצרית
+- input:
+  - `class-aware surface models`
+  - `artifact identity`
+- output:
+  - `product-grade loop surfaces`
+- connects_to: `UI / UX Foundation`

@@ -17,6 +17,9 @@ export function createAiDesignService({
   designTokens = null,
   componentContract = null,
   slimmedContextPayload = null,
+  artifactExpectation = null,
+  classAwareGenerationContract = null,
+  classSpecificSurfaceEvolutionRules = null,
   providerConfig = null,
 } = {}) {
   const { aiDesignRequest } = defineAiDesignRequestSchema({
@@ -30,6 +33,9 @@ export function createAiDesignService({
     designTokens,
     componentContract,
     slimmedContextPayload,
+    artifactExpectation,
+    classAwareGenerationContract,
+    classSpecificSurfaceEvolutionRules,
   });
   const { aiDesignProviderResult } = createAiDesignProviderAdapter({
     aiDesignRequest,

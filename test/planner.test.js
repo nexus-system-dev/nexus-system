@@ -193,3 +193,66 @@ test("planner builds agency roadmap for agency system domain", () => {
   assert.equal(roadmap.some((task) => task.id === "agency-reporting"), true);
   assert.equal(roadmap.every((task) => typeof task.taskType === "string" && task.taskType.length > 0), true);
 });
+
+test("planner builds internal-tool roadmap from intake type when domain context is missing", () => {
+  const planner = new StrategicPlanner();
+
+  const roadmap = planner.generateInitialRoadmap({
+    businessGoal: "לבנות workspace פנימי עם תור עבודה, ownership ו-SLA אמיתי",
+    stack: {},
+    intake: {
+      projectType: "internal-tool",
+      visionText: "כלי פנימי לצוות עם תור, בעלות ופעולה הבאה",
+    },
+  });
+
+  assert.equal(roadmap.some((task) => task.id === "internal-tool-workspace"), true);
+  assert.equal(roadmap.some((task) => task.id === "internal-tool-ownership"), true);
+  assert.equal(roadmap.some((task) => task.id === "internal-tool-visibility"), true);
+});
+
+test("planner builds commerce ops roadmap from intake type when commerce signals are present", () => {
+  const planner = new StrategicPlanner();
+
+  const roadmap = planner.generateInitialRoadmap({
+    businessGoal: "לסדר ecommerce operations עם orders, catalog ו-inventory במקום אחד ברור",
+    stack: {},
+    intake: {
+      projectType: "commerce-ops",
+      visionText: "מערכת מסחר תפעולית עם הזמנות, קטלוג ומלאי",
+    },
+  });
+
+  assert.equal(roadmap.some((task) => task.id === "commerce-ops-command-center"), true);
+  assert.equal(roadmap.some((task) => task.id === "commerce-ops-orders"), true);
+  assert.equal(roadmap.some((task) => task.id === "commerce-ops-catalog"), true);
+});
+
+test("planner prefers imported asset extraction tasks over generic fallback roadmap", () => {
+  const planner = new StrategicPlanner();
+
+  const roadmap = planner.generateInitialRoadmap({
+    businessGoal: "Drive the next step from imported project evidence",
+    stack: {},
+    intake: {
+      projectType: "internal-tool",
+    },
+    importedAssetTaskExtraction: {
+      status: "ready",
+      extractedTasks: [
+        {
+          extractedTaskId: "imported-task:documents:knowledge-review:readme",
+          sourceType: "documents",
+          category: "knowledge-review",
+          title: "Review imported documentation: README.md",
+          detail: "Convert imported documentation into actionable implementation steps.",
+          priority: "low",
+          evidence: ["README.md"],
+        },
+      ],
+    },
+  });
+
+  assert.deepEqual(roadmap.map((task) => task.id), ["imported-task:documents:knowledge-review:readme"]);
+  assert.equal(roadmap[0].summary, "Review imported documentation: README.md");
+});

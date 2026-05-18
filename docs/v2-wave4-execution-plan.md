@@ -11,16 +11,32 @@
 קובץ המקור שממנו נגזרות משימות `Wave 4`:
 - [docs/backlog-unified-status-and-order.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/backlog-unified-status-and-order.md)
 
+מסמך end-state קנוני מחייב ל־`Wave 4`:
+- [docs/operating-system/wave4-end-state-definition.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-end-state-definition.md)
+
+מסמך planning track קנוני ל־`Minimum Believable Nexus Core`:
+- [docs/operating-system/wave4-minimum-believable-core-planning-track.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-minimum-believable-core-planning-track.md)
+
+מסמך external product intelligence קנוני ל־`Wave 4`:
+- [docs/operating-system/wave4-external-product-intelligence-pass-2026-05-18.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-external-product-intelligence-pass-2026-05-18.md)
+
+מסמך execution engine קנוני ל־`Wave 4`:
+- [docs/operating-system/wave4-permanent-orchestrator-v1.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-permanent-orchestrator-v1.md)
+
 בלוקי `Wave 4` שנמשכו מהמקור:
 - `Nexus Product Go-To-Market`
 - `Owner Control Plane`
 
 הרחבת execution plan בגלל תלות מוצרית מחייבת:
 - `Product Boundary Model`
+- `Minimum Believable Nexus Core`
 
 הערה חשובה:
 - `Product Boundary Model` יושבת בקובץ המקור מחוץ לבלוקי `Wave 4`, אבל בפועל היא תנאי עבודה ל־GTM ולהשקה.
 - בלי boundary ברור אי אפשר ליישר promises, expectations ו־owner communications.
+- `Minimum Believable Nexus Core` עדיין לא מפורק כאן למשימות backlog מלאות, אבל הוא כבר תנאי קנוני מחייב ל־Wave 4 לפי מסמך ה־end-state.
+- הפירוק הקנוני הראשוני של `Minimum Believable Nexus Core` ל־lanes, tasks, execution order ו־validation gate מנוהל במסמך ה־planning track הייעודי.
+- לכן אין לקרוא את `Wave 4` יותר כ־`boundary + GTM + owner shell` בלבד.
 
 ## Status Legend
 
@@ -30,12 +46,55 @@
 
 ## Wave 4 Goal
 
-`Wave 4` נועדה להפוך את Nexus ממערכת בנויה למוצר שאפשר:
-- למקם בשוק
-- להציג נכון
-- להפעיל כבעלים
-- לנטר ברמת הנהלה
-- ולנהל סביבו launch ו־operation אמיתיים
+`Wave 4` נועדה להפוך את Nexus ל־`Minimum Believable Nexus`:
+- מערכת שאפשר להשתמש בה באמת כדי לקחת `prompt` או `upload`
+- להבין איזה מוצר בונים
+- להתחיל לבנות אותו אוטומטית ובצורה class-aware
+- להראות build progression חי מול המשתמש
+- להחזיק local workspace continuity
+- לקדם את המוצר ל־`releaseable product state`
+- ולאפשר continuation אמיתי אחרי release
+
+רק מעל השכבה הזאת `Wave 4` גם צריכה:
+- ליישר `Product Boundary`
+- להציג `Go-To-Market`
+- ולאפשר `Owner Control Plane`
+
+כלומר:
+- `boundary`
+- `GTM`
+- `owner control`
+
+הם חלק מ־`Wave 4`,
+אבל אינם מגדירים אותה לבדם ואינם מספיקים לסגירה truthful של הגל.
+
+## Wave 4 End-State Override
+
+המסמך [docs/operating-system/wave4-end-state-definition.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-end-state-definition.md) הוא override קנוני לפרשנות של `Wave 4`.
+
+מכאן והלאה:
+- אסור למסגר את `Wave 4` כגל של `boundary/GTM/owner shell` בלבד
+- חייבים לכלול בה `Minimum Believable Nexus Core`
+- חייבים להתייחס כ־`non-negotiable` ל:
+  - automatic class-aware product skeleton generation
+  - real visible product build progression
+  - evolving product surfaces
+  - local-first / Electron-style workspace continuity
+  - runtime / packaging preparation per class
+  - releaseable product state and continuation loop
+  - no meaningful backend/core/runtime progression without visible surface progression and live browser verification in parallel
+  - external product intelligence must be integrated canonically, not copied or bolted on
+  - structural UI evolution must go through coherent Figma-backed design planning, not patchwork implementation
+
+הבהרה קנונית:
+- Figma היא כלי design support ו־visual planning
+- Nexus עצמה חייבת להישאר מנוע היצירה הפנימי:
+  - class resolution
+  - bootstrap
+  - generation
+  - runtime direction
+  - release path
+  - continuation
 
 ## Current Progress
 
@@ -49,14 +108,136 @@
 
 זה סדר הביצוע המחייב ברמת הבלוקים:
 
-1. `Product Boundary Model`
-2. `Nexus Product Go-To-Market`
-3. `Owner Control Plane`
+1. `Minimum Believable Nexus Core`
+2. `Product Boundary Model`
+3. `Nexus Product Go-To-Market`
+4. `Owner Control Plane`
 
 למה זה הסדר הנכון:
+- `Minimum Believable Nexus Core` קודם כי בלי build progression אמיתי, class-aware product skeletons, runtime direction ו־local workspace continuity, Nexus עדיין לא מוצר יצירה אמיתי אלא מעטפת תיאורית.
 - `Product Boundary Model` קודם כי לפני שמשיקים צריך לדעת מה Nexus מבטיחה, מה מחוץ לתחום ומה חייב disclosure.
-- `Nexus Product Go-To-Market` אחריה כי messaging, website, access model ו־launch campaign נשענים על boundary ברור.
-- `Owner Control Plane` בא אחרי שיש מוצר עם positioning, funnel ו־measurement, כי owner systems נשענים על metrics, incidents ו־GTM signals אמיתיים.
+- `Nexus Product Go-To-Market` באה אחרי core + boundary כי messaging ו־launch חייבים להישען על מה Nexus באמת בונה מול המשתמש, לא על shell חיצוני מנותק.
+- `Owner Control Plane` בא אחרי שיש מוצר עם product signals, build progression, funnel ו־measurement, כי owner systems נשענים על runtime truth אמיתי.
+
+## Minimum Believable Nexus Core
+
+הבלוק הזה הוא כעת חלק קנוני מ־`Wave 4`.
+
+הפירוק הקנוני הפעיל שלו מנוהל ב:
+- [docs/operating-system/wave4-minimum-believable-core-planning-track.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-minimum-believable-core-planning-track.md)
+- [docs/operating-system/wave4-product-class-resolution-model.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-product-class-resolution-model.md)
+- [docs/operating-system/wave4-stage-runtime-direction-resolver.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-stage-runtime-direction-resolver.md)
+- [docs/operating-system/wave4-automatic-product-skeleton-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-automatic-product-skeleton-contract.md)
+- [docs/operating-system/wave4-class-specific-skeleton-quality-baseline.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-class-specific-skeleton-quality-baseline.md)
+- [docs/operating-system/wave4-split-workspace-live-build-surface-model.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-split-workspace-live-build-surface-model.md)
+- [docs/operating-system/wave4-build-progression-state-machine.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-build-progression-state-machine.md)
+- [docs/operating-system/wave4-class-aware-generation-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-class-aware-generation-contract.md)
+- [docs/operating-system/wave4-class-specific-surface-evolution-rules.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-class-specific-surface-evolution-rules.md)
+- [docs/operating-system/wave4-local-workspace-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-local-workspace-contract.md)
+- [docs/operating-system/wave4-desktop-shell-scope-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-desktop-shell-scope-contract.md)
+- [docs/operating-system/wave4-class-aware-runtime-resolver.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-class-aware-runtime-resolver.md)
+
+הוא כולל יכולות שלא ניתן לדחות:
+- automatic class-aware skeleton generation
+- build progression חי מול העיניים של המשתמש
+- real evolving product surfaces
+- split workspace / live build surface / simulator-like layout where relevant
+- local-first workspace continuity
+- runtime / packaging resolver per product class
+- releaseable product state
+- first truthful post-release continuation loop
+- coupled backend-to-surface progression and live verification discipline
+
+בלי הבלוק הזה:
+- `Wave 4` לא נסגרת truthfully
+- `Product Boundary Model` ו־`GTM` נשארים מנותקים מיכולת הליבה של Nexus
+- ו־`Owner Control Plane` נשענת על מוצר שעדיין לא usable מספיק
+
+## Minimum Believable Nexus Core Lane Order
+
+סדר ה־core lanes הקנוני לפני entry לבלוקי GTM / owner:
+1. `Product Understanding And Class Resolution`
+2. `Automatic Product Bootstrap`
+3. `Live Build Surfaces`
+4. `Class-Aware Product Generation`
+5. `Local Workspace / Electron Shell`
+6. `Runtime / Packaging Resolver`
+7. `Releaseable Output`
+8. `Continuation / Growth Loop`
+9. `Deployment / Release Path`
+10. `Live Orchestration Continuity`
+
+ה־task graph, dependencies, ו־trueGreen criteria של ה־lanes האלה מוגדרים ב־planning track הייעודי.
+
+חוזה ה־class resolution הקנוני של ה־core מוגדר ב:
+- [docs/operating-system/wave4-product-class-resolution-model.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-product-class-resolution-model.md)
+
+הבהרה:
+- `productClass` הוא שדה ה־truth הראשי של Wave 4
+- `domain specialization` הוא refinement משני
+- כל bootstrap, runtime, release, ו־continuation חייבים להישען קודם כל על `productClass`
+
+## Canonical Wave 4 Work Rule
+
+מעכשיו והלאה, ובפרט בתוך `Wave 4`, אסור לבנות שכבות `backend/core/runtime` משמעותיות
+בלי שהחזית, ה־routing, ה־continuity והמסך החי מתקדמים יחד איתן.
+
+אם capability חדשה משנה אמת מוצרית, חייבים במקביל:
+- לחשוף אותה visibly בתוך Nexus
+- לחבר אותה ל־live route או surface אמיתי
+- לבדוק אותה בלייב בדפדפן תוך כדי העבודה
+- לראות איך המשתמש חווה אותה בפועל
+- לוודא שאין disconnect בין engine truth לבין visible product truth
+
+הזרימה הקנונית מעכשיו היא:
+1. build capability
+2. expose it visibly
+3. test live
+4. observe real behavior
+5. אם משהו נשבר:
+   - לתקן מיד
+   - או לפתוח task / lane קנוני
+6. rerun live
+7. רק אז להמשיך
+
+משמעות הכלל:
+- no server truth without visible truth
+- no planner truth without UI differentiation
+- no route truth without restore truth
+- no upload truth without downstream continuity
+
+בנוסף, מעכשיו והלאה:
+- delegation לסוכנים אחרים צריכה לשמש אקטיבית כאשר היא מאיצה closure מקצה לקצה
+- אבל תמיד תחת orchestrator ראשי אחד
+
+ה־main orchestrator נשאר הסמכות העליונה ל:
+- architecture direction
+- task ordering
+- closure decisions
+- rerun discipline
+- canonical write-back
+- lane promotion
+- Wave transitions
+
+ה־agents האחרים הם execution workers בלבד.
+הם אינם רשאים:
+- להמציא framework
+- לשנות task ordering
+- לפתוח lanes לבד
+- לסגור `trueGreen` לבד
+- לכתוב canonical truth בלי אישור orchestration
+
+מודל העבודה המועדף מעכשיו:
+- bounded investigations
+- bounded fixes
+- bounded verification
+- parallel execution where it truthfully accelerates closure
+- canonical unification by the main orchestrator
+
+בנוסף:
+- Wave 4 development must actively learn from relevant external builders, workflow systems, and product environments
+- but every imported pattern must enter through the canonical lane/task structure, with validation, continuity, and UI integration rules
+- if a capability requires structural UI evolution, that evolution must pause for Figma-backed design planning before implementation continues
 
 ## Parallelization Rules
 
@@ -89,11 +270,16 @@
 ## Validation Gate
 
 `Wave 4 Validation Gate` מגיע רק אחרי שכל הבלוקים לעיל נסגרו ברמת implementation:
+- `Minimum Believable Nexus Core`
 - boundary ברור של המוצר
 - website + landing + access flows של Nexus
 - activation, launch ו־GTM measurement אמיתיים
 - owner control center עם operations, security ו־audit
 - אין פער בין מה שהמוצר מבטיח בחוץ לבין מה שהבעלים רואה ושולט מבפנים
+- והמשתמש רואה את המוצר עצמו נבנה, משתנה ומתקדם מולו בזמן אמת
+
+לצורך planning truth, ה־gate המפורט של `Minimum Believable Nexus` מנוהל ב:
+- [docs/operating-system/wave4-minimum-believable-core-planning-track.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-minimum-believable-core-planning-track.md)
 
 ## Execution Order By Block
 
@@ -1446,8 +1632,12 @@
 ## End State Of This File
 
 בסוף ההכנה של `Wave 4` צריך להיות ברור:
+- מהו `Minimum Believable Nexus`
+- אילו capabilities הן `non-negotiable`
+- אילו capabilities deferred לגלים מאוחרים יותר
 - מהי המשימה הראשונה
 - מה בא אחריה
 - מהו סדר הביצוע הנכון
+- איך `Minimum Believable Nexus Core` קודמת ל־`Go-To-Market` ו־`Owner Control Plane`
 - איך `Go-To-Market` ו־`Owner Control Plane` מתחברים
 - ואיך `Product Boundary Model` מגינה על ההשקה מפני promises שגויים

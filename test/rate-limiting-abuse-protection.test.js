@@ -90,6 +90,37 @@ test("critical routes are rate limited by IP and keep updated store state", () =
   assert.equal(store.clientSignals.get("critical:10.0.0.9").lastDecision, "rate-limited");
 });
 
+test("restore routes allow clustered bootstrap reads without false 429", () => {
+  const store = createInMemoryRateLimitStore();
+  let lastDecision = null;
+
+  for (let index = 0; index < 20; index += 1) {
+    const result = createRateLimitingAndAbuseProtection({
+      requestContext: createRequestContext({
+        ipAddress: "10.0.0.44",
+        userId: null,
+        pathName: index % 2 === 0 ? "/api/projects" : "/api/onboarding/sessions/session-1/conversation",
+        method: "GET",
+        timestamp: 30_000 + index,
+      }),
+      routeDefinition: {
+        method: "GET",
+        path: index % 2 === 0 ? "/api/projects" : "/api/onboarding/sessions/session-1/conversation",
+        tier: "restore",
+        kind: "restore-read",
+        bucketKey: index % 2 === 0 ? "/api/projects" : "/api/onboarding/sessions/*/conversation",
+      },
+      rateLimitStore: store,
+    });
+
+    lastDecision = result.rateLimitDecision;
+    assert.equal(lastDecision.allowed, true);
+  }
+
+  assert.equal(lastDecision.decision, "allowed");
+  assert.equal(store.clientSignals.get("restore:anonymous:10.0.0.44").lastDecision, "allowed");
+});
+
 test("repeated auth failures escalate to abuse-blocked", () => {
   const store = createInMemoryRateLimitStore();
   const routeDefinition = {

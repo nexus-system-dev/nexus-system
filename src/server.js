@@ -36,6 +36,8 @@ function sendFile(response, filePath) {
       ? "text/html; charset=utf-8"
       : ext === ".css"
         ? "text/css; charset=utf-8"
+        : ext === ".json"
+          ? "application/json; charset=utf-8"
         : "application/javascript; charset=utf-8";
 
   response.writeHead(200, { "Content-Type": type });
@@ -236,6 +238,37 @@ function resolveRouteDefinition(method, pathname) {
     };
   }
 
+  if (
+    verb === "GET"
+    && (
+      route === "/api/projects"
+      || /^\/api\/projects\/[^/]+$/.test(route)
+      || /^\/api\/projects\/[^/]+\/live-state$/.test(route)
+      || /^\/api\/onboarding\/sessions\/[^/]+$/.test(route)
+      || /^\/api\/onboarding\/sessions\/[^/]+\/conversation$/.test(route)
+      || /^\/api\/onboarding\/sessions\/[^/]+\/step$/.test(route)
+    )
+  ) {
+    return {
+      method: verb,
+      path: route,
+      tier: "restore",
+      kind: "restore-read",
+      bucketKey: route === "/api/projects"
+        ? "/api/projects"
+        : route.includes("/live-state")
+          ? "/api/projects/*/live-state"
+          : route.startsWith("/api/projects/")
+            ? "/api/projects/*"
+            : route.endsWith("/conversation")
+              ? "/api/onboarding/sessions/*/conversation"
+              : route.endsWith("/step")
+                ? "/api/onboarding/sessions/*/step"
+                : "/api/onboarding/sessions/*",
+      isKnownRoute: true,
+    };
+  }
+
   if (route.startsWith("/api/onboarding/")) {
     return {
       method: verb,
@@ -351,11 +384,15 @@ function resolveProjectRouteAction(method, pathname) {
       return "edit";
     }
 
+    if (suffix === "run-cycle") {
+      return "run";
+    }
+
     if (suffix === "partial-acceptance" || suffix === "approvals/approve" || suffix === "approvals/reject" || suffix === "approvals/revoke") {
       return "approve";
     }
 
-    if (suffix === "rollback-executions" || suffix === "snapshot-backup-schedule" || suffix === "snapshot-backups/run" || suffix === "snapshot-backup-worker" || suffix === "snapshot-backup-worker/run" || suffix === "snapshot-retention-policy" || suffix === "snapshot-retention-cleanup" || suffix === "business-continuity/actions" || suffix === "run-cycle" || suffix === "scan" || suffix === "analyze" || suffix === "sync-casino" || suffix === "connect-git" || suffix === "sync-runtime" || suffix === "sync-notion") {
+    if (suffix === "rollback-executions" || suffix === "snapshot-backup-schedule" || suffix === "snapshot-backups/run" || suffix === "snapshot-backup-worker" || suffix === "snapshot-backup-worker/run" || suffix === "snapshot-retention-policy" || suffix === "snapshot-retention-cleanup" || suffix === "business-continuity/actions" || suffix === "scan" || suffix === "analyze" || suffix === "sync-casino" || suffix === "connect-git" || suffix === "sync-runtime" || suffix === "sync-notion") {
       return "deploy";
     }
 
@@ -401,7 +438,14 @@ function resolveProjectRouteResourceType(pathname) {
   return "project-state";
 }
 
-function buildProjectAccessEnforcement({ request, pathname, project = null, userId = null } = {}) {
+function buildProjectAccessEnforcement({
+  request,
+  pathname,
+  project = null,
+  userId = null,
+  allowScopedReviewBypass = false,
+  allowViewAuthorizationBypass = false,
+} = {}) {
   if (!project?.state?.roleCapabilityMatrix || !project?.state?.tenantIsolationSchema) {
     return null;
   }
@@ -420,7 +464,7 @@ function buildProjectAccessEnforcement({ request, pathname, project = null, user
   const projectAction = resolveProjectRouteAction(request.method, pathname);
   const resourceType = resolveProjectRouteResourceType(pathname);
   const policyDecision =
-    projectAction === "deploy" || projectAction === "run" || projectAction === "approve"
+    projectAction === "deploy"
       ? project.state.policyDecision ?? null
       : null;
   const requestedWorkspaceId = resolveRequestWorkspaceHeader(
@@ -446,7 +490,10 @@ function buildProjectAccessEnforcement({ request, pathname, project = null, user
     },
   });
 
-  if (workspaceIsolationDecision.isBlocked === true || workspaceIsolationDecision.requiresScopedReview === true) {
+  if (
+    workspaceIsolationDecision.isBlocked === true
+    || (workspaceIsolationDecision.requiresScopedReview === true && allowScopedReviewBypass !== true)
+  ) {
     return {
       httpStatus: 403,
       payload: {
@@ -457,7 +504,10 @@ function buildProjectAccessEnforcement({ request, pathname, project = null, user
     };
   }
 
-  if (projectAuthorizationDecision.isBlocked === true) {
+  if (
+    projectAuthorizationDecision.isBlocked === true
+    && !(allowViewAuthorizationBypass === true && projectAction === "view")
+  ) {
     return {
       httpStatus: 403,
       payload: {
@@ -704,12 +754,19 @@ export function createServer(projectService, runtimeStatus = {}) {
         return;
       }
     }
-    if (routeDefinition.kind === "project-api" && workspaceId) {
+    const isProjectScopedRestoreRead =
+      routeDefinition.kind === "restore-read"
+      && workspaceId
+      && url.pathname.startsWith("/api/projects/")
+      && url.pathname !== "/api/projects";
+    if ((routeDefinition.kind === "project-api" || isProjectScopedRestoreRead) && workspaceId) {
       const enforcement = buildProjectAccessEnforcement({
         request,
         pathname: url.pathname,
         project: routedProject,
         userId: resolvedUserId,
+        allowScopedReviewBypass: isProjectScopedRestoreRead,
+        allowViewAuthorizationBypass: isProjectScopedRestoreRead,
       });
       if (enforcement) {
         observabilityTransport?.finishHttpRequest({
@@ -837,6 +894,104 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "GET" && url.pathname === "/api/settings-profile") {
+      const userId = resolveRequestUserId(request);
+      if (!userId) {
+        sendJson(response, 401, { error: "Authentication required" });
+        return;
+      }
+
+      const authPayload = projectService.getUserAuthPayload(userId);
+      if (!authPayload) {
+        sendJson(response, 404, { error: "User not found" });
+        return;
+      }
+
+      sendJson(response, 200, {
+        settingsProfileSurface: {
+          settingsProfileSurfaceId: `settings-profile:${authPayload.userIdentity?.userId ?? userId}`,
+          status: "ready",
+          routeKey: "settings",
+          actorProfile: {
+            userId: authPayload.userIdentity?.userId ?? userId,
+            displayName: authPayload.userIdentity?.displayName ?? null,
+            email: authPayload.userIdentity?.email ?? null,
+            role: authPayload.membershipRecord?.roleAssignment?.role ?? authPayload.membershipRecord?.role ?? "owner",
+          },
+          workspaceSettings: authPayload.workspaceSettings ?? {},
+          notificationPreferences: authPayload.notificationPreferences ?? {},
+          securitySettings: {
+            mfaDecision: authPayload.ownerMfaDecision?.decision ?? "unknown",
+            trustLevel: authPayload.userIdentity?.userId ? "known-user" : "anonymous",
+          },
+          summary: {
+            canEditProfile: true,
+            hasSettingsRoute: true,
+          },
+        },
+      });
+      return;
+    }
+
+    if (request.method === "PUT" && url.pathname === "/api/settings-profile") {
+      const userId = resolveRequestUserId(request);
+      if (!userId) {
+        sendJson(response, 401, { error: "Authentication required" });
+        return;
+      }
+
+      const body = await parseBody(request).catch(() => ({}));
+      if (body.profileInput) {
+        projectService.updateUserProfile({
+          userInput: { userId },
+          profileInput: body.profileInput,
+        });
+      }
+      if (body.settingsInput) {
+        projectService.updateWorkspaceSettings({
+          userInput: { userId },
+          settingsInput: body.settingsInput,
+        });
+      }
+      if (body.notificationInput) {
+        projectService.updateNotificationPreferences({
+          userInput: { userId },
+          preferenceInput: body.notificationInput,
+        });
+      }
+
+      const authPayload = projectService.getUserAuthPayload(userId);
+      if (!authPayload) {
+        sendJson(response, 404, { error: "User not found" });
+        return;
+      }
+
+      sendJson(response, 200, {
+        settingsProfileSurface: {
+          settingsProfileSurfaceId: `settings-profile:${authPayload.userIdentity?.userId ?? userId}`,
+          status: "ready",
+          routeKey: "settings",
+          actorProfile: {
+            userId: authPayload.userIdentity?.userId ?? userId,
+            displayName: authPayload.userIdentity?.displayName ?? null,
+            email: authPayload.userIdentity?.email ?? null,
+            role: authPayload.membershipRecord?.roleAssignment?.role ?? authPayload.membershipRecord?.role ?? "owner",
+          },
+          workspaceSettings: authPayload.workspaceSettings ?? {},
+          notificationPreferences: authPayload.notificationPreferences ?? {},
+          securitySettings: {
+            mfaDecision: authPayload.ownerMfaDecision?.decision ?? "unknown",
+            trustLevel: authPayload.userIdentity?.userId ? "known-user" : "anonymous",
+          },
+          summary: {
+            canEditProfile: true,
+            hasSettingsRoute: true,
+          },
+        },
+      });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname === "/api/project-drafts") {
       const body = await parseBody(request).catch(() => ({}));
       const result = projectService.createProjectDraft({
@@ -895,6 +1050,7 @@ export function createServer(projectService, runtimeStatus = {}) {
       const body = await parseBody(request).catch(() => ({}));
       const result = projectService.updateOnboardingIntake({
         sessionId,
+        projectName: body.projectName,
         visionText: body.visionText,
         uploadedFiles: body.uploadedFiles,
         externalLinks: body.externalLinks,
@@ -918,6 +1074,31 @@ export function createServer(projectService, runtimeStatus = {}) {
       const sessionId = segments[4];
       const step = projectService.getOnboardingCurrentStep(sessionId);
       sendJson(response, step ? 200 : 404, step ?? { error: "Session not found" });
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname.startsWith("/api/onboarding/sessions/") && url.pathname.endsWith("/conversation")) {
+      const sessionId = segments[4];
+      const conversation = projectService.getOnboardingConversationState(sessionId);
+      sendJson(response, conversation ? 200 : 404, conversation ?? { error: "Session not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/onboarding/sessions/") && url.pathname.endsWith("/conversation-turn")) {
+      const sessionId = segments[4];
+      const body = await parseBody(request).catch(() => ({}));
+      const conversation = projectService.submitOnboardingConversationTurn({
+        sessionId,
+        answer: body.answer,
+      });
+      sendJson(response, conversation ? 200 : 404, conversation ?? { error: "Session not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/onboarding/sessions/") && url.pathname.endsWith("/conversation-restart")) {
+      const sessionId = segments[4];
+      const conversation = projectService.restartOnboardingConversation(sessionId);
+      sendJson(response, conversation ? 200 : 404, conversation ?? { error: "Session not found" });
       return;
     }
 
@@ -1630,6 +1811,45 @@ export function createServer(projectService, runtimeStatus = {}) {
 
     if (request.method === "GET" && url.pathname === "/styles.css") {
       sendFile(response, path.join(publicDir, "styles.css"));
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname.startsWith("/nexus-ui/")) {
+      const relativeAssetPath = url.pathname.replace(/^\/+/, "");
+      const resolvedAssetPath = path.resolve(publicDir, relativeAssetPath);
+      if (!resolvedAssetPath.startsWith(path.resolve(publicDir, "nexus-ui"))) {
+        sendJson(response, 403, { error: "Forbidden" });
+        return;
+      }
+      if (!fs.existsSync(resolvedAssetPath) || fs.statSync(resolvedAssetPath).isDirectory()) {
+        sendJson(response, 404, { error: "Not found" });
+        return;
+      }
+      sendFile(response, resolvedAssetPath);
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname.startsWith("/shared/")) {
+      const relativeAssetPath = url.pathname.replace(/^\/+/, "");
+      const resolvedAssetPath = path.resolve(publicDir, relativeAssetPath);
+      if (!resolvedAssetPath.startsWith(path.resolve(publicDir, "shared"))) {
+        sendJson(response, 403, { error: "Forbidden" });
+        return;
+      }
+      if (!fs.existsSync(resolvedAssetPath) || fs.statSync(resolvedAssetPath).isDirectory()) {
+        sendJson(response, 404, { error: "Not found" });
+        return;
+      }
+      sendFile(response, resolvedAssetPath);
+      return;
+    }
+
+    if (
+      request.method === "GET"
+      && !url.pathname.startsWith("/api/")
+      && path.extname(url.pathname) === ""
+    ) {
+      sendFile(response, path.join(publicDir, "index.html"));
       return;
     }
 

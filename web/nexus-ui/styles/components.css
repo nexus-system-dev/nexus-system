@@ -1,0 +1,303 @@
+.nexus-ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nexus-space-2);
+  border: 0;
+  border-radius: var(--nexus-radius-button);
+  padding: 14px 24px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.nexus-ui-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.nexus-ui-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.nexus-ui-button--primary {
+  color: var(--nexus-primary-foreground);
+  background: linear-gradient(
+    135deg,
+    var(--nexus-primary-gradient-from),
+    var(--nexus-primary-gradient-to)
+  );
+  box-shadow: var(--nexus-shadow-sm);
+}
+
+.nexus-ui-button--secondary {
+  color: var(--nexus-foreground);
+  background: var(--nexus-card);
+  border: 1px solid var(--nexus-border);
+}
+
+.nexus-ui-button--tertiary {
+  color: var(--nexus-primary);
+  background: transparent;
+}
+
+.nexus-ui-button--sm {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+}
+
+.nexus-ui-button--lg {
+  padding: 18px 28px;
+  font-size: 1.05rem;
+}
+
+.nexus-ui-card {
+  background: var(--nexus-card);
+  color: var(--nexus-card-foreground);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--nexus-radius-card);
+  box-shadow: var(--nexus-shadow-sm);
+}
+
+.nexus-ui-card--hoverable {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.nexus-ui-card--hoverable:hover {
+  transform: translateY(-1px);
+  border-color: rgba(109, 93, 252, 0.22);
+  box-shadow: var(--nexus-shadow-md);
+}
+
+.nexus-ui-card--padding-sm { padding: 16px; }
+.nexus-ui-card--padding-md { padding: 24px; }
+.nexus-ui-card--padding-lg { padding: 32px; }
+.nexus-ui-card--padding-xl { padding: 40px; }
+
+.nexus-ui-field {
+  display: grid;
+  gap: 8px;
+}
+
+.nexus-ui-field__label {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.nexus-ui-field__required {
+  color: var(--nexus-destructive);
+}
+
+.nexus-ui-input,
+.nexus-ui-textarea {
+  width: 100%;
+  border: 1px solid var(--nexus-input-border);
+  background: var(--nexus-input-background);
+  color: var(--nexus-foreground);
+  border-radius: var(--nexus-radius-input);
+  padding: 14px 16px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.nexus-ui-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.nexus-ui-input:focus,
+.nexus-ui-textarea:focus {
+  outline: 0;
+  border-color: var(--nexus-primary);
+  box-shadow: 0 0 0 4px var(--nexus-ring);
+}
+
+.nexus-ui-field__helper {
+  color: var(--nexus-muted-foreground);
+  font-size: 0.9rem;
+}
+
+.nexus-ui-stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--nexus-space-5);
+  position: relative;
+}
+
+.nexus-ui-stepper::before {
+  content: "";
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  left: 24px;
+  height: 2px;
+  background: var(--nexus-stepper-connector);
+  z-index: 0;
+}
+
+.nexus-ui-stepper__item {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.nexus-ui-stepper__circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  background: var(--nexus-card);
+  border: 2px solid var(--nexus-stepper-inactive);
+  color: var(--nexus-muted-foreground);
+}
+
+.nexus-ui-stepper__item[data-status="active"] .nexus-ui-stepper__circle {
+  background: var(--nexus-stepper-active);
+  border-color: var(--nexus-stepper-active);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(109, 93, 252, 0.28);
+}
+
+.nexus-ui-stepper__item[data-status="complete"] .nexus-ui-stepper__circle {
+  background: var(--nexus-stepper-complete);
+  border-color: var(--nexus-stepper-complete);
+  color: #fff;
+}
+
+.nexus-ui-stepper__label {
+  max-width: 110px;
+  color: var(--nexus-muted-foreground);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.nexus-ui-stepper__item[data-status="active"] .nexus-ui-stepper__label {
+  color: var(--nexus-foreground);
+}
+
+.nexus-ui-state {
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: center;
+  display: grid;
+  gap: var(--nexus-space-4);
+}
+
+.nexus-ui-state__icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 1.75rem;
+}
+
+.nexus-ui-state[data-variant="empty"] .nexus-ui-state__icon {
+  background: var(--nexus-muted);
+}
+
+.nexus-ui-state[data-variant="loading"] .nexus-ui-state__icon {
+  background: var(--nexus-accent);
+}
+
+.nexus-ui-state[data-variant="success"] .nexus-ui-state__icon {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--nexus-success);
+}
+
+.nexus-ui-state[data-variant="error"] .nexus-ui-state__icon {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--nexus-destructive);
+}
+
+.nexus-ui-task-card {
+  display: grid;
+  gap: var(--nexus-space-4);
+}
+
+.nexus-ui-task-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--nexus-space-4);
+}
+
+.nexus-ui-task-card__main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--nexus-space-4);
+}
+
+.nexus-ui-task-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(109, 93, 252, 0.12);
+  color: var(--nexus-primary);
+  font-size: 1.35rem;
+  flex: 0 0 auto;
+}
+
+.nexus-ui-task-card__title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.nexus-ui-task-card__body {
+  margin: 0;
+  color: var(--nexus-muted-foreground);
+  line-height: 1.7;
+}
+
+.nexus-ui-task-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.nexus-ui-task-card__status[data-status="active"] {
+  background: rgba(109, 93, 252, 0.12);
+  color: var(--nexus-primary);
+}
+
+.nexus-ui-task-card__status[data-status="pending"] {
+  background: var(--nexus-muted);
+  color: var(--nexus-muted-foreground);
+}
+
+.nexus-ui-task-card__status[data-status="complete"] {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--nexus-success);
+}
+
+.nexus-ui-task-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-top: var(--nexus-space-4);
+  border-top: 1px solid var(--nexus-border-muted);
+  color: var(--nexus-muted-foreground);
+  font-size: 0.9rem;
+}

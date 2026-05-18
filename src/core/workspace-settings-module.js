@@ -18,6 +18,8 @@ export function createOrganizationWorkspaceSettingsModule({
       workspaceId: normalizedWorkspaceModel.workspaceId ?? null,
       defaultProjectVisibility: normalizedSettingsInput.defaultProjectVisibility ?? "private",
       defaultExecutionMode: normalizedSettingsInput.defaultExecutionMode ?? "guided",
+      preferredLanguage: normalizedSettingsInput.preferredLanguage ?? "he",
+      themePreference: normalizedSettingsInput.themePreference ?? "light",
       workspaceOperatingMode: Object.hasOwn(normalizedSettingsInput, "workspaceOperatingMode")
         ? normalizedSettingsInput.workspaceOperatingMode
         : undefined,

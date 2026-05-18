@@ -10,14 +10,44 @@ function normalizeString(value, fallback = null) {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : fallback;
 }
 
+function normalizeGenerationIntent(aiDesignRequest) {
+  return normalizeObject(aiDesignRequest?.generationIntent);
+}
+
+function resolveFocusAreas(aiDesignRequest) {
+  return normalizeArray(normalizeGenerationIntent(aiDesignRequest).focusAreas)
+    .map((item) => normalizeString(item))
+    .filter(Boolean);
+}
+
+function resolveInteractionLabel(cta, generationIntent) {
+  const currentLabel = normalizeString(cta?.label);
+  if (!currentLabel || currentLabel === "Action") {
+    return normalizeString(generationIntent.primaryAction?.label, "Action");
+  }
+  return currentLabel;
+}
+
+function resolveRegionCopyGoal(aiDesignRequest, index) {
+  const focusAreas = resolveFocusAreas(aiDesignRequest);
+  if (focusAreas.length) {
+    return focusAreas[index % focusAreas.length];
+  }
+  return `Support ${normalizeString(aiDesignRequest?.selectedTask?.summary, "the selected task")}`;
+}
+
 function buildRegions(aiDesignRequest) {
+  const generationIntent = normalizeGenerationIntent(aiDesignRequest);
   return normalizeArray(aiDesignRequest?.renderableContext?.regionSummary).map((region, index) => ({
     regionId: normalizeString(region?.regionId, `proposal-region-${index + 1}`),
     slot: normalizeString(region?.slot, "content"),
     componentIntent: normalizeString(region?.componentType, "panel"),
     label: normalizeString(region?.role, `Region ${index + 1}`),
-    copyGoal: `Support ${normalizeString(aiDesignRequest?.selectedTask?.summary, "the selected task")}`,
-    stateIntent: normalizeString(aiDesignRequest?.screen?.currentPhase, "populated"),
+    copyGoal: resolveRegionCopyGoal(aiDesignRequest, index),
+    stateIntent: normalizeString(
+      generationIntent.projectType,
+      normalizeString(aiDesignRequest?.screen?.currentPhase, "populated"),
+    ),
     constraints: normalizeObject(region?.constraints),
   }));
 }
@@ -31,6 +61,8 @@ export function defineAiDesignResponseSchema({
   const screenId = normalizeString(normalizedRequest.screen?.screenId, "unknown-screen");
   const proposalId = `ai-design-proposal:${screenId}`;
   const regions = buildRegions(normalizedRequest);
+  const generationIntent = normalizeGenerationIntent(normalizedRequest);
+  const focusAreas = resolveFocusAreas(normalizedRequest);
 
   return {
     aiDesignProposal: {
@@ -43,18 +75,21 @@ export function defineAiDesignResponseSchema({
         copyId: `proposal-copy-${index + 1}`,
         regionId: region.regionId,
         field: "body",
-        proposedText: `${region.label} for ${normalizeString(normalizedRequest.screen?.title, "Generated screen")}`,
+        proposedText: focusAreas[index]
+          ? `${focusAreas[index]} · ${normalizeString(generationIntent.artifactTitle, normalizeString(normalizedRequest.screen?.title, "Generated screen"))}`
+          : `${region.label} for ${normalizeString(normalizedRequest.screen?.title, "Generated screen")}`,
       })),
       interactions: normalizeArray(normalizedRequest.renderableContext?.ctaAnchors).map((cta) => ({
         ctaId: normalizeString(cta?.ctaId),
-        label: normalizeString(cta?.label, "Action"),
-        actionIntent: normalizeString(cta?.actionIntent, "review"),
+        label: resolveInteractionLabel(cta, generationIntent),
+        actionIntent: normalizeString(cta?.actionIntent, generationIntent.primaryAction?.actionIntent ?? "review"),
         anchor: normalizeString(cta?.anchor, "primary"),
       })),
       reasoning: {
         summary: normalizeString(
           normalizedProviderPayload.summary,
-          `Generated from canonical renderable context for ${normalizeString(normalizedRequest.screen?.title, "screen")}.`,
+          generationIntent.generationGoal
+            ?? `Generated from canonical renderable context for ${normalizeString(normalizedRequest.screen?.title, "screen")}.`,
         ),
         source: normalizeString(normalizedProviderPayload.source, "canonical-local-provider"),
       },

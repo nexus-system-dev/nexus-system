@@ -1,8 +1,48 @@
 import { createDomainRegistry } from "./domain-registry.js";
+import { normalizeCanonicalProductClass, resolveCanonicalProductClass } from "../../web/shared/product-class-model.js";
 
 const DOMAIN_KEYWORDS = {
+  "landing-page": ["landing page", "landing-page", "hero", "cta", "marketing site", "דף נחיתה", "אתר שיווקי", "שיווק"],
   casino: ["casino", "wallet", "treasury", "bonus", "game", "games", "payments", "קזינו", "ארנק", "בונוס"],
   saas: ["saas", "subscription", "billing", "activation", "onboarding", "mvp", "platform", "מנוי"],
+  "internal-tool": [
+    "internal tool",
+    "workspace",
+    "queue",
+    "routing",
+    "handoff",
+    "ownership",
+    "operations",
+    "backoffice",
+    "back office",
+    "admin panel",
+    "portal",
+    "כלי פנימי",
+    "תור עבודה",
+    "בעלות",
+    "צוות פנימי",
+    "תפעול",
+  ],
+  "commerce-ops": [
+    "ecommerce",
+    "commerce",
+    "shop",
+    "store",
+    "catalog",
+    "checkout",
+    "cart",
+    "order",
+    "orders",
+    "inventory",
+    "merchant",
+    "fulfillment",
+    "catalog ops",
+    "order queue",
+    "מסחר",
+    "קטלוג",
+    "הזמנות",
+    "מלאי",
+  ],
   "mobile-app": [
     "mobile app",
     "react native",
@@ -13,6 +53,7 @@ const DOMAIN_KEYWORDS = {
     "play store",
     "אפליקציה",
   ],
+  game: ["game", "unity", "unreal", "gameplay", "hud", "משחק"],
   "agency-system": ["agency", "client", "clients", "reporting", "freelancer", "projects", "סוכנות", "לקוחות"],
   book: ["book", "ebook", "chapter", "chapters", "manuscript", "ספר", "פרק"],
   "content-product": ["course", "workshop", "module", "modules", "lesson", "content product", "קורס", "שיעור"],
@@ -47,7 +88,7 @@ export function classifyProjectDomain({
   goal = "",
   domainRegistry = createDomainRegistry(),
 } = {}) {
-  const intakeType = projectIntake?.projectType ?? "unknown";
+  const intakeType = normalizeCanonicalProductClass(projectIntake?.projectType, { fallback: "unknown" });
   const sourceType = externalSources?.source ?? externalSources?.type ?? null;
   const textCorpus = flattenText([
     goal,
@@ -68,6 +109,11 @@ export function classifyProjectDomain({
     Object.keys(externalSources?.flows ?? {}),
     externalSources?.roadmapContext?.knownMissingParts ?? [],
   ]);
+  const resolvedProductClass = resolveCanonicalProductClass({
+    explicitClass: projectIntake?.projectType,
+    texts: [textCorpus],
+    fallback: "generic",
+  }).productClass;
 
   const confidenceScores = {};
 
@@ -84,6 +130,10 @@ export function classifyProjectDomain({
       score += 0.55;
     }
 
+    if (domainRegistry.domains[domain]?.productClass === resolvedProductClass) {
+      score += 0.35;
+    }
+
     if (sourceType === "casino-api" && domain === "casino") {
       score = 1;
     }
@@ -97,10 +147,16 @@ export function classifyProjectDomain({
     .map(([domain]) => domain);
 
   const domain = sortedCandidates[0] ?? "generic";
+  const productClassCandidates = [...new Set(
+    sortedCandidates.map((candidate) => domainRegistry.domains[candidate]?.productClass ?? candidate),
+  )];
+  const productClass = domainRegistry.domains[domain]?.productClass ?? resolvedProductClass;
 
   return {
     domain,
     domainCandidates: sortedCandidates.length > 0 ? sortedCandidates : ["generic"],
     confidenceScores: sortedCandidates.length > 0 ? confidenceScores : { generic: 1 },
+    productClass,
+    productClassCandidates: productClassCandidates.length > 0 ? productClassCandidates : [productClass],
   };
 }

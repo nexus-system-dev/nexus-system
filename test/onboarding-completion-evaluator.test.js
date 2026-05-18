@@ -21,6 +21,7 @@ test("onboarding completion evaluator marks intake ready when required inputs ex
   assert.equal(onboardingCompletionDecision.isComplete, true);
   assert.equal(onboardingCompletionDecision.requiresClarification, false);
   assert.equal(onboardingCompletionDecision.readinessLevel, "ready");
+  assert.equal(onboardingCompletionDecision.completionStatus, "completed");
   assert.equal(onboardingCompletionDecision.nextAction, "build-project-state");
   assert.equal(onboardingCompletionDecision.summary.projectTypeResolved, true);
 });
@@ -46,4 +47,36 @@ test("onboarding completion evaluator requests clarification for missing intake 
   assert.equal(onboardingCompletionDecision.missingInputs.includes("supporting-material"), true);
   assert.equal(onboardingCompletionDecision.clarificationPrompts.includes("חדד איזה סוג פרויקט אתה בונה"), true);
   assert.equal(onboardingCompletionDecision.readinessLevel, "blocked");
+  assert.equal(onboardingCompletionDecision.completionStatus, "needs-clarification");
+  assert.equal(onboardingCompletionDecision.primaryBlockingReason, "תן שם לפרויקט");
+});
+
+test("onboarding completion evaluator keeps supporting material as continuation gate when understanding is sufficient", () => {
+  const { onboardingCompletionDecision } = createOnboardingCompletionEvaluator({
+    projectIntake: {
+      projectName: "Clinic Launch",
+      visionText: "Landing page for a new clinic service",
+      projectType: "landing-page",
+      uploadedFiles: [],
+      externalLinks: [],
+    },
+    onboardingSession: {
+      sessionId: "session-3",
+      conversation: {
+        answers: {
+          "target-audience": "Busy parents",
+          "core-problem": "They do not understand what to book first",
+        },
+      },
+      requiredActions: [],
+    },
+  });
+
+  assert.equal(onboardingCompletionDecision.isComplete, true);
+  assert.equal(onboardingCompletionDecision.requiresClarification, false);
+  assert.equal(onboardingCompletionDecision.readinessLevel, "ready-with-supporting-material-gap");
+  assert.equal(onboardingCompletionDecision.supportingMaterialDeferred, true);
+  assert.equal(onboardingCompletionDecision.nextAction, "build-project-state-with-supporting-material-gate");
+  assert.equal(onboardingCompletionDecision.continuationGate?.gateType, "supporting-material");
+  assert.equal(onboardingCompletionDecision.missingInputs.includes("supporting-material"), true);
 });

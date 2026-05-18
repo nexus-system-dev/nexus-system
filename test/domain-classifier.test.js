@@ -3,41 +3,32 @@ import assert from "node:assert/strict";
 
 import { classifyProjectDomain } from "../src/core/domain-classifier.js";
 
-test("domain classifier identifies mobile app from intake and scan signals", () => {
+test("classifyProjectDomain resolves landing-page as a canonical product class", () => {
   const result = classifyProjectDomain({
     projectIntake: {
-      projectType: "mobile-app",
-      visionText: "אפליקציה ב-React Native להזמנת שליחים",
-      requestedDeliverables: ["auth"],
+      projectType: "landing-page",
+      visionText: "Landing page for a coaching offer with a clear CTA and trust section.",
     },
-    scan: {
-      stack: {
-        frontend: ["Expo", "React Native"],
-        backend: ["Express"],
-        database: ["Postgres"],
-      },
-    },
-    knowledge: {
-      summary: "mobile app with onboarding",
-    },
+    goal: "Build a landing page that converts visitors into booked calls.",
   });
 
-  assert.equal(result.domain, "mobile-app");
-  assert.equal(result.domainCandidates[0], "mobile-app");
-  assert.equal(result.confidenceScores["mobile-app"] > 0.5, true);
+  assert.equal(result.domain, "landing-page");
+  assert.equal(result.productClass, "landing-page");
+  assert.equal(result.productClassCandidates[0], "landing-page");
 });
 
-test("domain classifier identifies casino from external source", () => {
+test("classifyProjectDomain preserves specialization while mapping to a canonical product class", () => {
   const result = classifyProjectDomain({
-    goal: "להקים wallet ותשלומים לקזינו",
+    projectIntake: {
+      visionText: "Casino wallet and bonus flows for a new player experience.",
+    },
     externalSources: {
       source: "casino-api",
-      roadmapContext: {
-        knownMissingParts: ["Wallet and treasury implementation"],
-      },
     },
+    goal: "Complete auth, wallet, and payments.",
   });
 
   assert.equal(result.domain, "casino");
-  assert.equal(result.confidenceScores.casino, 1);
+  assert.equal(result.productClass, "saas");
+  assert.equal(result.productClassCandidates.includes("saas"), true);
 });

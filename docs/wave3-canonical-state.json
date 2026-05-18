@@ -8,7 +8,331 @@
       "Wave 3 planning docs were audited against repository reality before execution began.",
       "Wave 3 scope was narrowed to unfinished work only.",
       "Tasks already owned and completed by Wave 2 were removed from the active Wave 3 execution map and recorded as satisfied prerequisites instead.",
-      "Several Wave 3 dependency labels were non-canonical lane names rather than executable tasks; those dependencies were repaired into exact repository-backed prerequisites."
+      "Several Wave 3 dependency labels were non-canonical lane names rather than executable tasks; those dependencies were repaired into exact repository-backed prerequisites.",
+      "After execution order 095, Wave 3 entered a canonical product-truth hardening phase that is tracked in docs/nexus-loop-productization-canonical-block.json and governed by docs/operating-system/wave3-product-truth-hardening-plan.md.",
+      "Wave 4 readiness is gated on closing critical Wave 3 product-truth hardening gaps on the live Nexus site at http://127.0.0.1:4011/.",
+      "Wave 3 also carries a canonical parallel planning track for AI-guided onboarding intelligence at docs/operating-system/wave3-onboarding-intelligence-planning-track.md.",
+      "After the repeated-loop closure lane reached trueGreen, Wave 3 opened a new canonical live closure lane for existing-project upload verification at docs/operating-system/wave3-existing-project-upload-closure-track.md.",
+      "After the existing-project upload closure lane reached trueGreen, Wave 3 opened a canonical planning track for live class sweep contract definition at docs/operating-system/wave3-live-class-sweep-track.md before any broader cross-class sweep execution or Wave 4 planning may begin.",
+      "After the live class sweep rerun reached complete-clean and the Wave 3 reopener closure pass closed W3-PTH-012 through W3-PTH-016 on 2026-05-18, Wave 3 product-truth hardening stopped blocking Wave 4 planning.",
+      "Wave 4 planning is now governed by docs/operating-system/wave4-end-state-definition.md, which defines Minimum Believable Nexus as a non-negotiable planning baseline rather than treating Wave 4 as boundary, GTM, and owner shell only."
+    ]
+  },
+  "wave3ProductTruthHardening": {
+    "status": "trueGreen-wave4-planning-ready",
+    "sourceOfTruthUrl": "http://127.0.0.1:4011/",
+    "canonicalBlockPath": "docs/nexus-loop-productization-canonical-block.json",
+    "canonicalPlanPath": "docs/operating-system/wave3-product-truth-hardening-plan.md",
+    "wave4ReadinessVerdict": "planning-go",
+    "blockingReasons": [],
+    "freezeWave3ExecutionThrough": "095",
+    "freezeWave3ExecutionAfter": [
+      "096",
+      "097",
+      "098",
+      "099",
+      "100",
+      "101",
+      "102",
+      "103"
+    ],
+    "gatingCriteria": [
+      "runtime truth",
+      "route truth",
+      "renderer truth",
+      "handoff truth",
+      "restore truth",
+      "product-grade truth"
+    ],
+    "visualCapabilityCompletionRule": "Any capability that claims to create a visual outcome must end as a real visual product surface inside Nexus on 127.0.0.1:4011, not at metadata, schema, regions, preview payloads, bullets, summaries, validation output, or internal renderer state."
+  },
+  "wave3ParallelPlanningTracks": {
+    "onboardingIntelligence": {
+      "status": "planning-required-parallel",
+      "blockingMode": "non-blocking-for-active-hardening-queue",
+      "canonicalPlanPath": "docs/operating-system/wave3-onboarding-intelligence-planning-track.md",
+      "readinessRole": "required-canonical-input-for-wave4-readiness",
+      "problemStatement": "Onboarding still feels too generic and weakens question quality, flow steering, artifact quality, trust, and downstream loop quality.",
+      "requiredOutputs": [
+        "architecture",
+        "orchestration",
+        "contracts",
+        "decision model",
+        "questioning strategy",
+        "stopping criteria",
+        "anti-generic behavior",
+        "grounding rules",
+        "loop-truth integration points",
+        "artifact-quality integration points"
+      ]
+    },
+    "liveClassSweepPlanning": {
+      "status": "planning-required-parallel",
+      "blockingMode": "required-before-live-class-sweep-execution",
+      "canonicalPlanPath": "docs/operating-system/wave3-live-class-sweep-track.md",
+      "readinessRole": "required-canonical-input-before-sweep-execution-and-before-wave4-planning",
+      "problemStatement": "Nexus now needs a deterministic live class sweep contract so future browser-driven class verification produces canonical blockers instead of agent interpretation drift.",
+      "requiredOutputs": [
+        "canonical product-class matrix",
+        "create vs upload intake order",
+        "pass/fail truth per stage",
+        "failure ledger schema",
+        "lane promotion rules",
+        "rerun rules",
+        "sweep completion rules",
+        "wave4 prohibition rules while sweep remains unclosed"
+      ]
+    },
+    "liveClassSweepExecution": {
+      "status": "complete-clean",
+      "blockingMode": "required-before-wave4-planning",
+      "canonicalPlanPath": "docs/operating-system/wave3-live-class-sweep-track.md",
+      "canonicalLedgerPath": "docs/operating-system/wave3-live-class-failure-ledger.md",
+      "activeLane": "W3-LIVE-CLASS-SWEEP",
+      "activeTask": {
+        "taskId": "W3-LCS-001",
+        "title": "Create-start reliability on failing create/upload handoff paths",
+        "status": "trueGreen",
+        "source": "first live class sweep on 2026-05-18",
+        "scope": [
+          "create/upload submission handoff only",
+          "failing paths recorded in the canonical failure ledger only",
+          "live rerun required before closure"
+        ],
+        "closureEvidencePath": "docs/operating-system/wave3-final-hardening/evidence/live-class-sweep/2026-05-18/live-class-sweep-report.json"
+      }
+    }
+  },
+  "wave4PlanningTrack": {
+    "status": "active-canonical-execution",
+    "canonicalExecutionEnginePath": "docs/operating-system/wave4-permanent-orchestrator-v1.md",
+    "canonicalPlanPath": "docs/v2-wave4-execution-plan.md",
+    "canonicalEndStatePath": "docs/operating-system/wave4-end-state-definition.md",
+    "canonicalCorePlanningTrackPath": "docs/operating-system/wave4-minimum-believable-core-planning-track.md",
+    "canonicalProductClassResolutionPath": "docs/operating-system/wave4-product-class-resolution-model.md",
+    "canonicalStageRuntimeResolverPath": "docs/operating-system/wave4-stage-runtime-direction-resolver.md",
+    "canonicalAutomaticSkeletonContractPath": "docs/operating-system/wave4-automatic-product-skeleton-contract.md",
+    "canonicalSkeletonQualityBaselinePath": "docs/operating-system/wave4-class-specific-skeleton-quality-baseline.md",
+    "canonicalSplitWorkspaceLiveBuildSurfaceModelPath": "docs/operating-system/wave4-split-workspace-live-build-surface-model.md",
+    "canonicalBuildProgressionStateMachinePath": "docs/operating-system/wave4-build-progression-state-machine.md",
+    "canonicalClassAwareGenerationContractPath": "docs/operating-system/wave4-class-aware-generation-contract.md",
+    "canonicalClassSpecificSurfaceEvolutionRulesPath": "docs/operating-system/wave4-class-specific-surface-evolution-rules.md",
+    "canonicalLocalWorkspaceContractPath": "docs/operating-system/wave4-local-workspace-contract.md",
+    "canonicalDesktopShellScopeContractPath": "docs/operating-system/wave4-desktop-shell-scope-contract.md",
+    "canonicalClassAwareRuntimeResolverPath": "docs/operating-system/wave4-class-aware-runtime-resolver.md",
+    "canonicalExternalIntelligencePath": "docs/operating-system/wave4-external-product-intelligence-pass-2026-05-18.md",
+    "planningMode": "minimum-believable-nexus-first",
+    "nonNegotiableRequirements": [
+      "automatic class-aware product skeleton generation",
+      "real visible product build progression on live surfaces",
+      "local-first workspace continuity",
+      "runtime and packaging preparation per product class",
+      "releaseable product state and continuation loop",
+      "no meaningful backend/core/runtime progression without visible surface progression and live browser verification in parallel",
+      "external product intelligence must be integrated through canonical lane/task structure rather than copied or bolted on",
+      "structural UI evolution must pass through coherent Figma-backed design planning",
+      "Figma integration is a real Wave 4 execution capability with explicit structural-pass threshold rules",
+      "Figma remains design support and visual-planning aid only; Nexus itself must own generation, runtime, release, and continuation capability internally"
+    ],
+    "interpretationRule": "Wave 4 may not be framed or closed truthfully as boundary, GTM, and owner shell only. Those layers remain subordinate to Minimum Believable Nexus core execution.",
+    "workRule": "From this point forward, meaningful Nexus capabilities must be built and verified as coupled backend-to-surface product truth: build capability, expose it visibly, test live, observe real behavior, repair or open a canonical task if broken, rerun live, and only then continue."
+    ,
+    "delegationRule": "From this point forward, Nexus development should actively use bounded delegation to execution workers when it truthfully accelerates closure, while keeping one main orchestrator as the sole authority for architecture direction, task ordering, closure decisions, rerun discipline, canonical write-back, lane promotion, and wave transitions.",
+    "adaptationPassStatus": "closed-canonical-engine-created",
+    "laneStructure": [
+      "product-understanding-and-class-resolution",
+      "automatic-product-bootstrap",
+      "live-build-surfaces",
+      "class-aware-product-generation",
+      "local-workspace-electron-shell",
+      "runtime-packaging-resolver",
+      "releaseable-output",
+      "continuation-growth-loop",
+      "deployment-release-path",
+      "live-orchestration-continuity"
+    ],
+    "firstCanonicalExecutionTask": {
+      "taskId": "W4-MBN-001",
+      "title": "Define canonical product-class resolution model",
+      "source": "docs/operating-system/wave4-minimum-believable-core-planning-track.md",
+      "status": "trueGreen",
+      "closureEvidence": [
+        "docs/operating-system/wave4-product-class-resolution-model.md",
+        "web/shared/product-class-model.js",
+        "test/product-class-model.test.js",
+        "test/domain-classifier.test.js"
+      ],
+      "closedAt": "2026-05-18"
+    },
+    "nextCanonicalExecutionTask": {
+      "taskId": "W4-MBN-012",
+      "title": "Define packaging and preview contract per class",
+      "source": "docs/operating-system/wave4-minimum-believable-core-planning-track.md",
+      "status": "selected-not-started"
+    },
+    "completedCanonicalExecutionTasks": [
+      {
+        "taskId": "W4-MBN-002",
+        "title": "Define project stage and runtime-direction resolver",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-stage-runtime-direction-resolver.md",
+          "src/core/project-stage-runtime-direction-resolver.js",
+          "test/project-stage-runtime-direction-resolver.test.js",
+          "test/bootstrap-plan-generator.test.js",
+          "test/release-plan-generator.test.js",
+          "test/context-builder-runtime-direction.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-003",
+        "title": "Define automatic class-aware skeleton contract",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-automatic-product-skeleton-contract.md",
+          "src/core/automatic-product-skeleton-contract.js",
+          "test/automatic-product-skeleton-contract.test.js",
+          "test/bootstrap-plan-generator.test.js",
+          "test/context-builder-skeleton-contract.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-004",
+        "title": "Define class-specific skeleton quality baseline",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-class-specific-skeleton-quality-baseline.md",
+          "src/core/class-specific-skeleton-quality-baseline.js",
+          "src/core/class-specific-skeleton-quality-baseline-bridge.js",
+          "test/class-specific-skeleton-quality-baseline.test.js",
+          "test/bootstrap-plan-generator.test.js",
+          "test/context-builder-skeleton-contract.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-005",
+        "title": "Define split-workspace and live-build surface model",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-split-workspace-live-build-surface-model.md",
+          "web/shared/split-workspace-live-build-surface-model.js",
+          "src/core/context-builder.js",
+          "web/nexus-ui/adapters/execution-adapter.js",
+          "web/nexus-ui/screens/ExecutionLiveScreen.js",
+          "test/split-workspace-live-build-surface-model.test.js",
+          "test/context-builder-skeleton-contract.test.js",
+          "test/execution-adapter.test.js",
+          "test/execution-live-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-006",
+        "title": "Define build progression state machine",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-build-progression-state-machine.md",
+          "src/core/build-progression-state-machine.js",
+          "src/core/context-builder.js",
+          "web/nexus-ui/adapters/execution-adapter.js",
+          "web/nexus-ui/screens/ExecutionLiveScreen.js",
+          "test/build-progression-state-machine.test.js",
+          "test/context-builder-runtime-direction.test.js",
+          "test/context-builder-skeleton-contract.test.js",
+          "test/execution-adapter.test.js",
+          "test/execution-live-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-007",
+        "title": "Define class-aware generation contract",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-class-aware-generation-contract.md",
+          "src/core/class-aware-generation-contract.js",
+          "src/core/context-builder.js",
+          "src/core/ai-design-service.js",
+          "src/core/ai-design-request-schema.js",
+          "test/class-aware-generation-contract.test.js",
+          "test/ai-design-request-schema.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-008",
+        "title": "Define frontend/backend/scene evolution rules per class",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-class-specific-surface-evolution-rules.md",
+          "src/core/class-specific-surface-evolution-rules.js",
+          "src/core/context-builder.js",
+          "src/core/ai-design-service.js",
+          "src/core/ai-design-request-schema.js",
+          "web/nexus-ui/adapters/execution-adapter.js",
+          "web/nexus-ui/screens/ExecutionLiveScreen.js",
+          "test/class-specific-surface-evolution-rules.test.js",
+          "test/ai-design-request-schema.test.js",
+          "test/execution-adapter.test.js",
+          "test/execution-live-screen-render.test.js",
+          "test/context-builder-runtime-direction.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-009",
+        "title": "Define local workspace contract",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-local-workspace-contract.md",
+          "src/core/local-workspace-contract.js",
+          "src/core/context-builder.js",
+          "web/nexus-ui/adapters/execution-adapter.js",
+          "web/nexus-ui/screens/ExecutionLiveScreen.js",
+          "test/local-workspace-contract.test.js",
+          "test/context-builder-runtime-direction.test.js",
+          "test/execution-adapter.test.js",
+          "test/execution-live-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-010",
+        "title": "Define Electron/desktop shell scope for Wave 4",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-desktop-shell-scope-contract.md",
+          "src/core/desktop-shell-scope-contract.js",
+          "src/core/context-builder.js",
+          "web/nexus-ui/adapters/execution-adapter.js",
+          "web/nexus-ui/screens/ExecutionLiveScreen.js",
+          "test/desktop-shell-scope-contract.test.js",
+          "test/context-builder-runtime-direction.test.js",
+          "test/execution-adapter.test.js",
+          "test/execution-live-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-011",
+        "title": "Define class-aware runtime resolver",
+        "status": "trueGreen",
+        "closedAt": "2026-05-18",
+        "closureEvidence": [
+          "docs/operating-system/wave4-class-aware-runtime-resolver.md",
+          "src/core/class-aware-runtime-resolver.js",
+          "src/core/context-builder.js",
+          "web/nexus-ui/adapters/execution-adapter.js",
+          "web/nexus-ui/screens/ExecutionLiveScreen.js",
+          "test/class-aware-runtime-resolver.test.js",
+          "test/context-builder-runtime-direction.test.js",
+          "test/execution-adapter.test.js",
+          "test/execution-live-screen-render.test.js"
+        ]
+      }
     ]
   },
   "laneDefinitions": [

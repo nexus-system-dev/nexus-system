@@ -13,6 +13,10 @@ const DOMAIN_TEMPLATES = {
     rules: ["create-initial-structure", "define-first-workflow"],
     artifacts: ["app-shell"],
   },
+  "landing-page": {
+    rules: ["initialize-landing-shell", "initialize-conversion-structure", "initialize-proof-sections"],
+    artifacts: ["landing-shell", "conversion-structure", "proof-sections"],
+  },
   casino: {
     rules: ["initialize-auth-core", "initialize-wallet-core", "initialize-game-flow"],
     artifacts: ["auth-module", "wallet-module", "game-flow"],
@@ -25,6 +29,14 @@ const DOMAIN_TEMPLATES = {
     rules: ["initialize-mobile-shell", "initialize-navigation", "initialize-mobile-auth"],
     artifacts: ["mobile-shell", "navigation", "mobile-auth"],
   },
+  "internal-tool": {
+    rules: ["initialize-workspace-shell", "initialize-queue-workflow", "initialize-ownership-model"],
+    artifacts: ["workspace-shell", "queue-workflow", "ownership-model"],
+  },
+  "commerce-ops": {
+    rules: ["initialize-commerce-ops-shell", "initialize-order-queue", "initialize-catalog-operations"],
+    artifacts: ["commerce-ops-shell", "order-queue", "catalog-operations"],
+  },
   "agency-system": {
     rules: ["initialize-client-intake", "initialize-reporting-core"],
     artifacts: ["client-intake", "reporting-core"],
@@ -36,6 +48,10 @@ const DOMAIN_TEMPLATES = {
   "content-product": {
     rules: ["initialize-content-outline", "initialize-delivery-structure"],
     artifacts: ["content-outline", "delivery-structure"],
+  },
+  game: {
+    rules: ["initialize-game-shell", "initialize-gameplay-loop", "initialize-game-ui"],
+    artifacts: ["game-shell", "gameplay-loop", "game-ui"],
   },
 };
 
@@ -159,12 +175,13 @@ export function createBootstrapTemplateMerger({
 
 export function createBootstrapTaskTemplates({
   domain = "generic",
+  productClass = null,
   targetPlatform = null,
 } = {}) {
-  const domainTemplates = createDomainBootstrapTemplates(domain);
+  const domainTemplates = createDomainBootstrapTemplates(productClass ?? domain);
   const platformTemplates = createPlatformBootstrapTemplates(targetPlatform);
   const bootstrapTemplateSchema = defineBootstrapTemplateSchema({
-    domain,
+    domain: productClass ?? domain,
     targetPlatform,
   });
   const baseTemplates = createBaseBootstrapTemplates(bootstrapTemplateSchema);

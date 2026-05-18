@@ -1,0 +1,102 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+
+import { renderExecutionLiveScreen } from "../web/nexus-ui/screens/ExecutionLiveScreen.js";
+
+test("execution live screen renders workspace contract inside visible surface", () => {
+  const html = renderExecutionLiveScreen({
+    badge: "Nexus עובד עכשיו",
+    title: "מבצעים את המשימה",
+    subtitle: "המערכת פועלת עכשיו על המשימה שנבחרה לך.",
+    detail: "מגדירים את ה־split workspace הקנוני.",
+    missionTitle: "נועלים מודל workspace חי",
+    progressPercent: 42,
+    statusItems: [
+      { label: "חוזה build surface", status: "done" },
+      { label: "runtime direction", status: "active" },
+    ],
+    liveItems: ["מייצב build region", "קושר runtime visibility"],
+    logItems: [{ time: "עכשיו", message: "workspace contract rendered" }],
+    stats: [{ label: "התקדמות", value: "42%" }],
+    projectName: "Workspace Project",
+    stopAction: { label: "עצור ביצוע", supported: false },
+    proofAction: { label: "הצג הוכחה כשמוכן ←", target: "proof" },
+    workspaceSurfaceModel: {
+      workspaceFamily: "product-workspace",
+      previewFrameFamily: "product-workspace-preview",
+      buildSurfaceFamily: "saas-product-surface",
+      buildSurfaceTitle: "המוצר עצמו נבנה בתוך workspace חי",
+      buildSurfaceDetail: "workflow ראשון, state, והפעולה היצרנית הבאה צריכים להתבהר מול המשתמש.",
+      orchestrationEmphasis: "workflow-activation-and-first-product-move",
+      runtimeDirection: "web-app-runtime",
+      releasePathFamily: "web-product-release",
+      visibleMilestones: ["product-shell-visible", "workflow-visible"],
+    },
+    classSpecificSurfaceEvolutionRules: {
+      evolutionFamily: "workflow-evolution",
+      frontendSurfaceType: "product-workspace",
+      backendStateType: "workflow-state",
+      sceneType: "workflow-sequence",
+      visibleEvolutionRule: "product workflow and state feedback must evolve together",
+      requiredVisibleChanges: ["workflow surface evolves", "state feedback updates visibly"],
+    },
+    localWorkspaceContract: {
+      workspaceMode: "browser-backed-local-workspace",
+      desktopShellStatus: "deferred-to-w4-mbn-010",
+      currentWorkspaceKey: "project-brain",
+      buildRouteKey: "execution",
+      resumeWorkspace: "project-brain",
+      continuitySource: "workspace-navigation",
+      continuityGuarantees: ["project identity survives reopen", "active workspace survives reopen"],
+    },
+    desktopShellScopeContract: {
+      shellFamily: "browser-backed-shell",
+      shellStatus: "scope-defined-not-implemented",
+      currentWave4Path: "browser-backed-local-workspace",
+      preferredFutureShell: "desktop-wrapper-shell",
+      releaseWorkflowMode: "browser-to-cloud-handoff",
+      obligations: ["desktop shell cannot lose workspace continuity"],
+    },
+    classAwareRuntimeResolver: {
+      runtimeFamily: "web-app-runtime",
+      packagingFamily: "saas-package",
+      releasePathFamily: "web-product-release",
+      previewFamily: "product-workspace-preview",
+      targetPlatform: "web",
+      preferredReleaseTarget: "web-deployment",
+      shellPath: "browser-backed-local-workspace",
+      visibleRuntimeRule: "runtime path must stay visible as product workspace runtime with web product release",
+      projectFacingPath: "web-app-runtime -> web-product-release",
+      packagingPath: "product-workspace-preview -> saas-package",
+    },
+    buildProgressionStateMachine: {
+      currentLabel: "ה־surface מתפתח",
+      currentRouteKey: "execution",
+      overlayStatus: "active",
+      states: [
+        { stateId: "class-locked", label: "ה־class ננעל", routeKey: "understanding", status: "done" },
+        { stateId: "skeleton-visible", label: "השלד נראה על המסך", routeKey: "execution", status: "done" },
+        { stateId: "surface-evolving", label: "ה־surface מתפתח", routeKey: "execution", status: "active" },
+      ],
+    },
+  });
+
+  assert.match(html, /nexus-execution-screen__workspace-contract/);
+  assert.match(html, /product-workspace/);
+  assert.match(html, /המוצר עצמו נבנה בתוך workspace חי/);
+  assert.match(html, /web-app-runtime -&gt; web-product-release|web-app-runtime -&gt; web-product-release/);
+  assert.match(html, /Build progression/);
+  assert.match(html, /ה־surface מתפתח/);
+  assert.match(html, /Class-aware evolution/);
+  assert.match(html, /workflow-evolution/);
+  assert.match(html, /workflow-sequence/);
+  assert.match(html, /Local workspace contract/);
+  assert.match(html, /browser-backed-local-workspace/);
+  assert.match(html, /deferred-to-w4-mbn-010/);
+  assert.match(html, /Desktop shell scope/);
+  assert.match(html, /browser-backed-shell/);
+  assert.match(html, /scope-defined-not-implemented/);
+  assert.match(html, /Runtime path/);
+  assert.match(html, /web-app-runtime/);
+  assert.match(html, /web-app-runtime -&gt; web-product-release|web-app-runtime -> web-product-release/);
+});

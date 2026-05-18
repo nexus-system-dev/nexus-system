@@ -1,0 +1,649 @@
+Design a complete end-to-end UI system in Figma Make for a product called Nexus.
+
+Do not generate code.
+Do not generate frontend implementation.
+Do not generate developer handoff.
+Generate a full product screen system only.
+
+Use the current rendered Nexus Create screen as the visual reference and style anchor.
+Important: use its visual direction only. Do not depend on any existing repo design rules, design tokens, or implementation constraints.
+Design the system from scratch in Figma, while keeping the same overall visual feel as the current Create screen.
+
+PRODUCT CONTEXT
+
+Nexus is an AI product-building operating system.
+In simple terms:
+A user gives Nexus an idea for a product or business.
+Nexus helps the user clarify the idea, understand the audience and problem, break the work into tasks, execute the next task, show the result, ask for confirmation, update project state, and move to the next task.
+Nexus is not a dashboard-heavy admin tool.
+Nexus is a guided working loop.
+The product should feel like a clear AI-powered flow for building and advancing a product, one meaningful step at a time.
+
+CORE PRODUCT LOOP
+
+Project Create
+→ Smart Onboarding
+→ Understanding Summary
+→ Nexus Loop Core
+→ Execution Live
+→ Result / Proof
+→ Confirmation
+→ State Update
+→ Next Task
+→ repeat
+
+VISUAL STYLE REFERENCE FROM THE CURRENT CREATE SCREEN
+
+Use the current Create screen as the primary visual reference.
+
+Visual direction:
+- light, clean, premium SaaS product
+- calm white and very light gray background
+- strong purple to blue accent system
+- rounded, soft, modern surfaces
+- structured but not busy
+- generous whitespace
+- product-first, not analytics-first
+- elegant and focused rather than flashy
+
+Layout:
+- fixed right sidebar in RTL layout
+- main canvas to the left of the sidebar
+- top navigation/topbar inside the main product area
+- a horizontal stepper near the top for the primary loop
+- a large centered content area
+- optional supporting side column cards when relevant
+- clear hierarchy: sidebar → topbar → stepper → main action surface
+
+Sidebar:
+- vertical navigation
+- minimal, clean, icon + label rows
+- active item highlighted with soft purple background
+- white sidebar with subtle border
+- persistent across most product screens
+- lower section for Settings and Help
+
+Top navigation / topbar:
+- small Nexus brand mark
+- notifications icon
+- user avatar/profile control
+- lightweight, clean, not crowded
+- soft divider below topbar
+
+Stepper:
+- visible in primary flow screens
+- 4 high-level stages inspired by the current Create screen:
+  1. Create
+  2. Understand the project
+  3. Understanding / validation
+  4. Next action
+- use circles, subtle connectors, active purple state
+- stepper should communicate progress without feeling like a form wizard from 2016
+
+Cards:
+- white cards on light gray background
+- generous padding
+- subtle border
+- very soft shadow
+- large radius
+- cards must feel crisp and premium, not generic template cards
+
+Spacing:
+- roomy spacing throughout
+- clear visual breathing room between sections
+- avoid dense clusters
+- use strong vertical rhythm
+- give the main action area obvious prominence
+
+Typography:
+- modern sans serif
+- clean, highly legible
+- strong title hierarchy
+- large bold page titles
+- medium-weight section headers
+- muted but readable supporting text
+- use Hebrew/RTL-aware layout and spacing
+- overall tone: premium product UI, not playful consumer app
+
+Colors:
+- background: very light gray / off-white
+- surfaces: white
+- borders: soft cool gray
+- primary accent: purple / indigo gradient
+- supporting accent: blue-violet
+- success: soft green
+- warning: amber
+- error: red
+- text: deep near-black
+- muted text: gray-blue
+
+Buttons:
+- primary CTA: purple/blue gradient fill, white text, large radius
+- secondary CTA: white fill, subtle border, dark text
+- tertiary/text actions only where useful
+- buttons must feel confident and product-grade
+- no fake buttons
+- every button must imply a real action
+
+Inputs:
+- large, clean, rounded inputs
+- subtle borders
+- clear labels above fields
+- comfortable input height
+- helpful placeholders
+- drag-and-drop upload area should feel intentional and premium
+
+Helper cards:
+- use helper/tips/support cards on the side only when they reinforce the user’s next action
+- they should guide, not distract
+- they should visually match the primary form or task surface
+
+Corners:
+- rounded corners throughout
+- use a soft modern radius consistently
+
+Shadows:
+- light, elegant shadows only
+- avoid heavy or muddy elevation
+
+Overall mood:
+- white / gray foundation
+- purple / blue action accents
+- polished, quiet, guided, focused
+- no clutter
+- no messy dashboard blocks
+
+FULL SCREEN LIST
+
+Design all of these screens as one coherent system:
+
+1. Home / Project Switcher
+2. Project Create
+3. Smart Onboarding
+4. Understanding Summary
+5. Nexus Loop Core
+6. Execution Live
+7. Result / Proof
+8. Confirmation
+9. State Update
+10. Next Task
+11. Timeline / History
+12. Files / Uploads
+13. Notifications
+14. Settings
+15. Integrations
+16. Advanced Hub
+17. Project Brain Advanced
+18. Release Advanced
+19. Growth Advanced
+
+SCREEN DEFINITIONS
+
+For each screen, design a full screen and include:
+- screen title
+- purpose
+- what the user sees first
+- main content
+- primary CTA
+- secondary CTA
+- what happens after clicking
+- empty state
+- loading state
+- success state
+- error state
+
+Use the following product definitions:
+
+1. Home / Project Switcher
+- Title: הבית שלך / Home
+- Purpose: let the user choose an existing project or start a new one
+- User sees first: list of projects and one obvious “create new project” action
+- Main content: project cards/rows with status, last updated, active badge
+- Primary CTA: Create New Project
+- Secondary CTA: Open Project
+- After click: either open Project Create or enter the selected project’s loop
+- Empty state: no projects yet, invite creation
+- Loading state: loading projects
+- Success state: project selected successfully
+- Error state: unable to load project list
+
+2. Project Create
+- Title: מה אתה רוצה לבנות?
+- Purpose: capture the initial idea and optional supporting assets
+- User sees first: a large clean creation form
+- Main content: project name, idea description, file upload, optional URL, helper cards
+- Primary CTA: Create Project and Start
+- Secondary CTA: none or Save Draft if useful
+- After click: create project and enter Smart Onboarding
+- Empty state: blank form with guided placeholders
+- Loading state: creating project
+- Success state: project created, onboarding starts
+- Error state: validation or creation failed
+
+3. Smart Onboarding
+- Title: רוצה להבין את הפרויקט שלך
+- Purpose: AI conversation that clarifies audience, problem, current workflow, success criteria
+- User sees first: conversational thread with AI messages and user responses
+- Main content: chat, current question, input field, “what I understood” and “what is missing” summary cards
+- Primary CTA: Continue
+- Secondary CTA: Restart or Back
+- After click: next AI question or move to Understanding Summary when complete
+- Empty state: first AI question waiting
+- Loading state: AI thinking / generating next question
+- Success state: onboarding complete
+- Error state: AI response failed or session lost
+
+4. Understanding Summary
+- Title: זה מה שהבנתי
+- Purpose: show the condensed structured understanding before entering the working loop
+- User sees first: four summary cards
+- Main content: audience, problem, solution, goal
+- Primary CTA: Correct, this is right / Continue
+- Secondary CTA: Fix / Edit
+- After click: either go back to onboarding or continue to Loop Core
+- Empty state: no summary available yet
+- Loading state: building summary
+- Success state: understanding confirmed
+- Error state: failed to summarize
+
+5. Nexus Loop Core
+- Title: מה עושים עכשיו
+- Purpose: show the single most important next task
+- User sees first: one big mission card
+- Main content: current task, why it matters, what will happen, vertical loop timeline
+- Primary CTA: Execute Task
+- Secondary CTA: View Proof
+- After click: Execute Task opens Execution Live, View Proof opens latest proof
+- Empty state: no next task selected yet
+- Loading state: selecting next task
+- Success state: task is ready to execute
+- Error state: failed to resolve next task
+
+6. Execution Live
+- Title: מבצעים את המשימה
+- Purpose: show the live execution of the current task
+- User sees first: active mission card and execution status panels
+- Main content: execution steps, current active step, live actions, recent logs
+- Primary CTA: Show Proof When Ready
+- Secondary CTA: Stop Execution
+- After click: primary goes to Result / Proof, secondary stops or pauses execution
+- Empty state: no active execution yet
+- Loading state: system is executing
+- Success state: task execution finished
+- Error state: execution failed or partially failed
+
+7. Result / Proof
+- Title: המשימה הושלמה
+- Purpose: show what Nexus created and why it counts as proof
+- User sees first: preview of the created output
+- Main content: result preview, proof bullets, metrics/statistics, artifact actions
+- Primary CTA: Show Full Proof
+- Secondary CTA: Open in New Tab, Download Files
+- After click: primary can expand detailed proof or go toward confirmation
+- Empty state: no proof yet
+- Loading state: assembling proof
+- Success state: proof ready
+- Error state: proof unavailable or incomplete
+
+8. Confirmation
+- Title: מה דעתך על התוצאה?
+- Purpose: collect explicit user approval or request for revision
+- User sees first: two large decision cards
+- Main content: approve / needs fix decision
+- Primary CTA: This is good, continue
+- Secondary CTA: Needs changes
+- After click: continue goes to State Update, needs changes loops back into a revised task/execution path
+- Empty state: no result to confirm
+- Loading state: saving feedback
+- Success state: decision recorded
+- Error state: failed to save decision
+
+9. State Update
+- Title: עודכן בהצלחה
+- Purpose: explain what changed in the project state after confirmation
+- User sees first: project update summary
+- Main content: what changed, progress health, project status bar
+- Primary CTA: Continue to Next Task
+- Secondary CTA: View Timeline
+- After click: open Next Task or Timeline
+- Empty state: no updates yet
+- Loading state: updating project state
+- Success state: state updated and saved
+- Error state: update failed
+
+10. Next Task
+- Title: הצעד הבא
+- Purpose: present the next recommended task after the previous one was accepted
+- User sees first: one new mission card
+- Main content: next task, why it matters now, stage marker
+- Primary CTA: Execute Task
+- Secondary CTA: View Why
+- After click: start next execution or open more context
+- Empty state: no next task found yet
+- Loading state: computing next task
+- Success state: next task ready
+- Error state: failed to determine next step
+
+11. Timeline / History
+- Title: היסטוריית הפרויקט
+- Purpose: show the chronological story of what happened in the project
+- User sees first: timeline items
+- Main content: milestones, completed tasks, generated outputs, changes, optionally linked proof
+- Primary CTA: Return to Current Step
+- Secondary CTA: Open Specific Milestone
+- After click: return to relevant screen or open artifact detail
+- Empty state: no history yet
+- Loading state: loading history
+- Success state: history available
+- Error state: failed to load history
+
+12. Files / Uploads
+- Title: קבצים וחומרים
+- Purpose: let the user review uploaded files, notes, and supporting assets
+- User sees first: list/grid of uploaded assets
+- Main content: file list, tags, source labels, previews, upload action
+- Primary CTA: Upload More Files
+- Secondary CTA: Open File / Remove File
+- After click: file opens or uploads continue
+- Empty state: no files uploaded yet
+- Loading state: loading files
+- Success state: files attached
+- Error state: upload failed or preview unavailable
+
+13. Notifications
+- Title: התראות
+- Purpose: central inbox for task updates, execution updates, proofs, and approvals
+- User sees first: notification list
+- Main content: grouped notifications with time and action
+- Primary CTA: Mark All as Read
+- Secondary CTA: Open Related Item
+- After click: clear status or navigate to related screen
+- Empty state: no notifications
+- Loading state: loading notifications
+- Success state: notifications loaded
+- Error state: failed to fetch notifications
+
+14. Settings
+- Title: הגדרות
+- Purpose: manage profile, system preferences, notifications, account settings
+- User sees first: settings categories and profile surface
+- Main content: left-side settings menu, right-side editable settings forms
+- Primary CTA: Save Changes
+- Secondary CTA: Reset / Cancel
+- After click: save preferences
+- Empty state: default values shown
+- Loading state: loading settings
+- Success state: settings saved
+- Error state: failed to save
+
+15. Integrations
+- Title: אינטגרציות
+- Purpose: show connected and available external services
+- User sees first: grid of integrations
+- Main content: connected tools, available tools, connection state
+- Primary CTA: View All Integrations or Connect
+- Secondary CTA: Disconnect / Configure
+- After click: open integration setup or detail
+- Empty state: no integrations connected yet
+- Loading state: checking connections
+- Success state: integration connected
+- Error state: failed to connect
+
+16. Advanced Hub
+- Title: אזור מתקדם
+- Purpose: gateway to advanced areas for power users
+- User sees first: curated entry cards
+- Main content: cards for Developer, Project Brain, Release, Growth
+- Primary CTA: Open Advanced Area
+- Secondary CTA: none or Learn More
+- After click: open selected advanced screen
+- Empty state: advanced features unavailable
+- Loading state: loading advanced tools
+- Success state: tools ready
+- Error state: failed to open advanced area
+
+17. Project Brain Advanced
+- Title: מוח הפרויקט
+- Purpose: deep project reasoning, insights, blockers, recommendations
+- User sees first: insights and AI recommendations
+- Main content: insights, reasoning, assumptions, blockers, strategic suggestions
+- Primary CTA: View All Insights
+- Secondary CTA: Apply Recommendation
+- After click: open insight detail or feed action into loop
+- Empty state: no insights yet
+- Loading state: generating insights
+- Success state: insights available
+- Error state: failed to generate insights
+
+18. Release Advanced
+- Title: ניהול גרסאות ושחרורים
+- Purpose: manage release candidates, deployment status, versions
+- User sees first: release/version list
+- Main content: versions, readiness, release state, deploy history
+- Primary CTA: Create New Release
+- Secondary CTA: Open Release Details
+- After click: start release workflow or inspect release
+- Empty state: no releases yet
+- Loading state: loading release data
+- Success state: release available
+- Error state: failed to load releases
+
+19. Growth Advanced
+- Title: צמיחה ושיווק
+- Purpose: growth experiments, acquisition channels, KPI tracking
+- User sees first: high-level performance cards and chart
+- Main content: metrics, experiments, channels, conversion trends
+- Primary CTA: Create Growth Experiment
+- Secondary CTA: View Campaign
+- After click: open campaign/experiment builder
+- Empty state: no growth experiments yet
+- Loading state: loading growth data
+- Success state: metrics available
+- Error state: failed to load analytics
+
+BUTTON / ACTION MAP
+
+Define a complete interaction model for all major buttons, including at minimum:
+
+- Create Project and Start
+  - action: create project
+  - destination: Smart Onboarding
+  - expected result: project exists, onboarding session starts
+
+- Continue (Onboarding)
+  - action: submit answer and fetch next AI question
+  - destination: Smart Onboarding or Understanding Summary
+  - expected result: updated transcript and refined understanding
+
+- Fix
+  - action: go back to onboarding correction flow
+  - destination: Smart Onboarding
+  - expected result: user can refine the understanding
+
+- Correct, Continue
+  - action: approve understanding summary
+  - destination: Nexus Loop Core
+  - expected result: next task appears
+
+- Execute Task
+  - action: start current task execution
+  - destination: Execution Live
+  - expected result: live run begins
+
+- View Proof
+  - action: open latest result proof
+  - destination: Result / Proof
+  - expected result: user sees created artifact and evidence
+
+- Show Proof When Ready
+  - action: move from live execution to proof when available
+  - destination: Result / Proof
+  - expected result: proof surface opens
+
+- Show Full Proof
+  - action: expand or deepen proof view
+  - destination: Result / Proof detail or Release Advanced
+  - expected result: full validation/proof is visible
+
+- Open in New Tab
+  - action: open artifact preview externally
+  - destination: external/browser preview
+  - expected result: user sees real output
+
+- Download Files
+  - action: download generated assets
+  - destination: file artifact export
+  - expected result: files saved locally
+
+- This is good, continue
+  - action: approve result
+  - destination: State Update
+  - expected result: task marked accepted
+
+- Needs changes
+  - action: reject or request revision
+  - destination: revised execution/loop path
+  - expected result: feedback enters correction cycle
+
+- Continue to Next Task
+  - action: move forward
+  - destination: Next Task
+  - expected result: next mission becomes current
+
+- Return to Current Step
+  - action: exit history view
+  - destination: current active loop screen
+  - expected result: user returns to the latest task context
+
+- Upload More Files
+  - action: add supporting material
+  - destination: Files / Uploads
+  - expected result: project context expands
+
+- Mark All as Read
+  - action: clear notification unread state
+  - destination: Notifications
+  - expected result: inbox updated
+
+- Save Changes
+  - action: save settings
+  - destination: Settings
+  - expected result: preferences persist
+
+- Connect Integration
+  - action: start connection flow
+  - destination: Integrations
+  - expected result: service linked to project/workspace
+
+- Open Advanced Area
+  - action: navigate to selected advanced module
+  - destination: Developer / Project Brain / Release / Growth
+  - expected result: deeper workspace opens
+
+NAVIGATION MODEL
+
+Sidebar items:
+- Home
+- Create
+- Onboarding
+- Loop
+- Timeline
+- Files
+- Developer
+- Project Brain
+- Release
+- Growth
+- Integrations
+- Settings
+- Help
+
+Topbar items:
+- Nexus brand mark
+- notifications
+- profile/avatar
+- optional project selector when relevant
+
+Stepper stages:
+- Create
+- Understand the Project
+- Understanding
+- Action
+
+Primary loop screens:
+- Project Create
+- Smart Onboarding
+- Understanding Summary
+- Nexus Loop Core
+- Execution Live
+- Result / Proof
+- Confirmation
+- State Update
+- Next Task
+- Timeline / History
+
+Secondary/support screens:
+- Home / Project Switcher
+- Files / Uploads
+- Notifications
+- Settings
+- Integrations
+
+Advanced screens:
+- Advanced Hub
+- Project Brain Advanced
+- Release Advanced
+- Growth Advanced
+- optionally Developer as an advanced area entry
+
+UX RULES
+
+Every screen must clearly answer:
+- what is this?
+- why does it matter?
+- what should I do now?
+
+Additional UX rules:
+- always present one obvious primary action
+- secondary actions must support the same goal, not distract from it
+- never force the user to decode product state from abstract metrics
+- keep the user moving through one clear loop
+- explain system reasoning in plain language
+- make the AI feel useful, not magical or vague
+- use supporting cards only when they help the next decision
+- preserve consistency across all screens
+- prioritize clarity over decorative complexity
+
+ANTI-RULES
+
+Do not create:
+- dashboard clutter
+- random panel farms
+- inconsistent spacing or typography
+- fake buttons
+- placeholder-only cards
+- generic SaaS admin templates
+- unrelated product features
+- crowded KPI walls as the main UX
+- dark mode unless explicitly needed
+- multiple competing CTAs on the same screen
+- screens that do not connect logically to the next screen
+
+IMPORTANT DESIGN INTENT
+
+This system should feel like:
+- a premium AI operating system for building products
+- a guided product-building journey
+- calm, clear, modern, and focused
+- elegant enough for Figma showcase quality
+- consistent across all 19 screens
+- clearly rooted in the current Create screen visual style
+
+FINAL OUTPUT REQUIREMENT
+
+Generate a complete multi-screen Nexus UI system in Figma Make.
+Produce polished, coherent, production-grade screen designs for all listed screens.
+Make the screens visually consistent and logically connected.
+Use Hebrew / RTL layout where appropriate.
+Emphasize the primary product loop.
+Keep advanced areas visually related but clearly secondary.
+The result should look like one thoughtful product, not a collection of unrelated screens.

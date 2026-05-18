@@ -48,12 +48,15 @@ import { createPostProjectCreationRedirectResolver } from "./post-project-creati
 import { createProjectStateBootstrapService } from "./project-state-bootstrap-service.js";
 import { createOnboardingCompletionEvaluator } from "./onboarding-completion-evaluator.js";
 import { createOnboardingToStateHandoffContract } from "./onboarding-to-state-handoff-contract.js";
+import { buildCanonicalProofArtifact } from "./canonical-proof-artifact.js";
+import { buildRepeatedLoopContinuation } from "./repeated-loop-continuation.js";
 import { createUploadedIntakeToScannerHandoff } from "./uploaded-intake-to-scanner-handoff.js";
 import { createPasswordResetAndEmailVerificationFlow } from "./password-reset-email-verification-flow.js";
 import { defineWorkspaceAndMembershipModel } from "./workspace-membership-model.js";
 import { createProjectAccessControlModule } from "./project-access-control-module.js";
 import { createRoleAssignmentAndInvitationFlow } from "./role-assignment-invitation-flow.js";
 import { createOrganizationWorkspaceSettingsModule } from "./workspace-settings-module.js";
+import { createNotificationPreferenceSettings } from "./notification-preference-settings.js";
 import { createPlatformObservabilityTransport } from "./platform-observability-transport.js";
 import { createPersistentProjectSnapshotStore, createProjectSnapshotStore } from "./project-snapshot-store.js";
 import { createProjectAuditApiAndViewerModel } from "./project-audit-api-viewer-model.js";
@@ -544,8 +547,9 @@ export class ProjectService {
     };
   }
 
-  createProjectIntake({ visionText, uploadedFiles, externalLinks }) {
+  createProjectIntake({ projectName, visionText, uploadedFiles, externalLinks }) {
     return this.onboarding.createProjectIntake({
+      projectName,
       visionText,
       uploadedFiles,
       externalLinks,
@@ -576,9 +580,10 @@ export class ProjectService {
     return this.onboarding.resolveAction(actionType, payload);
   }
 
-  updateOnboardingIntake({ sessionId, visionText, uploadedFiles, externalLinks }) {
+  updateOnboardingIntake({ sessionId, projectName, visionText, uploadedFiles, externalLinks }) {
     return this.onboarding.updateIntake({
       sessionId,
+      projectName,
       visionText,
       uploadedFiles,
       externalLinks,
@@ -596,14 +601,28 @@ export class ProjectService {
     return this.onboarding.getCurrentStep(sessionId);
   }
 
+  getOnboardingConversationState(sessionId) {
+    return this.onboarding.getConversationState(sessionId);
+  }
+
+  submitOnboardingConversationTurn({ sessionId, answer }) {
+    return this.onboarding.submitConversationTurn({
+      sessionId,
+      answer,
+    });
+  }
+
+  restartOnboardingConversation(sessionId) {
+    return this.onboarding.restartConversation(sessionId);
+  }
+
   finishOnboardingSession(sessionId) {
-    const finished = this.onboarding.finishSession(sessionId);
-    if (!finished) {
+    const session = this.onboarding.getSession(sessionId);
+    if (!session) {
       return null;
     }
 
-    const session = finished.updatedSession;
-    const projectDraft = finished.projectDraft ?? {};
+    const projectDraft = session.projectDraft ?? {};
     const projectIntake = session.projectIntake ?? null;
     const { onboardingCompletionDecision } = createOnboardingCompletionEvaluator({
       projectIntake,
@@ -615,6 +634,13 @@ export class ProjectService {
       onboardingCompletionDecision,
       onboardingSession: session,
     });
+    const finished = this.onboarding.finishSession(sessionId, {
+      onboardingCompletionDecision,
+    });
+    if (!finished) {
+      return null;
+    }
+    const finishedSession = finished.updatedSession;
 
     if (onboardingStateHandoff.summary?.canBuildProjectState !== true) {
       return {
@@ -626,9 +652,9 @@ export class ProjectService {
       };
     }
 
-    const projectId = projectDraft.id ?? session.projectDraftId ?? null;
+    const projectId = projectDraft.id ?? finishedSession.projectDraftId ?? null;
     const projectName = projectDraft.name ?? "Project Draft";
-    const projectGoal = projectDraft.goal ?? session.projectIntake?.visionText ?? "";
+    const projectGoal = projectDraft.goal ?? finishedSession.projectIntake?.visionText ?? "";
     const bootstrapped = createProjectStateBootstrapService({
       stateBootstrapPayload: {
         identity: {
@@ -642,14 +668,14 @@ export class ProjectService {
           canBootstrap: true,
         },
         ownership: {
-          ownerUserId: session.userId ?? null,
+          ownerUserId: finishedSession.userId ?? null,
           workspaceId: null,
           role: "owner",
         },
         bootstrapMetadata: {},
-        approvals: session.approvals ?? [],
+        approvals: finishedSession.approvals ?? [],
         missingClarifications: [],
-        intake: session.projectIntake ?? null,
+        intake: finishedSession.projectIntake ?? null,
         draftMetadata: {
           draftId: projectId,
           name: projectName,
@@ -660,7 +686,7 @@ export class ProjectService {
       },
       projectOwnershipBinding: {
         projectId,
-        ownerUserId: session.userId ?? null,
+        ownerUserId: finishedSession.userId ?? null,
         workspaceId: null,
         role: "owner",
       },
@@ -677,24 +703,62 @@ export class ProjectService {
         projectDraft,
         projectCreationEvent: this.projectCreationEvents.get(projectId) ?? null,
         projectCreationMetric: this.projectCreationMetric ?? null,
-        userId: session.userId ?? null,
-        onboardingSession: session,
+        userId: finishedSession.userId ?? null,
+        onboardingSession: finishedSession,
       });
     } else {
       const existingProject = this.projects.get(projectId);
-      existingProject.onboardingSession = session;
+      const reboundWorkspaceId = existingProject.context?.workspaceModel?.workspaceId
+        ?? existingProject.state?.workspaceModel?.workspaceId
+        ?? `workspace-${finishedSession.userId ?? "unknown"}`;
+      const reboundWorkspaceModel = {
+        ...(existingProject.context?.workspaceModel ?? existingProject.state?.workspaceModel ?? {}),
+        workspaceId: reboundWorkspaceId,
+        ownerUserId: finishedSession.userId ?? null,
+        roles: ["owner"],
+      };
+      existingProject.onboardingSession = finishedSession;
       existingProject.projectDraft = projectDraft;
       existingProject.projectCreationEvent =
         this.projectCreationEvents.get(projectId)
         ?? existingProject.projectCreationEvent
         ?? null;
       existingProject.projectCreationMetric = this.projectCreationMetric ?? existingProject.projectCreationMetric ?? null;
+      existingProject.userId = finishedSession.userId ?? existingProject.userId ?? null;
       existingProject.name = projectName;
       existingProject.goal = projectGoal;
       existingProject.state = bootstrapped.initialProjectState ?? projectDraft.state ?? existingProject.state;
+      existingProject.state = {
+        ...(existingProject.state ?? {}),
+        workspaceModel: reboundWorkspaceModel,
+      };
+      existingProject.context = {
+        ...(existingProject.context ?? {}),
+        workspaceModel: reboundWorkspaceModel,
+      };
     }
 
     const project = this.projects.get(projectId);
+    if (project) {
+      project.userId = finishedSession.userId ?? project.userId ?? null;
+      const reboundWorkspaceId = project.context?.workspaceModel?.workspaceId
+        ?? project.state?.workspaceModel?.workspaceId
+        ?? `workspace-${finishedSession.userId ?? "unknown"}`;
+      const reboundWorkspaceModel = {
+        ...(project.context?.workspaceModel ?? project.state?.workspaceModel ?? {}),
+        workspaceId: reboundWorkspaceId,
+        ownerUserId: finishedSession.userId ?? null,
+        roles: ["owner"],
+      };
+      project.state = {
+        ...(project.state ?? {}),
+        workspaceModel: reboundWorkspaceModel,
+      };
+      project.context = {
+        ...(project.context ?? {}),
+        workspaceModel: reboundWorkspaceModel,
+      };
+    }
     project.projectCreationEvent =
       this.projectCreationEvents.get(projectId)
       ?? project.projectCreationEvent
@@ -704,7 +768,7 @@ export class ProjectService {
     project.intakeScanHandoff = createUploadedIntakeToScannerHandoff({
       projectId,
       projectIntake,
-      connectedSources: session.connectedSources,
+      connectedSources: finishedSession.connectedSources,
       gitSnapshot: project.gitSnapshot,
       notionSnapshot: project.notionSnapshot,
     });
@@ -1972,6 +2036,68 @@ export class ProjectService {
     return { authPayload: persistedAuthPayload ?? authPayload };
   }
 
+  updateUserProfile({ userInput, profileInput } = {}) {
+    const profile = userInput && typeof userInput === "object" ? userInput : {};
+    const nextProfile = profileInput && typeof profileInput === "object" ? profileInput : {};
+    const existing = this.findUserRecord(profile);
+
+    if (!existing) {
+      return null;
+    }
+
+    const userIdentity = {
+      ...existing.userIdentity,
+      displayName: typeof nextProfile.displayName === "string" && nextProfile.displayName.trim()
+        ? nextProfile.displayName.trim()
+        : existing.userIdentity?.displayName ?? null,
+      email: typeof nextProfile.email === "string" && nextProfile.email.trim()
+        ? nextProfile.email.trim()
+        : existing.userIdentity?.email ?? null,
+    };
+
+    const membershipRecord = existing.membershipRecord
+      ? {
+          ...existing.membershipRecord,
+          memberProfile: {
+            ...(existing.membershipRecord.memberProfile ?? {}),
+            displayName: userIdentity.displayName,
+            email: userIdentity.email,
+          },
+        }
+      : existing.membershipRecord;
+
+    const authPayload = {
+      ...existing,
+      userIdentity,
+      membershipRecord,
+    };
+
+    const persistedAuthPayload = this.persistUserAuthPayload(authPayload);
+    return { authPayload: persistedAuthPayload ?? authPayload };
+  }
+
+  updateNotificationPreferences({ userInput, preferenceInput } = {}) {
+    const profile = userInput && typeof userInput === "object" ? userInput : {};
+    const existing = this.findUserRecord(profile);
+
+    if (!existing) {
+      return null;
+    }
+
+    const { notificationPreferences } = createNotificationPreferenceSettings({
+      userIdentity: existing.userIdentity,
+      preferenceInput,
+    });
+
+    const authPayload = {
+      ...existing,
+      notificationPreferences,
+    };
+
+    const persistedAuthPayload = this.persistUserAuthPayload(authPayload);
+    return { authPayload: persistedAuthPayload ?? authPayload };
+  }
+
   seedDemoProject() {
     const projectId = "giftwallet";
     if (this.projects.has(projectId)) {
@@ -2516,6 +2642,11 @@ export class ProjectService {
       return null;
     }
 
+    const preservedRepeatedLoopContinuation =
+      project.repeatedLoopContinuation
+      ?? project.state?.repeatedLoopContinuation
+      ?? project.context?.repeatedLoopContinuation
+      ?? null;
     project.projectCreationEvents = this.listProjectCreationEvents();
     project.projectCreationSummary = this.buildProjectCreationSummary(project.projectCreationEvents);
     project.normalizedSources = normalizeProjectSources(project);
@@ -2565,9 +2696,11 @@ export class ProjectService {
       continuityPlan,
       disasterRecoveryChecklist,
       businessContinuityState,
+      repeatedLoopContinuation: preservedRepeatedLoopContinuation,
     };
     project.state = {
       ...project.state,
+      repeatedLoopContinuation: preservedRepeatedLoopContinuation,
       businessGoal: project.goal,
       context: project.context,
       domainProfile: project.context?.domainProfile ?? null,
@@ -2692,12 +2825,28 @@ export class ProjectService {
       todayPrioritiesFeed: project.context?.todayPrioritiesFeed ?? null,
       ownerVisibilityStrip: project.context?.ownerVisibilityStrip ?? null,
       aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
+      proofArtifact: buildCanonicalProofArtifact({
+        project,
+        previewScreenViewModel: project.context?.previewScreenViewModel ?? null,
+        generatedSurfaceProofSchema: project.context?.generatedSurfaceProofSchema ?? null,
+        aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
+        proposalApplyDecision: project.context?.proposalApplyDecision ?? null,
+        artifactExpectation: project.context?.artifactExpectation ?? null,
+      }),
       aiGenerationObservability: project.context?.aiGenerationObservability ?? null,
       providerLatencyFailureTracker: project.context?.providerLatencyFailureTracker ?? null,
       generationSuccessAcceptanceTracker: project.context?.generationSuccessAcceptanceTracker ?? null,
       promptContractFailureTracker: project.context?.promptContractFailureTracker ?? null,
       aiGenerationReviewDashboard: project.context?.aiGenerationReviewDashboard ?? null,
       generatedSurfaceProofSchema: project.context?.generatedSurfaceProofSchema ?? null,
+      proofArtifact: buildCanonicalProofArtifact({
+        project,
+        previewScreenViewModel: project.context?.previewScreenViewModel ?? null,
+        generatedSurfaceProofSchema: project.context?.generatedSurfaceProofSchema ?? null,
+        aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
+        proposalApplyDecision: project.context?.proposalApplyDecision ?? null,
+        artifactExpectation: project.context?.artifactExpectation ?? null,
+      }),
       generatedAccessibilityValidationEngine: project.context?.generatedAccessibilityValidationEngine ?? null,
       generatedSurfacePerformanceBudgetValidator: project.context?.generatedSurfacePerformanceBudgetValidator ?? null,
       generatedBrandConsistencyValidator: project.context?.generatedBrandConsistencyValidator ?? null,
@@ -2953,6 +3102,12 @@ export class ProjectService {
       onboardingViewState: project.context?.onboardingViewState ?? null,
       onboardingCompletionDecision: project.context?.onboardingCompletionDecision ?? null,
       onboardingStateHandoff: project.context?.onboardingStateHandoff ?? null,
+      artifactExpectation: project.context?.artifactExpectation
+        ?? project.context?.proofArtifact?.artifactExpectation
+        ?? null,
+      generationIntent: project.context?.generationIntent
+        ?? project.context?.aiDesignRequest?.generationIntent
+        ?? null,
       projectPermissionSchema: project.context?.projectPermissionSchema ?? null,
       roleCapabilityMatrix: project.context?.roleCapabilityMatrix ?? null,
       projectAuthorizationDecision: project.context?.projectAuthorizationDecision ?? null,
@@ -3893,6 +4048,36 @@ export class ProjectService {
     };
   }
 
+  buildSyntheticArtifactApprovalRequest(projectId, project) {
+    const safeProject = project && typeof project === "object" ? project : {};
+    const artifact = safeProject.proofArtifact && typeof safeProject.proofArtifact === "object"
+      ? safeProject.proofArtifact
+      : {};
+    const artifactExpectation = safeProject.context?.artifactExpectation && typeof safeProject.context.artifactExpectation === "object"
+      ? safeProject.context.artifactExpectation
+      : {};
+    const artifactTitle = artifact.title ?? artifactExpectation.title ?? safeProject.name ?? "Artifact";
+
+    return {
+      approvalRequestId: `approval:${projectId}:artifact-proof:user-confirmation`,
+      projectId,
+      actionType: "artifact-proof-confirmation",
+      actorType: "user",
+      actionPayload: {
+        approvalType: "artifact-proof-confirmation",
+        artifactId: artifact.artifactId ?? null,
+        artifactTitle,
+      },
+      riskContext: {
+        riskLevel: "low",
+        reason: `User confirmed ${artifactTitle} as the artifact to advance.`,
+        uncertainty: false,
+      },
+      requestedAt: new Date().toISOString(),
+      status: "pending",
+    };
+  }
+
   captureApproval(projectId, { approvalRequestId, userInput } = {}) {
     const project = this.projects.get(projectId);
     if (!project) {
@@ -3901,7 +4086,14 @@ export class ProjectService {
 
     this.rebuildContext(projectId);
 
-    const request = project.context?.approvalRequest;
+    const activeRequest = project.context?.approvalRequest;
+    const syntheticArtifactRequest = this.buildSyntheticArtifactApprovalRequest(projectId, project);
+    const shouldUseSyntheticArtifactRequest = approvalRequestId
+      && syntheticArtifactRequest?.approvalRequestId === approvalRequestId
+      && activeRequest?.approvalRequestId !== approvalRequestId;
+    const request = shouldUseSyntheticArtifactRequest
+      ? syntheticArtifactRequest
+      : (activeRequest ?? syntheticArtifactRequest);
     if (!request || (approvalRequestId && request.approvalRequestId !== approvalRequestId)) {
       return {
         approvalPayload: null,
@@ -3939,14 +4131,39 @@ export class ProjectService {
       approvalRecord,
       ...((project.approvalRecords ?? []).filter((record) => record.approvalRequestId !== approvalRecord.approvalRequestId)),
     ];
+
+    if (normalizedDecision === "approved") {
+      const repeatedLoopContinuation = buildRepeatedLoopContinuation({
+        projectId,
+        project,
+        approvalCount: project.approvalRecords.length,
+      });
+      project.repeatedLoopContinuation = repeatedLoopContinuation;
+      project.state = {
+        ...(project.state ?? {}),
+        repeatedLoopContinuation,
+      };
+      project.context = {
+        ...(project.context ?? {}),
+        repeatedLoopContinuation,
+      };
+    }
+
+    this.rebuildContext(projectId);
+
+    if (normalizedDecision === "approved") {
+      this.runCycle(projectId);
+    }
+
+    const refreshedProject = this.projects.get(projectId) ?? project;
     this.rebuildContext(projectId);
 
     return {
       approvalPayload: {
         approvalRecord,
-        approvalStatus: project.context?.approvalStatus ?? null,
-        approvalRecords: project.context?.approvalRecords ?? [],
-        sharedApprovalState: project.context?.sharedApprovalState ?? null,
+        approvalStatus: refreshedProject.context?.approvalStatus ?? null,
+        approvalRecords: refreshedProject.context?.approvalRecords ?? [],
+        sharedApprovalState: refreshedProject.context?.sharedApprovalState ?? null,
       },
     };
   }
@@ -3977,9 +4194,33 @@ export class ProjectService {
         .map((event) => event.payload.taskId),
     );
 
+    const cycleProjectState = {
+      ...(project.state ?? {}),
+      context: {
+        ...(project.state?.context ?? {}),
+        domain:
+          project.context?.domain
+          ?? project.state?.context?.domain
+          ?? project.projectIntake?.projectType
+          ?? project.state?.intake?.projectType
+          ?? "generic",
+        gaps: project.state?.context?.gaps ?? [],
+        flows: project.state?.context?.flows ?? [],
+      },
+      intake: project.projectIntake ?? project.state?.intake ?? null,
+      importedAssetTaskExtraction:
+        project.context?.importedAssetTaskExtraction
+        ?? project.state?.importedAssetTaskExtraction
+        ?? null,
+      maintenanceBacklog:
+        project.context?.maintenanceBacklog
+        ?? project.state?.maintenanceBacklog
+        ?? null,
+    };
+
     const cycle = this.orchestrator.runCycle({
       projectId,
-      projectState: project.state,
+      projectState: cycleProjectState,
       agents: project.agents,
       completedTaskIds,
     });
@@ -4100,6 +4341,17 @@ export class ProjectService {
       authenticatedAppShell: project.context?.authenticatedAppShell ?? null,
       navigationRouteSurface: project.context?.navigationRouteSurface ?? null,
       aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
+      generationIntent: project.context?.generationIntent
+        ?? project.context?.aiDesignRequest?.generationIntent
+        ?? null,
+      proofArtifact: buildCanonicalProofArtifact({
+        project,
+        previewScreenViewModel: project.context?.previewScreenViewModel ?? null,
+        generatedSurfaceProofSchema: project.context?.generatedSurfaceProofSchema ?? null,
+        aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
+        proposalApplyDecision: project.context?.proposalApplyDecision ?? null,
+        artifactExpectation: project.context?.artifactExpectation ?? null,
+      }),
       aiDesignRequest: project.context?.aiDesignRequest ?? null,
       aiDesignProposal: project.context?.aiDesignProposal ?? null,
       aiDesignProviderResult: project.context?.aiDesignProviderResult ?? null,

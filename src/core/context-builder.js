@@ -39,6 +39,15 @@ import { defineUserActivityEventSchema } from "./user-activity-event-schema.js";
 import { createSessionActivityTracker } from "./session-activity-tracker.js";
 import { createReturningUserResolver } from "./returning-user-resolver.js";
 import { createReturnTomorrowContinuityResolver } from "./return-tomorrow-continuity-resolver.js";
+import { createSplitWorkspaceAndLiveBuildSurfaceModel } from "../../web/shared/split-workspace-live-build-surface-model.js";
+import { createBuildProgressionStateMachine } from "./build-progression-state-machine.js";
+import { createAutomaticProductSkeletonContract } from "./automatic-product-skeleton-contract.js";
+import { createClassSpecificSkeletonQualityBaseline } from "./class-specific-skeleton-quality-baseline.js";
+import { createClassAwareGenerationContract } from "./class-aware-generation-contract.js";
+import { createClassSpecificSurfaceEvolutionRules } from "./class-specific-surface-evolution-rules.js";
+import { createLocalWorkspaceContract } from "./local-workspace-contract.js";
+import { createDesktopShellScopeContract } from "./desktop-shell-scope-contract.js";
+import { createClassAwareRuntimeResolver } from "./class-aware-runtime-resolver.js";
 import { createRetentionMetricsAggregator } from "./retention-metrics-aggregator.js";
 import { createRetentionCurveAnalyzer } from "./retention-curve-analyzer.js";
 import { createDurableUserActivitySessionHistory } from "./user-activity-session-history-store.js";
@@ -190,6 +199,7 @@ import { createEmailNotificationDeliveryModule } from "./email-notification-deli
 import { createNotificationPreferenceSettings } from "./notification-preference-settings.js";
 import { createWebhookExternalNotificationAdapter } from "./webhook-external-notification-adapter.js";
 import { createReleasePlanGenerator } from "./release-plan-generator.js";
+import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
 import { createApprovalRecordStore } from "./approval-record-store.js";
@@ -250,6 +260,7 @@ import { defineGeneratedSurfaceProofSchema } from "./generated-surface-proof-sch
 import { createGeneratedAccessibilityValidationEngine } from "./generated-accessibility-validation-engine.js";
 import { createGeneratedSurfacePerformanceBudgetValidator } from "./generated-surface-performance-budget-validator.js";
 import { createGeneratedBrandConsistencyValidator } from "./generated-brand-consistency-validator.js";
+import { buildCanonicalProofArtifact } from "./canonical-proof-artifact.js";
 import { createRenderableDesignProposalNormalizer } from "./renderable-design-proposal-normalizer.js";
 import { createDesignProposalValidationFlow } from "./design-proposal-validation-flow.js";
 import { createDesignProposalPreviewPipeline } from "./design-proposal-preview-pipeline.js";
@@ -1364,11 +1375,25 @@ export function buildProjectContext(
   const domain = domainDecision.domain;
   const domainRegistry = createDomainRegistry();
   const domainProfile = resolveDomainProfile(domain, domainRegistry);
+  const productClass = domainDecision.productClass ?? domainProfile.productClass ?? project.projectIntake?.projectType ?? "unknown";
   const { domainCapabilities, requiredContextFields, executionModes } = mapDomainCapabilities(domain, domainRegistry);
   const { recommendedDefaults, defaultsTrace } = createRecommendedDefaults({
     projectIntake: project.projectIntake ?? null,
     domain,
     constraints: project.manualContext?.constraints ?? project.state?.constraints ?? {},
+  });
+  const { projectStage, runtimeDirection } = resolveProjectStageAndRuntimeDirection({
+    productClass,
+    domainProfile,
+    projectIntake: project.projectIntake ?? null,
+    projectState: {
+      ...(project.state ?? {}),
+      releasePlan: project.state?.releasePlan ?? null,
+      buildTargets: project.state?.buildTargets ?? [],
+      bootstrapPlan: project.state?.bootstrapPlan ?? null,
+      bootstrapTasks: project.state?.bootstrapTasks ?? [],
+    },
+    recommendedDefaults,
   });
   const stackRecommendation = createStackRecommendationModule({
     domain,
@@ -1636,8 +1661,20 @@ export function buildProjectContext(
   const { bootstrapPlan, bootstrapTasks } = createBootstrapPlanGenerator({
     projectIntake: project.projectIntake ?? null,
     domain,
+    productClass,
     recommendedDefaults,
     domainProfile,
+    projectState: {
+      ...(project.state ?? {}),
+      lifecycle: project.state?.lifecycle ?? null,
+    },
+  });
+  const splitWorkspaceLiveBuildSurfaceModel = createSplitWorkspaceAndLiveBuildSurfaceModel({
+    productClass: bootstrapPlan?.runtimeDirection?.productClass ?? productClass,
+    runtimeDirection: bootstrapPlan?.runtimeDirection ?? runtimeDirection,
+    skeletonContract: bootstrapPlan?.skeletonContract ?? null,
+    skeletonQualityBaseline: bootstrapPlan?.skeletonQualityBaseline ?? null,
+    projectStage: bootstrapPlan?.projectStage ?? projectStage,
   });
   const { bootstrapAssignments } = createBootstrapDispatcher({
     bootstrapTasks,
@@ -2007,12 +2044,27 @@ export function buildProjectContext(
       recommendedDefaults,
     },
     domain,
+    productClass,
     domainProfile,
   });
   const { buildTargets, artifactManifest } = createBuildTargetResolver({
     domain,
     releaseTarget: releasePlan.releaseTarget,
   });
+  const buildProgressionStateMachine = createBuildProgressionStateMachine({
+    productClass: bootstrapPlan?.runtimeDirection?.productClass ?? productClass,
+    projectStage: bootstrapPlan?.projectStage ?? projectStage,
+    progressState,
+    splitWorkspaceLiveBuildSurfaceModel,
+    skeletonContract: bootstrapPlan?.skeletonContract ?? null,
+    skeletonQualityBaseline: bootstrapPlan?.skeletonQualityBaseline ?? null,
+    runtimeDirection: bootstrapPlan?.runtimeDirection ?? runtimeDirection,
+    releasePlan,
+  });
+  progressState.buildProgressionStateId = buildProgressionStateMachine.currentStateId;
+  progressState.buildProgressionRouteKey = buildProgressionStateMachine.summary.currentRouteKey;
+  progressState.buildProgressionOverlayStatus = buildProgressionStateMachine.overlayStatus;
+  progressState.buildProgressionLabel = buildProgressionStateMachine.summary.currentLabel;
   const releaseRequirementsSchema = defineReleaseRequirementsSchema({
     releaseTarget: releasePlan.releaseTarget,
     domain,
@@ -2972,6 +3024,23 @@ export function buildProjectContext(
     projectIntake: project.projectIntake ?? project.onboardingSession?.projectIntake ?? null,
     onboardingCompletionDecision,
     onboardingSession: project.onboardingSession ?? null,
+  });
+  const artifactExpectation = onboardingStateHandoff?.artifactExpectation ?? null;
+  const automaticProductSkeletonContract = createAutomaticProductSkeletonContract({
+    productClass,
+    runtimeDirection,
+    domainProfile,
+  });
+  const classSpecificSkeletonQualityBaseline = createClassSpecificSkeletonQualityBaseline({
+    productClass,
+    skeletonContract: automaticProductSkeletonContract,
+  });
+  const classAwareGenerationContract = createClassAwareGenerationContract({
+    productClass,
+    artifactExpectation,
+    runtimeDirection,
+    skeletonContract: automaticProductSkeletonContract,
+    qualityBaseline: classSpecificSkeletonQualityBaseline,
   });
   const { activationGoals } = deriveActivationGoals({
     nexusPositioning,
@@ -4218,6 +4287,12 @@ export function buildProjectContext(
     managementTemplate,
     projectState: project.state ?? {},
   });
+  const classSpecificSurfaceEvolutionRules = createClassSpecificSurfaceEvolutionRules({
+    productClass,
+    runtimeDirection,
+    classAwareGenerationContract,
+    splitWorkspaceLiveBuildSurfaceModel,
+  });
   const { aiDesignServiceResult } = createAiDesignService({
     projectId: project.id,
     projectState: project.state ?? {},
@@ -4230,6 +4305,9 @@ export function buildProjectContext(
     designTokens,
     componentContract,
     slimmedContextPayload,
+    artifactExpectation,
+    classAwareGenerationContract,
+    classSpecificSurfaceEvolutionRules,
     providerConfig: project.manualContext?.aiDesignProviderConfig ?? null,
   });
   const { aiDesignExecutionState } = createAiDesignExecutionHook({
@@ -4309,6 +4387,14 @@ export function buildProjectContext(
     editedProposal,
     partialAcceptanceDecision,
     screenProposalDiff,
+  });
+  const proofArtifact = buildCanonicalProofArtifact({
+    project,
+    previewScreenViewModel,
+    generatedSurfaceProofSchema,
+    aiControlCenterSurface,
+    proposalApplyDecision,
+    artifactExpectation,
   });
   const { acceptedScreenState, integratedDesignProposalState } = createDesignProposalStateIntegration({
     proposalApplyDecision,
@@ -4473,6 +4559,17 @@ export function buildProjectContext(
       handoffMode: "optional-bridge",
     },
   });
+  const { localWorkspaceContract } = createLocalWorkspaceContract({
+    projectId: project.id,
+    projectName: project.name,
+    productClass,
+    workspaceNavigationModel,
+    splitWorkspaceLiveBuildSurfaceModel,
+    returnTomorrowContinuity,
+    localDevelopmentBridge,
+    cloudWorkspaceModel,
+    buildProgressionStateMachine,
+  });
   const { remoteMacRunner } = createRemoteMacRunnerContract({
     executionTopology,
     appleBuildConfig: {
@@ -4493,6 +4590,20 @@ export function buildProjectContext(
         shouldArchive: domain === "mobile-app",
       },
     },
+  });
+  const { desktopShellScopeContract } = createDesktopShellScopeContract({
+    projectId: project.id,
+    productClass,
+    localWorkspaceContract,
+    localDevelopmentBridge,
+    remoteMacRunner,
+    cloudWorkspaceModel,
+  });
+  const { classAwareRuntimeResolver } = createClassAwareRuntimeResolver({
+    productClass,
+    runtimeDirection,
+    desktopShellScopeContract,
+    localWorkspaceContract,
   });
   const { executionModeDecision } = createExecutionModeResolver({
     executionTopology,
@@ -5314,6 +5425,12 @@ export function buildProjectContext(
   context.onboardingViewState = onboardingViewState;
   context.onboardingCompletionDecision = onboardingCompletionDecision;
   context.onboardingStateHandoff = onboardingStateHandoff;
+  context.artifactExpectation = artifactExpectation;
+  context.classAwareGenerationContract = classAwareGenerationContract;
+  context.classSpecificSurfaceEvolutionRules = classSpecificSurfaceEvolutionRules;
+  context.localWorkspaceContract = localWorkspaceContract;
+  context.desktopShellScopeContract = desktopShellScopeContract;
+  context.classAwareRuntimeResolver = classAwareRuntimeResolver;
   context.projectPermissionSchema = projectPermissionSchema;
   context.roleCapabilityMatrix = roleCapabilityMatrix;
   context.projectAuthorizationDecision = projectAuthorizationDecision;
@@ -5416,6 +5533,7 @@ export function buildProjectContext(
   context.managementTemplate = managementTemplate;
   context.templateVariants = templateVariants;
   context.aiDesignRequest = aiDesignServiceResult.aiDesignRequest;
+  context.generationIntent = aiDesignServiceResult.aiDesignRequest?.generationIntent ?? null;
   context.aiDesignProposal = aiDesignServiceResult.aiDesignProviderResult?.aiDesignProposal ?? null;
   context.aiDesignProviderResult = aiDesignServiceResult.aiDesignProviderResult ?? null;
   context.aiDesignServiceResult = aiDesignServiceResult;
@@ -5448,6 +5566,7 @@ export function buildProjectContext(
   context.activeScreenResolver = activeScreenResolver;
   context.liveRuntimeScreenState = liveRuntimeScreenState;
   context.previewScreenViewModel = previewScreenViewModel;
+  context.proofArtifact = proofArtifact;
   context.primaryActionValidation = primaryActionValidation;
   context.mobileValidation = mobileValidation;
   context.stateCoverageValidation = stateCoverageValidation;
@@ -5521,6 +5640,9 @@ export function buildProjectContext(
   context.agentGovernanceTrace = agentGovernanceTrace;
   context.bootstrapPlan = bootstrapPlan;
   context.bootstrapTasks = bootstrapTasks;
+  context.automaticProductSkeletonContract = bootstrapPlan?.skeletonContract ?? null;
+  context.classSpecificSkeletonQualityBaseline = bootstrapPlan?.skeletonQualityBaseline ?? null;
+  context.splitWorkspaceLiveBuildSurfaceModel = splitWorkspaceLiveBuildSurfaceModel;
   context.bootstrapAssignments = bootstrapAssignments;
   context.bootstrapExecutionRequests = bootstrapExecutionRequests;
   context.bootstrapResolvedSurfaces = bootstrapResolvedSurfaces;
@@ -5645,6 +5767,10 @@ export function buildProjectContext(
   context.externalDeliveryResult = externalDeliveryResult;
   context.releasePlan = releasePlan;
   context.releaseSteps = releaseSteps;
+  context.productClass = productClass;
+  context.projectStage = projectStage;
+  context.runtimeDirection = runtimeDirection;
+  context.buildProgressionStateMachine = buildProgressionStateMachine;
   context.buildTargets = buildTargets;
   context.buildArtifactManifest = artifactManifest;
   context.artifactRecord = artifactRecord;

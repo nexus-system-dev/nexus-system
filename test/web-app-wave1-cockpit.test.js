@@ -59,6 +59,34 @@ function createShortDelayTimers() {
 
 function createFakeDocument() {
   const selectors = [
+    "#shell-route-label",
+    "#shell-route-title",
+    "#shell-route-subtitle",
+    "#topbar-notifications-button",
+    "#topbar-profile-button",
+    "#nav-create",
+    "#nav-onboarding",
+    "#nav-loop",
+    "#nav-timeline",
+    "#nav-developer",
+    "#nav-project-brain",
+    "#nav-release",
+    "#nav-growth",
+    "#nav-settings",
+    "#nav-help",
+    "#flow-step-create",
+    "#flow-step-onboarding",
+    "#flow-step-understanding",
+    "#flow-step-loop",
+    "#qa-route-switcher",
+    "#qa-prev-screen-button",
+    "#qa-next-screen-button",
+    "#qa-screen-create-button",
+    "#qa-screen-onboarding-button",
+    "#qa-screen-understanding-button",
+    "#qa-screen-loop-button",
+    "#qa-screen-execution-button",
+    "#qa-screen-proof-button",
     ".hero-actions",
     "#project-select",
     "#sync-casino-button",
@@ -100,6 +128,7 @@ function createFakeDocument() {
     "#create-project-file-content-input",
     "#create-project-button",
     "#finish-onboarding-button",
+    "#tab-loop",
     "#tab-developer",
     "#tab-project-brain",
     "#tab-release",
@@ -112,6 +141,38 @@ function createFakeDocument() {
     "#existing-content",
     "#live-content",
     "#decision-content",
+    "#loop-workspace-summary",
+    "#loop-screen-intro",
+    "#loop-primary-title",
+    "#loop-primary-reason",
+    "#loop-primary-action-button",
+    "#loop-secondary-action-button",
+    "#workspace-loop",
+    "#workspace-execution",
+    "#workspace-proof",
+    "#loop-stage-rail-content",
+    "#loop-understanding-content",
+    "#loop-next-task-content",
+    "#loop-execution-content",
+    "#loop-proof-content",
+    "#loop-open-onboarding-button",
+    "#loop-open-project-brain-button",
+    "#loop-open-developer-button",
+    "#loop-open-release-button",
+    "#execution-mission-title",
+    "#execution-status-list",
+    "#execution-live-list",
+    "#execution-log-list",
+    "#execution-stop-button",
+    "#execution-proof-button",
+    "#execution-refresh-button",
+    "#proof-preview-title",
+    "#proof-ready-title",
+    "#proof-bullets-list",
+    "#proof-stats-grid",
+    "#proof-download-button",
+    "#proof-open-button",
+    "#proof-full-button",
     "#developer-workspace-summary",
     "#workspace-developer",
     "#project-brain-summary",
@@ -189,6 +250,9 @@ function createFakeDocument() {
   }
 
   return {
+    body: {
+      dataset: {},
+    },
     documentElement: {
       style: {
         setProperty(name, value) {
@@ -958,21 +1022,110 @@ test("cockpit renders Wave 1 sections from the canonical project payload", async
   assert.match(fakeDocument.elements.get("#data-display-components-content").innerHTML, /dense tabular views for entities/);
   assert.match(fakeDocument.elements.get("#data-display-components-content").innerHTML, /Weekly activation/);
   assert.match(fakeDocument.elements.get("#data-display-components-content").innerHTML, /Ready/);
+  assert.equal(fakeDocument.elements.get("#shell-route-title").textContent, "Nexus Loop");
+  assert.match(fakeDocument.elements.get("#shell-route-subtitle").textContent, /זה הצעד הבא/);
+  assert.equal(fakeDocument.elements.get("#nav-loop").disabled, false);
+  assert.equal(fakeDocument.elements.get("#nav-timeline").disabled, true);
+  assert.match(fakeDocument.elements.get("#nav-timeline").title, /NLP-011/);
+  assert.equal(fakeDocument.elements.get("#flow-step-understanding").disabled, false);
+  assert.match(fakeDocument.elements.get("#flow-step-understanding").title, /מסך הסיכום|Understanding Summary/);
+  assert.match(fakeDocument.elements.get("#tab-loop").innerHTML, /Loop/);
+  assert.match(fakeDocument.elements.get("#loop-screen-intro").textContent, /single working loop/i);
+  assert.match(fakeDocument.elements.get("#loop-primary-title").textContent, /Wire cockpit layout|להכין ניסוי ראשון/);
+  assert.match(fakeDocument.elements.get("#loop-primary-reason").textContent, /זה תקוע בגלל|holds the progress|יש כאן החלטה אחת|step הכי ישיר/);
+  assert.equal(fakeDocument.elements.get("#loop-primary-action-button").textContent, "בצע את המשימה ⚡");
+  assert.equal(fakeDocument.elements.get("#loop-primary-action-button").dataset.loopTarget, "project-brain");
+  assert.equal(fakeDocument.elements.get("#loop-primary-action-button").dataset.loopActionKind, "execute");
+  assert.match(fakeDocument.elements.get("#loop-what-happens-body").textContent, /Landing page|נריץ את המשימה/);
+  assert.equal(fakeDocument.elements.get("#loop-secondary-action-button").dataset.loopTarget, "release");
+  assert.match(fakeDocument.elements.get("#loop-workspace-summary").innerHTML, /What this task is/);
+  assert.match(fakeDocument.elements.get("#loop-workspace-summary").innerHTML, /What happens when you click/);
+  assert.match(fakeDocument.elements.get("#loop-workspace-summary").innerHTML, /What proof to expect/);
+  assert.match(fakeDocument.elements.get("#loop-stage-rail-content").innerHTML, /הבנה/);
+  assert.match(fakeDocument.elements.get("#loop-next-task-content").innerHTML, /Next task/);
+  assert.match(fakeDocument.elements.get("#loop-execution-content").innerHTML, /Execution/);
+  assert.match(fakeDocument.elements.get("#loop-proof-content").innerHTML, /Proof/);
+  assert.equal(fakeDocument.elements.get("#flow-feedback-banner").hidden, true);
   assert.match(fakeDocument.elements.get("#tab-developer").innerHTML, /Wire cockpit layout/);
   assert.match(fakeDocument.elements.get("#tab-release").innerHTML, /blocked/);
-  assert.equal(fakeDocument.elements.get("#workspace-developer").hidden, false);
+  assert.equal(fakeDocument.elements.get("#workspace-loop").hidden, false);
+  assert.equal(fakeDocument.elements.get("#workspace-developer").hidden, true);
   assert.equal(fakeDocument.elements.get("#workspace-project-brain").hidden, true);
-  assert.equal(fakeDocument.elements.get("#tab-developer").ariaSelected, "true");
+  assert.equal(fakeDocument.elements.get(".hero-actions").hidden, true);
+  assert.equal(fakeDocument.elements.get("#tab-loop").ariaSelected, "true");
   assert.equal(fakeDocument.documentElement.style.getPropertyValue("--bg"), "#101820");
   assert.equal(fakeDocument.documentElement.style.getPropertyValue("--font-body"), "\"IBM Plex Sans\", sans-serif");
   assert.equal(fakeDocument.documentElement.style.getPropertyValue("--layout-max-width"), "1360px");
   assert.equal(fakeDocument.documentElement.style.getPropertyValue("--space-lg"), "21px");
+
+  await fakeDocument.elements
+    .get("#loop-primary-action-button")
+    .listeners.click({ currentTarget: fakeDocument.elements.get("#loop-primary-action-button") });
+
+  assert.equal(fakeDocument.elements.get("#workspace-project-brain").hidden, false);
+  assert.equal(fakeDocument.elements.get("#shell-route-title").textContent, "Project Brain");
+  assert.equal(fakeDocument.elements.get("#tab-project-brain").ariaSelected, "true");
+
+  app.setActiveWorkspace("loop");
 
   app.setActiveWorkspace("release");
 
   assert.equal(fakeDocument.elements.get("#workspace-developer").hidden, true);
   assert.equal(fakeDocument.elements.get("#workspace-release").hidden, false);
   assert.equal(fakeDocument.elements.get("#tab-release").ariaSelected, "true");
+});
+
+test("QA screen switcher opens loop-family preview screens without an active project", async () => {
+  const fakeDocument = createFakeDocument();
+
+  async function fetchImpl(url) {
+    if (url === "/api/projects") {
+      return {
+        ok: true,
+        async json() {
+          return { projects: [] };
+        },
+      };
+    }
+
+    throw new Error(`Unexpected url: ${url}`);
+  }
+
+  const app = createCockpitApp({
+    doc: fakeDocument,
+    fetchImpl,
+    setTimeoutImpl() {
+      return 0;
+    },
+    clearTimeoutImpl() {},
+  });
+  await app.ready;
+
+  fakeDocument.elements.get("#qa-screen-loop-button").listeners.click({
+    currentTarget: fakeDocument.elements.get("#qa-screen-loop-button"),
+  });
+
+  assert.equal(fakeDocument.elements.get("#screen-create").hidden, true);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, false);
+  assert.equal(fakeDocument.elements.get("#screen-workspace").dataset.activeWorkspace, "loop");
+  assert.equal(fakeDocument.body.dataset.appScreen, "workspace");
+  assert.match(fakeDocument.elements.get("#shell-route-title").textContent, /Nexus Loop/);
+
+  fakeDocument.elements.get("#qa-screen-execution-button").listeners.click({
+    currentTarget: fakeDocument.elements.get("#qa-screen-execution-button"),
+  });
+
+  assert.equal(fakeDocument.elements.get("#screen-workspace").dataset.activeWorkspace, "execution");
+  assert.match(fakeDocument.elements.get("#shell-route-title").textContent, /Execution \/ Live Run/);
+  assert.match(fakeDocument.elements.get("#execution-mission-title").textContent, /להכין ניסוי ראשון לרכישת משתמשים/);
+
+  fakeDocument.elements.get("#qa-screen-proof-button").listeners.click({
+    currentTarget: fakeDocument.elements.get("#qa-screen-proof-button"),
+  });
+
+  assert.equal(fakeDocument.elements.get("#screen-workspace").dataset.activeWorkspace, "proof");
+  assert.match(fakeDocument.elements.get("#shell-route-title").textContent, /Result \/ Proof/);
+  assert.match(fakeDocument.elements.get("#proof-ready-title").textContent, /מוכן/);
 });
 
 test("cockpit refreshes live progress without manual clicks", async () => {
@@ -1508,7 +1661,10 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
   assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, false);
   assert.equal(fakeDocument.elements.get("#workspace-board").hidden, false);
   assert.equal(fakeDocument.elements.get("#hero-project-name").textContent, "Launch App");
+  assert.equal(fakeDocument.elements.get("#workspace-loop").hidden, false);
+  assert.equal(fakeDocument.elements.get("#workspace-developer").hidden, true);
   assert.match(fakeDocument.elements.get("#developer-workspace-summary").innerHTML, /18%/);
+  assert.match(fakeDocument.elements.get("#loop-workspace-summary").innerHTML, /Next task/);
   assert.match(fakeDocument.elements.get("#now-content").innerHTML, /Your starter app is ready/);
   assert.match(fakeDocument.elements.get("#graph-content").innerHTML, /Review bootstrap output/);
   assert.match(fakeDocument.elements.get("#decision-content").innerHTML, /Review bootstrap output/);
@@ -2377,6 +2533,9 @@ test("cockpit restores workspace after refresh using local app state", async () 
   assert.equal(secondDocument.elements.get("#screen-workspace").hidden, false);
   assert.equal(secondDocument.elements.get("#workspace-board").hidden, false);
   assert.equal(secondDocument.elements.get("#hero-project-name").textContent, "GiftWallet");
+  assert.equal(secondDocument.elements.get("#tab-loop").ariaSelected, "true");
+  assert.equal(secondDocument.elements.get("#workspace-loop").hidden, false);
+  assert.equal(secondDocument.elements.get("#workspace-developer").hidden, true);
 });
 
 test("cockpit restores reopened onboarding after refresh and can exit back to workspace", async () => {
@@ -2778,7 +2937,7 @@ test("product flow invariants keep create, onboarding, and workspace as exclusiv
   assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
   assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, false);
   assert.equal(fakeDocument.elements.get("#workspace-board").hidden, false);
-  assert.equal(fakeDocument.elements.get("#tab-developer").ariaSelected, "true");
+  assert.equal(fakeDocument.elements.get("#tab-loop").ariaSelected, "true");
   assert.equal(requests.some((request) => request.url === "/api/onboarding/sessions/onboarding-flow-invariants/finish" && request.method === "POST"), true);
 });
 

@@ -1,0 +1,168 @@
+Project: Closure Gate SaaS Live / Closure Gate SaaS Live Final
+
+Evidence:
+- fresh create-to-onboarding handoff on `4011` is class-aware for the SaaS class
+- stale onboarding restore after a live server restart no longer pretends the old session is still usable:
+  - after reload on a dead in-memory session, the UI returns truthfully to `Project Create`
+  - it no longer resumes the old conversation and then fails later with `Request failed: 404`
+- a fresh SaaS rerun with a supporting link now reaches:
+  - class-aware onboarding
+  - understanding summary
+  - loop
+- the fresh loop now shows a real next build step for:
+  - `Closure Gate SaaS Live Final follow-up dashboard`
+- after the latest loop-language hardening, the fresh loop no longer leads with:
+  - `המשימה הפעילה`
+  - `מפת הלולאה`
+  - `ב-Proof`
+  and now shows:
+  - `החלק שנבנה עכשיו`
+  - `מה כבר סגור ומה נפתח אחר כך`
+  - `בתצוגה שנפתח`
+  - `בונים עכשיו את Closure Gate SaaS Live Final follow-up dashboard`
+  - `בנה עכשיו`
+  - `ראה את מה שנבנה`
+- the live loop also no longer leaks the internal phase slug `understanding-complete`
+- after the restart-safe restore fix, a stale onboarding reload now returns truthfully to create instead of surfacing `Request failed: 404`
+
+What changed relative to the older audit:
+- the older proof leak (`ARTIFACT PREVIEW`, `previewable: true`, `regions: 5`, `validation: invalid`, `apply: blocked`) was observed on a previous live path
+- the supporting-material handoff is no longer the active blocker on the fresh path
+- the fresh SaaS path now clears onboarding finish and opens the loop on `4011`
+- the fresh SaaS loop is now preview-led instead of task-led:
+  - the product surface appears above the task container
+  - the task card moved into supporting context instead of dominating the page
+- the embedded surface no longer contradicts itself with an unrelated stale task line:
+  - the old auth/setup line was replaced with product-aligned continuity for the same dashboard
+- direct revisit of `/home` now stays inside the SPA instead of collapsing to raw `{"error":"Not found"}` JSON
+- `/settings` now opens as a real settings surface instead of a deferred placeholder or random fallback screen
+- the live settings route is now connected to backend profile/settings state:
+  - the real settings layout is visible
+  - profile fields render from live user state
+  - save shows a truthful success state
+  - persisted profile name and notification toggle survive reload
+- the `/settings` route no longer nests the create layout inside the settings state:
+  - no duplicated create/form shell
+  - no visible flow stepper
+  - no visible hero banner above the settings screen
+- browser history back from `/settings` to `/home` now stays inside the SPA and returns to the `הבית שלך ב־Nexus` surface instead of raw backend output
+- the root route `/` now returns truthfully to the canonical create screen instead of reopening an old `Home` shell state
+- the `/home` route no longer renders an inner workspace shell inside the support surface:
+  - the duplicated home shell chrome is gone
+  - the visible surface collapses to the clean home support state instead of a nested shell
+- the `/` create route now preserves any stored project snapshot/context instead of hard-resetting shell continuity when it renders the canonical create screen
+- in the latest live revisit, `Home` now restores project continuity again when stored context exists:
+  - project cards are visible on the imported Home surface
+  - the current project card now shows `חזור ללופ`
+  - the imported Home layout stays intact and no nested shell regression was reintroduced
+- repeated aggressive live reruns can still trigger a transient `429` on `/settings` because the current server rate-limit path is still active
+- the create/onboarding action path also exposed a live rerender continuity bug:
+  - `צור פרויקט והתחל`
+  - onboarding navigation
+  - onboarding finish
+  stopped responding truthfully after route rerenders because their listeners were bound only to replaced DOM nodes
+- that action-continuity bug is now patched in the live frontend by moving the create/onboarding controls to delegated document-level handlers
+
+Current blocker truth:
+- the SaaS class has now been freshly revalidated through:
+  - loop
+  - proof
+  - artifact / timeline continuation
+- however, the downstream rerun now shows the remaining blocker more clearly:
+  - the proof / artifact path still exposes builder-internal and execution-first truth on the live surface
+  - visible examples from the current live pass include:
+    - `מוכן journey-onboarding-initialization:onboarding:capture-intake`
+    - `בדיקת האיכות הנוכחית: invalid`
+    - `מצב ההמשך כרגע: blocked`
+    - `סטטוס ולידציה: invalid`
+    - `סטטוס apply: blocked`
+    - `Artifact`
+    - `Bootstrap validation failed`
+    - `Recommended defaults are still provisional`
+    - `agent-runtime`
+- direct support-route revisit is now route-safe at both the server and shell level, `Home` no longer nests an inner shell, `/` no longer intentionally clears stored project context when it renders create, `/settings` is now a real connected settings screen, and a current live revisit of `/home` now restores project cards plus `חזור ללופ` when stored context exists; however, the broader closure gate still needs a final product-direction judgment
+- the fresh loop is now real and cleaner, but the proof / artifact continuation still shifts the emotional center back toward execution/status truth instead of product-first truth
+- the surface is still task-centric enough that Wave 3 cannot yet be called closed from this class alone
+- `W3-SL-005` still cannot close until the class matrix as a whole proves product-first enough for Wave 3 closure
+
+Latest structural fix after that audit:
+- the proof / artifact / timeline render path was patched to stop surfacing user-visible copy such as:
+  - `invalid`
+  - `blocked`
+  - `Artifact`
+  - `agent-runtime`
+  - bootstrap/runtime phrasing
+  from the main user-facing proof and timeline screens
+- the proof adapter now uses product-facing continuation language instead of validation/apply/runtime status as visible proof truth
+- the timeline adapter now filters builder-internal runtime events instead of replaying them as user-facing history
+- the legacy proof-screen mutation path in `web/app.js` now reuses the product-facing proof view model instead of rebuilding raw validation/apply copy from runtime state
+
+Important truth:
+- this structural fix is code truth until it is rerun live on `4011`
+- the closure gate is still open until a fresh live SaaS pass proves that the visible Proof / Artifact / Timeline surfaces no longer emotionally read as internal execution pipeline state
+- the remaining audited classes still need the same rerun judgment
+
+Verdict:
+- small SaaS no longer fails on a stale supporting-material stop
+- small SaaS now reaches a truthful fresh loop path on `4011`
+- small SaaS is no longer the main handoff blocker
+- the downstream proof / artifact rerun is now complete for the SaaS class
+- the remaining blocker is now narrower and more exact:
+  - a structural suppression patch for proof/timeline leakage is in place
+  - but the class still does not close `W3-SL-005` truthfully until a fresh live rerun on `4011` proves that the visible proof/timeline surfaces no longer leak execution-first / builder-internal truth
+
+Later live update:
+- live browser verification is now available on `127.0.0.1:4011`
+- the `/home -> project-open` route-truth bug has been fixed:
+  - opening a project from `Home` now syncs truthfully to `/loop`
+- explicit reload on `/proof`, `/artifact`, and `/timeline` now restores the correct screen instead of dropping back to the create shell
+- `landing / marketing`, `mobile app`, and `internal tool` now pass a fresh live rerun through `Loop -> Proof -> Artifact -> Timeline` without visible:
+  - `agent-runtime`
+  - `invalid`
+  - `blocked`
+  - `Bootstrap validation failed`
+  - `Recommended defaults are still provisional`
+- the remaining truthful gap is narrower now:
+  - `small SaaS` still needs one more full post-route-fix rerun through the same live path before the whole audited class matrix can be closed truthfully
+
+Final live rerun update:
+- `small SaaS` now completes a full live rerun through:
+  - `Loop`
+  - `Proof`
+  - `Artifact`
+  - `Timeline`
+- the direct execution-first leakage strings are gone from the visible live surfaces:
+  - `agent-runtime`
+  - `invalid`
+  - `blocked`
+  - `Bootstrap validation failed`
+  - `Recommended defaults are still provisional`
+  - `Artifact`
+- route truth also holds in this pass:
+  - project-open from `/home` lands truthfully on `/loop`
+  - explicit reload on `/proof`, `/artifact`, and `/timeline` restores the correct screen
+- however, the class still does not close `W3-SL-005` truthfully because product-grade truth is still weak:
+  - visible builder/composition metadata still appears on the user-facing surfaces
+  - examples from the live pass include:
+    - `topbar`
+    - `panel`
+    - `approved`
+    - `5 חלקים גלויים`
+    - `0 פעולות זמינות`
+- so the closure blocker is now no longer direct execution leakage
+- the blocker is that the visible artifact/proof/timeline experience still feels too much like composed builder state instead of a product progressively taking shape
+
+Final product-grade rerun:
+- the generic small-SaaS product surface was rerun again after suppressing/reframing the visible builder/composition metadata
+- the visible live surfaces no longer expose:
+  - `topbar`
+  - `panel`
+  - `approved`
+  - `5 חלקים גלויים`
+  - `0 פעולות זמינות`
+- the remaining support copy now reads as product-facing guidance rather than internal assembly state
+- with that final rerun, the dominant feeling is now:
+  - "my product is progressively becoming real"
+  rather than:
+  - "this is a system composing UI parts"
+- this closes the final product-grade blocker for the small SaaS class and completes the full audited matrix truthfully

@@ -1,0 +1,73 @@
+Wave 3 existing-project upload live note
+Date: 2026-05-17
+Source of truth: http://127.0.0.1:4011/
+
+What was verified:
+- the canonical active task is still `W3-UP-001`
+- the apparent dependency `Create uploaded intake to scanner handoff` was checked against repository reality
+- `src/core/uploaded-intake-to-scanner-handoff.js` already exists and materializes uploaded intake into a scan root
+- `src/core/project-service.js` already calls `createUploadedIntakeToScannerHandoff(...)` during onboarding completion
+- the resulting handoff scan is already applied back onto the project before `rebuildContext(projectId)` and `runCycle(projectId)`
+- therefore no truthful higher dependency was opened by the handoff investigation
+- the live upload surface on `4011` no longer advertises `10MB`
+- the live upload input now exposes `multiple`
+- the live upload accept list now includes project-evidence file types such as:
+  - `.js`
+  - `.jsx`
+  - `.ts`
+  - `.tsx`
+  - `.css`
+  - `.scss`
+  - `.html`
+  - `.yml`
+  - `.yaml`
+  - `.csv`
+- the live upload surface now reads as multi-file project evidence intake rather than one support-file picker
+- the create flow now stores uploaded evidence as a multi-file bundle for onboarding instead of a single support-file placeholder
+- the root `/` route on `4011` now stays on `create` after hydration instead of auto-loading the first stored project into `loop`
+- real local file attachment was proven live against `4011` through Playwright-driven browser automation
+- verified upload bundles:
+  - `milan.co`:
+    - `README.md`
+    - `package.json`
+    - `tsconfig.json`
+    - `src/middleware.ts`
+  - `The Nexus`:
+    - `README.md`
+    - `package.json`
+    - `src/server.js`
+    - `docs/wave3-canonical-state.json`
+- the live create surface visibly acknowledged real selected files, including `4 קבצי פרויקט נבחרו`
+- both bundles opened live onboarding after create
+- comparative differentiation is partially visible:
+  - `milan.co` resolves to a commerce / operations workspace
+  - `The Nexus` resolves to an internal-tool workspace
+- the false `429` blocker was removed from the live onboarding-completion path
+- uploaded files now persist canonically into the onboarding session instead of waiting for a separate finish-time replay
+- uploaded file material can now resolve project type before explicit manual class clarification
+- both representative bundles now reach a class-aware workspace / loop handoff instead of blocking on unknown project type
+- a direct finish trace now proves stronger server-side truth:
+  - onboarding completion creates a real project
+  - uploaded files survive inside `projectIntake`
+  - imported evidence can seed a project-specific roadmap such as `Review imported documentation: docs/package.json`
+- the artifact approval handoff is now fixed:
+  - `confirmation -> state-update` approves the artifact request itself instead of a weaker runtime approval path
+  - the visible state-update copy now reflects artifact approval truthfully
+- a full Playwright rerun on `4011` now proves end-to-end visible progression for both representative bundles through:
+  - `loop -> proof -> artifact -> confirmation -> state-update -> timeline`
+- the downstream surfaces are now visibly project-specific:
+  - `milan.co` shows `תצוגת מסחר ותפעול`, commerce stats, commerce next actions, and a commerce-specific timeline
+  - `The Nexus` shows `תצוגת כלי פנימי`, internal-tool stats, internal-tool next actions, and an internal-tool timeline
+
+What this means canonically:
+- `W3-UP-001` is now closed as `trueGreen`
+- the live upload lane is now proven on `4011`
+- what was proven live:
+  - root create-route stability on `/`
+  - real local multi-file attachment proof on the live site
+  - truthful onboarding continuity
+  - uploaded-project-driven class resolution
+  - visible downstream progression through `Loop -> Proof -> Artifact -> Timeline`
+  - truthful comparative differentiation across two uploaded bundles
+  - uploaded-project identity preservation through the downstream loop
+- there is no promoted dependency ahead of `W3-UP-001`

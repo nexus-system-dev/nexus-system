@@ -1,3 +1,5 @@
+import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
+
 const RELEASE_TARGET_TAXONOMY = {
   "private-deployment": {
     category: "deployment",
@@ -31,15 +33,27 @@ const RELEASE_TARGET_TAXONOMY = {
     category: "content",
     steps: ["prepare-content", "validate", "assets", "deliver", "track"],
   },
+  "game-build": {
+    category: "game-release",
+    steps: ["build", "validate", "package", "playtest", "track"],
+  },
+  "playable-preview": {
+    category: "game-preview",
+    steps: ["build", "preview", "playtest", "track"],
+  },
   "private-distribution": {
     category: "distribution",
     steps: ["validate", "package", "distribute", "track"],
   },
 };
 
-function inferReleaseTarget({ projectState = {}, domainProfile = null, releaseTarget = null } = {}) {
+function inferReleaseTarget({ projectState = {}, domainProfile = null, releaseTarget = null, runtimeDirection = null } = {}) {
   if (releaseTarget) {
     return releaseTarget;
+  }
+
+  if (runtimeDirection?.preferredReleaseTarget) {
+    return runtimeDirection.preferredReleaseTarget;
   }
 
   if (projectState?.recommendedDefaults?.hosting?.target === "web-deployment") {
@@ -65,13 +79,21 @@ function buildReleaseSteps({ releaseTarget, lifecyclePhase, domain }) {
 export function createReleasePlanGenerator({
   projectState = {},
   domain = "generic",
+  productClass = null,
   releaseTarget = null,
   domainProfile = null,
 } = {}) {
+  const { projectStage, runtimeDirection } = resolveProjectStageAndRuntimeDirection({
+    productClass,
+    domainProfile,
+    projectState,
+    recommendedDefaults: projectState?.recommendedDefaults ?? null,
+  });
   const resolvedReleaseTarget = inferReleaseTarget({
     projectState,
     domainProfile,
     releaseTarget,
+    runtimeDirection,
   });
   const lifecyclePhase = projectState?.lifecycle?.currentPhase ?? "planning";
   const releaseSteps = buildReleaseSteps({
@@ -83,6 +105,9 @@ export function createReleasePlanGenerator({
   return {
     releasePlan: {
       domain,
+      productClass: runtimeDirection.productClass,
+      projectStage,
+      runtimeDirection,
       lifecyclePhase,
       releaseTarget: resolvedReleaseTarget,
       releaseTargetTaxonomy:

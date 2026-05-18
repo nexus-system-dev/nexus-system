@@ -1,9 +1,64 @@
+import { buildProjectCreateViewModel } from "./nexus-ui/adapters/project-adapter.js";
+import { bindProjectCreateScreenElements, renderProjectCreateScreen } from "./nexus-ui/screens/ProjectCreateScreen.js";
+import { buildSmartOnboardingViewModel } from "./nexus-ui/adapters/onboarding-adapter.js";
+import { bindSmartOnboardingScreenElements, renderSmartOnboardingScreen } from "./nexus-ui/screens/SmartOnboardingScreen.js";
+import {
+  buildOnboardingArtifactExpectationPreview,
+  buildOnboardingGenerationIntentPreview,
+  buildUnderstandingSummaryViewModel,
+} from "./nexus-ui/adapters/understanding-adapter.js";
+import { bindUnderstandingSummaryScreenElements, renderUnderstandingSummaryScreen } from "./nexus-ui/screens/UnderstandingSummaryScreen.js";
+import { buildLoopCoreViewModel } from "./nexus-ui/adapters/loop-adapter.js";
+import { renderLoopCoreScreen } from "./nexus-ui/screens/LoopCoreScreen.js";
+import { buildExecutionLiveViewModel } from "./nexus-ui/adapters/execution-adapter.js";
+import { bindExecutionLiveScreenElements, renderExecutionLiveScreen } from "./nexus-ui/screens/ExecutionLiveScreen.js";
+import { buildProofResultViewModel } from "./nexus-ui/adapters/proof-adapter.js";
+import { bindProofResultScreenElements, renderProofResultScreen } from "./nexus-ui/screens/ProofResultScreen.js";
+import { buildArtifactPreviewViewModel } from "./nexus-ui/adapters/artifact-preview-adapter.js";
+import { bindArtifactPreviewScreenElements, renderArtifactPreviewScreen } from "./nexus-ui/screens/ArtifactPreviewScreen.js";
+import { buildArtifactDownloadDescriptor } from "./nexus-ui/components/proof-artifact-download.js";
+import { buildConfirmationViewModel } from "./nexus-ui/adapters/confirmation-adapter.js";
+import { bindConfirmationDecisionScreenElements, renderConfirmationDecisionScreen } from "./nexus-ui/screens/ConfirmationDecisionScreen.js";
+import { buildStateUpdateViewModel } from "./nexus-ui/adapters/state-update-adapter.js";
+import { bindStateUpdateScreenElements, renderStateUpdateScreen } from "./nexus-ui/screens/StateUpdateScreen.js";
+import { buildNextTaskViewModel } from "./nexus-ui/adapters/next-task-adapter.js";
+import { bindNextTaskScreenElements, renderNextTaskScreen } from "./nexus-ui/screens/NextTaskScreen.js";
+import { buildTimelineViewModel } from "./nexus-ui/adapters/timeline-adapter.js";
+import { bindTimelineHistoryScreenElements, renderTimelineHistoryScreen } from "./nexus-ui/screens/TimelineHistoryScreen.js";
+import { buildHomeSupportViewModel } from "./nexus-ui/adapters/home-adapter.js";
+import { bindHomeSupportScreenElements, renderHomeSupportScreen } from "./nexus-ui/screens/HomeSupportScreen.js";
+import { buildFilesSupportViewModel } from "./nexus-ui/adapters/files-adapter.js";
+import { renderFilesSupportScreen } from "./nexus-ui/screens/FilesSupportScreen.js";
+import { buildSettingsViewModel } from "./nexus-ui/adapters/settings-adapter.js";
+import { bindSettingsScreenElements, renderSettingsScreen } from "./nexus-ui/screens/SettingsScreen.js";
+import { buildHelpSupportViewModel } from "./nexus-ui/adapters/help-adapter.js";
+import { bindHelpSupportScreenElements, renderHelpSupportScreen } from "./nexus-ui/screens/HelpSupportScreen.js";
+import { renderQaFallbackScreen } from "./nexus-ui/screens/QaFallbackScreen.js";
+import { renderNexusCard } from "./nexus-ui/components/NexusCard.js";
+import { renderNexusButton } from "./nexus-ui/components/NexusButton.js";
+import { renderWorkspaceLayout } from "./nexus-ui/layouts/WorkspaceLayout.js";
+import { PRIMARY_LOOP_ROUTES, SUPPORT_ROUTES } from "./nexus-ui/routes/index.js";
+import { resolveCanonicalProductClass } from "./shared/product-class-model.js";
+
 function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function normalizeString(value) {
+  return String(value ?? "").trim();
+}
+
+function isExplicitDevModeEnabled() {
+  if (globalThis.location === undefined) {
+    return false;
+  }
+
+  const searchParams = new URLSearchParams(globalThis.location.search ?? "");
+  return searchParams.get("dev") === "1";
 }
 
 function escapeHtml(value) {
@@ -21,6 +76,29 @@ function setCssVar(styleTarget, name, value) {
   }
 
   styleTarget.setProperty(name, String(value));
+}
+
+const CREATE_PROJECT_UPLOAD_EMPTY_META = "README, package.json, קבצי קוד, מסמכים וקבצי הקשר. אפשר לבחור כמה קבצים יחד.";
+const CREATE_PROJECT_UPLOAD_SELECTED_META = "הקבצים ייכנסו ל־onboarding כחומר פרויקט אמיתי לפני פתיחת ה־workspace.";
+
+function triggerArtifactDownload(doc, project) {
+  const artifact = normalizeObject(project?.proofArtifact);
+  const descriptor = buildArtifactDownloadDescriptor({ project, artifact });
+  if (!descriptor || !doc?.defaultView?.URL || !doc?.defaultView?.Blob) {
+    return false;
+  }
+
+  const blob = new doc.defaultView.Blob([descriptor.content], { type: descriptor.mimeType });
+  const objectUrl = doc.defaultView.URL.createObjectURL(blob);
+  const link = doc.createElement("a");
+  link.href = objectUrl;
+  link.download = descriptor.filename;
+  link.style.display = "none";
+  doc.body.append(link);
+  link.click();
+  link.remove();
+  doc.defaultView.setTimeout(() => doc.defaultView.URL.revokeObjectURL(objectUrl), 0);
+  return true;
 }
 
 const labels = {
@@ -122,14 +200,57 @@ function stackHtml(title, items, emptyText) {
 function queryElements(doc) {
   return {
     projectSelect: doc.querySelector("#project-select"),
+    shellRouteLabel: doc.querySelector("#shell-route-label"),
+    shellRouteTitle: doc.querySelector("#shell-route-title"),
+    shellRouteSubtitle: doc.querySelector("#shell-route-subtitle"),
+    topbarNotificationsButton: doc.querySelector("#topbar-notifications-button"),
+    topbarProfileButton: doc.querySelector("#topbar-profile-button"),
+    navCreateButton: doc.querySelector("#nav-create"),
+    navOnboardingButton: doc.querySelector("#nav-onboarding"),
+    navLoopButton: doc.querySelector("#nav-loop"),
+    navTimelineButton: doc.querySelector("#nav-timeline"),
+    navDeveloperButton: doc.querySelector("#nav-developer"),
+    navProjectBrainButton: doc.querySelector("#nav-project-brain"),
+    navReleaseButton: doc.querySelector("#nav-release"),
+    navGrowthButton: doc.querySelector("#nav-growth"),
+    navSettingsButton: doc.querySelector("#nav-settings"),
+    navHelpButton: doc.querySelector("#nav-help"),
+    flowStepCreateButton: doc.querySelector("#flow-step-create"),
+    flowStepOnboardingButton: doc.querySelector("#flow-step-onboarding"),
+    flowStepUnderstandingButton: doc.querySelector("#flow-step-understanding"),
+    flowStepLoopButton: doc.querySelector("#flow-step-loop"),
+    qaRouteSwitcher: doc.querySelector("#qa-route-switcher"),
+    qaPrevScreenButton: doc.querySelector("#qa-prev-screen-button"),
+    qaNextScreenButton: doc.querySelector("#qa-next-screen-button"),
+    qaScreenCreateButton: doc.querySelector("#qa-screen-create-button"),
+    qaScreenOnboardingButton: doc.querySelector("#qa-screen-onboarding-button"),
+    qaScreenUnderstandingButton: doc.querySelector("#qa-screen-understanding-button"),
+    qaScreenLoopButton: doc.querySelector("#qa-screen-loop-button"),
+    qaScreenExecutionButton: doc.querySelector("#qa-screen-execution-button"),
+    qaScreenProofButton: doc.querySelector("#qa-screen-proof-button"),
     syncCasinoButton: doc.querySelector("#sync-casino-button"),
     analyzeButton: doc.querySelector("#analyze-button"),
     runCycleButton: doc.querySelector("#run-cycle-button"),
     heroActions: doc.querySelector(".hero-actions"),
     screenCreate: doc.querySelector("#screen-create"),
+    screenHome: doc.querySelector("#screen-home"),
+    screenFiles: doc.querySelector("#screen-files"),
+    screenSettings: doc.querySelector("#screen-settings"),
+    screenHelp: doc.querySelector("#screen-help"),
     screenOnboarding: doc.querySelector("#screen-onboarding"),
+    screenUnderstanding: doc.querySelector("#screen-understanding"),
+    screenLoop: doc.querySelector("#screen-loop"),
+    screenExecution: doc.querySelector("#screen-execution"),
+    screenProof: doc.querySelector("#screen-proof"),
+    screenArtifact: doc.querySelector("#screen-artifact"),
+    screenConfirmation: doc.querySelector("#screen-confirmation"),
+    screenStateUpdate: doc.querySelector("#screen-state-update"),
+    screenNextTask: doc.querySelector("#screen-next-task"),
+    screenTimeline: doc.querySelector("#screen-timeline"),
     screenWorkspace: doc.querySelector("#screen-workspace"),
+    workspaceTabs: doc.querySelector(".workspace-tabs"),
     workspaceTopShell: doc.querySelector(".workspace-top-shell"),
+    workspaceOverviewGrid: doc.querySelector(".workspace-overview-grid"),
     workspaceBoard: doc.querySelector("#workspace-board"),
     flowFeedbackBanner: doc.querySelector("#flow-feedback-banner"),
     flowFeedbackTitle: doc.querySelector("#flow-feedback-title"),
@@ -137,8 +258,8 @@ function queryElements(doc) {
     createNewProjectButton: doc.querySelector("#create-new-project-button"),
     reopenOnboardingButton: doc.querySelector("#reopen-onboarding-button"),
     emptyAppState: doc.querySelector("#empty-app-state"),
-    emptyProjectMessage: doc.querySelector("#empty-project-message"),
-    emptyProjectStatus: doc.querySelector("#empty-project-status"),
+    createScreenTitle: doc.querySelector("#create-screen-title"),
+    createScreenStatus: doc.querySelector("#create-screen-status"),
     projectCreateStage: doc.querySelector("#project-create-stage"),
     onboardingStage: doc.querySelector("#onboarding-stage"),
     onboardingScreenMessage: doc.querySelector("#onboarding-screen-message"),
@@ -149,7 +270,19 @@ function queryElements(doc) {
     onboardingBackButton: doc.querySelector("#onboarding-back-button"),
     onboardingForwardButton: doc.querySelector("#onboarding-forward-button"),
     onboardingNotesList: doc.querySelector("#onboarding-notes-list"),
+    onboardingUnderstoodList: doc.querySelector("#onboarding-understood-list"),
+    onboardingMissingList: doc.querySelector("#onboarding-missing-list"),
     onboardingChatThread: doc.querySelector("#onboarding-chat-thread"),
+    understandingAudienceTitle: doc.querySelector("#understanding-audience-title"),
+    understandingAudienceBody: doc.querySelector("#understanding-audience-body"),
+    understandingProblemTitle: doc.querySelector("#understanding-problem-title"),
+    understandingProblemBody: doc.querySelector("#understanding-problem-body"),
+    understandingSolutionTitle: doc.querySelector("#understanding-solution-title"),
+    understandingSolutionBody: doc.querySelector("#understanding-solution-body"),
+    understandingGoalTitle: doc.querySelector("#understanding-goal-title"),
+    understandingGoalBody: doc.querySelector("#understanding-goal-body"),
+    understandingCorrectButton: doc.querySelector("#understanding-correct-button"),
+    understandingContinueButton: doc.querySelector("#understanding-continue-button"),
     onboardingCurrentQuestionTitle: doc.querySelector("#onboarding-current-question-title"),
     onboardingCurrentQuestionBody: doc.querySelector("#onboarding-current-question-body"),
     onboardingAnswerInput: doc.querySelector("#onboarding-answer-input"),
@@ -159,10 +292,18 @@ function queryElements(doc) {
     createProjectNameInput: doc.querySelector("#create-project-name-input"),
     createProjectVisionInput: doc.querySelector("#create-project-vision-input"),
     createProjectLinkInput: doc.querySelector("#create-project-link-input"),
+    helpSearchInput: doc.querySelector("#help-search-input"),
+    helpSupportSummary: doc.querySelector("#help-support-summary"),
+    helpSupportCopyButton: doc.querySelector("#help-support-copy-button"),
     createProjectFileNameInput: doc.querySelector("#create-project-file-name-input"),
     createProjectFileContentInput: doc.querySelector("#create-project-file-content-input"),
+    createProjectFileUploadInput: doc.querySelector("#create-project-file-upload-input"),
+    createProjectFilePickerButton: doc.querySelector("#create-project-file-picker-button"),
+    createProjectFilePickerTitle: doc.querySelector("#create-project-file-picker-title"),
+    createProjectFilePickerMeta: doc.querySelector("#create-project-file-picker-meta"),
     createProjectButton: doc.querySelector("#create-project-button"),
     finishOnboardingButton: doc.querySelector("#finish-onboarding-button"),
+    loopTab: doc.querySelector("#tab-loop"),
     developerTab: doc.querySelector("#tab-developer"),
     projectBrainTab: doc.querySelector("#tab-project-brain"),
     releaseTab: doc.querySelector("#tab-release"),
@@ -175,6 +316,39 @@ function queryElements(doc) {
     existing: doc.querySelector("#existing-content"),
     live: doc.querySelector("#live-content"),
     decision: doc.querySelector("#decision-content"),
+    loopWorkspaceSummary: doc.querySelector("#loop-workspace-summary"),
+    loopScreenIntro: doc.querySelector("#loop-screen-intro"),
+    loopPrimaryTitle: doc.querySelector("#loop-primary-title"),
+    loopPrimaryReason: doc.querySelector("#loop-primary-reason"),
+    loopWhatHappensBody: doc.querySelector("#loop-what-happens-body"),
+    loopPrimaryActionButton: doc.querySelector("#loop-primary-action-button"),
+    loopSecondaryActionButton: doc.querySelector("#loop-secondary-action-button"),
+    loopWorkspacePanel: doc.querySelector("#workspace-loop"),
+    executionWorkspacePanel: doc.querySelector("#workspace-execution"),
+    proofWorkspacePanel: doc.querySelector("#workspace-proof"),
+    loopStageRail: doc.querySelector("#loop-stage-rail-content"),
+    loopUnderstanding: doc.querySelector("#loop-understanding-content"),
+    loopNextTask: doc.querySelector("#loop-next-task-content"),
+    loopExecution: doc.querySelector("#loop-execution-content"),
+    loopProof: doc.querySelector("#loop-proof-content"),
+    loopOpenOnboardingButton: doc.querySelector("#loop-open-onboarding-button"),
+    loopOpenProjectBrainButton: doc.querySelector("#loop-open-project-brain-button"),
+    loopOpenDeveloperButton: doc.querySelector("#loop-open-developer-button"),
+    loopOpenReleaseButton: doc.querySelector("#loop-open-release-button"),
+    executionMissionTitle: doc.querySelector("#execution-mission-title"),
+    executionStatusList: doc.querySelector("#execution-status-list"),
+    executionLiveList: doc.querySelector("#execution-live-list"),
+    executionLogList: doc.querySelector("#execution-log-list"),
+    executionStopButton: doc.querySelector("#execution-stop-button"),
+    executionProofButton: doc.querySelector("#execution-proof-button"),
+    executionRefreshButton: doc.querySelector("#execution-refresh-button"),
+    proofPreviewTitle: doc.querySelector("#proof-preview-title"),
+    proofReadyTitle: doc.querySelector("#proof-ready-title"),
+    proofBulletsList: doc.querySelector("#proof-bullets-list"),
+    proofStatsGrid: doc.querySelector("#proof-stats-grid"),
+    proofDownloadButton: doc.querySelector("#proof-download-button"),
+    proofOpenButton: doc.querySelector("#proof-open-button"),
+    proofFullButton: doc.querySelector("#proof-full-button"),
     developerWorkspaceSummary: doc.querySelector("#developer-workspace-summary"),
     developerWorkspacePanel: doc.querySelector("#workspace-developer"),
     projectBrainSummary: doc.querySelector("#project-brain-summary"),
@@ -237,35 +411,386 @@ function queryElements(doc) {
   };
 }
 
-const workspaceKeys = ["developer", "project-brain", "release", "growth"];
-const onboardingQuestionFlow = [
+function applyDevModeVisibility(elements) {
+  const showDeveloper = isExplicitDevModeEnabled();
+  if (elements.navDeveloperButton) {
+    elements.navDeveloperButton.hidden = !showDeveloper;
+  }
+  if (elements.developerTab) {
+    elements.developerTab.hidden = !showDeveloper;
+  }
+  if (elements.developerWorkspacePanel) {
+    elements.developerWorkspacePanel.hidden = !showDeveloper;
+  }
+}
+
+const workspaceKeys = ["loop", "execution", "proof", "artifact", "confirmation", "state-update", "next-task", "timeline", "developer", "project-brain", "release", "growth"];
+const shellPrimaryStepKeys = ["create", "onboarding", "understanding", "loop"];
+const advancedShellRouteKeys = ["developer", "project-brain", "release", "growth"];
+const shellRouteKeys = new Set([
+  ...PRIMARY_LOOP_ROUTES,
+  ...SUPPORT_ROUTES.filter((routeKey) => routeKey !== "notifications" && routeKey !== "integrations"),
+  ...advancedShellRouteKeys,
+  "artifact",
+  "qa",
+]);
+  const onboardingQuestionFlow = [
   {
-    id: "target-user",
-    title: "למי הפרויקט הזה מיועד?",
-    body: "ענה בקצרה מי המשתמש המרכזי כדי שנבין עבור מי בונים את ה־workspace הראשון.",
-    noteLabel: "קהל יעד",
-    placeholder: "לדוגמה: מנהלי מוצר, צוותי פיתוח, בעלי קזינו או צוותי support.",
+    id: "target-audience",
+    title: "מי המשתמש או הקהל המרכזי של הפרויקט הזה?",
+    body: "ענה בקצרה מי המשתמש המרכזי כדי שנבין עבור מי בונים את הפרויקט.",
+    placeholder: "לדוגמה: עצמאים שרוצים יותר פניות, או צוות תפעול שצריך תור עבודה ברור",
   },
   {
-    id: "core-flow",
-    title: "מה הפעולה הראשונה שהמשתמש חייב לבצע?",
-    body: "תאר את הצעד הראשון הקריטי של המשתמש בתוך המוצר, בלי לפרט עדיין את כל המערכת.",
-    noteLabel: "פעולת ליבה ראשונה",
-    placeholder: "לדוגמה: לפתוח פרויקט, לאשר proposal, או להשלים onboarding קצר.",
+    id: "core-problem",
+    title: "מה הבעיה המרכזית שהם מתמודדים איתה?",
+    body: "תאר את הכאב המרכזי שחוזר שוב ושוב אצל המשתמש הזה.",
+    placeholder: "לדוגמה: קשה להם לנהל לקוחות ולעקוב אחרי מכירות",
   },
   {
-    id: "success-outcome",
-    title: "איך תדע שהגרסה הראשונה באמת נותנת ערך?",
-    body: "תאר מה המשתמש צריך לקבל או להרגיש כדי שנוכל להגדיר מהו first value אמיתי.",
-    noteLabel: "תוצאת ערך ראשונה",
-    placeholder: "לדוגמה: לראות next task ברור, recommendation, או project state usable.",
+    id: "successful-solution",
+    title: "איך נראה פתרון מוצלח מבחינתם?",
+    body: "תאר איך נראה בעיניהם פתרון שממש עובד עבורם.",
+    placeholder: "לדוגמה: כלי לקוחות פשוט ונוח עם התראות",
   },
 ];
+
+function detectOnboardingProjectType(text = "") {
+  return resolveCanonicalProductClass({
+    texts: [String(text ?? "")],
+    fallback: "unknown",
+  }).productClass;
+}
+
+function resolveOnboardingProjectType(options = {}) {
+  const draftVisionText =
+    options.visionText
+    ?? globalThis.document?.querySelector("#create-project-vision-input")?.value
+    ?? "";
+  const projectSummaryText = options.projectTypeHint ?? "";
+  const uploadedFilesText = (() => {
+    const rawFileContent = globalThis.document?.querySelector("#create-project-file-content-input")?.value ?? "";
+    if (!rawFileContent.trim()) {
+      return "";
+    }
+    try {
+      const parsed = JSON.parse(rawFileContent);
+      if (!Array.isArray(parsed)) {
+        return "";
+      }
+      return parsed
+        .flatMap((file) => [file?.name, file?.type, file?.content])
+        .filter((value) => typeof value === "string" && value.trim())
+        .join("\n");
+    } catch {
+      return rawFileContent;
+    }
+  })();
+  const combinedSignals = [draftVisionText, projectSummaryText, uploadedFilesText].join("\n");
+  return resolveCanonicalProductClass({
+    texts: [combinedSignals],
+    hintedClass: options.projectTypeHint,
+    fallback: "unknown",
+  }).productClass;
+}
+
+function resolveOnboardingQuestionPresentation(questionId, answers = {}, options = {}) {
+  const projectType = resolveOnboardingProjectType(options);
+  const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
+  const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
+
+  if (questionId === "target-audience") {
+    if (projectType === "landing-page") {
+      return {
+        title: "למי דף הנחיתה הזה צריך לדבר?",
+        placeholder: "לדוגמה: עצמאים שרוצים יותר פניות בלי שיחת מכירה ארוכה",
+        reason: "השאלה הזו תעזור לי לנסח כותרת, אמון ופעולה כך שהדף ידבר מיד אל הקהל הנכון.",
+      };
+    }
+    if (projectType === "mobile-app") {
+      return {
+        title: "מי ישתמש באפליקציה הזאת ביום-יום?",
+        placeholder: "לדוגמה: הורים עובדים שצריכים להבין מהר מה קורה היום",
+        reason: "השאלה הזו תעזור לי לדייק את המסך הראשון, הפעולה הראשונה והזרימה שאחריה.",
+      };
+    }
+    if (projectType === "internal-tool") {
+      return {
+        title: "מי הצוות שיעבוד עם הכלי הזה בכל יום?",
+        placeholder: "לדוגמה: צוות תפעול ושירות שצריך לראות תור עבודה ברור",
+        reason: "השאלה הזו תעזור לי לבנות משטח עבודה שמדבר ישר אל מי שמטפל בתור ובבקשות.",
+      };
+    }
+    if (projectType === "commerce-ops") {
+      return {
+        title: "מי הצוות שמנהל את המסחר הזה בכל יום?",
+        placeholder: "לדוגמה: צוות מסחר ותפעול שמחזיק קטלוג, הזמנות ותוכן",
+        reason: "השאלה הזו תעזור לי לבנות מרכז מסחר שמראה מה נתקע בקטלוג, בהזמנות ובתוכן בלי לפצל את הצוות בין מסכים.",
+      };
+    }
+    if (projectType === "saas") {
+      return {
+        title: "מי המשתמשים שצריכים לנהל את העבודה בתוך המוצר?",
+        placeholder: "לדוגמה: מאמנים עצמאיים שמנהלים לקוחות וחידושי מנוי",
+        reason: "השאלה הזו תעזור לי לדייק את הלוח, הפעולה הראשונה וההתקדמות שהמוצר צריך לאפשר.",
+      };
+    }
+  }
+
+  if (questionId === "project-class") {
+    return {
+      title: "מה הדבר המרכזי שאתה בונה כאן: דף נחיתה שיווקי, מערכת מסחר תפעולית, כלי פנימי לצוות, או מוצר SaaS קטן?",
+      placeholder: "לדוגמה: דף נחיתה / מערכת מסחר תפעולית / כלי פנימי לצוות / מוצר SaaS קטן",
+      reason: "יש כאן כמה אותות אפשריים, ואני צריך לנעול את סוג הפרויקט כדי לא לערבב בין דף שיווקי, כלי פנימי ומוצר SaaS.",
+    };
+  }
+
+  if (questionId === "core-problem" && audience) {
+    if (projectType === "landing-page") {
+      return {
+        title: `מעולה. אם הדף נבנה עבור ${audience}, מה גורם להם לא לעצור ולהשאיר פרטים היום?`,
+        placeholder: "לדוגמה: הם לא מבינים מהר למה לבחור בי ולכן לא משאירים פרטים",
+        reason: `כבר ברור לי מי הקהל. עכשיו אני צריך להבין מה שוברים במסר של הדף עבור ${audience}.`,
+      };
+    }
+    if (projectType === "internal-tool") {
+      return {
+        title: `מעולה. אם הכלי נבנה עבור ${audience}, מה נשבר להם בעבודה היומית?`,
+        placeholder: "לדוגמה: פניות נופלות בין נציגים ואין בעלות ברורה על הטיפול",
+        reason: `כבר ברור לי מי הצוות. עכשיו צריך להבין מה צוואר הבקבוק שחוזר אצל ${audience}.`,
+      };
+    }
+    if (projectType === "commerce-ops") {
+      return {
+        title: `מעולה. אם המערכת נבנית עבור ${audience}, מה נשבר להם במסחר היומי?`,
+        placeholder: "לדוגמה: הזמנות, מלאי ותוכן לא נפגשים באותו flow ולכן הטיפול נמרח ונופל בין בעלי תפקידים",
+        reason: `כבר ברור לי מי הצוות. עכשיו צריך להבין איפה מסחר, קטלוג או הזמנות נתקעים אצל ${audience}.`,
+      };
+    }
+  }
+
+  if (questionId === "successful-solution" && audience && problem) {
+    if (projectType === "landing-page") {
+      return {
+        title: `יש כבר תמונה טובה: הקהל הוא ${audience} והכאב המרכזי הוא ${problem}. איך נראה דף שנכון לקדם עכשיו?`,
+        placeholder: "לדוגמה: דף ברור עם הבטחה חדה, הוכחת אמון ופעולה אחת שקל לבחור",
+        reason: `יש לי קהל וכאב. נשאר לחדד איך דף נחיתה מוצלח נראה בפועל עבור ${audience}.`,
+      };
+    }
+    if (projectType === "internal-tool") {
+      return {
+        title: `יש כבר תמונה טובה: הצוות הוא ${audience} והכאב המרכזי הוא ${problem}. איך נראה כלי מוצלח מבחינתם?`,
+        placeholder: "לדוגמה: תור עבודה ברור עם בעלות, סטטוס ופעולה אחת שאפשר לבצע מיד",
+        reason: `יש לי קהל וכאב. נשאר לחדד איך נראה כלי שמסדר את העבודה בפועל עבור ${audience}.`,
+      };
+    }
+    if (projectType === "commerce-ops") {
+      return {
+        title: `יש כבר תמונה טובה: הצוות הוא ${audience} והכאב המרכזי הוא ${problem}. איך נראה מרכז מסחר מוצלח מבחינתם?`,
+        placeholder: "לדוגמה: מסך אחד שמראה הזמנות דחופות, חריגות קטלוג, בעלות ופעולה הבאה לכל נציג",
+        reason: `יש לי קהל וכאב. נשאר לחדד איך נראה מרכז מסחר שמסדר את העבודה היומית בפועל עבור ${audience}.`,
+      };
+    }
+  }
+
+  const fallback = onboardingQuestionFlow.find((item) => item.id === questionId) ?? onboardingQuestionFlow[0];
+  return {
+    title: fallback?.title ?? "",
+    placeholder: fallback?.placeholder ?? "",
+    reason: "",
+  };
+}
+
+function refreshOnboardingConversationPresentation(conversation, options = {}) {
+  const normalizedConversation = normalizeObject(conversation);
+  const currentQuestion = normalizeObject(normalizedConversation.currentQuestion);
+
+  if (!currentQuestion.id) {
+    return normalizedConversation;
+  }
+
+  const answers = normalizeObject(normalizedConversation.answers);
+  const presentation = resolveOnboardingQuestionPresentation(currentQuestion.id, answers, options);
+
+  return {
+    ...normalizedConversation,
+    currentQuestion: {
+      ...currentQuestion,
+      title: presentation.title || currentQuestion.title || "",
+      placeholder: presentation.placeholder || currentQuestion.placeholder || "",
+      reason: presentation.reason || currentQuestion.reason || "",
+    },
+  };
+}
 
 function workspaceTabHtml(title, metaItems = []) {
   return `
     <span class="workspace-tab-title">${escapeHtml(title)}</span>
     <span class="workspace-tab-meta">${metaItems.map((item) => escapeHtml(item)).join(" · ")}</span>
+  `;
+}
+
+function normalizeShellRouteKey(routeKey) {
+  const aliases = {
+    brain: "project-brain",
+  };
+  const normalizedKey = aliases[routeKey] ?? routeKey;
+  return shellRouteKeys.has(normalizedKey) ? normalizedKey : "create";
+}
+
+const shellRoutePathMap = {
+  create: "/",
+  onboarding: "/onboarding",
+  understanding: "/understanding",
+  loop: "/loop",
+  execution: "/execution",
+  proof: "/proof",
+  artifact: "/artifact",
+  confirmation: "/confirmation",
+  "state-update": "/state-update",
+  "next-task": "/next-task",
+  timeline: "/timeline",
+  home: "/home",
+  files: "/files",
+  settings: "/settings",
+  help: "/help",
+  developer: "/developer",
+  "project-brain": "/project-brain",
+  release: "/release",
+  growth: "/growth",
+};
+
+function resolveShellRouteKeyFromPath(pathname = "/") {
+  const normalizedPath = normalizeString(pathname) || "/";
+  for (const [routeKey, routePath] of Object.entries(shellRoutePathMap)) {
+    if (routePath === normalizedPath) {
+      return routeKey;
+    }
+  }
+  return normalizedPath === "/" ? "create" : null;
+}
+
+function resolveArtifactExpectation(project) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.artifactExpectation
+      ?? safeProject.context?.artifactExpectation
+      ?? safeProject.onboardingStateHandoff?.artifactExpectation
+      ?? safeProject.context?.onboardingStateHandoff?.artifactExpectation
+      ?? safeProject.proofArtifact?.artifactExpectation,
+  );
+}
+
+function resolveGenerationIntent(project) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.generationIntent
+      ?? safeProject.aiDesignRequest?.generationIntent
+      ?? safeProject.context?.generationIntent
+      ?? safeProject.context?.aiDesignRequest?.generationIntent,
+  );
+}
+
+function resolveLoopTaskSignal(project) {
+  const approvals = normalizeArray(project.approvals);
+  const roadmap = normalizeArray(project.cycle?.roadmap);
+  const blockedTask = roadmap.find((task) => task.status === "blocked");
+  const assignedTask = roadmap.find((task) => task.status === "assigned");
+  const title = approvals[0] ?? assignedTask?.summary ?? blockedTask?.summary ?? "כרגע אין משימה פעילה";
+  const reason = blockedTask
+    ? `זה תקוע בגלל: ${normalizeArray(blockedTask.dependencies).join(", ") || "חסר מידע"}`
+    : approvals[0]
+      ? "יש כאן החלטה אחת שמחזיקה את ההתקדמות."
+      : "זה הצעד הכי ישיר להמשיך ממנו עכשיו.";
+
+  return {
+    title,
+    reason,
+    assignedTask,
+    blockedTask,
+    blocker: project.overview?.bottleneck ?? blockedTask?.summary ?? "לא זוהה חסם מרכזי",
+    queueCount: roadmap.length,
+    activeCount: roadmap.filter((task) => task.status === "assigned").length,
+    blockedCount: roadmap.filter((task) => task.status === "blocked").length,
+  };
+}
+
+function buildInternalToolExecutionFallback(project) {
+  const expectation = resolveArtifactExpectation(project);
+  if (expectation.projectType !== "internal-tool") {
+    return null;
+  }
+
+  const generationIntent = resolveGenerationIntent(project);
+  const title = normalizeString(expectation.title) || "משטח עבודה פנימי";
+  const focusAreas = normalizeArray(expectation.proofFocus)
+    .map((item) => normalizeString(item))
+    .filter(Boolean);
+  const primaryFocus = focusAreas[0] ?? "בעלות גלויה על התור";
+  const secondaryFocus = focusAreas[1] ?? "רמת שירות ברורה על כל בקשה";
+  const tertiaryFocus = focusAreas[2] ?? "הפעולה הבאה שניתנת לביצוע מיד";
+  const detail = normalizeString(generationIntent.generationGoal)
+    || normalizeString(expectation.continuityLine)
+    || normalizeString(expectation.summary)
+    || "Nexus משלים עכשיו את סביבת העבודה הראשונה לפני ההוכחה.";
+
+  return {
+    missionTitle: `מכינים את ${title}`,
+    detail,
+    statusItems: [
+      { label: "ננעל כיוון משטח העבודה עבור הצוות", state: "done" },
+      { label: `ממקמים ${primaryFocus}`, state: "done" },
+      { label: `מכינים ${secondaryFocus}`, state: "active" },
+      { label: `ה־Proof הבא יראה ${tertiaryFocus}`, state: "pending" },
+    ],
+    liveLines: [
+      `מגדיר ${primaryFocus}`,
+      `מכין ${secondaryFocus}`,
+      `מסיים את ${title} לקראת Proof`,
+      `מוביל אל ${tertiaryFocus}`,
+    ],
+    logRows: [
+      { time: "עכשיו", message: `Nexus משלים את ${title} לפני Proof.` },
+      { time: "עכשיו", message: `היעד הקרוב: ${primaryFocus}.` },
+      { time: "עכשיו", message: `עוד רגע נראה ${tertiaryFocus}.` },
+    ],
+  };
+}
+
+function loopStageRailHtml(stages = []) {
+  if (!stages.length) {
+    return `<p class="empty">עדיין אין route זמין ל־loop.</p>`;
+  }
+
+  return `
+    <ol class="loop-core-stage-list">
+      ${stages.map((stage) => `
+        <li class="loop-core-stage-item ${stage.status === "active" ? "active" : ""}" data-stage-status="${escapeHtml(stage.status)}">
+          <button class="loop-core-stage-button" type="button" data-loop-target="${escapeHtml(stage.target)}">
+            <span class="loop-core-stage-dot"></span>
+            <span class="loop-core-stage-label">${escapeHtml(stage.title)}</span>
+          </button>
+        </li>
+      `).join("")}
+    </ol>
+  `;
+}
+
+function loopExplainHtml(items = []) {
+  if (!items.length) {
+    return `<p class="empty">עדיין אין הכוונה זמינה ללולאה.</p>`;
+  }
+
+  return `
+    <div class="loop-explain-grid">
+      ${items.map((item) => `
+        <article class="loop-explain-card">
+          <span class="mini-label">${escapeHtml(item.label)}</span>
+          <strong>${escapeHtml(item.title)}</strong>
+          <p>${escapeHtml(item.body)}</p>
+        </article>
+      `).join("")}
+    </div>
   `;
 }
 
@@ -279,13 +804,28 @@ function renderWorkspaceTabs(elements, project) {
   const releaseSummary = normalizeObject(releaseWorkspace.summary);
   const growthWorkspace = normalizeObject(project.growthWorkspace);
   const growthSummary = normalizeObject(growthWorkspace.summary);
+  const loopTask = resolveLoopTaskSignal(project);
+
+  if (elements.loopTab) {
+    elements.loopTab.innerHTML = workspaceTabHtml("Loop", [
+      projectBrainWorkspace.overview?.currentPhase ?? "flow",
+      loopTask.title,
+      releaseValidation.status ?? "review",
+    ]);
+  }
 
   if (elements.developerTab) {
-    elements.developerTab.innerHTML = workspaceTabHtml("Developer", [
-      `${developerSummary.progressPercent ?? 0}%`,
-      developerSummary.progressStatus ?? "idle",
-      developerSummary.nextAction ?? "no next action",
-    ]);
+    if (isExplicitDevModeEnabled()) {
+      elements.developerTab.hidden = false;
+      elements.developerTab.innerHTML = workspaceTabHtml("Developer", [
+        `${developerSummary.progressPercent ?? 0}%`,
+        developerSummary.progressStatus ?? "idle",
+        developerSummary.nextAction ?? "no next action",
+      ]);
+    } else {
+      elements.developerTab.hidden = true;
+      elements.developerTab.innerHTML = "";
+    }
   }
 
   if (elements.projectBrainTab) {
@@ -314,8 +854,11 @@ function renderWorkspaceTabs(elements, project) {
 }
 
 function setActiveWorkspace(elements, workspaceKey) {
-  const activeKey = workspaceKeys.includes(workspaceKey) ? workspaceKey : "developer";
+  const activeKey = workspaceKeys.includes(workspaceKey) ? workspaceKey : "loop";
   const mapping = [
+    { key: "loop", tab: elements.loopTab, panel: elements.loopWorkspacePanel },
+    { key: "execution", tab: null, panel: elements.executionWorkspacePanel },
+    { key: "proof", tab: null, panel: elements.proofWorkspacePanel },
     { key: "developer", tab: elements.developerTab, panel: elements.developerWorkspacePanel },
     { key: "project-brain", tab: elements.projectBrainTab, panel: elements.projectBrainPanel },
     { key: "release", tab: elements.releaseTab, panel: elements.releaseWorkspacePanel },
@@ -334,6 +877,27 @@ function setActiveWorkspace(elements, workspaceKey) {
       entry.panel.classList?.toggle("active", isActive);
       entry.panel.hidden = !isActive;
     }
+  }
+
+  if (elements.screenWorkspace) {
+    elements.screenWorkspace.dataset.activeWorkspace = activeKey;
+  }
+  if (elements.workspaceTopShell) {
+    elements.workspaceTopShell.dataset.activeWorkspace = activeKey;
+  }
+  const isLoop = activeKey === "loop";
+  if (elements.workspaceTabs) {
+    elements.workspaceTabs.hidden = true;
+  }
+  if (elements.workspaceTopShell) {
+    elements.workspaceTopShell.hidden = true;
+  }
+  if (elements.workspaceOverviewGrid) {
+    elements.workspaceOverviewGrid.hidden = true;
+  }
+  const body = elements.screenWorkspace?.ownerDocument?.body;
+  if (body?.dataset) {
+    body.dataset.activeWorkspace = activeKey;
   }
 }
 
@@ -522,6 +1086,7 @@ function renderLive(elements, project) {
   const commandOutputs = normalizeArray(liveLogStream.commandOutputs);
   const stdoutEntries = normalizeArray(liveLogStream.streams?.stdout);
   const stderrEntries = normalizeArray(liveLogStream.streams?.stderr);
+  const executionViewModel = buildExecutionLiveViewModel({ project });
   const items = [
     {
       title: `Live channel: ${liveUpdateChannel.transportMode ?? "polling"}`,
@@ -554,6 +1119,65 @@ function renderLive(elements, project) {
   ];
 
   elements.live.innerHTML = listHtml(items, "כרגע אין פעילות מיוחדת.");
+
+  if (elements.executionMissionTitle) {
+    elements.executionMissionTitle.textContent = executionViewModel.missionTitle;
+  }
+
+  if (elements.executionStatusList) {
+    elements.executionStatusList.innerHTML = executionViewModel.statusItems
+      .map((item) => {
+        const state = item.status === "done" ? "done" : item.status === "active" ? "active" : "pending";
+        const icon = state === "done"
+          ? '<span class="execution-route-status-icon check">✓</span>'
+          : state === "active"
+            ? '<span class="execution-route-status-icon play">▶</span>'
+            : '<span class="execution-route-status-icon pending"></span>';
+        return `
+          <div class="execution-route-status-row${state === "active" ? " active" : ""}">
+            <div class="execution-route-status-left">
+              ${icon}
+              <span>${escapeHtml(item.label)}</span>
+            </div>
+            <span class="execution-route-status-drag">◆</span>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  if (elements.executionLiveList) {
+    elements.executionLiveList.innerHTML = `
+      ${executionViewModel.liveItems.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}
+      <div class="execution-route-spinner" aria-hidden="true"></div>
+    `;
+  }
+
+  if (elements.executionLogList) {
+    elements.executionLogList.innerHTML = executionViewModel.logItems
+      .map((entry) => `
+        <div class="execution-route-log-row">
+          <span>${escapeHtml(String(entry.time))}</span>
+          <span>${escapeHtml(entry.message)}</span>
+        </div>
+      `)
+      .join("");
+  }
+
+  if (elements.executionStopButton) {
+    elements.executionStopButton.disabled = true;
+    elements.executionStopButton.title = "אין כרגע backend route מאושר לעצירת execution live.";
+  }
+
+  if (elements.executionProofButton) {
+    elements.executionProofButton.disabled = false;
+    elements.executionProofButton.title = "עבור למסך ההוכחה כשהתוצאה מוכנה.";
+  }
+
+  if (elements.executionRefreshButton) {
+    elements.executionRefreshButton.disabled = false;
+    elements.executionRefreshButton.title = "רענן את מצב הביצוע והלוגים מהפרויקט הפעיל.";
+  }
 }
 
 function renderDecision(elements, project) {
@@ -594,10 +1218,60 @@ function renderDecision(elements, project) {
   elements.decision.innerHTML = listHtml(items, "אין כרגע משהו שצריך לאשר.");
 }
 
+function renderProofScreen(elements, project) {
+  const viewModel = buildProofResultViewModel({ project });
+  const visibleBullets = [
+    ...normalizeArray(viewModel.successCriteria).map((item) => item?.title).filter(Boolean),
+    ...normalizeArray(viewModel.artifacts).slice(0, 2).map((item) => item?.name).filter(Boolean),
+  ].slice(0, 5);
+  const stats = normalizeArray(viewModel.stats).slice(0, 4);
+
+  if (elements.proofPreviewTitle) {
+    elements.proofPreviewTitle.textContent = viewModel.previewTitle;
+  }
+  if (elements.proofReadyTitle) {
+    elements.proofReadyTitle.textContent = viewModel.readyTitle;
+  }
+  if (elements.proofBulletsList) {
+    elements.proofBulletsList.innerHTML = visibleBullets
+      .map((item) => `<li>${escapeHtml(item)}</li>`)
+      .join("");
+  }
+  if (elements.proofStatsGrid) {
+    elements.proofStatsGrid.innerHTML = stats
+      .map((item) => `
+        <div class="proof-route-stat-card">
+          <div class="proof-route-stat-value">${escapeHtml(String(item.value))}</div>
+          <div class="proof-route-stat-label">${escapeHtml(item.label)}</div>
+        </div>
+      `)
+      .join("");
+  }
+  if (elements.proofDownloadButton) {
+    const downloadSupported = viewModel.secondaryActions?.[1]?.supported === true;
+    elements.proofDownloadButton.disabled = !downloadSupported;
+    elements.proofDownloadButton.title = downloadSupported
+      ? "הורד artifact קנוני self-contained שאפשר לפתוח ולשתף מחוץ ל־Nexus."
+      : "אין כרגע artifact קנוני מספיק יציב להורדה מתוך ה־proof screen.";
+  }
+  if (elements.proofOpenButton) {
+    const openSupported = viewModel.secondaryActions?.[0]?.supported === true;
+    elements.proofOpenButton.disabled = !openSupported;
+    elements.proofOpenButton.title = openSupported
+      ? "פתח את ה־artifact הקנוני כמשטח עצמאי בתוך Nexus."
+      : "אין כרגע artifact route קנוני לפתיחה ישירה.";
+  }
+  if (elements.proofFullButton) {
+    elements.proofFullButton.disabled = false;
+    elements.proofFullButton.title = "המשך למסך האישור כדי להחליט אם לקדם את התוצאה או לבקש תיקון.";
+  }
+}
+
 function renderProposalReview(elements, project) {
   const state = normalizeObject(project.state);
   const aiControlCenterSurface = normalizeObject(project.aiControlCenterSurface ?? state.aiControlCenterSurface);
   const aiDesignRequest = normalizeObject(project.aiDesignRequest ?? state.aiDesignRequest);
+  const generationIntent = normalizeObject(project.generationIntent ?? aiDesignRequest.generationIntent);
   const aiDesignProposal = normalizeObject(project.aiDesignProposal ?? state.aiDesignProposal);
   const aiGenerationObservability = normalizeObject(project.aiGenerationObservability ?? state.aiGenerationObservability);
   const providerLatencyFailureTracker = normalizeObject(project.providerLatencyFailureTracker ?? state.providerLatencyFailureTracker);
@@ -716,6 +1390,12 @@ function renderProposalReview(elements, project) {
           title: aiDesignRequest.screen?.screenId ?? "screen",
           body: aiDesignRequest.selectedTask?.summary ?? "No selected task summary",
         },
+        ...(generationIntent.intentId
+          ? [{
+              title: generationIntent.artifactTitle ?? "Artifact intent",
+              body: generationIntent.generationGoal ?? generationIntent.framingLine ?? "No explicit generation intent",
+            }]
+          : []),
         {
           title: aiDesignProposal.proposalId ?? "proposal",
           body: `regions ${normalizeArray(aiDesignProposal.regions).length} | provider ${aiDesignProposal.reasoning?.source ?? "unknown"}`,
@@ -927,15 +1607,289 @@ function renderProposalReview(elements, project) {
       ${stackHtml("Generation success & acceptance", generationSuccessItems, "עדיין אין מעקב קנוני להצלחה ולקבלה של generation.")}
       ${stackHtml("Prompt contract failures", promptContractFailureItems, "עדיין אין מעקב קנוני לכשלי prompt contract.")}
       ${stackHtml("AI generation review dashboard", aiGenerationDashboardItems, "עדיין אין dashboard קנוני ל־AI generation review.")}
-      ${stackHtml("Generated surface proof", generatedSurfaceProofItems, "עדיין אין proof קנוני ל־generated surface.")}
-      ${stackHtml("Generated accessibility validation", generatedAccessibilityItems, "עדיין אין accessibility validation קנוני ל־generated surface.")}
-      ${stackHtml("Generated surface performance budget", generatedPerformanceBudgetItems, "עדיין אין performance budget קנוני ל־generated surface.")}
-      ${stackHtml("Generated brand consistency", generatedBrandConsistencyItems, "עדיין אין brand consistency קנוני ל־generated surface.")}
-      ${stackHtml("Generated asset provenance", generatedAssetProvenanceItems, "עדיין אין provenance קנוני ל־generated assets.")}
-      ${stackHtml("Generated preview", generatedPreviewItems, "עדיין אין generated surface זמין להצגה.")}
+      ${stackHtml("Surface proof", generatedSurfaceProofItems, "עדיין אין proof קנוני למשטח הפעיל.")}
+      ${stackHtml("Accessibility validation", generatedAccessibilityItems, "עדיין אין accessibility validation קנוני למשטח הפעיל.")}
+      ${stackHtml("Surface performance budget", generatedPerformanceBudgetItems, "עדיין אין performance budget קנוני למשטח הפעיל.")}
+      ${stackHtml("Brand consistency", generatedBrandConsistencyItems, "עדיין אין brand consistency קנוני למשטח הפעיל.")}
+      ${stackHtml("Asset provenance", generatedAssetProvenanceItems, "עדיין אין provenance קנוני לנכסים הפעילים.")}
+      ${stackHtml("Preview surface", generatedPreviewItems, "עדיין אין משטח תצוגה פעיל להצגה.")}
       ${stackHtml("Edit history", historyEntries, "עדיין אין היסטוריית revisions מעבר ליצירה הראשונית.")}
       ${stackHtml("Partial acceptance", partialItems, "עדיין לא בוצע partial acceptance על ההצעה הזאת.")}
     `;
+  }
+}
+
+function renderLoop(elements, project) {
+  const developerWorkspace = normalizeObject(project.developerWorkspace);
+  const developerSummary = normalizeObject(developerWorkspace.contextSummary);
+  const projectBrainWorkspace = normalizeObject(project.projectBrainWorkspace);
+  const brainSummary = normalizeObject(projectBrainWorkspace.summary);
+  const releaseWorkspace = normalizeObject(project.releaseWorkspace);
+  const releaseSummary = normalizeObject(releaseWorkspace.summary);
+  const releaseValidation = normalizeObject(releaseWorkspace.validation);
+  const aiDesignRequest = normalizeObject(project.aiDesignRequest ?? project.state?.aiDesignRequest);
+  const generationIntent = normalizeObject(project.generationIntent ?? aiDesignRequest.generationIntent);
+  const aiControlCenterSurface = normalizeObject(project.aiControlCenterSurface ?? project.state?.aiControlCenterSurface);
+  const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? project.state?.proposalApplyDecision);
+  const partialAcceptanceDecision = normalizeObject(project.partialAcceptanceDecision ?? project.state?.partialAcceptanceDecision);
+  const liveUpdateChannel = normalizeObject(project.liveUpdateChannel);
+  const liveLogStream = normalizeObject(project.liveLogStream);
+  const taskSignal = resolveLoopTaskSignal(project);
+  const roadmap = normalizeArray(project.cycle?.roadmap);
+  const assignedTasks = roadmap.filter((task) => task.status === "assigned");
+  const currentPhase = projectBrainWorkspace.overview?.currentPhase ?? "unknown";
+  const releasePreviewId = aiControlCenterSurface.generatedSurfacePreview?.screenId ?? null;
+  const primaryLoopAction = taskSignal.queueCount > 0
+    ? {
+        label: "Execute next task",
+        target: "project-brain",
+        kind: "execute",
+        reason: taskSignal.reason,
+        title: taskSignal.title,
+      }
+    : {
+        label: "Continue onboarding",
+        target: "onboarding",
+        kind: "navigate",
+        reason: "ה־loop צריך עוד context לפני שאפשר לקדם task ברור.",
+        title: "Complete the project context",
+      };
+  const secondaryLoopAction = releasePreviewId || releaseValidation.status
+    ? {
+        label: "Open visible proof",
+        target: "proof",
+      }
+    : {
+        label: "Open execution lane",
+        target: "developer",
+      };
+  const clickOutcome = primaryLoopAction.target === "project-brain"
+    ? "It opens the task context so you can review the reasoning, blockers, and the execution lane behind this move."
+    : "It returns you to onboarding so you can complete the missing context before the loop can continue.";
+  const visibleOutcome = primaryLoopAction.kind === "execute" && /רכישת משתמשים|landing|ניסוי/i.test(primaryLoopAction.title)
+    ? "ניצור Landing page קצרה עם מסר ברור כדי להתחיל לקבל לקוחות ראשונים."
+    : primaryLoopAction.kind === "execute"
+    ? "נריץ את המשימה בפועל ונעדכן את הפרויקט עם התוצאה וההוכחה הבאה."
+    : "נחזור ל־onboarding כדי להשלים את ההקשר שחסר לפני שאפשר להתקדם.";
+  const proofExpectation = releasePreviewId
+    ? `Expect to review the visible proposal and proof lane for ${releasePreviewId}.`
+    : "Expect to review the release proof lane that will show the visible result after execution.";
+  const loopExplainItems = [
+    {
+      label: "What this task is",
+      title: taskSignal.title,
+      body: taskSignal.reason,
+    },
+    {
+      label: "Why it is next",
+      title: taskSignal.blocker,
+      body: "This is the current blocker or highest-pressure move in the project loop.",
+    },
+    {
+      label: "What happens when you click",
+      title: primaryLoopAction.label,
+      body: clickOutcome,
+    },
+    {
+      label: "What proof to expect",
+      title: secondaryLoopAction.label,
+      body: proofExpectation,
+    },
+    ...(generationIntent.intentId
+      ? [{
+          label: "What generation is aiming to build",
+          title: generationIntent.artifactTitle ?? "Artifact intent",
+          body: generationIntent.generationGoal ?? generationIntent.framingLine ?? "The generation request now carries the onboarding artifact intent forward.",
+        }]
+      : []),
+  ];
+
+  const understandingItems = [
+    {
+      title: "What this is",
+      body: project.goal ?? "The product goal is not clear yet.",
+    },
+    {
+      title: "Why it matters",
+      body: `The loop is currently in ${currentPhase} with ${brainSummary.blockerCount ?? 0} blockers.`,
+    },
+    {
+      title: "What you can do now",
+      body: "Continue onboarding if the project context still feels incomplete or too shallow.",
+    },
+  ];
+
+  const nextTaskItems = [
+    {
+      title: "What this is",
+      body: taskSignal.title,
+    },
+    {
+      title: "Why it matters",
+      body: taskSignal.reason,
+    },
+    {
+      title: "What you can do now",
+      body: `Open task details to see why this move is next. Queue state: total ${taskSignal.queueCount} | active ${taskSignal.activeCount} | blocked ${taskSignal.blockedCount}.`,
+    },
+  ];
+
+  const executionItems = [
+    {
+      title: "What this is",
+      body: developerSummary.nextAction ?? "There is no current execution action yet.",
+    },
+    {
+      title: "Why it matters",
+      body: `Execution status is ${developerSummary.progressStatus ?? "idle"} with progress ${developerSummary.progressPercent ?? 0}%. Live channel: ${liveUpdateChannel.transportMode ?? "polling"}.`,
+    },
+    {
+      title: "What you can do now",
+      body: assignedTasks[0]
+        ? "Open the execution lane to watch the assigned task run in real time."
+        : `Open the execution lane to inspect the live runtime path. Current log count: ${liveLogStream.summary?.totalEntries ?? 0}.`,
+    },
+  ];
+
+  const proofItems = [
+    {
+      title: "What this is",
+      body: `The proof lane is currently ${releaseValidation.status ?? "unknown"} and ${releaseSummary.isBlocked ? "blocked" : "moving"}.`,
+    },
+    {
+      title: "Why it matters",
+      body: aiControlCenterSurface.generatedSurfacePreview?.screenId
+        ? `The visible review target is ${aiControlCenterSurface.generatedSurfacePreview.screenId}.`
+        : "The release proof lane is where the visible result will be reviewed after execution.",
+    },
+    {
+      title: "What you can do now",
+      body: `Open the proof lane to inspect the result and review status. Apply: ${proposalApplyDecision.status ?? "unknown"} | partial: ${partialAcceptanceDecision.status ?? "not-run"}.`,
+    },
+  ];
+
+  const stages = [
+    {
+      step: "01",
+      title: "הבנה",
+      status: brainSummary.blockerCount > 0 ? "done" : "done",
+      body: currentPhase,
+      target: "onboarding",
+    },
+    {
+      step: "02",
+      title: "משימה",
+      status: taskSignal.queueCount > 0 ? "active" : "pending",
+      body: taskSignal.title,
+      target: "project-brain",
+    },
+    {
+      step: "03",
+      title: "ביצוע",
+      status: assignedTasks.length > 0 ? "active" : "pending",
+      body: developerSummary.nextAction ?? "waiting",
+      target: "execution",
+    },
+    {
+      step: "04",
+      title: "הוכחה",
+      status: aiDesignRequest.requestId || releaseValidation.status ? "active" : "pending",
+      body: releaseValidation.status ?? "unknown",
+      target: "proof",
+    },
+    {
+      step: "05",
+      title: "אישור",
+      status: proposalApplyDecision.status === "approved" ? "active" : "pending",
+      body: proposalApplyDecision.status ?? "pending",
+      target: "confirmation",
+    },
+    {
+      step: "06",
+      title: "עדכון",
+      status: project?.status === "working" ? "active" : "pending",
+      body: project?.status ?? "pending",
+      target: "state-update",
+    },
+    {
+      step: "07",
+      title: "הבא",
+      status: taskSignal.queueCount > 1 ? "active" : "pending",
+      body: taskSignal.queueCount > 1 ? "next queued" : "pending",
+      target: "next-task",
+    },
+  ];
+
+  if (elements.loopScreenIntro) {
+    elements.loopScreenIntro.textContent =
+      "This screen is the single working loop: understand the next move, open it, and end in one visible proof lane.";
+  }
+  if (elements.loopPrimaryTitle) {
+    elements.loopPrimaryTitle.textContent = primaryLoopAction.title;
+  }
+  if (elements.loopPrimaryReason) {
+    elements.loopPrimaryReason.textContent = primaryLoopAction.reason;
+  }
+  if (elements.loopWhatHappensBody) {
+    elements.loopWhatHappensBody.textContent = visibleOutcome;
+  }
+  if (elements.loopPrimaryActionButton) {
+    elements.loopPrimaryActionButton.textContent = "בצע את המשימה ⚡";
+    elements.loopPrimaryActionButton.dataset.loopTarget = primaryLoopAction.target;
+    elements.loopPrimaryActionButton.dataset.loopActionKind = primaryLoopAction.kind;
+    elements.loopPrimaryActionButton.disabled = false;
+    elements.loopPrimaryActionButton.title = primaryLoopAction.reason;
+  }
+  if (elements.loopSecondaryActionButton) {
+    elements.loopSecondaryActionButton.textContent = "ראה הוכחה 👁";
+    elements.loopSecondaryActionButton.dataset.loopTarget = secondaryLoopAction.target;
+    elements.loopSecondaryActionButton.disabled = false;
+    elements.loopSecondaryActionButton.title =
+      secondaryLoopAction.target === "proof"
+        ? "Open the visible proof and review lane."
+        : "Open the current execution lane.";
+  }
+  if (elements.loopOpenOnboardingButton) {
+    elements.loopOpenOnboardingButton.textContent = "Refine project context";
+    elements.loopOpenOnboardingButton.disabled = false;
+    elements.loopOpenOnboardingButton.title = "Open the onboarding step to refine project understanding.";
+  }
+  if (elements.loopOpenProjectBrainButton) {
+    elements.loopOpenProjectBrainButton.textContent = "Review task reasoning";
+    elements.loopOpenProjectBrainButton.disabled = false;
+    elements.loopOpenProjectBrainButton.title = "Open the task context and breakdown lane.";
+  }
+  if (elements.loopOpenDeveloperButton) {
+    elements.loopOpenDeveloperButton.textContent = "Watch execution path";
+    elements.loopOpenDeveloperButton.disabled = false;
+    elements.loopOpenDeveloperButton.title = assignedTasks[0]
+      ? "Open the active execution lane."
+      : "Open the execution lane even though no task is assigned yet.";
+  }
+  if (elements.loopOpenReleaseButton) {
+    elements.loopOpenReleaseButton.textContent = "Review visible proof";
+    elements.loopOpenReleaseButton.disabled = false;
+    elements.loopOpenReleaseButton.title = releasePreviewId
+      ? "Open the visible proof and proposal review lane."
+      : "Open the proof lane even though the visible preview is still limited.";
+  }
+  if (elements.loopStageRail) {
+    elements.loopStageRail.innerHTML = loopStageRailHtml(stages);
+  }
+  if (elements.loopWorkspaceSummary) {
+    elements.loopWorkspaceSummary.innerHTML = loopExplainHtml(loopExplainItems);
+  }
+  if (elements.loopUnderstanding) {
+    elements.loopUnderstanding.innerHTML = stackHtml("Understanding", understandingItems, "עדיין אין understanding route זמין.");
+  }
+  if (elements.loopNextTask) {
+    elements.loopNextTask.innerHTML = stackHtml("Next task", nextTaskItems, "עדיין אין next task זמין.");
+  }
+  if (elements.loopExecution) {
+    elements.loopExecution.innerHTML = stackHtml("Execution", executionItems, "עדיין אין execution state זמין.");
+  }
+  if (elements.loopProof) {
+    elements.loopProof.innerHTML = stackHtml("Proof", proofItems, "עדיין אין proof path זמין.");
   }
 }
 
@@ -949,6 +1903,7 @@ function renderWorkspaceSummaries(elements, project) {
   const releaseValidation = normalizeObject(releaseWorkspace.validation);
   const growthWorkspace = normalizeObject(project.growthWorkspace);
   const growthSummary = normalizeObject(growthWorkspace.summary);
+  const loopTask = resolveLoopTaskSignal(project);
 
   elements.developerWorkspaceSummary.innerHTML = metricHtml([
     { label: "Progress", value: `${developerSummary.progressPercent ?? 0}%` },
@@ -2139,13 +3094,18 @@ function renderEvents(elements, project) {
 }
 
 export function renderProject(elements, project) {
+  if (!elements.screenWorkspace || !elements.workspaceBoard) {
+    return;
+  }
   renderTop(elements, project);
   renderWorkspaceTabs(elements, project);
   renderWorkspaceSummaries(elements, project);
+  renderLoop(elements, project);
   renderCritical(elements, project);
   renderMissing(elements, project);
   renderExisting(elements, project);
   renderLive(elements, project);
+  renderProofScreen(elements, project);
   renderDecision(elements, project);
   renderPrimitiveComponents(elements, project);
   renderLayoutComponents(elements, project);
@@ -2182,15 +3142,358 @@ export function createCockpitApp({
   }
 
   const elements = queryElements(doc);
+  const createScreenElementKeys = [
+    "emptyAppState",
+    "createScreenTitle",
+    "createScreenStatus",
+    "projectCreateStage",
+    "createProjectNameInput",
+    "createProjectVisionInput",
+    "createProjectLinkInput",
+    "createProjectFilePickerButton",
+    "createProjectFilePickerTitle",
+    "createProjectFilePickerMeta",
+    "createProjectFileUploadInput",
+    "createProjectFileNameInput",
+    "createProjectFileContentInput",
+    "createProjectButton",
+  ];
+  applyDevModeVisibility(elements);
+  const mainGrid = doc.querySelector(".main-grid");
+  if (mainGrid && !doc.querySelector("#screen-execution")) {
+    const executionScreenHost = doc.createElement("section");
+    executionScreenHost.id = "screen-execution";
+    executionScreenHost.className = "app-screen app-screen-execution";
+    executionScreenHost.hidden = true;
+    mainGrid.appendChild(executionScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-loop")) {
+    const loopScreenHost = doc.createElement("section");
+    loopScreenHost.id = "screen-loop";
+    loopScreenHost.className = "app-screen app-screen-loop";
+    loopScreenHost.hidden = true;
+    mainGrid.appendChild(loopScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-understanding")) {
+    const understandingScreenHost = doc.createElement("section");
+    understandingScreenHost.id = "screen-understanding";
+    understandingScreenHost.className = "app-screen app-screen-understanding";
+    understandingScreenHost.hidden = true;
+    mainGrid.appendChild(understandingScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-home")) {
+    const homeScreenHost = doc.createElement("section");
+    homeScreenHost.id = "screen-home";
+    homeScreenHost.className = "app-screen app-screen-home";
+    homeScreenHost.hidden = true;
+    mainGrid.appendChild(homeScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-files")) {
+    const filesScreenHost = doc.createElement("section");
+    filesScreenHost.id = "screen-files";
+    filesScreenHost.className = "app-screen app-screen-files";
+    filesScreenHost.hidden = true;
+    mainGrid.appendChild(filesScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-settings")) {
+    const settingsScreenHost = doc.createElement("section");
+    settingsScreenHost.id = "screen-settings";
+    settingsScreenHost.className = "app-screen app-screen-settings";
+    settingsScreenHost.hidden = true;
+    mainGrid.appendChild(settingsScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-qa")) {
+    const qaScreenHost = doc.createElement("section");
+    qaScreenHost.id = "screen-qa";
+    qaScreenHost.className = "app-screen app-screen-qa";
+    qaScreenHost.hidden = true;
+    mainGrid.appendChild(qaScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-proof")) {
+    const proofScreenHost = doc.createElement("section");
+    proofScreenHost.id = "screen-proof";
+    proofScreenHost.className = "app-screen app-screen-proof";
+    proofScreenHost.hidden = true;
+    mainGrid.appendChild(proofScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-artifact")) {
+    const artifactScreenHost = doc.createElement("section");
+    artifactScreenHost.id = "screen-artifact";
+    artifactScreenHost.className = "app-screen app-screen-artifact";
+    artifactScreenHost.hidden = true;
+    mainGrid.appendChild(artifactScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-confirmation")) {
+    const confirmationScreenHost = doc.createElement("section");
+    confirmationScreenHost.id = "screen-confirmation";
+    confirmationScreenHost.className = "app-screen app-screen-confirmation";
+    confirmationScreenHost.hidden = true;
+    mainGrid.appendChild(confirmationScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-state-update")) {
+    const stateUpdateScreenHost = doc.createElement("section");
+    stateUpdateScreenHost.id = "screen-state-update";
+    stateUpdateScreenHost.className = "app-screen app-screen-state-update";
+    stateUpdateScreenHost.hidden = true;
+    mainGrid.appendChild(stateUpdateScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-next-task")) {
+    const nextTaskScreenHost = doc.createElement("section");
+    nextTaskScreenHost.id = "screen-next-task";
+    nextTaskScreenHost.className = "app-screen app-screen-next-task";
+    nextTaskScreenHost.hidden = true;
+    mainGrid.appendChild(nextTaskScreenHost);
+  }
+  if (mainGrid && !doc.querySelector("#screen-timeline")) {
+    const timelineScreenHost = doc.createElement("section");
+    timelineScreenHost.id = "screen-timeline";
+    timelineScreenHost.className = "app-screen app-screen-timeline";
+    timelineScreenHost.hidden = true;
+    mainGrid.appendChild(timelineScreenHost);
+  }
+  elements.screenExecution = doc.querySelector("#screen-execution");
+  elements.screenLoop = doc.querySelector("#screen-loop");
+  elements.screenUnderstanding = doc.querySelector("#screen-understanding");
+  elements.screenHome = doc.querySelector("#screen-home");
+  elements.screenFiles = doc.querySelector("#screen-files");
+  elements.screenSettings = doc.querySelector("#screen-settings");
+  elements.screenHelp = doc.querySelector("#screen-help");
+  elements.screenQa = doc.querySelector("#screen-qa");
+  elements.screenProof = doc.querySelector("#screen-proof");
+  elements.screenArtifact = doc.querySelector("#screen-artifact");
+  elements.screenConfirmation = doc.querySelector("#screen-confirmation");
+  elements.screenStateUpdate = doc.querySelector("#screen-state-update");
+  elements.screenNextTask = doc.querySelector("#screen-next-task");
+  elements.screenTimeline = doc.querySelector("#screen-timeline");
+  function clearCreateScreenElementBindings() {
+    for (const key of createScreenElementKeys) {
+      elements[key] = null;
+    }
+  }
+
+  function bindCreateScreenElements() {
+    clearCreateScreenElementBindings();
+    bindProjectCreateScreenElements(doc, elements);
+  }
+
+  function bindHelpScreenElements() {
+    bindHelpSupportScreenElements(doc, elements);
+  }
+
+  function renderCreateScreenView(viewModel = buildProjectCreateViewModel()) {
+    if (!elements.screenCreate) {
+      return;
+    }
+    elements.screenCreate.innerHTML = renderProjectCreateScreen(viewModel);
+    bindCreateScreenElements();
+  }
+
+  function ensureOnboardingScreenView() {
+    if (!elements.screenOnboarding) {
+      return;
+    }
+    if (!elements.screenOnboarding.innerHTML.trim()) {
+      const viewModel = buildSmartOnboardingViewModel({
+        onboardingConversation,
+        onboardingFlow,
+        currentProject,
+      });
+      elements.screenOnboarding.innerHTML = renderSmartOnboardingScreen(viewModel);
+      bindSmartOnboardingScreenElements(doc, elements);
+    }
+  }
+
+  function buildCanonicalSupportSidebar(currentRoute) {
+    return {
+      currentRoute,
+      primary: [
+        { title: "יצירה", href: "/create", target: "create", icon: "＋" },
+        { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
+        { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
+        { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
+      ],
+      support: [
+        { title: "בית", href: "/home", target: "home", icon: "⌂" },
+        { title: "קבצים", href: "/files", icon: "⌘" },
+      ],
+      advanced: [
+        { title: "Developer", href: "/developer", icon: "⌘" },
+        { title: "מוח הפרויקט", href: "/brain", icon: "☷" },
+        { title: "שחרורים", href: "/release", icon: "▤" },
+        { title: "צמיחה", href: "/growth", icon: "↗" },
+      ],
+      footer: [
+        { title: "הגדרות", href: "/settings", icon: "⚙" },
+        { title: "עזרה", href: "/help", icon: "?" },
+      ],
+    };
+  }
+
+  function renderTruthfulBlockedRouteScreen(routeKey, {
+    title = "המסך הזה עוד לא מוכן לשחזור",
+    body = "חסר כרגע ההקשר שצריך כדי לפתוח את המסלול הזה בצורה אמיתית.",
+    primaryLabel = "חזור ליצירה",
+    primaryTarget = "create",
+    secondaryLabel = "פתח בית",
+    secondaryTarget = "home",
+  } = {}) {
+    const screenMap = {
+      onboarding: elements.screenOnboarding,
+      loop: elements.screenLoop,
+      execution: elements.screenExecution,
+      proof: elements.screenProof,
+      artifact: elements.screenArtifact,
+      confirmation: elements.screenConfirmation,
+      "state-update": elements.screenStateUpdate,
+      "next-task": elements.screenNextTask,
+      timeline: elements.screenTimeline,
+    };
+    const host = screenMap[routeKey];
+    if (!host) {
+      return;
+    }
+
+    const projectName = currentProject?.name ?? "Nexus";
+    host.innerHTML = renderWorkspaceLayout({
+      sidebar: buildCanonicalSupportSidebar(routeKey === "onboarding" ? "/onboarding" : "/loop"),
+      topbar: {
+        projectName,
+        avatar: projectName.slice(0, 1) || "N",
+      },
+      content: `
+        <section class="nexus-route-blocked-screen">
+          <div class="nexus-route-blocked-screen__hero">
+            <span class="nexus-route-blocked-screen__badge">Route state</span>
+            <h1>${escapeHtml(title)}</h1>
+            <p>${escapeHtml(body)}</p>
+          </div>
+          <div class="nexus-route-blocked-screen__grid">
+            ${renderNexusCard({
+              className: "nexus-route-blocked-screen__card",
+              padding: "lg",
+              content: `
+                <h2>מה חסר עכשיו</h2>
+                <ul class="nexus-route-blocked-screen__list">
+                  <li>פרויקט פעיל או session שניתן לשחזר באמת.</li>
+                  <li>context שמאפשר להמשיך במסלול בלי ליפול ל־QA mock.</li>
+                  <li>state שמחובר לשרת החי ולא רק ל־URL.</li>
+                </ul>
+              `,
+            })}
+            ${renderNexusCard({
+              className: "nexus-route-blocked-screen__card",
+              padding: "lg",
+              content: `
+                <h2>מה אפשר לעשות עכשיו</h2>
+                <div class="nexus-route-blocked-screen__actions">
+                  ${renderNexusButton({
+                    label: primaryLabel,
+                    variant: "primary",
+                    size: "lg",
+                    attrs: { "data-nexus-ui-target": primaryTarget },
+                  })}
+                  ${renderNexusButton({
+                    label: secondaryLabel,
+                    variant: "secondary",
+                    size: "lg",
+                    attrs: { "data-nexus-ui-target": secondaryTarget },
+                  })}
+                </div>
+              `,
+            })}
+          </div>
+        </section>
+      `,
+    });
+  }
+
+  function renderDeferredSupportScreenView(route) {
+    if (!elements.screenCreate) {
+      return;
+    }
+
+    elements.screenCreate.innerHTML = `
+      <section class="deferred-support-route">
+        <section id="empty-app-state" class="create-main-card deferred-support-card" data-mode="${escapeHtml(route.key)}">
+          <div class="create-card-header">
+            <div class="empty-app-copy">
+              <p class="eyebrow deferred-support-card__eyebrow">Deferred</p>
+              <h2 id="create-screen-title">${escapeHtml(route.title)}</h2>
+              <p id="create-screen-status">${escapeHtml(route.subtitle)}</p>
+            </div>
+          </div>
+          <div class="deferred-support-card__body">
+            <p>${escapeHtml(route.explanation)}</p>
+          </div>
+        </section>
+      </section>
+    `;
+    bindCreateScreenElements();
+  }
+
+  function renderBlockedRouteFallback(routeKey) {
+    const route = buildShellRouteModel(routeKey);
+    currentShellRouteKey = route.key;
+    closeLiveUpdates();
+    currentProjectAuditPayload = null;
+    if (routeKey === "onboarding") {
+      renderTruthfulBlockedRouteScreen("onboarding", {
+        title: "אין onboarding פעיל לשחזור",
+        body: "הגענו למסלול /onboarding בלי session או פרויקט פעיל. המסך נשאר בתוך Nexus, אבל צריך להתחיל פרויקט חדש או לחזור לבית כדי להמשיך truthfully.",
+        primaryLabel: "פתח יצירה",
+        primaryTarget: "create",
+        secondaryLabel: "פתח בית",
+        secondaryTarget: "home",
+      });
+      setAppScreen("onboarding");
+      renderShellChrome(route.key, activeWorkspace);
+      persistFlowState(route.key);
+      scrollViewportToTop();
+      return;
+    }
+    if (routeKey === "loop") {
+      renderTruthfulBlockedRouteScreen("loop", {
+        title: "אין לופ פעיל לשחזור",
+        body: "הגענו למסלול /loop בלי פרויקט פעיל. במקום QA fallback או create שקט, Nexus מציג חסימה אמיתית בתוך המסך הקנוני.",
+        primaryLabel: "פתח בית",
+        primaryTarget: "home",
+        secondaryLabel: "צור פרויקט",
+        secondaryTarget: "create",
+      });
+      setAppScreen("loop");
+      renderShellChrome(route.key, activeWorkspace);
+      persistFlowState(route.key);
+      scrollViewportToTop();
+      return;
+    }
+    renderQaFallbackRoute(route.key);
+    renderShellChrome(route.key, activeWorkspace);
+    persistFlowState(route.key);
+    scrollViewportToTop();
+  }
+
   let currentProjectId = null;
   let currentProject = null;
+  let cachedProjects = [];
   let refreshTimer = null;
   let liveEventSource = null;
-  let activeWorkspace = "developer";
+  let activeWorkspace = "loop";
+  let currentShellRouteKey = "create";
+  let qaPreviewRouteKey = null;
   let onboardingFlow = null;
   let onboardingConversation = null;
   let currentProjectAuditPayload = null;
   let activeAppUser = null;
+  let currentSettingsProfileSurface = null;
+  let currentSettingsPanel = "profile";
+  let currentSettingsFlashMessage = "";
+  let currentSettingsErrorMessage = "";
+  let currentSettingsSavingState = "idle";
+  let currentHelpSearchQuery = "";
+  let currentHelpCategory = "";
+  let currentHelpArticleId = "";
+  let currentHelpSupportPanelOpen = false;
+  let currentHelpSupportCopyMessage = "";
   const presenceParticipantId = `presence-${Math.random().toString(36).slice(2, 10)}`;
   const appStorage = storageImpl && typeof storageImpl.getItem === "function" && typeof storageImpl.setItem === "function"
     ? storageImpl
@@ -2202,13 +3505,1102 @@ export function createCockpitApp({
         removeItem() {},
       };
   const locationHost = globalThis.location?.hostname ?? "";
+  let suppressShellRouteHistorySync = false;
+
+  function resolveCurrentShellRouteKey(screen = null, workspaceKey = null) {
+    if (qaPreviewRouteKey) {
+      return qaPreviewRouteKey;
+    }
+    const activeScreen = screen ?? doc?.body?.dataset?.appScreen ?? currentShellRouteKey;
+
+    if (activeScreen === "workspace") {
+      return normalizeShellRouteKey(workspaceKey ?? activeWorkspace ?? currentShellRouteKey);
+    }
+
+    if (activeScreen === "onboarding") {
+      return elements.onboardingFormStage?.hidden === false ? "understanding" : "onboarding";
+    }
+
+    return normalizeShellRouteKey(activeScreen ?? currentShellRouteKey);
+  }
+
+  function syncBrowserShellRoute(routeKey, options = {}) {
+    if (suppressShellRouteHistorySync) {
+      return;
+    }
+    const historyApi = globalThis.history;
+    const locationApi = globalThis.location;
+    if (!historyApi || !locationApi || typeof historyApi.pushState !== "function" || typeof historyApi.replaceState !== "function") {
+      return;
+    }
+
+    const normalizedRouteKey = normalizeShellRouteKey(routeKey);
+    const targetPath = shellRoutePathMap[normalizedRouteKey] ?? "/";
+    const currentPath = normalizeString(locationApi.pathname) || "/";
+    if (currentPath === targetPath) {
+      return;
+    }
+
+    const mode = options.replace === true ? "replaceState" : "pushState";
+    historyApi[mode]({ nexusRoute: normalizedRouteKey }, "", targetPath);
+  }
+
+  function buildShellRouteModel(routeKey) {
+    const hasProject = Boolean(currentProjectId || currentProject?.id);
+    const hasContinuationPreview = currentProject?.onboardingContinuationPreview === true;
+    const hasLoopAccess = hasProject || hasContinuationPreview;
+    const canResumeOnboarding = Boolean(hasProject || onboardingFlow?.sessionId || onboardingConversation);
+    const routeMap = {
+      create: {
+        key: "create",
+        label: "Primary flow",
+        title: "Project Create",
+        subtitle: "פותחים פרויקט חדש ומתחילים את הלופ במקום אחד ברור.",
+        explanation: "זה מסך הכניסה הרשמי של Nexus. מכאן יוצרים פרויקט חדש בלי לעבור דרך dashboard מפוצל.",
+        navButton: elements.navCreateButton,
+        stepButton: elements.flowStepCreateButton,
+        stepKey: "create",
+        enabled: true,
+      },
+      onboarding: {
+        key: "onboarding",
+        label: "Primary flow",
+        title: "Smart Onboarding",
+        subtitle: "מחדדים את הפרויקט בשיחה לפני שנכנסים לעבודה עצמה.",
+        explanation: "זה שלב האיסוף והחידוד. ממשיכים לכאן רק כשיש draft אמיתי או פרויקט קיים לעבוד עליו.",
+        navButton: elements.navOnboardingButton,
+        stepButton: elements.flowStepOnboardingButton,
+        stepKey: "onboarding",
+        enabled: canResumeOnboarding,
+        disabledReason: "Onboarding נפתח רק אחרי יצירת draft או פרויקט פעיל.",
+      },
+      loop: {
+        key: "loop",
+        label: "Primary flow",
+        title: "Nexus Loop",
+        subtitle: "זה הצעד הבא, למה הוא הבא, ומה תראה אחרי שתבצע אותו.",
+        explanation: "זה לב המוצר: משימה אחת ברורה, סיבה אחת ברורה, ויציאה אחת להוכחה ויזואלית.",
+        navButton: elements.navLoopButton,
+        stepButton: elements.flowStepLoopButton,
+        stepKey: "loop",
+        enabled: hasLoopAccess,
+        disabledReason: "Loop נפתח רק כשיש פרויקט פעיל או כשההבנה כבר אושרה וממתינים רק לחומר תומך.",
+      },
+      execution: {
+        key: "execution",
+        label: "Primary flow",
+        title: "Execution / Live Run",
+        subtitle: "כאן רואים את שלב הביצוע החי של המשימה, בזמן אמת.",
+        explanation: "זה מסך הביצוע של הלופ: סטטוס המשימה, פעולות שרצות עכשיו, ולוג עדכני של מה שהמערכת עושה.",
+        navButton: elements.navLoopButton,
+        stepButton: elements.flowStepLoopButton,
+        stepKey: "loop",
+        enabled: hasProject,
+        disabledReason: "Execution נפתח רק כשיש פרויקט פעיל.",
+      },
+      proof: {
+        key: "proof",
+        label: "Primary flow",
+        title: "Result / Proof",
+        subtitle: "כאן רואים מה נוצר בפועל, יחד עם proof ונתוני התוצאה.",
+        explanation: "זה מסך ההוכחה של הלופ: תצוגת התוצר, bullet proof, וסטטיסטיקות התוצאה לפני שעוברים לאישור.",
+        navButton: elements.navLoopButton,
+        stepButton: elements.flowStepLoopButton,
+        stepKey: "loop",
+        enabled: hasProject,
+        disabledReason: "Proof נפתח רק כשיש פרויקט פעיל.",
+      },
+      artifact: {
+        key: "artifact",
+        label: "Primary flow",
+        title: "Artifact Preview",
+        subtitle: "כאן התוצר נפתח כמשטח עצמאי וקנוני, לא רק כחלק מכרטיס ה־proof.",
+        explanation: "זה route ה־artifact הראשון: אותו תוצר שנבנה בלופ, עכשיו כמשטח פתוח בפני עצמו בתוך Nexus.",
+        navButton: elements.navLoopButton,
+        stepButton: elements.flowStepLoopButton,
+        stepKey: "loop",
+        enabled: hasProject,
+        disabledReason: "Artifact route זמין רק כשיש פרויקט פעיל עם proof artifact.",
+      },
+      confirmation: {
+        key: "confirmation",
+        label: "Primary flow",
+        title: "Confirmation",
+        subtitle: "כאן מחליטים אם לאשר את התוצאה ולהמשיך, או לחזור לתיקון ממוקד.",
+        explanation: "זה מסך ההחלטה של הלופ: אשר והמשך לעדכון מצב, או בקש שינויים וחזור למשימה.",
+        navButton: elements.navLoopButton,
+        stepButton: elements.flowStepLoopButton,
+        stepKey: "loop",
+        enabled: hasProject || resolveDevFlowControlsEnabled(),
+        disabledReason: "Confirmation זמין אחרי proof.",
+      },
+      "state-update": {
+        key: "state-update",
+        label: "Primary flow",
+        title: "State Update",
+        subtitle: "כאן רואים איך מצב הפרויקט השתנה אחרי אישור התוצאה.",
+        explanation: "זה מסך המעבר בין review מאושר לבין המשך הלולאה. ממנו רואים מה נסגר, מה נפתח, ומה המשמעות קדימה.",
+        navButton: elements.navLoopButton,
+        stepButton: elements.flowStepLoopButton,
+        stepKey: "loop",
+        enabled: hasProject || resolveDevFlowControlsEnabled(),
+        disabledReason: "State Update זמין אחרי proof ו־confirmation.",
+      },
+      "next-task": {
+        key: "next-task",
+        label: "Primary flow",
+        title: "Next Task",
+        subtitle: "כאן רואים מה הצעד הבא שמומלץ לפתוח אחרי עדכון המצב.",
+        explanation: "זה מסך המעבר מה־state החדש אל המשימה הבאה. ממנו אפשר להיכנס ישירות לביצוע או לפתוח פירוט.",
+        navButton: elements.navLoopButton,
+        stepButton: elements.flowStepLoopButton,
+        stepKey: "loop",
+        enabled: hasProject || resolveDevFlowControlsEnabled(),
+        disabledReason: "Next Task זמין אחרי state update.",
+      },
+      developer: {
+        key: "developer",
+        label: "Advanced lane",
+        title: "Developer Workspace",
+        subtitle: "מסלול מתקדם לצפייה ב־runtime, execution ו־code scan.",
+        explanation: "זה מסך עבודה משני, לא תחליף ל־loop הראשי.",
+        navButton: elements.navDeveloperButton,
+        enabled: hasProject,
+        disabledReason: "Developer workspace זמין רק לפרויקט פעיל.",
+      },
+      "project-brain": {
+        key: "project-brain",
+        label: "Advanced lane",
+        title: "Project Brain",
+        subtitle: "כאן בודקים reasoning, blockers והבנת הפרויקט מאחורי הלופ.",
+        explanation: "זה מסך משני לבדיקת הקשרים והחלטות, לא המסך הראשי של המשתמש.",
+        navButton: elements.navProjectBrainButton,
+        enabled: hasProject,
+        disabledReason: "Project Brain זמין רק לפרויקט פעיל.",
+      },
+      release: {
+        key: "release",
+        label: "Advanced lane",
+        title: "Release Workspace",
+        subtitle: "כאן רואים proof, proposal review ו־apply state.",
+        explanation: "זה מסלול ההוכחה וה־review. ב־NLP-001 הוא נשאר secondary lane.",
+        navButton: elements.navReleaseButton,
+        enabled: hasProject,
+        disabledReason: "Release זמין רק לפרויקט פעיל.",
+      },
+      growth: {
+        key: "growth",
+        label: "Advanced lane",
+        title: "Growth Workspace",
+        subtitle: "כאן עובדים על ערוצי צמיחה, KPI ותוכניות שיווק משניות.",
+        explanation: "Growth נשאר secondary lane ולא חלק מהלופ הראשי בשלב הזה.",
+        navButton: elements.navGrowthButton,
+        enabled: hasProject,
+        disabledReason: "Growth workspace זמין רק לפרויקט פעיל.",
+      },
+      timeline: {
+        key: "timeline",
+        label: "Primary flow",
+        title: "Timeline / History",
+        subtitle: "כאן רואים את היסטוריית הפרויקט, אבני הדרך, והמעברים שעברנו.",
+        explanation: "זה מסך הזיכרון של הלופ: מה קרה, מתי זה קרה, ואיך זה מחבר בין המשימות לבין שינויי המצב.",
+        navButton: elements.navTimelineButton,
+        enabled: hasProject || resolveDevFlowControlsEnabled(),
+        disabledReason: "Timeline זמין כשיש פרויקט פעיל או במצב QA מקומי.",
+      },
+      home: {
+        key: "home",
+        label: "Support screen",
+        title: "Home",
+        subtitle: "כאן רואים את כל הפרויקטים הפעילים ובוחרים מאיפה להמשיך.",
+        explanation: "זה מסך הבית של המערכת: כניסה לפרויקט קיים או פתיחת פרויקט חדש.",
+        enabled: true,
+      },
+      files: {
+        key: "files",
+        label: "Support screen",
+        title: "Files",
+        subtitle: "כאן רואים את הקבצים שכבר ידועים לפרויקט או ל־draft הנוכחי, בלי להמציא פעולות backend שעוד לא קיימות.",
+        explanation: "זה מסך קבצים בטוח: תצוגה מרוכזת של assets שכבר זמינים במצב הפרויקט או ב־draft המקומי.",
+        enabled: true,
+      },
+      settings: {
+        key: "settings",
+        label: "Support screen",
+        title: "Settings",
+        subtitle: "כאן מנהלים פרופיל, התראות והעדפות עבודה של המשתמש.",
+        explanation: "זה מסך ההגדרות הפעיל של Nexus: פרופיל, התראות, אבטחה ומראה.",
+        navButton: elements.navSettingsButton,
+        enabled: true,
+      },
+      help: {
+        key: "help",
+        label: "Support screen",
+        title: "Help",
+        subtitle: "כאן פותחים מדריכי מוצר, מסננים שאלות נפוצות, ומכינים פנייה אמיתית לתמיכה.",
+        explanation: "מסך העזרה של Nexus מציג רק תוכן ופעולות שכבר קיימים עכשיו: חיפוש מקומי, מאמרי מוצר, וקיצור דרך אמיתי לתמיכה.",
+        navButton: elements.navHelpButton,
+        enabled: true,
+      },
+      understanding: {
+        key: "understanding",
+        label: "Primary flow",
+        title: "Understanding Summary",
+        subtitle: "כאן מאשרים שהמערכת באמת הבינה את הפרויקט לפני המעבר ללופ.",
+        explanation: "זה מסך הסיכום בין ה־Onboarding לבין ה־Loop. ממנו מתקנים או ממשיכים למשימה הבאה.",
+        stepButton: elements.flowStepUnderstandingButton,
+        stepKey: "understanding",
+        enabled: canResumeOnboarding || resolveDevFlowControlsEnabled(),
+        disabledReason: "Understanding Summary זמין רק אחרי שיש הקשר התחלתי לפרויקט.",
+      },
+    };
+
+    return routeMap[routeKey] ?? routeMap.create;
+  }
+
+  function setShellButtonState(button, { active = false, enabled = true, reason = "", target = "" } = {}) {
+    if (!button) {
+      return;
+    }
+
+    button.classList?.toggle("active", active);
+    button.disabled = !enabled;
+    if ("ariaSelected" in button) {
+      button.ariaSelected = active ? "true" : "false";
+    }
+    if (target) {
+      button.dataset.shellTarget = target;
+    }
+    button.title = reason || "";
+  }
+
+  function renderShellChrome(screen = null, workspaceKey = null) {
+    const currentRouteKey = resolveCurrentShellRouteKey(screen, workspaceKey);
+    const currentRoute = buildShellRouteModel(currentRouteKey);
+    currentShellRouteKey = currentRouteKey;
+    const isLoopFamilyRoute = currentRouteKey === "execution" || currentRouteKey === "proof" || currentRouteKey === "artifact" || currentRouteKey === "confirmation" || currentRouteKey === "state-update" || currentRouteKey === "next-task" || currentRouteKey === "timeline";
+    const routeModels = [
+      buildShellRouteModel("create"),
+      buildShellRouteModel("onboarding"),
+      buildShellRouteModel("loop"),
+      buildShellRouteModel("timeline"),
+      buildShellRouteModel("home"),
+      buildShellRouteModel("files"),
+      buildShellRouteModel("developer"),
+      buildShellRouteModel("project-brain"),
+      buildShellRouteModel("release"),
+      buildShellRouteModel("growth"),
+      buildShellRouteModel("settings"),
+      buildShellRouteModel("help"),
+      buildShellRouteModel("understanding"),
+    ];
+
+    if (elements.shellRouteLabel) {
+      elements.shellRouteLabel.textContent = currentRoute.label;
+    }
+    if (elements.shellRouteTitle) {
+      elements.shellRouteTitle.textContent = currentRoute.title;
+    }
+    if (elements.shellRouteSubtitle) {
+      elements.shellRouteSubtitle.textContent = currentRoute.subtitle;
+    }
+
+    for (const model of routeModels) {
+      if (model.navButton) {
+        setShellButtonState(model.navButton, {
+          active: model.key === currentRouteKey || (isLoopFamilyRoute && model.key === "loop"),
+          enabled: model.enabled,
+          reason: model.enabled ? model.explanation : model.disabledReason,
+          target: model.key,
+        });
+      }
+
+      if (model.stepButton) {
+        setShellButtonState(model.stepButton, {
+          active: model.stepKey === currentRoute.stepKey || (shellPrimaryStepKeys.includes(model.key) && model.key === currentRouteKey),
+          enabled: model.enabled,
+          reason: model.enabled ? model.explanation : model.disabledReason,
+          target: model.key,
+        });
+      }
+    }
+
+    if (elements.topbarNotificationsButton) {
+      elements.topbarNotificationsButton.disabled = true;
+      elements.topbarNotificationsButton.title = "Notifications screen lands in NLP-013.";
+    }
+    if (elements.topbarProfileButton) {
+      elements.topbarProfileButton.disabled = false;
+      elements.topbarProfileButton.title = "פתח את מסך ההגדרות והפרופיל.";
+      elements.topbarProfileButton.dataset.shellTarget = "settings";
+    }
+    if (elements.projectSelect) {
+      elements.projectSelect.title = currentProjectId
+        ? "בחר פרויקט פעיל אחר בלי לצאת ממערכת המסכים."
+        : "ה־project switcher המלא נבנה ב־NLP-012, אבל כבר אפשר לבחור פרויקט קיים מהרשימה.";
+    }
+    if (elements.heroActions) {
+      elements.heroActions.hidden = !["developer", "project-brain", "release", "growth"].includes(currentRouteKey);
+    }
+
+    if (doc?.body?.dataset) {
+      doc.body.dataset.shellRoute = currentRouteKey;
+    }
+
+    renderQaRouteControls();
+  }
+
+  function shouldBypassToQaRoute(target) {
+    if (!isQaModeEnabled() || !isPrimaryQaRoute(target)) {
+      return false;
+    }
+
+    if (target === "create") {
+      return false;
+    }
+
+    if (target === "onboarding") {
+      return !(currentProjectId || currentProject || onboardingFlow?.sessionId);
+    }
+
+    if (target === "understanding") {
+      return !(currentProjectId || currentProject || onboardingFlow?.sessionId || onboardingConversation);
+    }
+
+    return !(currentProjectId || currentProject);
+  }
+
+  function openShellRoute(target, options = {}) {
+    if (shouldBypassToQaRoute(target)) {
+      openQaScreen(target);
+      return;
+    }
+
+    const route = buildShellRouteModel(target);
+    if (!route.enabled) {
+      renderBlockedRouteFallback(target);
+      return;
+    }
+
+    if (target === "create") {
+      enterCreateProjectScreen();
+      renderShellChrome("create", activeWorkspace);
+      syncBrowserShellRoute("create", { replace: options.replace === true });
+      scrollViewportToTop();
+      return;
+    }
+
+    if (target === "home") {
+      renderHomeSupportScreenView();
+      syncBrowserShellRoute("home", { replace: options.replace === true });
+      scrollViewportToTop();
+      return;
+    }
+
+    if (target === "files") {
+      renderFilesSupportScreenView();
+      syncBrowserShellRoute("files", { replace: options.replace === true });
+      scrollViewportToTop();
+      return;
+    }
+
+    if (target === "help") {
+      renderHelpSupportScreenView();
+      syncBrowserShellRoute("help", { replace: options.replace === true });
+      scrollViewportToTop();
+      return;
+    }
+
+    if (target === "settings") {
+      void renderSettingsScreenView();
+      syncBrowserShellRoute("settings", { replace: options.replace === true });
+      scrollViewportToTop();
+      return;
+    }
+
+    if (target === "onboarding") {
+      if (currentProjectId || currentProject || onboardingFlow?.sessionId) {
+        reopenOnboardingFromWorkspace();
+      } else {
+        ensureOnboardingScreenView();
+        renderEmptyAppState({
+          mode: "onboarding",
+          message: "אין onboarding פעיל לשחזור",
+          status: "המסלול נשאר בתוך Nexus, אבל כדי להמשיך צריך פרויקט פעיל או session onboarding שמור.",
+        });
+      }
+      renderShellChrome("onboarding", activeWorkspace);
+      syncBrowserShellRoute("onboarding", { replace: options.replace === true });
+      scrollViewportToTop();
+      return;
+    }
+
+    if (target === "understanding") {
+      openUnderstandingPreviewScreen();
+      syncBrowserShellRoute("understanding", { replace: options.replace === true });
+      return;
+    }
+
+    if (target === "loop") {
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderLoopCoreScreenView(currentProject);
+      } else if (isQaModeEnabled()) {
+        openLoopPreviewScreen();
+      } else {
+        renderBlockedRouteFallback(target);
+        syncBrowserShellRoute("loop", { replace: options.replace === true });
+        return;
+      }
+      syncBrowserShellRoute("loop", { replace: options.replace === true });
+      return;
+    }
+
+    if (target === "execution") {
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderExecutionLiveScreenView(currentProject);
+      } else if (isQaModeEnabled()) {
+        openExecutionPreviewScreen();
+      } else {
+        renderBlockedRouteFallback(target);
+        syncBrowserShellRoute("execution", { replace: options.replace === true });
+        return;
+      }
+      syncBrowserShellRoute("execution", { replace: options.replace === true });
+      return;
+    }
+
+    if (target === "proof") {
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderProofResultScreenView(currentProject);
+      } else if (isQaModeEnabled()) {
+        openProofPreviewScreen();
+      } else {
+        renderBlockedRouteFallback(target);
+        syncBrowserShellRoute("proof", { replace: options.replace === true });
+        return;
+      }
+      syncBrowserShellRoute("proof", { replace: options.replace === true });
+      return;
+    }
+
+    if (target === "artifact") {
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderArtifactPreviewScreenView(currentProject);
+      } else if (isQaModeEnabled()) {
+        renderArtifactPreviewScreenView(null, { qaMode: true });
+      } else {
+        renderBlockedRouteFallback(target);
+        syncBrowserShellRoute("artifact", { replace: options.replace === true });
+        return;
+      }
+      syncBrowserShellRoute("artifact", { replace: options.replace === true });
+      return;
+    }
+
+    if (target === "confirmation") {
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderConfirmationDecisionScreenView(currentProject);
+      } else if (isQaModeEnabled()) {
+        openConfirmationPreviewScreen();
+      } else {
+        renderBlockedRouteFallback(target);
+        syncBrowserShellRoute("confirmation", { replace: options.replace === true });
+        return;
+      }
+      syncBrowserShellRoute("confirmation", { replace: options.replace === true });
+      return;
+    }
+
+    if (target === "state-update") {
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderStateUpdateScreenView(currentProject);
+      } else if (isQaModeEnabled()) {
+        openStateUpdatePreviewScreen();
+      } else {
+        renderBlockedRouteFallback(target);
+        syncBrowserShellRoute("state-update", { replace: options.replace === true });
+        return;
+      }
+      syncBrowserShellRoute("state-update", { replace: options.replace === true });
+      return;
+    }
+
+    if (target === "next-task") {
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderNextTaskScreenView(currentProject);
+      } else if (isQaModeEnabled()) {
+        openNextTaskPreviewScreen();
+      } else {
+        renderBlockedRouteFallback(target);
+        syncBrowserShellRoute("next-task", { replace: options.replace === true });
+        return;
+      }
+      syncBrowserShellRoute("next-task", { replace: options.replace === true });
+      return;
+    }
+
+    if (target === "timeline") {
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderTimelineHistoryScreenView(currentProject);
+      } else if (isQaModeEnabled()) {
+        openTimelinePreviewScreen();
+      } else {
+        renderBlockedRouteFallback(target);
+        syncBrowserShellRoute("timeline", { replace: options.replace === true });
+        return;
+      }
+      syncBrowserShellRoute("timeline", { replace: options.replace === true });
+      return;
+    }
+
+    if (target === "developer" || target === "project-brain" || target === "release" || target === "growth") {
+      activeWorkspace = target;
+      setAppScreen("workspace");
+      setActiveWorkspace(elements, activeWorkspace);
+      renderShellChrome("workspace", activeWorkspace);
+      syncBrowserShellRoute(target, { replace: options.replace === true });
+      scrollViewportToTop();
+      updatePresence().catch(() => {});
+    }
+  }
+
+  function applyRequestedShellRouteFromLocation(options = {}) {
+    const requestedRoute = resolveShellRouteKeyFromPath(globalThis.location?.pathname ?? "/");
+    if (!requestedRoute) {
+      return;
+    }
+
+    suppressShellRouteHistorySync = true;
+    try {
+      openShellRoute(requestedRoute, { replace: options.replace !== false });
+    } finally {
+      suppressShellRouteHistorySync = false;
+    }
+  }
+
+  function primeInitialShellRoute() {
+    const requestedRouteKey = resolveShellRouteKeyFromPath(globalThis.location?.pathname ?? "/") ?? "create";
+    const primableRouteKeys = new Set([
+      "create",
+      "home",
+      "files",
+      "settings",
+      "help",
+      "onboarding",
+      "understanding",
+      "loop",
+      "execution",
+      "proof",
+      "artifact",
+      "confirmation",
+      "state-update",
+      "next-task",
+      "timeline",
+    ]);
+    const primedRouteKey = primableRouteKeys.has(requestedRouteKey)
+      ? requestedRouteKey
+      : "create";
+
+    currentShellRouteKey = primedRouteKey;
+
+    if (doc?.body?.dataset) {
+      doc.body.dataset.appScreen = primedRouteKey;
+      doc.body.dataset.shellRoute = primedRouteKey;
+    }
+    if (doc?.documentElement?.dataset) {
+      doc.documentElement.dataset.appScreen = primedRouteKey;
+    }
+
+    setAppScreen(primedRouteKey, { persist: false });
+    if (primedRouteKey === "create") {
+      renderCreateScreenView();
+    } else if (primedRouteKey === "home") {
+      renderHomeSupportScreenView([]);
+    } else if (primedRouteKey === "files") {
+      renderFilesSupportScreenView();
+    } else if (primedRouteKey === "settings") {
+      void renderSettingsScreenView();
+    } else if (primedRouteKey === "help") {
+      renderHelpSupportScreenView();
+    } else if (primedRouteKey === "onboarding") {
+      ensureOnboardingScreenView();
+      renderEmptyAppState({
+        mode: "onboarding",
+        message: "בודקים אם יש onboarding פעיל",
+        status: "אנחנו טוענים את ה־session החי. אם אין כזה, נשאיר כאן blocked state אמיתי בתוך Nexus.",
+      });
+    } else if (
+      primedRouteKey === "loop"
+      || primedRouteKey === "execution"
+      || primedRouteKey === "proof"
+      || primedRouteKey === "artifact"
+      || primedRouteKey === "confirmation"
+      || primedRouteKey === "state-update"
+      || primedRouteKey === "next-task"
+      || primedRouteKey === "timeline"
+    ) {
+      renderTruthfulBlockedRouteScreen("loop", {
+        title: "בודקים אם יש פרויקט פעיל לשחזור",
+        body: "אנחנו טוענים את הפרויקט החי. אם אין כזה, המסלול יישאר כאן עם blocked state אמיתי בתוך ה־shell הקנוני.",
+        primaryLabel: "פתח בית",
+        primaryTarget: "home",
+        secondaryLabel: "צור פרויקט",
+        secondaryTarget: "create",
+      });
+    }
+    setActiveWorkspace(elements, activeWorkspace);
+    renderShellChrome(primedRouteKey, activeWorkspace);
+  }
 
   function resolveDevFlowControlsEnabled() {
-    if (locationHost === "127.0.0.1" || locationHost === "localhost") {
+    if (globalThis.location === undefined) {
       return true;
     }
 
-    return globalThis.location === undefined;
+    const searchParams = new URLSearchParams(globalThis.location.search ?? "");
+    return searchParams.get("qa") === "1";
+  }
+
+  const qaScreenSequence = ["create", "onboarding", "understanding", "loop", "execution", "proof", "confirmation", "state-update", "next-task", "timeline"];
+
+  function isQaModeEnabled() {
+    return resolveDevFlowControlsEnabled();
+  }
+
+  function isPrimaryQaRoute(target) {
+    return qaScreenSequence.includes(target);
+  }
+
+  function resolveCurrentQaScreenKey() {
+    if (qaPreviewRouteKey) {
+      return qaPreviewRouteKey;
+    }
+    const activeRoute = resolveCurrentShellRouteKey();
+    return qaScreenSequence.includes(activeRoute) ? activeRoute : "create";
+  }
+
+  function seedCreatePreviewInputs() {
+    if (elements.createProjectNameInput && !elements.createProjectNameInput.value.trim()) {
+      elements.createProjectNameInput.value = currentProject?.name ?? "My SaaS App";
+    }
+    if (elements.createProjectVisionInput && !elements.createProjectVisionInput.value.trim()) {
+      elements.createProjectVisionInput.value = currentProject?.goal ?? "מערכת לניהול לקוחות עם AI";
+    }
+    if (elements.createProjectLinkInput && !elements.createProjectLinkInput.value.trim()) {
+      elements.createProjectLinkInput.value = "https://example.com";
+    }
+  }
+
+  function ensureCompletedOnboardingPreviewState() {
+    if (onboardingConversation?.isComplete === true && Object.keys(normalizeObject(onboardingConversation?.answers)).length > 0) {
+      return;
+    }
+
+    const baseAnswers = {
+      "target-audience": getOnboardingAnswer("target-audience") || "בעלי עסקים קטנים",
+      "core-problem": getOnboardingAnswer("core-problem") || "קשה להם לנהל לקוחות ולעקוב אחרי מכירות",
+      "successful-solution": getOnboardingAnswer("successful-solution") || "כלי לקוחות פשוט ונוח עם התראות",
+    };
+
+    const completeConversation = createOnboardingConversationState();
+    completeConversation.answers = baseAnswers;
+    completeConversation.currentIndex = onboardingQuestionFlow.length;
+    completeConversation.currentQuestion = null;
+    completeConversation.isComplete = true;
+    completeConversation.transcript = [
+      { speaker: "agent", text: "למי המערכת הזאת נבנית?", time: "10:30" },
+      { speaker: "user", text: baseAnswers["target-audience"], time: "10:30" },
+      { speaker: "agent", text: "מה הבעיה המרכזית שהם מתמודדים איתה?", time: "10:31" },
+      { speaker: "user", text: baseAnswers["core-problem"], time: "10:31" },
+      { speaker: "agent", text: "איך נראה פתרון מוצלח מבחינתם?", time: "10:32" },
+      { speaker: "user", text: baseAnswers["successful-solution"], time: "10:32" },
+    ];
+    completeConversation.summary = buildLocalOnboardingSummary(baseAnswers);
+    completeConversation.totalQuestions = onboardingQuestionFlow.length;
+    onboardingConversation = completeConversation;
+  }
+
+  function openCreatePreviewScreen() {
+    qaPreviewRouteKey = "create";
+    seedCreatePreviewInputs();
+    renderEmptyAppState({
+      mode: "create",
+      message: "מה אתה רוצה לבנות?",
+      status: "ספר לנו על הרעיון שלך כדי שנוכל להפוך אותו למציאות",
+    });
+    scrollViewportToTop();
+  }
+
+  function openOnboardingPreviewScreen() {
+    qaPreviewRouteKey = "onboarding";
+    onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
+    renderEmptyAppState({
+      mode: "onboarding",
+      message: "רוצה להבין את הפרויקט שלך 👋",
+      status: "זה מצב בדיקה למסך ה־Onboarding, כדי לעבור על השיחה, הכפתורים, וה־AI flow בלי לאבד הקשר.",
+    });
+    renderOnboardingNotes();
+    renderOnboardingConversation();
+    scrollViewportToTop();
+  }
+
+  function openUnderstandingPreviewScreen() {
+    qaPreviewRouteKey = "understanding";
+    ensureCompletedOnboardingPreviewState();
+    renderUnderstandingSummaryScreenView();
+    renderShellChrome("understanding", activeWorkspace);
+    scrollViewportToTop();
+  }
+
+  function openLoopPreviewScreen() {
+    qaPreviewRouteKey = "loop";
+    const previewProject = ensureQaProjectPreviewState();
+    renderLoopCoreScreenView(previewProject, { qaMode: true });
+    scrollViewportToTop();
+  }
+
+  function openExecutionPreviewScreen() {
+    qaPreviewRouteKey = "execution";
+    const previewProject = ensureQaProjectPreviewState();
+    renderExecutionLiveScreenView(previewProject, { qaMode: true });
+    scrollViewportToTop();
+  }
+
+  function openProofPreviewScreen() {
+    qaPreviewRouteKey = "proof";
+    const previewProject = ensureQaProjectPreviewState();
+    renderProofResultScreenView(previewProject, { qaMode: true });
+    scrollViewportToTop();
+  }
+
+  function openConfirmationPreviewScreen() {
+    qaPreviewRouteKey = "confirmation";
+    const previewProject = ensureQaProjectPreviewState();
+    renderConfirmationDecisionScreenView(previewProject, { qaMode: true });
+    scrollViewportToTop();
+  }
+
+  function openStateUpdatePreviewScreen() {
+    qaPreviewRouteKey = "state-update";
+    const previewProject = ensureQaProjectPreviewState();
+    renderStateUpdateScreenView(previewProject, { qaMode: true });
+    scrollViewportToTop();
+  }
+
+  function openNextTaskPreviewScreen() {
+    qaPreviewRouteKey = "next-task";
+    const previewProject = ensureQaProjectPreviewState();
+    renderNextTaskScreenView(previewProject, { qaMode: true });
+    scrollViewportToTop();
+  }
+
+  function openTimelinePreviewScreen() {
+    qaPreviewRouteKey = "timeline";
+    const previewProject = ensureQaProjectPreviewState();
+    renderTimelineHistoryScreenView(previewProject, { qaMode: true });
+    scrollViewportToTop();
+  }
+
+  function buildQaPreviewProject() {
+    return {
+      id: "qa-preview-project",
+      name: "My SaaS App",
+      goal: "להכין ניסוי ראשון לרכישת משתמשים",
+      status: "working",
+      overview: {
+        bottleneck: "חסר ערוץ משתמשים ראשון שאפשר למדוד",
+      },
+      cycle: {
+        roadmap: [
+          {
+            summary: "להכין ניסוי ראשון לרכישת משתמשים",
+            status: "assigned",
+            lane: "growth",
+          },
+          {
+            summary: "הגדרת מעקב וניתוח",
+            status: "blocked",
+            lane: "analytics",
+          },
+        ],
+      },
+      developerWorkspace: {
+        contextSummary: {
+          progressPercent: 72,
+          progressStatus: "running",
+          nextAction: "יצירת Landing page",
+          incidentStatus: "clear",
+        },
+      },
+      projectBrainWorkspace: {
+        overview: {
+          currentPhase: "understanding-complete",
+        },
+        summary: {
+          blockerCount: 1,
+          requiresApproval: false,
+        },
+      },
+      releaseWorkspace: {
+        summary: {
+          isBlocked: false,
+        },
+        validation: {
+          status: "ready",
+        },
+      },
+      aiControlCenterSurface: {
+        aiControlCenterSurfaceId: "qa-proof-surface",
+        generatedSurfacePreview: {
+          screenId: "Landing page",
+          regionCount: 3,
+          hasCtaAnchors: true,
+        },
+        liveRuntimeBinding: {
+          activeScreenId: "landing-page-preview",
+        },
+        summary: {
+          deliveryStatus: "ready",
+        },
+      },
+      generatedSurfaceProofSchema: {
+        proofId: "qa-proof",
+        summary: {
+          proofStatus: "ready",
+          failedCheckCount: 0,
+          warningCheckCount: 1,
+          previewStatus: "available",
+          validationStatus: "passed",
+        },
+        evidence: {
+          regionCount: 3,
+          visibleCtaCount: 1,
+          hasCtaAnchors: true,
+          isPreviewable: true,
+          sourceProposalId: "proposal-qa",
+        },
+      },
+      proposalApplyDecision: {
+        status: "approved",
+      },
+      partialAcceptanceDecision: {
+        status: "not-run",
+      },
+      growthWorkspace: {
+        analytics: {
+          summaryCards: [
+            { label: "ביקורים", value: "128" },
+            { label: "הרשמות", value: "23" },
+            { label: "שיעור המרה", value: "18%" },
+            { label: "עלות ליד", value: "₪0.45" },
+          ],
+        },
+      },
+      progressState: {
+        status: "active",
+        percent: 72,
+      },
+      reactiveWorkspaceState: {
+        progressBar: {
+          percent: 72,
+        },
+      },
+      liveUpdateChannel: {
+        transportMode: "polling",
+        refreshStrategy: "scheduled-refresh",
+      },
+      realtimeEventStream: {
+        events: [
+          { message: "יצירת טיוטה ראשונית", timestamp: "10:42", status: "active" },
+          { message: "הוספת טופס הרשמה", timestamp: "10:41", status: "active" },
+          { message: "חיבור Google Analytics", timestamp: "10:40", status: "done" },
+        ],
+      },
+      liveLogStream: {
+        summary: {
+          totalEntries: 6,
+        },
+        commandOutputs: [
+          { message: "בניית תוכנית פעולה", timestamp: "10:39" },
+          { message: "מחקר ואיסוף מידע", timestamp: "10:38" },
+        ],
+        streams: {
+          stdout: [
+            { message: "יוצר Landing page...", timestamp: "10:42" },
+            { message: "מוסיף טופס הרשמה...", timestamp: "10:41" },
+            { message: "מחבר מעקב...", timestamp: "10:40" },
+            { message: "בודק תקינות...", timestamp: "10:39" },
+          ],
+          stderr: [],
+        },
+      },
+    };
+  }
+
+  function ensureQaProjectPreviewState() {
+    if (!currentProject) {
+      currentProject = buildQaPreviewProject();
+    }
+    return currentProject;
+  }
+
+  function openWorkspacePreviewScreen(workspaceKey) {
+    qaPreviewRouteKey = workspaceKey;
+    closeLiveUpdates();
+    const previewProject = ensureQaProjectPreviewState();
+    renderProject(elements, previewProject);
+    activeWorkspace = workspaceKey;
+    setAppScreen("workspace");
+    setActiveWorkspace(elements, activeWorkspace);
+    renderShellChrome("workspace", activeWorkspace);
+    persistFlowState("workspace");
+    scrollViewportToTop();
+  }
+
+  function renderQaRouteControls() {
+    if (!isQaModeEnabled()) {
+      if (elements.qaRouteSwitcher) {
+        elements.qaRouteSwitcher.hidden = true;
+      }
+      return;
+    }
+
+    if (elements.qaRouteSwitcher) {
+      elements.qaRouteSwitcher.hidden = false;
+    }
+
+    const currentKey = resolveCurrentQaScreenKey();
+    const currentIndex = Math.max(0, qaScreenSequence.indexOf(currentKey));
+    const buttonMap = [
+      { key: "create", button: elements.qaScreenCreateButton },
+      { key: "onboarding", button: elements.qaScreenOnboardingButton },
+      { key: "understanding", button: elements.qaScreenUnderstandingButton },
+      { key: "loop", button: elements.qaScreenLoopButton },
+      { key: "execution", button: elements.qaScreenExecutionButton },
+      { key: "proof", button: elements.qaScreenProofButton },
+    ];
+
+    for (const entry of buttonMap) {
+      if (!entry.button) {
+        continue;
+      }
+      entry.button.dataset.qaScreen = entry.key;
+      entry.button.classList?.toggle("active", entry.key === currentKey);
+      entry.button.disabled = false;
+    }
+
+    if (elements.qaPrevScreenButton) {
+      elements.qaPrevScreenButton.disabled = currentIndex <= 0;
+    }
+    if (elements.qaNextScreenButton) {
+      elements.qaNextScreenButton.disabled = currentIndex >= qaScreenSequence.length - 1;
+    }
+  }
+
+  function renderQaFallbackRoute(target) {
+    if (!elements.screenQa) {
+      return;
+    }
+
+    qaPreviewRouteKey = target;
+    elements.screenQa.innerHTML = renderQaFallbackScreen(target);
+    setAppScreen("qa");
+    scrollViewportToTop();
+  }
+
+  function openQaScreen(target) {
+    if (!isQaModeEnabled()) {
+      return;
+    }
+
+    if (target === "create") {
+      qaPreviewRouteKey = "create";
+      openCreatePreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+
+    if (target === "onboarding") {
+      qaPreviewRouteKey = "onboarding";
+      openOnboardingPreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+
+    if (target === "understanding") {
+      qaPreviewRouteKey = "understanding";
+      openUnderstandingPreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+
+    if (target === "loop") {
+      openLoopPreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+
+    if (target === "execution") {
+      openExecutionPreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+
+    if (target === "proof") {
+      openProofPreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+
+    if (target === "confirmation") {
+      openConfirmationPreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+
+    if (target === "state-update") {
+      openStateUpdatePreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+
+    if (target === "next-task") {
+      openNextTaskPreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+
+    if (target === "timeline") {
+      openTimelinePreviewScreen();
+      renderQaRouteControls();
+      return;
+    }
+  }
+
+  function resolveQaTargetFromButton(button) {
+    const explicitTarget = button?.dataset?.qaScreen;
+    if (explicitTarget) {
+      return explicitTarget;
+    }
+
+    const fallbackMap = {
+      "qa-screen-create-button": "create",
+      "qa-screen-onboarding-button": "onboarding",
+      "qa-screen-understanding-button": "understanding",
+      "qa-screen-loop-button": "loop",
+      "qa-screen-execution-button": "execution",
+      "qa-screen-proof-button": "proof",
+    };
+
+    return fallbackMap[button?.id ?? ""] ?? "";
   }
 
   function readStoredFlowState() {
@@ -2226,13 +4618,156 @@ export function createCockpitApp({
     } catch {}
   }
 
+  function buildStoredProjectSnapshot(project) {
+    const normalizedProject = normalizeObject(project);
+    const state = normalizeObject(normalizedProject.state);
+    const onboardingStateHandoff = normalizeObject(normalizedProject.onboardingStateHandoff ?? state.onboardingStateHandoff);
+    const artifactExpectation = normalizeObject(normalizedProject.artifactExpectation ?? onboardingStateHandoff.artifactExpectation);
+    const repeatedLoopContinuation = normalizeObject(
+      normalizedProject.repeatedLoopContinuation
+      ?? state.repeatedLoopContinuation
+      ?? normalizedProject.context?.repeatedLoopContinuation,
+    );
+
+    if (!normalizedProject.id) {
+      return null;
+    }
+
+    return {
+      id: normalizedProject.id,
+      name: normalizeString(normalizedProject.name),
+      goal: normalizeString(normalizedProject.goal),
+      status: normalizeString(normalizedProject.status),
+      artifactExpectation: Object.keys(artifactExpectation).length > 0
+        ? {
+            projectType: normalizeString(artifactExpectation.projectType),
+            deliverableLabel: normalizeString(artifactExpectation.deliverableLabel),
+          }
+        : null,
+      repeatedLoopContinuation: Object.keys(repeatedLoopContinuation).length > 0
+        ? {
+            artifactTitle: normalizeString(repeatedLoopContinuation.artifactTitle),
+            requiresClarification: repeatedLoopContinuation.requiresClarification === true,
+          }
+        : null,
+      proofArtifact: normalizedProject.proofArtifact && typeof normalizedProject.proofArtifact === "object"
+        ? {
+            artifactId: normalizeString(normalizedProject.proofArtifact.artifactId),
+            title: normalizeString(normalizedProject.proofArtifact.title),
+            kind: normalizeString(normalizedProject.proofArtifact.kind),
+          }
+        : null,
+      timelinePreview: Array.isArray(normalizedProject.timelineEntries)
+        ? normalizedProject.timelineEntries.slice(0, 3).map((entry) => ({
+            label: normalizeString(entry?.label),
+            status: normalizeString(entry?.status),
+          }))
+        : [],
+    };
+  }
+
+  function buildPersistedDraftInputs(screen, draftInputs) {
+    const safeDrafts = normalizeObject(draftInputs);
+    const preserveFullDraftPayload = screen === "create" || screen === "onboarding" || screen === "understanding";
+
+    if (preserveFullDraftPayload) {
+      return safeDrafts;
+    }
+
+    return {
+      projectName: safeDrafts.projectName ?? "",
+      visionText: safeDrafts.visionText ?? "",
+      supportingLink: safeDrafts.supportingLink ?? "",
+      fileName: "",
+      fileContent: "",
+    };
+  }
+
+  function resolvePersistedProjectContext(storedFlowState = null, options = {}) {
+    const persistedState = storedFlowState ?? readStoredFlowState();
+    const storedProjectSnapshot = normalizeObject(persistedState?.currentProjectSnapshot);
+    const storedConversation = normalizeObject(persistedState?.onboardingConversation);
+    const conversationProjectId = storedConversation.projectId ?? null;
+    const snapshotProjectId = storedProjectSnapshot.id ?? null;
+    const selectedProjectId = elements.projectSelect?.value?.trim?.() || null;
+    const preserveStoredProject = options.preserveStoredProject !== false;
+    const liveProjectId = currentProject?.id ?? null;
+    const resolvedProjectId = currentProjectId
+      ?? liveProjectId
+      ?? selectedProjectId
+      ?? conversationProjectId
+      ?? (preserveStoredProject ? snapshotProjectId : null)
+      ?? null;
+    const resolvedProject = currentProject?.id
+      ? currentProject
+      : (
+        resolvedProjectId
+          ? (
+            normalizeArray(cachedProjects).find((project) => project?.id === resolvedProjectId)
+            ?? (
+              preserveStoredProject && storedProjectSnapshot.id === resolvedProjectId
+                ? storedProjectSnapshot
+                : null
+            )
+          )
+          : null
+      )
+      ?? (
+        (preserveStoredProject && storedProjectSnapshot.id)
+          ? storedProjectSnapshot
+          : null
+      );
+
+    return {
+      resolvedProjectId,
+      resolvedProject,
+      storedProjectSnapshot,
+      storedConversation,
+    };
+  }
+
+  function toSerializableStoredValue(value, seen = new WeakSet()) {
+    if (value == null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      return value ?? null;
+    }
+
+    if (typeof value === "function" || typeof value === "symbol" || typeof value === "bigint") {
+      return null;
+    }
+
+    if (Array.isArray(value)) {
+      return value
+        .map((entry) => toSerializableStoredValue(entry, seen))
+        .filter((entry) => entry !== undefined);
+    }
+
+    if (typeof value === "object") {
+      if (seen.has(value)) {
+        return null;
+      }
+      seen.add(value);
+
+      const serialized = {};
+      for (const [key, entry] of Object.entries(value)) {
+        const normalizedEntry = toSerializableStoredValue(entry, seen);
+        if (normalizedEntry !== undefined) {
+          serialized[key] = normalizedEntry;
+        }
+      }
+      seen.delete(value);
+      return serialized;
+    }
+
+    return undefined;
+  }
+
   function captureDraftInputs() {
     return {
-      projectName: elements.createProjectNameInput?.value ?? "",
-      visionText: elements.createProjectVisionInput?.value ?? "",
-      supportingLink: elements.createProjectLinkInput?.value ?? "",
-      fileName: elements.createProjectFileNameInput?.value ?? "",
-      fileContent: elements.createProjectFileContentInput?.value ?? "",
+      projectName: readCurrentCreateFieldValue("create-project-name-input"),
+      visionText: readCurrentCreateFieldValue("create-project-vision-input"),
+      supportingLink: readCurrentCreateFieldValue("create-project-link-input"),
+      fileName: readCurrentCreateFieldValue("create-project-file-name-input"),
+      fileContent: readCurrentCreateFieldValue("create-project-file-content-input"),
     };
   }
 
@@ -2242,17 +4777,89 @@ export function createCockpitApp({
     if (elements.createProjectLinkInput) elements.createProjectLinkInput.value = draftInputs.supportingLink ?? "";
     if (elements.createProjectFileNameInput) elements.createProjectFileNameInput.value = draftInputs.fileName ?? "";
     if (elements.createProjectFileContentInput) elements.createProjectFileContentInput.value = draftInputs.fileContent ?? "";
+    updateCreateFileSelectionUi();
+  }
+
+  function parseStoredCreateProjectFiles() {
+    const fileName = readCurrentCreateFieldValue("create-project-file-name-input").trim();
+    const fileContent = readCurrentCreateFieldValue("create-project-file-content-input");
+
+    if (fileContent.trim()) {
+      try {
+        const parsed = JSON.parse(fileContent);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .filter((file) => file && typeof file === "object")
+            .map((file) => ({
+              name: typeof file.name === "string" && file.name.trim() ? file.name.trim() : "supporting-notes.txt",
+              type: typeof file.type === "string" && file.type.trim() ? file.type.trim() : "text",
+              content: typeof file.content === "string" ? file.content : "",
+              size: typeof file.size === "number" ? file.size : null,
+            }))
+            .filter((file) => file.name || file.content.trim());
+        }
+      } catch {
+        // Fall back to the legacy single-file shape stored in the hidden fields.
+      }
+    }
+
+    if (!fileName && !fileContent.trim()) {
+      return [];
+    }
+
+    return [
+      {
+        name: fileName || "supporting-notes.txt",
+        type: fileName.endsWith(".md") ? "markdown" : "text",
+        content: fileContent,
+        size: null,
+      },
+    ];
   }
 
   function persistFlowState(screen) {
+    const normalizedScreen = typeof screen === "string" ? screen : "";
+    const preserveOnboardingPayload = normalizedScreen === "create" || normalizedScreen === "onboarding" || normalizedScreen === "understanding";
+    const resolvedConversation = normalizeObject(onboardingConversation);
+    const preserveStoredProject = !(
+      (normalizedScreen === "create" || normalizedScreen === "onboarding")
+      && !currentProjectId
+      && !currentProject?.id
+      && !resolvedConversation.projectId
+    );
+    const persistedContext = resolvePersistedProjectContext(null, {
+      preserveStoredProject,
+    });
+    const preservedConversation = Object.keys(resolvedConversation).length > 0
+      ? {
+          ...resolvedConversation,
+          projectId: resolvedConversation.projectId
+            ?? persistedContext.resolvedProjectId
+            ?? null,
+        }
+      : null;
+    const persistedDraftInputs = buildPersistedDraftInputs(normalizedScreen, captureDraftInputs());
+    const serializableProjectSnapshot = persistedContext.resolvedProject
+      ? buildStoredProjectSnapshot(persistedContext.resolvedProject)
+      : null;
     writeStoredFlowState({
       screen,
-      currentProjectId,
+      currentProjectId: persistedContext.resolvedProjectId,
       activeWorkspace,
-      onboardingFlow,
-      onboardingConversation,
-      draftInputs: captureDraftInputs(),
+      currentProjectSnapshot: serializableProjectSnapshot,
+      currentProjectAuditPayload: currentProjectAuditPayload ?? null,
+      onboardingFlow: preserveOnboardingPayload ? onboardingFlow : null,
+      onboardingConversation: preserveOnboardingPayload ? preservedConversation : null,
+      draftInputs: persistedDraftInputs,
     });
+  }
+
+  function scrollViewportToTop() {
+    try {
+      globalThis.scrollTo?.({ top: 0, left: 0, behavior: "auto" });
+    } catch {
+      globalThis.scrollTo?.(0, 0);
+    }
   }
 
   async function fetchJson(url, options) {
@@ -2292,13 +4899,112 @@ export function createCockpitApp({
     }
 
     button.disabled = disabled;
-    button.textContent = label ?? (target === "finish" ? "סיים Onboarding" : "צור פרויקט");
+    button.textContent = label ?? (target === "finish" ? "סיים Onboarding" : "צור פרויקט והתחל");
+  }
+
+  function buildLocalOnboardingPrompt(questionIndex, answers = {}) {
+    const question = onboardingQuestionFlow[questionIndex] ?? null;
+    if (!question) {
+      return null;
+    }
+
+    const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
+    const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
+
+    if (question.id === "core-problem" && audience) {
+      return `מעולה. אם המערכת נבנית עבור ${audience}, מה הבעיה המרכזית שהם מתמודדים איתה?`;
+    }
+
+    if (question.id === "successful-solution" && audience && problem) {
+      return `יש כבר תמונה טובה: הקהל הוא ${audience} והכאב המרכזי הוא ${problem}. איך נראה פתרון מוצלח מבחינתם?`;
+    }
+
+    return question.title;
+  }
+
+  function buildLocalOnboardingSummary(answers = {}) {
+    const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
+    const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
+    const solution = typeof answers["successful-solution"] === "string" ? answers["successful-solution"].trim() : "";
+    const understoodItems = [];
+    const missingItems = [];
+
+    if (audience) {
+      understoodItems.push(`קהל יעד: ${audience}`);
+    }
+    if (problem) {
+      understoodItems.push(`בעיה מרכזית: ${problem}`);
+    }
+    if (solution) {
+      understoodItems.push(`כיוון לפתרון: ${solution}`);
+    }
+
+    if (!audience) {
+      missingItems.push("מי קהל היעד המרכזי");
+    } else if (!problem) {
+      missingItems.push("מה הבעיה הכי כואבת של קהל היעד");
+    } else {
+      missingItems.push("איך הם משתמשים היום");
+    }
+
+    if (!problem) {
+      missingItems.push("מה עוצר אותם היום מלהתקדם");
+    } else if (!solution) {
+      missingItems.push("איך נראה פתרון מוצלח מבחינתם");
+    } else {
+      missingItems.push("כמה מכירות קיימות");
+    }
+
+    if (solution) {
+      missingItems.push("כמה לקוחות יש להם");
+    }
+
+    return {
+      understoodTitle: "מה הבנתי עד עכשיו",
+      understoodItems,
+      missingTitle: "מה חסר לי",
+      missingItems,
+    };
   }
 
   function createOnboardingConversationState() {
+    const answers = {};
+    const openingPrompt = buildLocalOnboardingPrompt(0, answers);
+    const openingQuestion = resolveOnboardingQuestionPresentation(
+      onboardingQuestionFlow[0]?.id ?? "target-audience",
+      answers,
+      {
+        visionText: elements.createProjectVisionInput?.value?.trim() ?? onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
+        projectTypeHint: currentProject?.artifactExpectation?.projectType
+          ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+          ?? "",
+      },
+    );
     return {
+      mode: "local",
       currentIndex: 0,
-      answers: {},
+      totalQuestions: onboardingQuestionFlow.length,
+      isComplete: false,
+      answers,
+      transcript: openingPrompt
+        ? [
+            {
+              id: "ai-1",
+              speaker: "ai",
+              text: openingPrompt,
+              time: "10:30",
+            },
+          ]
+        : [],
+      summary: buildLocalOnboardingSummary(answers),
+      currentQuestion: openingPrompt
+        ? {
+            id: onboardingQuestionFlow[0]?.id ?? null,
+            title: openingQuestion.title || openingPrompt,
+            placeholder: openingQuestion.placeholder || onboardingQuestionFlow[0]?.placeholder || "",
+            reason: openingQuestion.reason || "",
+          }
+        : null,
       draftAnswer: "",
       pendingAdvance: false,
       pendingAnswer: "",
@@ -2306,11 +5012,117 @@ export function createCockpitApp({
     };
   }
 
+  function normalizeOnboardingConversationPayload(payload) {
+    const conversation = normalizeObject(payload?.onboardingConversation);
+    const transcript = normalizeArray(conversation.transcript)
+      .filter((entry) => entry && typeof entry === "object")
+      .map((entry, index) => ({
+        id: entry.id ?? `entry-${index + 1}`,
+        speaker: entry.speaker === "user" ? "user" : "ai",
+        text: typeof entry.text === "string" ? entry.text : "",
+        time: typeof entry.time === "string" ? entry.time : "",
+      }));
+    const summary = normalizeObject(conversation.summary);
+    const currentQuestion = normalizeObject(conversation.currentQuestion);
+    const answers = normalizeObject(conversation.answers);
+
+    return refreshOnboardingConversationPresentation({
+      mode: "backend",
+      sessionId: conversation.sessionId ?? onboardingFlow?.sessionId ?? null,
+      transcript,
+      summary: {
+        understoodTitle: summary.understoodTitle ?? "מה הבנתי עד עכשיו",
+        understoodItems: normalizeArray(summary.understoodItems),
+        missingTitle: summary.missingTitle ?? "מה חסר לי",
+        missingItems: normalizeArray(summary.missingItems),
+      },
+      currentQuestion: currentQuestion.id
+        ? {
+            id: currentQuestion.id,
+            title: resolveOnboardingQuestionPresentation(currentQuestion.id, answers, {
+              visionText: payload?.goal ?? currentProject?.goal ?? onboardingFlow?.visionText?.trim?.() ?? "",
+              projectTypeHint: payload?.artifactExpectation?.projectType
+                ?? currentProject?.artifactExpectation?.projectType
+                ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+                ?? "",
+            }).title || currentQuestion.title || "",
+            placeholder: resolveOnboardingQuestionPresentation(currentQuestion.id, answers, {
+              visionText: payload?.goal ?? currentProject?.goal ?? onboardingFlow?.visionText?.trim?.() ?? "",
+              projectTypeHint: payload?.artifactExpectation?.projectType
+                ?? currentProject?.artifactExpectation?.projectType
+                ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+                ?? "",
+            }).placeholder || currentQuestion.placeholder || "",
+            reason: resolveOnboardingQuestionPresentation(currentQuestion.id, answers, {
+              visionText: payload?.goal ?? currentProject?.goal ?? onboardingFlow?.visionText?.trim?.() ?? "",
+              projectTypeHint: payload?.artifactExpectation?.projectType
+                ?? currentProject?.artifactExpectation?.projectType
+                ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+                ?? "",
+            }).reason || currentQuestion.reason || "",
+          }
+        : null,
+      currentIndex: Number(conversation.currentIndex ?? 0),
+      totalQuestions: Number(conversation.totalQuestions ?? onboardingQuestionFlow.length),
+      isComplete: conversation.isComplete === true,
+      completionReason: typeof conversation.completionReason === "string" ? conversation.completionReason : "",
+      answers,
+      draftAnswer: "",
+      pendingAdvance: false,
+      pendingAnswer: "",
+      advanceTimer: null,
+    }, {
+      visionText: payload?.goal ?? currentProject?.goal ?? onboardingFlow?.visionText?.trim?.() ?? "",
+      projectTypeHint: payload?.artifactExpectation?.projectType
+        ?? currentProject?.artifactExpectation?.projectType
+        ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+        ?? "",
+    });
+  }
+
+  async function syncOnboardingConversationFromBackend(sessionId) {
+    if (!sessionId) {
+      onboardingConversation = createOnboardingConversationState();
+      return onboardingConversation;
+    }
+
+    const payload = await fetchJson(`/api/onboarding/sessions/${sessionId}/conversation`);
+    onboardingConversation = normalizeOnboardingConversationPayload(payload);
+    return onboardingConversation;
+  }
+
+  async function submitOnboardingConversationAnswerToBackend(answer) {
+    if (!onboardingFlow?.sessionId) {
+      return null;
+    }
+
+    const payload = await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/conversation-turn`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answer }),
+    });
+    onboardingConversation = normalizeOnboardingConversationPayload(payload);
+    return onboardingConversation;
+  }
+
+  async function restartOnboardingConversationFromBackend() {
+    if (!onboardingFlow?.sessionId) {
+      onboardingConversation = createOnboardingConversationState();
+      return onboardingConversation;
+    }
+
+    const payload = await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/conversation-restart`, {
+      method: "POST",
+    });
+    onboardingConversation = normalizeOnboardingConversationPayload(payload);
+    return onboardingConversation;
+  }
+
   function buildWorkspaceLandingFeedback({ projectName = "", answers = {} } = {}) {
     const resolvedProjectName = projectName.trim() || "הפרויקט שלך";
-    const targetUser = typeof answers["target-user"] === "string" ? answers["target-user"].trim() : "";
-    const coreFlow = typeof answers["core-flow"] === "string" ? answers["core-flow"].trim() : "";
-    const successOutcome = typeof answers["success-outcome"] === "string" ? answers["success-outcome"].trim() : "";
+    const targetUser = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
+    const coreFlow = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
+    const successOutcome = typeof answers["successful-solution"] === "string" ? answers["successful-solution"].trim() : "";
 
     const title = "הפרויקט שלך מוכן";
     const messageParts = [`נכנסת עכשיו ל־workspace של ${resolvedProjectName}.`];
@@ -2326,6 +5138,150 @@ export function createCockpitApp({
     return {
       title,
       message: messageParts.join(" "),
+    };
+  }
+
+  function resolveOnboardingContinuationGate(finished = {}) {
+    return normalizeObject(
+      finished?.onboardingStateHandoff?.continuationGate
+        ?? finished?.onboardingCompletionDecision?.continuationGate,
+    );
+  }
+
+  function buildOnboardingContinuationFeedback({
+    projectName = "",
+    answers = {},
+    finished = {},
+    previewOnly = false,
+  } = {}) {
+    const continuationGate = resolveOnboardingContinuationGate(finished);
+    const artifactExpectation = normalizeObject(
+      finished?.project?.artifactExpectation
+        ?? finished?.onboardingStateHandoff?.artifactExpectation,
+    );
+
+    if (previewOnly) {
+      const artifactTitle = (artifactExpectation.title ?? projectName.trim()) || "התוצר הראשון";
+      const previewMessageParts = [`ההבנה כבר אושרה, והלופ ננעל סביב ${artifactTitle}.`];
+      if (continuationGate.title) {
+        previewMessageParts.push(continuationGate.title);
+      }
+      const requestedMaterial = continuationGate.requestedMaterialLabel ?? continuationGate.detail ?? "";
+      if (requestedMaterial) {
+        previewMessageParts.push(requestedMaterial);
+      }
+
+      return {
+        title: "ההבנה אושרה, הלופ מוכן",
+        message: previewMessageParts.join(" ").trim(),
+      };
+    }
+
+    const base = buildWorkspaceLandingFeedback({ projectName, answers });
+    if (!continuationGate.gateType) {
+      return base;
+    }
+
+    return {
+      title: base.title,
+      message: `${base.message} ${continuationGate.title}. ${continuationGate.requestedMaterialLabel ?? continuationGate.detail ?? ""}`.trim(),
+    };
+  }
+
+  function shouldUseOnboardingContinuationPreview(finished = {}) {
+    const completionDecision = normalizeObject(finished.onboardingCompletionDecision);
+    const handoff = normalizeObject(finished.onboardingStateHandoff);
+    const continuationGate = resolveOnboardingContinuationGate(finished);
+    if (!continuationGate.gateType) {
+      return false;
+    }
+
+    return completionDecision.isComplete === true
+      || completionDecision.supportingMaterialDeferred === true
+      || handoff.summary?.canBuildProjectState === true
+      || handoff.completionDecision?.supportingMaterialDeferred === true;
+  }
+
+  function buildOnboardingContinuationPreviewProject({
+    projectName = "",
+    visionText = "",
+    finished = {},
+  } = {}) {
+    const continuationGate = resolveOnboardingContinuationGate(finished);
+    const onboardingStateHandoff = normalizeObject(finished.onboardingStateHandoff);
+    const onboardingCompletionDecision = normalizeObject(finished.onboardingCompletionDecision);
+    const derivedArtifactExpectation = buildOnboardingArtifactExpectationPreview({
+      onboardingFlow: {
+        ...(onboardingFlow ?? {}),
+        projectName,
+        visionText,
+      },
+      onboardingConversation,
+    });
+    const artifactExpectation = normalizeObject(
+      onboardingStateHandoff.artifactExpectation?.title
+        ? onboardingStateHandoff.artifactExpectation
+        : derivedArtifactExpectation,
+    );
+    const generationIntent = buildOnboardingGenerationIntentPreview({
+      currentProject: {
+        artifactExpectation,
+      },
+      onboardingFlow: {
+        ...(onboardingFlow ?? {}),
+        projectName,
+        visionText,
+      },
+      onboardingConversation,
+    });
+    const artifactTitle = (artifactExpectation.title ?? projectName.trim()) || "התוצר הראשון";
+
+    return {
+      onboardingContinuationPreview: true,
+      name: projectName.trim() || onboardingFlow?.projectName?.trim?.() || "Project",
+      goal: visionText.trim() || onboardingFlow?.visionText?.trim?.() || "",
+      onboardingStateHandoff: {
+        ...onboardingStateHandoff,
+        artifactExpectation,
+        continuationGate,
+      },
+      onboardingCompletionDecision: {
+        ...onboardingCompletionDecision,
+        continuationGate,
+      },
+      artifactExpectation,
+      generationIntent,
+      overview: {
+        bottleneck: continuationGate.requestedMaterialLabel ?? continuationGate.title ?? "חומר תומך עדיין חסר",
+      },
+      cycle: {
+        roadmap: [
+          {
+            summary: `לקדם את ${artifactTitle}`,
+            status: "assigned",
+          },
+        ],
+      },
+      projectBrainWorkspace: {
+        overview: {
+          currentPhase: "understanding-approved-awaiting-supporting-material",
+        },
+        summary: {
+          blockerCount: 1,
+        },
+      },
+      developerWorkspace: {
+        contextSummary: {
+          progressStatus: "pending",
+          nextAction: continuationGate.requestedMaterialLabel ?? "צרף חומר תומך כדי לדייק את ההמשך",
+        },
+      },
+      releaseWorkspace: {
+        validation: {},
+      },
+      aiControlCenterSurface: {
+        generatedSurfacePreview: {},
+      },
     };
   }
 
@@ -2350,22 +5306,127 @@ export function createCockpitApp({
     if (elements.createProjectLinkInput) elements.createProjectLinkInput.value = "";
     if (elements.createProjectFileNameInput) elements.createProjectFileNameInput.value = "";
     if (elements.createProjectFileContentInput) elements.createProjectFileContentInput.value = "";
+    if (elements.createProjectFileUploadInput) elements.createProjectFileUploadInput.value = "";
+    updateCreateFileSelectionUi();
   }
 
-  function enterCreateProjectScreen() {
+  function updateCreateFileSelectionUi() {
+    const selectedFiles = parseStoredCreateProjectFiles();
+    const hasSelectedFile = selectedFiles.length > 0;
+    const primaryFileName = selectedFiles[0]?.name ?? "";
+    const selectedCount = selectedFiles.length;
+
+    if (elements.createProjectFilePickerButton) {
+      elements.createProjectFilePickerButton.classList?.toggle("has-file", hasSelectedFile);
+    }
+    if (elements.createProjectFilePickerTitle) {
+      elements.createProjectFilePickerTitle.textContent = hasSelectedFile
+        ? selectedCount === 1
+          ? primaryFileName || "קובץ פרויקט נבחר"
+          : `${selectedCount} קבצי פרויקט נבחרו`
+        : "גרור קבצים לכאן או לחץ להעלאה";
+    }
+    if (elements.createProjectFilePickerMeta) {
+      elements.createProjectFilePickerMeta.textContent = hasSelectedFile
+        ? CREATE_PROJECT_UPLOAD_SELECTED_META
+        : CREATE_PROJECT_UPLOAD_EMPTY_META;
+    }
+  }
+
+  async function hydrateSelectedSupportFiles(fileList) {
+    const selectedFiles = Array.from(fileList ?? []).filter(Boolean);
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
+    const hydratedFiles = [];
+    for (const file of selectedFiles) {
+      const normalizedName = typeof file.name === "string" && file.name.trim() ? file.name.trim() : "supporting-notes.txt";
+      let content = "";
+
+      try {
+        if (typeof file.text === "function") {
+          const fileText = await file.text();
+          content = typeof fileText === "string" ? fileText : "";
+        }
+      } catch {
+        content = "";
+      }
+
+      if (!content.trim()) {
+        content = `Selected project asset: ${normalizedName}${file.type ? ` (${file.type})` : ""}.`;
+      }
+
+      hydratedFiles.push({
+        name: normalizedName,
+        type: typeof file.type === "string" && file.type.trim()
+          ? file.type
+          : normalizedName.endsWith(".md")
+            ? "markdown"
+            : "text",
+        content,
+        size: typeof file.size === "number" ? file.size : null,
+      });
+    }
+
+    if (elements.createProjectFileNameInput) {
+      elements.createProjectFileNameInput.value = hydratedFiles.map((file) => file.name).join(", ");
+    }
+    if (elements.createProjectFileContentInput) {
+      elements.createProjectFileContentInput.value = JSON.stringify(hydratedFiles);
+    }
+
+    updateCreateFileSelectionUi();
+    persistFlowState(resolveCurrentShellRouteKey());
+
+    if (onboardingFlow?.sessionId) {
+      try {
+        await syncOnboardingIntakeToSession({
+          sessionId: onboardingFlow.sessionId,
+          uploadedFiles: hydratedFiles,
+        });
+      } catch {
+        // Keep the local file hydration even if the backend sync fails here.
+      }
+    }
+  }
+
+  function enterCreateProjectScreen({ preserveProjectContext = true } = {}) {
     closeLiveUpdates();
+    const persistedContext = preserveProjectContext
+      ? resolvePersistedProjectContext()
+      : {
+          resolvedProjectId: null,
+          resolvedProject: null,
+        };
+    const preservedProjectId = persistedContext.resolvedProjectId ?? null;
+    const preservedProject = persistedContext.resolvedProject ?? null;
+
     currentProjectId = null;
     currentProject = null;
     currentProjectAuditPayload = null;
     onboardingFlow = null;
     onboardingConversation = null;
+    renderCreateScreenView();
     resetCreateProjectInputs();
     renderEmptyAppState({
       mode: "create",
-      message: "צור פרויקט חדש",
-      status: "אפשר להתחיל flow חדש בלי לאבד את ההפרדה בין Create Project, Onboarding ו־Workspace.",
+      message: "מה אתה רוצה לבנות?",
+      status: "ספר לנו על הרעיון שלך ונעזור לך להפוך אותו למציאות",
     });
-    persistFlowState("create");
+
+    if (preserveProjectContext && (preservedProjectId || preservedProject?.id)) {
+      const liveProjectId = currentProjectId;
+      const liveProject = currentProject;
+      currentProjectId = preservedProjectId;
+      currentProject = preservedProject;
+      persistFlowState("create");
+      currentProjectId = liveProjectId;
+      currentProject = liveProject;
+    } else {
+      persistFlowState("create");
+    }
+    scrollViewportToTop();
   }
 
   function buildRunCycleFeedback(previousProject, nextProject) {
@@ -2432,14 +5493,56 @@ export function createCockpitApp({
     }
   }
 
-  function setAppScreen(screen) {
-    const normalizedScreen = screen === "workspace" || screen === "onboarding" ? screen : "create";
+  function setAppScreen(screen, options = {}) {
+    const normalizedScreen = screen === "workspace" || screen === "onboarding" || screen === "understanding" || screen === "loop" || screen === "execution" || screen === "proof" || screen === "artifact" || screen === "confirmation" || screen === "state-update" || screen === "next-task" || screen === "timeline" || screen === "home" || screen === "files" || screen === "settings" || screen === "help" || screen === "qa" ? screen : "create";
 
     if (elements.screenCreate) {
       elements.screenCreate.hidden = normalizedScreen !== "create";
     }
+    if (elements.screenHome) {
+      elements.screenHome.hidden = normalizedScreen !== "home";
+    }
+    if (elements.screenFiles) {
+      elements.screenFiles.hidden = normalizedScreen !== "files";
+    }
+    if (elements.screenSettings) {
+      elements.screenSettings.hidden = normalizedScreen !== "settings";
+    }
+    if (elements.screenHelp) {
+      elements.screenHelp.hidden = normalizedScreen !== "help";
+    }
     if (elements.screenOnboarding) {
       elements.screenOnboarding.hidden = normalizedScreen !== "onboarding";
+    }
+    if (elements.screenUnderstanding) {
+      elements.screenUnderstanding.hidden = normalizedScreen !== "understanding";
+    }
+    if (elements.screenLoop) {
+      elements.screenLoop.hidden = normalizedScreen !== "loop";
+    }
+    if (elements.screenExecution) {
+      elements.screenExecution.hidden = normalizedScreen !== "execution";
+    }
+    if (elements.screenProof) {
+      elements.screenProof.hidden = normalizedScreen !== "proof";
+    }
+    if (elements.screenArtifact) {
+      elements.screenArtifact.hidden = normalizedScreen !== "artifact";
+    }
+    if (elements.screenConfirmation) {
+      elements.screenConfirmation.hidden = normalizedScreen !== "confirmation";
+    }
+    if (elements.screenStateUpdate) {
+      elements.screenStateUpdate.hidden = normalizedScreen !== "state-update";
+    }
+    if (elements.screenNextTask) {
+      elements.screenNextTask.hidden = normalizedScreen !== "next-task";
+    }
+    if (elements.screenTimeline) {
+      elements.screenTimeline.hidden = normalizedScreen !== "timeline";
+    }
+    if (elements.screenQa) {
+      elements.screenQa.hidden = normalizedScreen !== "qa";
     }
     if (elements.screenWorkspace) {
       elements.screenWorkspace.hidden = normalizedScreen !== "workspace";
@@ -2453,24 +5556,62 @@ export function createCockpitApp({
     if (elements.workspaceBoard) {
       elements.workspaceBoard.hidden = normalizedScreen !== "workspace";
     }
-    if (elements.heroActions) {
-      elements.heroActions.hidden = normalizedScreen !== "workspace";
-    }
     if (normalizedScreen !== "workspace") {
       clearFlowFeedback();
     }
-    persistFlowState(normalizedScreen);
+    const body = doc?.body;
+    if (body?.dataset) {
+      body.dataset.appScreen = normalizedScreen;
+    }
+    const root = doc?.documentElement;
+    if (root?.dataset) {
+      root.dataset.appScreen = normalizedScreen;
+    }
+    renderShellChrome(normalizedScreen, activeWorkspace);
+    if (options.persist !== false) {
+      persistFlowState(normalizedScreen);
+    }
   }
 
   async function loadProject(projectId, transitionFeedback = null, preloadedProject = null) {
     const project = preloadedProject ?? await fetchJson(`/api/projects/${projectId}`);
+    const workspaceBackedScreens = new Set([
+      "loop",
+      "execution",
+      "proof",
+      "artifact",
+      "confirmation",
+      "state-update",
+      "next-task",
+      "timeline",
+    ]);
     currentProjectId = projectId;
     currentProject = project;
-    currentProjectAuditPayload = project.projectAuditPayload ?? project.state?.projectAuditPayload ?? null;
+    qaPreviewRouteKey = null;
     onboardingFlow = null;
+    onboardingConversation = null;
+    currentProjectAuditPayload = project.projectAuditPayload ?? project.state?.projectAuditPayload ?? null;
     applyDesignSystem(doc, project);
     renderProject(elements, project);
-    setAppScreen("workspace");
+    if (activeWorkspace === "loop") {
+      renderLoopCoreScreenView(project);
+    } else if (activeWorkspace === "execution") {
+      renderExecutionLiveScreenView(project);
+    } else if (activeWorkspace === "proof") {
+      renderProofResultScreenView(project);
+    } else if (activeWorkspace === "artifact") {
+      renderArtifactPreviewScreenView(project);
+    } else if (activeWorkspace === "confirmation") {
+      renderConfirmationDecisionScreenView(project);
+    } else if (activeWorkspace === "state-update") {
+      renderStateUpdateScreenView(project);
+    } else if (activeWorkspace === "next-task") {
+      renderNextTaskScreenView(project);
+    } else if (activeWorkspace === "timeline") {
+      renderTimelineHistoryScreenView(project);
+    } else {
+      setAppScreen("workspace");
+    }
     if (transitionFeedback?.title || transitionFeedback?.message) {
       showFlowFeedback({
         title: transitionFeedback.title ?? "ה־workspace נטען",
@@ -2482,8 +5623,10 @@ export function createCockpitApp({
     if (transitionFeedback?.pulseWorkspace === true) {
       pulseWorkspaceContinuity();
     }
+    const resolvedScreen = workspaceBackedScreens.has(activeWorkspace) ? activeWorkspace : "workspace";
     setActiveWorkspace(elements, activeWorkspace);
-    persistFlowState("workspace");
+    renderShellChrome(resolvedScreen, activeWorkspace);
+    persistFlowState(resolvedScreen);
     updatePresence().catch(() => {});
     connectLiveUpdates();
     return project;
@@ -2554,6 +5697,15 @@ export function createCockpitApp({
     return `שם הפרויקט: ${normalizedName}\n${normalizedVision}`.trim();
   }
 
+  function resolveRepeatedLoopContinuation(project = null) {
+    const safeProject = normalizeObject(project);
+    return normalizeObject(
+      safeProject.repeatedLoopContinuation
+        ?? safeProject.state?.repeatedLoopContinuation
+        ?? safeProject.context?.repeatedLoopContinuation,
+    );
+  }
+
   function reopenOnboardingFromWorkspace() {
     if (currentProject) {
       if (elements.createProjectNameInput) {
@@ -2563,24 +5715,148 @@ export function createCockpitApp({
         elements.createProjectVisionInput.value = currentProject.goal ?? "";
       }
     }
-    onboardingConversation = createOnboardingConversationState();
 
+    const repeatedLoopContinuation = resolveRepeatedLoopContinuation(currentProject);
+    const repeatedLoopClarification = normalizeObject(repeatedLoopContinuation.clarification);
+    const isRepeatedLoopClarification = repeatedLoopContinuation.requiresClarification === true;
+    const isContinuationPreview = currentProject?.onboardingContinuationPreview === true;
     renderEmptyAppState({
       mode: "onboarding",
-      message: "פתחת מחדש את מסך ה־Onboarding",
-      status: "זה מצב בדיקה מתוך ה־workspace כדי לעבוד על ה־UI של ה־onboarding בלי ליצור פרויקט חדש.",
+      message: isRepeatedLoopClarification
+        ? "חוזרים לדייק את הסבב הבא"
+        : isContinuationPreview
+          ? "חוזרים להשלים חומר תומך"
+          : "פתחת מחדש את מסך ה־Onboarding",
+      status: isRepeatedLoopClarification
+        ? `${repeatedLoopClarification.title ?? "צריך עוד הבהרה לפני סבב ההמשך"}. ${repeatedLoopClarification.detail ?? ""}`.trim()
+        : isContinuationPreview
+        ? formatOnboardingBlockedStatus({
+            onboardingCompletionDecision: currentProject?.onboardingCompletionDecision,
+            onboardingStateHandoff: currentProject?.onboardingStateHandoff,
+          })
+        : "זה מצב בדיקה מתוך ה־workspace כדי לעבוד על ה־UI של ה־onboarding בלי ליצור פרויקט חדש.",
     });
+    if (isRepeatedLoopClarification) {
+      onboardingConversation = {
+        mode: "repeated-loop-clarification",
+        projectId: currentProjectId ?? currentProject?.id ?? null,
+        currentIndex: 0,
+        totalQuestions: 1,
+        isComplete: false,
+        answers: {},
+        transcript: [
+          {
+            id: "ai-clarification-1",
+            speaker: "ai",
+            text: repeatedLoopClarification.promptTitle
+              ?? `מה חסר כדי לפתוח סבב המשך אמיתי של ${repeatedLoopContinuation.artifactTitle ?? currentProject?.name ?? "התוצר שאושר"}?`,
+            time: "10:30",
+          },
+        ],
+        summary: {
+          understoodTitle: "מה כבר סגור",
+          understoodItems: [
+            `התוצר שאושר נשמר: ${repeatedLoopContinuation.artifactTitle ?? currentProject?.name ?? "הפרויקט הפעיל"}`,
+          ],
+          missingTitle: "מה צריך עכשיו כדי לא למחזר את אותו artifact",
+          missingItems: [
+            repeatedLoopClarification.requestedMaterialLabel ?? repeatedLoopClarification.detail ?? "חומר תומך שידייק את הסבב הבא",
+          ],
+        },
+        currentQuestion: {
+          id: "repeated-loop-clarification",
+          title: repeatedLoopClarification.promptTitle ?? "איזה חומר תומך יחזק את הסבב הבא?",
+          placeholder: repeatedLoopClarification.promptPlaceholder ?? "הדבק כאן קישור, מסך, spec או דוגמה רלוונטית",
+          reason: repeatedLoopClarification.promptBody ?? "",
+        },
+        draftAnswer: "",
+        pendingAdvance: false,
+        pendingAnswer: "",
+        advanceTimer: null,
+      };
+      renderOnboardingNotes();
+      renderOnboardingConversation();
+    } else {
+      syncOnboardingConversationFromBackend(onboardingFlow?.sessionId)
+        .then(() => {
+          renderOnboardingNotes();
+          renderOnboardingConversation();
+        })
+        .catch(() => {
+          onboardingConversation = createOnboardingConversationState();
+          renderOnboardingNotes();
+          renderOnboardingConversation();
+        });
+    }
+    renderShellChrome("onboarding", activeWorkspace);
     persistFlowState("onboarding");
   }
 
+  function navigateLoopTarget(target) {
+    openShellRoute(target);
+  }
+
   async function exitOnboardingScreen() {
-    if (currentProjectId) {
+    const storedFlowState = readStoredFlowState();
+    const persistedContext = resolvePersistedProjectContext(storedFlowState);
+    const fallbackProjectName = currentProject?.name?.trim?.()
+      || elements.createProjectNameInput?.value?.trim()
+      || persistedContext.resolvedProject?.name?.trim?.()
+      || "";
+    const cachedFallbackProject = normalizeArray(cachedProjects).find((project) => (
+      project?.id === persistedContext.resolvedProjectId
+      || (
+        fallbackProjectName
+        && typeof project?.name === "string"
+        && project.name.trim() === fallbackProjectName
+      )
+    ));
+    const resolvedWorkspaceProjectId = persistedContext.resolvedProjectId ?? cachedFallbackProject?.id ?? null;
+
+    if (resolvedWorkspaceProjectId) {
       onboardingConversation = null;
-      await loadProject(currentProjectId, {
-        title: "חזרת ל־workspace שלך",
-        message: "יצאת ממסך ה־Onboarding וחזרת לאותו פרויקט בלי לאבד את ההקשר.",
-      });
-      return;
+      const storedProjectSnapshot = persistedContext.storedProjectSnapshot;
+      const fallbackProject = currentProject?.id
+        ? currentProject
+        : (
+          persistedContext.resolvedProject?.id
+            ? persistedContext.resolvedProject
+            : (
+              storedProjectSnapshot.id
+                ? storedProjectSnapshot
+                : (cachedFallbackProject?.id ? cachedFallbackProject : null)
+            )
+        );
+      const workspaceBackedRoute = normalizeString(storedFlowState?.activeWorkspace);
+      if (workspaceKeys.includes(workspaceBackedRoute)) {
+        activeWorkspace = workspaceBackedRoute;
+      }
+
+      try {
+        await loadProject(resolvedWorkspaceProjectId, {
+          title: "חזרת ל־workspace שלך",
+          message: "יצאת ממסך ה־Onboarding וחזרת לאותו פרויקט בלי לאבד את ההקשר.",
+        }, fallbackProject?.id ? fallbackProject : null);
+        return;
+      } catch {
+        const cachedFallback = normalizeArray(cachedProjects).find((project) => (
+          project?.id === fallbackProject?.id
+          || (
+            fallbackProject?.name
+            && typeof project?.name === "string"
+            && project.name.trim() === fallbackProject.name.trim()
+          )
+        ));
+        const resolvedFallbackId = cachedFallback?.id ?? fallbackProject?.id ?? cachedFallbackProject?.id ?? null;
+
+        if (resolvedFallbackId) {
+          await loadProject(resolvedFallbackId, {
+            title: "חזרת ל־workspace שלך",
+            message: "יצאת ממסך ה־Onboarding וחזרת לאותו פרויקט בלי לאבד את ההקשר.",
+          }, fallbackProject?.id === resolvedFallbackId ? fallbackProject : null);
+          return;
+        }
+      }
     }
 
     onboardingFlow = null;
@@ -2593,20 +5869,61 @@ export function createCockpitApp({
   }
 
   function buildOnboardingUploadedFiles() {
-    const fileName = elements.createProjectFileNameInput?.value?.trim() ?? "";
-    const fileContent = elements.createProjectFileContentInput?.value ?? "";
+    return parseStoredCreateProjectFiles();
+  }
 
-    if (!fileName && !fileContent.trim()) {
-      return [];
+  function readCurrentCreateFieldValue(fieldId) {
+    const liveField = doc.querySelector(`#${fieldId}`);
+    const value = typeof liveField?.value === "string" ? liveField.value : "";
+    if (value.trim()) {
+      return value;
     }
 
-    return [
-      {
-        name: fileName || "supporting-notes.txt",
-        type: fileName.endsWith(".md") ? "markdown" : "text",
-        content: fileContent,
-      },
-    ];
+    const elementKeyById = {
+      "create-project-name-input": "createProjectNameInput",
+      "create-project-vision-input": "createProjectVisionInput",
+      "create-project-link-input": "createProjectLinkInput",
+      "create-project-file-name-input": "createProjectFileNameInput",
+      "create-project-file-content-input": "createProjectFileContentInput",
+    };
+    const elementKey = elementKeyById[fieldId];
+    if (!elementKey) {
+      return value;
+    }
+    return typeof elements[elementKey]?.value === "string" ? elements[elementKey].value : "";
+  }
+
+  async function syncOnboardingIntakeToSession({
+    sessionId = onboardingFlow?.sessionId ?? null,
+    projectName = elements.createProjectNameInput?.value?.trim() || onboardingFlow?.projectName?.trim?.() || "",
+    visionText = elements.createProjectVisionInput?.value?.trim() || onboardingFlow?.visionText?.trim?.() || "",
+    supportingLink = elements.createProjectLinkInput?.value?.trim() || onboardingFlow?.supportingLink?.trim?.() || "",
+    uploadedFiles = buildOnboardingUploadedFiles(),
+  } = {}) {
+    if (!sessionId || !projectName || !visionText) {
+      return null;
+    }
+
+    const result = await fetchJson(`/api/onboarding/sessions/${sessionId}/intake`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectName,
+        visionText: formatVisionText(projectName, visionText),
+        uploadedFiles,
+        externalLinks: supportingLink ? [supportingLink] : [],
+      }),
+    });
+
+    onboardingFlow = {
+      ...(onboardingFlow ?? {}),
+      sessionId,
+      projectName,
+      visionText,
+      supportingLink,
+    };
+
+    return result;
   }
 
   function getOnboardingAnswer(questionId) {
@@ -2615,96 +5932,743 @@ export function createCockpitApp({
   }
 
   function buildOnboardingLeadSummary() {
-    const audience = getOnboardingAnswer("target-user");
-    const flow = getOnboardingAnswer("core-flow");
-    const outcome = getOnboardingAnswer("success-outcome");
+    const audience = getOnboardingAnswer("target-audience");
+    const problem = getOnboardingAnswer("core-problem");
+    const solution = getOnboardingAnswer("successful-solution");
 
-    if (audience && flow && outcome) {
-      return `כרגע אני מבין שאנחנו בונים עבור ${audience}, כשהפעולה הראשונה שחייבת לעבוד היא ${flow}, והערך הראשוני יימדד לפי ${outcome}.`;
+    if (audience && problem && solution) {
+      return `כרגע אני מבין שאנחנו בונים עבור ${audience}, הכאב המרכזי הוא ${problem}, והפתרון צריך להרגיש כמו ${solution}.`;
     }
 
-    if (audience && flow) {
-      return `יש כבר תמונה ראשונית: הפרויקט מכוון ל־${audience}, והצעד הראשון שחייב לעבוד הוא ${flow}.`;
+    if (audience && problem) {
+      return `יש כבר תמונה ראשונית: הפרויקט מכוון ל־${audience}, והכאב המרכזי שלהם הוא ${problem}.`;
     }
 
     if (audience) {
-      return `הבנתי שהפרויקט מכוון קודם כל ל־${audience}. עכשיו נחדד את הזרימה הראשונית שהמשתמש הזה חייב לעבור.`;
+      return `הבנתי שהפרויקט מכוון קודם כל ל־${audience}. עכשיו נחדד את הבעיה המרכזית שהם חייבים לפתור.`;
     }
 
     return "ברגע שתענה על השאלות, ה־AI יסכם כאן בצורה חיה מה כבר הובן על הפרויקט.";
   }
 
+  function formatOnboardingRetryStatus(error, fallback = "נסה שוב בעוד רגע.") {
+    const rawMessage = typeof error?.message === "string" ? error.message.trim() : "";
+    if (!rawMessage) {
+      return fallback;
+    }
+    if (/^Request failed:\s*\d+/i.test(rawMessage)) {
+      return fallback;
+    }
+    if (/(network|fetch|transport|timeout|failed to fetch)/i.test(rawMessage)) {
+      return fallback;
+    }
+    return fallback;
+  }
+
   function buildOnboardingWorkingMemory() {
-    const projectName = elements.createProjectNameInput?.value?.trim() ?? "";
-    const visionText = elements.createProjectVisionInput?.value?.trim() ?? "";
+    const summary = normalizeObject(onboardingConversation?.summary);
+    const understood = normalizeArray(summary.understoodItems);
+    const missing = normalizeArray(summary.missingItems);
+    const refining = [];
     const supportingLink = elements.createProjectLinkInput?.value?.trim() ?? "";
     const uploadedFiles = buildOnboardingUploadedFiles();
-    const audience = getOnboardingAnswer("target-user");
-    const flow = getOnboardingAnswer("core-flow");
-    const outcome = getOnboardingAnswer("success-outcome");
-    const understood = [];
-    const missing = [];
-    const refining = [];
 
-    if (projectName) {
-      understood.push(`שם הפרויקט כבר נעול סביב ${projectName}.`);
-    }
-
-    if (visionText) {
-      understood.push(`כבר יש מיקוד ראשוני: ${visionText}.`);
-    }
-
-    if (audience) {
-      understood.push(`ה־AI כבר מבין שהמשתמש המרכזי הוא ${audience}.`);
-    } else {
-      missing.push("עדיין חסר מי המשתמש המרכזי שעבורו בונים את החוויה הראשונה.");
-    }
-
-    if (flow) {
-      understood.push(`הפעולה הראשונה שחייבת לעבוד הוגדרה כ־${flow}.`);
-    } else {
-      missing.push("עדיין לא ברור מה הפעולה הראשונה שהמשתמש חייב לבצע בתוך המוצר.");
-    }
-
-    if (outcome) {
-      understood.push(`מדד הערך הראשוני מתבהר סביב ${outcome}.`);
-    } else {
-      missing.push("עדיין חסר איך נראה רגע הערך הראשון שהמשתמש אמור לקבל.");
-    }
-
-    if (audience && !flow) {
-      refining.push(`עכשיו כשהקהל הוא ${audience}, ה־AI מחדד את הזרימה הראשונית שהקהל הזה חייב לעבור.`);
-    }
-
-    if (audience && flow && !outcome) {
-      refining.push(`ה־AI מחבר בין ${audience} לבין הצעד הראשון ${flow}, ומחדד מה צריך להיות רגע הערך הראשון.`);
-    }
-
-    if (audience && flow && outcome) {
+    if (understood.length >= 2) {
       refining.push(buildOnboardingLeadSummary());
     }
-
     if (supportingLink) {
       refining.push("כבר הוזן קישור תומך, כך שאפשר יהיה לחבר את ההבנה הזו גם לחומר חיצוני.");
     }
-
     if (uploadedFiles.length > 0) {
-      refining.push(`נוסף גם מסמך תומך ידני (${uploadedFiles[0].name}) שיכול לחזק את ההקשר של השיחה.`);
+      refining.push(
+        uploadedFiles.length === 1
+          ? `נוסף גם קובץ פרויקט (${uploadedFiles[0].name}) שיכול להעשיר את ההבנה לפני פתיחת משטח העבודה.`
+          : `נוספו ${uploadedFiles.length} קבצי פרויקט שיכולים לבסס הקשר חזק יותר לפני פתיחת משטח העבודה.`,
+      );
     }
-
-    if (!understood.length && !missing.length && !refining.length) {
+    if (!understood.length && !missing.length) {
       missing.push("עדיין לא נאסף מספיק מידע. ה־AI מחכה לתשובה הראשונה כדי להתחיל לבנות תמונת מצב אמיתית.");
     }
 
+    return { understood, missing, refining };
+  }
+
+  function deriveUnderstandingSummaryModel() {
+    const audience = getOnboardingAnswer("target-audience");
+    const problem = getOnboardingAnswer("core-problem");
+    const solution = getOnboardingAnswer("successful-solution");
+    const visionText = elements.createProjectVisionInput?.value?.trim() ?? onboardingFlow?.visionText?.trim?.() ?? "";
+
+    const audienceTitle = audience || "קהל היעד עדיין לא הושלם";
+    const audienceBody = audience
+      ? "הקבוצה המרכזית שעבורה אנחנו בונים את החוויה הראשונה"
+      : "צריך לחדד מי המשתמש המרכזי של המוצר.";
+
+    const problemTitle = problem || "הבעיה עדיין לא חודדה";
+    const problemBody = problem
+      ? "זה הכאב המרכזי שהמוצר צריך לפתור כבר בגרסה הראשונה"
+      : "צריך להבין מה הכאב המרכזי שחוזר אצל המשתמש הזה.";
+
+    const solutionTitle = solution || "הפתרון עדיין לא הוגדר";
+    const solutionBody = solution
+      ? "כך צריך להרגיש פתרון שעובד טוב עבור המשתמש"
+      : "צריך לחדד איך נראה פתרון מוצלח מבחינת המשתמש.";
+
+    const goalTitle = visionText
+      ? (visionText.length > 38 ? `${visionText.slice(0, 38)}...` : visionText)
+      : "להוציא את הפרויקט לפעולה";
+    const goalBody = solution
+      ? "השלב הבא הוא להפוך את ההבנה הזו למשימה ישימה בתוך הלופ."
+      : "אחרי אישור הסיכום נתקדם למשימה הבאה שנגזרת מההבנה הזו.";
+
     return {
-      understood,
-      missing,
-      refining,
+      audienceTitle,
+      audienceBody,
+      problemTitle,
+      problemBody,
+      solutionTitle,
+      solutionBody,
+      goalTitle,
+      goalBody,
     };
   }
 
+  function renderUnderstandingSummaryStage() {
+    const model = deriveUnderstandingSummaryModel();
+    if (elements.understandingAudienceTitle) elements.understandingAudienceTitle.textContent = model.audienceTitle;
+    if (elements.understandingAudienceBody) elements.understandingAudienceBody.textContent = model.audienceBody;
+    if (elements.understandingProblemTitle) elements.understandingProblemTitle.textContent = model.problemTitle;
+    if (elements.understandingProblemBody) elements.understandingProblemBody.textContent = model.problemBody;
+    if (elements.understandingSolutionTitle) elements.understandingSolutionTitle.textContent = model.solutionTitle;
+    if (elements.understandingSolutionBody) elements.understandingSolutionBody.textContent = model.solutionBody;
+    if (elements.understandingGoalTitle) elements.understandingGoalTitle.textContent = model.goalTitle;
+    if (elements.understandingGoalBody) elements.understandingGoalBody.textContent = model.goalBody;
+  }
+
+  function renderUnderstandingSummaryScreenView() {
+    const viewModel = buildUnderstandingSummaryViewModel({
+      currentProject,
+      onboardingFlow,
+      onboardingConversation,
+    });
+
+    if (elements.screenUnderstanding) {
+      elements.screenUnderstanding.innerHTML = renderUnderstandingSummaryScreen(viewModel);
+      bindUnderstandingSummaryScreenElements(doc, elements);
+    }
+
+    if (elements.understandingContinueButton) {
+      elements.understandingContinueButton.onclick = async (event) => {
+        event.preventDefault?.();
+        await finishFirstProjectOnboarding();
+      };
+    }
+    if (elements.understandingCorrectButton) {
+      elements.understandingCorrectButton.onclick = async (event) => {
+        event.preventDefault?.();
+        await correctOnboardingUnderstanding();
+      };
+    }
+
+    renderUnderstandingSummaryStage();
+    setAppScreen("understanding");
+  }
+
+  function buildHomeProjectSource(projectsOverride = null) {
+    const baseProjects = normalizeArray(projectsOverride ?? cachedProjects);
+    const current = normalizeObject(currentProject);
+    const storedFlowState = readStoredFlowState();
+    const storedProjectSnapshot = normalizeObject(storedFlowState?.currentProjectSnapshot);
+    const projectMap = new Map();
+
+    for (const project of baseProjects) {
+      if (project?.id) {
+        projectMap.set(String(project.id), project);
+      }
+    }
+
+    if (current.id && !projectMap.has(String(current.id))) {
+      projectMap.set(String(current.id), current);
+    }
+
+    if (storedProjectSnapshot.id && !projectMap.has(String(storedProjectSnapshot.id))) {
+      projectMap.set(String(storedProjectSnapshot.id), storedProjectSnapshot);
+    }
+
+    return Array.from(projectMap.values());
+  }
+
+  function renderHomeSupportScreenView(projectsOverride = null) {
+    const storedFlowState = readStoredFlowState();
+    const storedProjectSnapshot = normalizeObject(storedFlowState?.currentProjectSnapshot);
+    const resolvedCurrentProjectId = currentProjectId
+      ?? currentProject?.id
+      ?? storedFlowState?.currentProjectId
+      ?? storedProjectSnapshot.id
+      ?? null;
+    currentProjectId = resolvedCurrentProjectId;
+
+    const viewModel = buildHomeSupportViewModel({
+      projects: buildHomeProjectSource(projectsOverride),
+      currentProjectId: resolvedCurrentProjectId,
+    });
+
+    if (elements.screenHome) {
+      elements.screenHome.innerHTML = renderHomeSupportScreen(viewModel);
+      bindHomeSupportScreenElements(doc, elements);
+    }
+
+    qaPreviewRouteKey = null;
+    setAppScreen("home");
+    renderShellChrome("home", activeWorkspace);
+    persistFlowState("home");
+  }
+
+  function renderHelpSupportScreenView() {
+    if (!elements.screenHelp) {
+      return;
+    }
+
+    currentShellRouteKey = "help";
+    const viewModel = buildHelpSupportViewModel({
+      currentRouteKey: "help",
+      currentProjectName: currentProject?.name ?? "",
+      currentPathname: globalThis.location?.pathname ?? "/help",
+      searchQuery: currentHelpSearchQuery,
+      selectedCategory: currentHelpCategory,
+      selectedArticleId: currentHelpArticleId,
+      supportPanelOpen: currentHelpSupportPanelOpen,
+      supportCopyMessage: currentHelpSupportCopyMessage,
+    });
+
+    currentHelpCategory = viewModel.selectedCategory || currentHelpCategory;
+    currentHelpArticleId = viewModel.selectedArticle?.id || currentHelpArticleId;
+
+    elements.screenHelp.innerHTML = renderHelpSupportScreen(viewModel);
+    bindHelpScreenElements();
+
+    qaPreviewRouteKey = null;
+    setAppScreen("help");
+    renderShellChrome("help", activeWorkspace);
+    persistFlowState("help");
+  }
+
+  function openHelpCategory(categoryKey) {
+    currentHelpCategory = normalizeString(categoryKey);
+    currentHelpArticleId = "";
+    currentHelpSupportCopyMessage = "";
+    renderHelpSupportScreenView();
+  }
+
+  function openHelpArticle(articleId) {
+    currentHelpArticleId = normalizeString(articleId);
+    currentHelpSupportCopyMessage = "";
+    renderHelpSupportScreenView();
+  }
+
+  function toggleHelpSupportPanel() {
+    currentHelpSupportPanelOpen = !currentHelpSupportPanelOpen;
+    currentHelpSupportCopyMessage = "";
+    renderHelpSupportScreenView();
+  }
+
+  async function copyHelpSupportSummary() {
+    const summary = elements.helpSupportSummary?.textContent?.trim?.() ?? "";
+    if (!summary) {
+      currentHelpSupportCopyMessage = "אין כרגע פרטי תמיכה להעתקה.";
+      renderHelpSupportScreenView();
+      return;
+    }
+
+    try {
+      if (globalThis.navigator?.clipboard?.writeText) {
+        await globalThis.navigator.clipboard.writeText(summary);
+      } else {
+        throw new Error("Clipboard API unavailable");
+      }
+      currentHelpSupportCopyMessage = "פרטי התמיכה הועתקו ללוח.";
+    } catch {
+      currentHelpSupportCopyMessage = "לא הצלחנו להעתיק אוטומטית. אפשר לסמן ולהעתיק ידנית מהתקציר.";
+    }
+
+    renderHelpSupportScreenView();
+  }
+
+  async function hydrateStoredProjectContextForSupportRoute({
+    storedWorkspaceProjectId = null,
+    storedProjectSnapshot = null,
+    projects = [],
+  } = {}) {
+    const snapshot = normalizeObject(storedProjectSnapshot);
+    const normalizedProjects = normalizeArray(projects);
+    const resolvedProjectId = currentProjectId
+      ?? currentProject?.id
+      ?? storedWorkspaceProjectId
+      ?? snapshot.id
+      ?? null;
+
+    if (!resolvedProjectId) {
+      return;
+    }
+
+    currentProjectId = resolvedProjectId;
+
+    if (currentProject?.id === resolvedProjectId) {
+      return;
+    }
+
+    currentProject = normalizedProjects.find((project) => project?.id === resolvedProjectId) ?? null;
+
+    if (!currentProject) {
+      try {
+        currentProject = await fetchJson(`/api/projects/${resolvedProjectId}`);
+      } catch {
+        currentProject = snapshot.id === resolvedProjectId ? snapshot : null;
+      }
+    }
+
+    if (!currentProject && snapshot.id === resolvedProjectId) {
+      currentProject = snapshot;
+    }
+  }
+
+  function renderDeferredShellRoute(routeKey) {
+    const route = buildShellRouteModel(routeKey);
+    currentShellRouteKey = route.key;
+    closeLiveUpdates();
+    currentProjectAuditPayload = null;
+    renderDeferredSupportScreenView(route);
+    setAppScreen(route.key);
+    renderShellChrome(route.key, activeWorkspace);
+    syncBrowserShellRoute(route.key);
+    persistFlowState(route.key);
+    scrollViewportToTop();
+  }
+
+  function renderBootstrapFailureScreen(error) {
+    const requestedRouteKey = resolveShellRouteKeyFromPath(globalThis.location?.pathname ?? "/") ?? "create";
+    const normalizedMessage = error?.message === "Request failed: 429"
+      ? "המערכת עמוסה כרגע"
+      : "טעינת Nexus נכשלה כרגע";
+    const normalizedStatus = error?.message === "Request failed: 429"
+      ? "ניסינו לטעון פרויקטים ולשחזר את ה־session, אבל השרת החי החזיר 429. המסך נשאר זמין ואפשר לרענן שוב בעוד רגע."
+      : `לא הצלחנו להשלים את טעינת ה־bootstrap החיה. ${error?.message ?? "נסה לרענן שוב."}`;
+
+    currentProjectId = null;
+    currentProject = null;
+    currentProjectAuditPayload = null;
+
+    if (requestedRouteKey === "home") {
+      renderHomeSupportScreenView([]);
+      if (elements.screenHome) {
+        const host = elements.screenHome.querySelector(".nexus-home-screen__intro-main > div p");
+        if (host) {
+          host.textContent = normalizedStatus;
+        }
+      }
+      return;
+    }
+
+    if (requestedRouteKey === "files") {
+      renderFilesSupportScreenView();
+      return;
+    }
+
+    if (requestedRouteKey === "help") {
+      renderHelpSupportScreenView();
+      return;
+    }
+
+    if (
+      requestedRouteKey !== "create"
+      && requestedRouteKey !== "settings"
+    ) {
+      renderBlockedRouteFallback(requestedRouteKey);
+      return;
+    }
+
+    renderEmptyAppState({
+      mode: "create",
+      message: normalizedMessage,
+      status: normalizedStatus,
+    });
+  }
+
+  function canTruthfullyRestoreDirectRoute(routeKey, storedFlowState = null) {
+    const persistedContext = resolvePersistedProjectContext(storedFlowState);
+    const hasPersistedProjectContext = Boolean(persistedContext.resolvedProjectId || persistedContext.resolvedProject?.id);
+
+    if (routeKey === "onboarding") {
+      return true;
+    }
+
+    if (routeKey === "understanding") {
+      return Boolean(currentProjectId || currentProject || onboardingFlow?.sessionId || hasPersistedProjectContext);
+    }
+
+    if (routeKey === "loop") {
+      return true;
+    }
+
+    if (
+      routeKey === "execution"
+      || routeKey === "proof"
+      || routeKey === "artifact"
+      || routeKey === "confirmation"
+      || routeKey === "state-update"
+      || routeKey === "next-task"
+      || routeKey === "timeline"
+    ) {
+      return Boolean(currentProjectId || currentProject || hasPersistedProjectContext);
+    }
+
+    return true;
+  }
+
+  function renderFilesSupportScreenView() {
+    const viewModel = buildFilesSupportViewModel({
+      project: currentProject,
+      draftInputs: captureDraftInputs(),
+    });
+
+    if (elements.screenFiles) {
+      elements.screenFiles.innerHTML = renderFilesSupportScreen(viewModel);
+    }
+
+    qaPreviewRouteKey = null;
+    setAppScreen("files");
+  }
+
+  function readSettingsToggleValue(toggleButton, fallback = false) {
+    if (!toggleButton) {
+      return fallback;
+    }
+    return toggleButton.dataset.enabled === "true";
+  }
+
+  function readSettingsFormDraft() {
+    return {
+      profileInput: {
+        displayName: elements.settingsDisplayNameInput?.value?.trim() ?? "",
+        email: elements.settingsEmailInput?.value?.trim() ?? "",
+      },
+      settingsInput: {
+        preferredLanguage: elements.settingsLanguageSelect?.value?.trim() ?? "he",
+        themePreference: elements.settingsThemeSelect?.value?.trim()
+          ?? elements.settingsThemeSelectClone?.value?.trim()
+          ?? "light",
+      },
+      notificationInput: {
+        emailEnabled: readSettingsToggleValue(elements.settingsEmailToggle, true),
+        inAppEnabled: readSettingsToggleValue(elements.settingsInAppToggle, true),
+      },
+    };
+  }
+
+  async function fetchSettingsProfileSurface() {
+    const payload = await fetchJson("/api/settings-profile");
+    currentSettingsProfileSurface = normalizeObject(payload?.settingsProfileSurface);
+    if (currentSettingsProfileSurface.actorProfile?.userId) {
+      writeStoredAppUser({
+        ...(readStoredAppUser() ?? {}),
+        userId: currentSettingsProfileSurface.actorProfile.userId,
+        displayName: currentSettingsProfileSurface.actorProfile.displayName ?? null,
+        email: currentSettingsProfileSurface.actorProfile.email ?? null,
+      });
+    }
+    return currentSettingsProfileSurface;
+  }
+
+  async function renderSettingsScreenView(settingsProfileSurfaceOverride = null) {
+    currentShellRouteKey = "settings";
+    setAppScreen("settings");
+    renderShellChrome("settings", activeWorkspace);
+    persistFlowState("settings");
+
+    const renderFromSurface = (surface, override = {}) => {
+      const viewModel = buildSettingsViewModel({
+        settingsProfileSurface: surface,
+        activePanel: currentSettingsPanel,
+        savingState: currentSettingsSavingState,
+        flashMessage: currentSettingsFlashMessage,
+        errorMessage: currentSettingsErrorMessage,
+        ...override,
+      });
+
+      if (elements.screenSettings) {
+        elements.screenSettings.innerHTML = renderSettingsScreen(viewModel);
+        bindSettingsScreenElements(doc, elements);
+      }
+    };
+
+    renderFromSurface(settingsProfileSurfaceOverride ?? currentSettingsProfileSurface);
+
+    if (settingsProfileSurfaceOverride) {
+      currentSettingsProfileSurface = settingsProfileSurfaceOverride;
+      return;
+    }
+
+    try {
+      const freshSurface = await fetchSettingsProfileSurface();
+      currentSettingsErrorMessage = "";
+      renderFromSurface(freshSurface);
+    } catch (error) {
+      currentSettingsErrorMessage = `טעינת ההגדרות נכשלה: ${error.message}`;
+      renderFromSurface(currentSettingsProfileSurface, {
+        errorMessage: currentSettingsErrorMessage,
+      });
+    }
+  }
+
+  async function saveSettingsProfileSurface() {
+    const draft = readSettingsFormDraft();
+    currentSettingsSavingState = "saving";
+    currentSettingsFlashMessage = "";
+    currentSettingsErrorMessage = "";
+    await renderSettingsScreenView(currentSettingsProfileSurface);
+
+    try {
+      const payload = await fetchJson("/api/settings-profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(draft),
+      });
+      currentSettingsProfileSurface = normalizeObject(payload?.settingsProfileSurface);
+      currentSettingsSavingState = "idle";
+      currentSettingsFlashMessage = "ההגדרות נשמרו בהצלחה.";
+      currentSettingsErrorMessage = "";
+      writeStoredAppUser({
+        ...(readStoredAppUser() ?? {}),
+        userId: currentSettingsProfileSurface.actorProfile?.userId ?? readStoredAppUser()?.userId ?? null,
+        displayName: currentSettingsProfileSurface.actorProfile?.displayName ?? null,
+        email: currentSettingsProfileSurface.actorProfile?.email ?? null,
+      });
+      await renderSettingsScreenView(currentSettingsProfileSurface);
+    } catch (error) {
+      currentSettingsSavingState = "idle";
+      currentSettingsErrorMessage = `שמירת ההגדרות נכשלה: ${error.message}`;
+      await renderSettingsScreenView(currentSettingsProfileSurface);
+    }
+  }
+
+  function renderLoopCoreScreenView(projectOverride = null, { qaMode = false } = {}) {
+    const sourceProject = projectOverride ?? currentProject ?? (qaMode ? ensureQaProjectPreviewState() : null);
+    const viewModel = buildLoopCoreViewModel({
+      project: sourceProject,
+      qaMode,
+    });
+
+    if (elements.screenLoop) {
+      elements.screenLoop.innerHTML = renderLoopCoreScreen(viewModel);
+    }
+
+    activeWorkspace = "loop";
+    setActiveWorkspace(elements, activeWorkspace);
+    setAppScreen("loop");
+  }
+
+  function renderExecutionLiveScreenView(projectOverride = null, { qaMode = false } = {}) {
+    const sourceProject = projectOverride ?? currentProject ?? (qaMode ? ensureQaProjectPreviewState() : null);
+    const viewModel = buildExecutionLiveViewModel({
+      project: sourceProject,
+      qaMode,
+    });
+
+    if (elements.screenExecution) {
+      elements.screenExecution.innerHTML = renderExecutionLiveScreen(viewModel);
+      bindExecutionLiveScreenElements(doc, elements);
+    }
+
+    if (sourceProject) {
+      renderLive(elements, sourceProject);
+    }
+
+    activeWorkspace = "execution";
+    setActiveWorkspace(elements, activeWorkspace);
+    setAppScreen("execution");
+    persistFlowState("execution");
+  }
+
+  function renderProofResultScreenView(projectOverride = null, { qaMode = false } = {}) {
+    const sourceProject = projectOverride ?? currentProject ?? (qaMode ? ensureQaProjectPreviewState() : null);
+    const viewModel = buildProofResultViewModel({
+      project: sourceProject,
+      qaMode,
+    });
+
+    if (elements.screenProof) {
+      elements.screenProof.innerHTML = renderProofResultScreen(viewModel);
+      bindProofResultScreenElements(doc, elements);
+    }
+
+    if (sourceProject) {
+      renderProofScreen(elements, sourceProject);
+    }
+
+    activeWorkspace = "proof";
+    setActiveWorkspace(elements, activeWorkspace);
+    setAppScreen("proof");
+    persistFlowState("proof");
+  }
+
+  function renderArtifactPreviewScreenView(projectOverride = null, { qaMode = false } = {}) {
+    const sourceProject = projectOverride ?? currentProject ?? (qaMode ? ensureQaProjectPreviewState() : null);
+    const viewModel = buildArtifactPreviewViewModel({
+      project: sourceProject,
+      qaMode,
+    });
+
+    if (elements.screenArtifact) {
+      elements.screenArtifact.innerHTML = renderArtifactPreviewScreen(viewModel);
+      bindArtifactPreviewScreenElements(doc, elements);
+    }
+
+    if (elements.artifactDownloadButton) {
+      elements.artifactDownloadButton.disabled = viewModel.downloadAction.supported !== true;
+      elements.artifactDownloadButton.title = viewModel.downloadAction.supported === true
+        ? "הורד artifact קנוני self-contained שאפשר להראות גם מחוץ ל־Nexus."
+        : "ה־artifact הנוכחי עדיין לא מוכן לייצוא עצמי בלי metadata בלבד.";
+    }
+
+    activeWorkspace = "artifact";
+    setActiveWorkspace(elements, activeWorkspace);
+    setAppScreen("artifact");
+    persistFlowState("artifact");
+  }
+
+  function renderConfirmationDecisionScreenView(projectOverride = null, { qaMode = false } = {}) {
+    const sourceProject = projectOverride ?? currentProject ?? (qaMode ? ensureQaProjectPreviewState() : null);
+    const viewModel = buildConfirmationViewModel({
+      project: sourceProject,
+      qaMode,
+    });
+
+    if (elements.screenConfirmation) {
+      elements.screenConfirmation.innerHTML = renderConfirmationDecisionScreen(viewModel);
+      bindConfirmationDecisionScreenElements(doc, elements);
+    }
+
+    activeWorkspace = "confirmation";
+    setActiveWorkspace(elements, activeWorkspace);
+    setAppScreen("confirmation");
+    persistFlowState("confirmation");
+  }
+
+  function renderStateUpdateScreenView(projectOverride = null, { qaMode = false } = {}) {
+    const sourceProject = projectOverride ?? currentProject ?? (qaMode ? ensureQaProjectPreviewState() : null);
+    const viewModel = buildStateUpdateViewModel({
+      project: sourceProject,
+      qaMode,
+    });
+
+    if (elements.screenStateUpdate) {
+      elements.screenStateUpdate.innerHTML = renderStateUpdateScreen(viewModel);
+      bindStateUpdateScreenElements(doc, elements);
+    }
+
+    activeWorkspace = "state-update";
+    setActiveWorkspace(elements, activeWorkspace);
+    setAppScreen("state-update");
+    persistFlowState("state-update");
+  }
+
+  function renderNextTaskScreenView(projectOverride = null, { qaMode = false } = {}) {
+    const sourceProject = projectOverride ?? currentProject ?? (qaMode ? ensureQaProjectPreviewState() : null);
+    const viewModel = buildNextTaskViewModel({
+      project: sourceProject,
+      qaMode,
+    });
+
+    if (elements.screenNextTask) {
+      elements.screenNextTask.innerHTML = renderNextTaskScreen(viewModel);
+      bindNextTaskScreenElements(doc, elements);
+    }
+
+    activeWorkspace = "next-task";
+    setActiveWorkspace(elements, activeWorkspace);
+    setAppScreen("next-task");
+    persistFlowState("next-task");
+  }
+
+  function renderTimelineHistoryScreenView(projectOverride = null, { qaMode = false } = {}) {
+    const sourceProject = projectOverride ?? currentProject ?? (qaMode ? ensureQaProjectPreviewState() : null);
+    const viewModel = buildTimelineViewModel({
+      project: sourceProject,
+      qaMode,
+    });
+
+    if (elements.screenTimeline) {
+      elements.screenTimeline.innerHTML = renderTimelineHistoryScreen(viewModel);
+      bindTimelineHistoryScreenElements(doc, elements);
+    }
+
+    activeWorkspace = "timeline";
+    setActiveWorkspace(elements, activeWorkspace);
+    setAppScreen("timeline");
+    persistFlowState("timeline");
+  }
+
+  function renderBootstrapRestoredScreen() {
+    const storedFlowState = readStoredFlowState();
+    const storedProjectSnapshot = normalizeObject(storedFlowState?.currentProjectSnapshot);
+    const storedProjectAuditPayload = normalizeObject(storedFlowState?.currentProjectAuditPayload);
+    const storedScreen = normalizeString(storedFlowState?.screen);
+    const requestedRouteKey = resolveShellRouteKeyFromPath(globalThis.location?.pathname ?? "/");
+    const workspaceBackedScreens = new Set([
+      "loop",
+      "execution",
+      "proof",
+      "artifact",
+      "confirmation",
+      "state-update",
+      "next-task",
+      "timeline",
+    ]);
+    const bootstrapScreen = workspaceBackedScreens.has(requestedRouteKey)
+      ? requestedRouteKey
+      : storedScreen;
+
+    if (requestedRouteKey === "create") {
+      return false;
+    }
+
+    if (!storedProjectSnapshot.id || !workspaceBackedScreens.has(bootstrapScreen)) {
+      return false;
+    }
+
+    currentProjectId = storedFlowState?.currentProjectId ?? storedProjectSnapshot.id;
+    currentProject = storedProjectSnapshot;
+    currentProjectAuditPayload = Object.keys(storedProjectAuditPayload).length > 0 ? storedProjectAuditPayload : null;
+    activeWorkspace = workspaceKeys.includes(storedFlowState?.activeWorkspace)
+      ? storedFlowState.activeWorkspace
+      : bootstrapScreen;
+    if (workspaceKeys.includes(bootstrapScreen)) {
+      activeWorkspace = bootstrapScreen;
+    }
+
+    if (bootstrapScreen === "loop") {
+      renderLoopCoreScreenView(storedProjectSnapshot);
+    } else if (bootstrapScreen === "execution") {
+      renderExecutionLiveScreenView(storedProjectSnapshot);
+    } else if (bootstrapScreen === "proof") {
+      renderProofResultScreenView(storedProjectSnapshot);
+    } else if (bootstrapScreen === "artifact") {
+      renderArtifactPreviewScreenView(storedProjectSnapshot);
+    } else if (bootstrapScreen === "confirmation") {
+      renderConfirmationDecisionScreenView(storedProjectSnapshot);
+    } else if (bootstrapScreen === "state-update") {
+      renderStateUpdateScreenView(storedProjectSnapshot);
+    } else if (bootstrapScreen === "next-task") {
+      renderNextTaskScreenView(storedProjectSnapshot);
+    } else if (bootstrapScreen === "timeline") {
+      renderTimelineHistoryScreenView(storedProjectSnapshot);
+    }
+
+    return true;
+  }
+
   function renderOnboardingNotes() {
-    if (!elements.onboardingNotesList) {
+    if (!elements.onboardingNotesList && !elements.onboardingUnderstoodList && !elements.onboardingMissingList) {
       return;
     }
 
@@ -2743,37 +6707,56 @@ export function createCockpitApp({
         `;
       })
       .join("");
+
+    if (elements.onboardingUnderstoodList) {
+      elements.onboardingUnderstoodList.innerHTML = (memory.understood.length ? memory.understood : ["עדיין אין מסקנות."])
+        .map((item) => `<p>${escapeHtml(item)}</p>`)
+        .join("");
+    }
+
+    if (elements.onboardingMissingList) {
+      elements.onboardingMissingList.innerHTML = (memory.missing.length ? memory.missing : ["כרגע אין פערים פתוחים."])
+        .map((item) => `<p>${escapeHtml(item)}</p>`)
+        .join("");
+    }
   }
 
   function buildOnboardingCurrentPrompt() {
-    const currentQuestion = onboardingQuestionFlow[onboardingConversation?.currentIndex ?? 0] ?? null;
-    const audience = getOnboardingAnswer("target-user");
-    const flow = getOnboardingAnswer("core-flow");
+    const currentQuestion = onboardingConversation?.currentQuestion ?? null;
+    const audience = getOnboardingAnswer("target-audience");
+    const problem = getOnboardingAnswer("core-problem");
 
     if (!currentQuestion) {
       return {
         title: "השיחה הושלמה",
-        body: "יש לנו תמונה ראשונית טובה. עכשיו אפשר להוסיף חומר תומך ידני לפני סיום onboarding.",
+        body: onboardingConversation?.completionReason || "יש לנו תמונה ראשונית טובה. עכשיו אפשר להוסיף חומר תומך ידני לפני סיום onboarding.",
       };
     }
 
-    if (currentQuestion.id === "core-flow" && audience) {
+    if (currentQuestion.reason) {
       return {
-        title: "מעולה, עכשיו נחדד את הפעולה הראשונה",
-        body: `אם המשתמש המרכזי הוא ${audience}, מה בדיוק הוא חייב לעשות ראשון כדי להרגיש שהמערכת באמת מתחילה לעבוד עבורו?`,
+        title: currentQuestion.title ?? "",
+        body: currentQuestion.reason,
       };
     }
 
-    if (currentQuestion.id === "success-outcome" && audience && flow) {
+    if (currentQuestion.id === "core-problem" && audience) {
+      return {
+        title: "מעולה, עכשיו נחדד את הכאב המרכזי",
+        body: `אם המערכת נבנית עבור ${audience}, מה הבעיה המרכזית שהם מתמודדים איתה?`,
+      };
+    }
+
+    if (currentQuestion.id === "successful-solution" && audience && problem) {
       return {
         title: "יש לי כבר תמונה כמעט שלמה",
-        body: `אז אנחנו מכוונים ל־${audience}, והצעד הראשון הוא ${flow}. עכשיו נשאר לחדד איך נראה רגע הערך הראשון שהמשתמש אמור לקבל.`,
+        body: `אז אנחנו מכוונים ל־${audience}, והכאב המרכזי הוא ${problem}. עכשיו נשאר לחדד איך נראה פתרון מוצלח מבחינתם.`,
       };
     }
 
     return {
-      title: currentQuestion.title,
-      body: currentQuestion.body,
+      title: currentQuestion.title ?? "",
+      body: currentQuestion.title ?? "",
     };
   }
 
@@ -2809,71 +6792,51 @@ export function createCockpitApp({
 
   function renderOnboardingConversation() {
     onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
-    const currentQuestion = onboardingQuestionFlow[onboardingConversation.currentIndex] ?? null;
-    const isComplete = onboardingConversation.currentIndex >= onboardingQuestionFlow.length;
+    const currentQuestion = onboardingConversation.currentQuestion ?? null;
+    const hasActiveQuestion = Boolean(currentQuestion?.id);
+    const isComplete = onboardingConversation.isComplete === true
+      || (
+        hasActiveQuestion !== true
+        && (onboardingConversation.currentIndex ?? 0) >= (onboardingConversation.totalQuestions ?? onboardingQuestionFlow.length)
+      );
     const currentPrompt = buildOnboardingCurrentPrompt();
     const isAwaitingAiReply = onboardingConversation.pendingAdvance === true;
+    const totalQuestions = Math.max(
+      Number(onboardingConversation.totalQuestions ?? onboardingQuestionFlow.length),
+      (onboardingConversation.currentIndex ?? 0) + (hasActiveQuestion ? 1 : 0),
+    );
 
     if (elements.onboardingProgressPill) {
       elements.onboardingProgressPill.textContent = isComplete
         ? "השיחה הושלמה"
-        : `שאלה ${onboardingConversation.currentIndex + 1} מתוך ${onboardingQuestionFlow.length}`;
+        : `שאלה ${(onboardingConversation.currentIndex ?? 0) + 1} מתוך ${totalQuestions}`;
     }
 
     if (elements.onboardingChatThread) {
-      const transcript = [];
+      elements.onboardingChatThread.innerHTML = normalizeArray(onboardingConversation.transcript)
+        .map((entry) => {
+          if (entry.speaker === "user") {
+            return `
+              <div class="onboarding-route-message-row user">
+                <div class="onboarding-route-bubble user">
+                  ${escapeHtml(entry.text)}
+                  ${entry.time ? `<span class="onboarding-route-time">${escapeHtml(entry.time)}</span>` : ""}
+                </div>
+              </div>
+            `;
+          }
 
-      for (const question of onboardingQuestionFlow.slice(0, onboardingConversation.currentIndex)) {
-        transcript.push(`
-          <article class="onboarding-chat-bubble ai">
-            <span class="mini-label">AI</span>
-            <strong>${escapeHtml(question.title)}</strong>
-            <p>${escapeHtml(question.body)}</p>
-          </article>
-        `);
-
-        const answer = onboardingConversation.answers[question.id];
-        if (typeof answer === "string" && answer.trim()) {
-          transcript.push(`
-            <article class="onboarding-chat-bubble user">
-              <span class="mini-label">אתה</span>
-              <p>${escapeHtml(answer.trim())}</p>
-            </article>
-          `);
-        }
-      }
-
-      if (isComplete) {
-        transcript.push(`
-          <article class="onboarding-chat-bubble ai">
-            <span class="mini-label">AI</span>
-            <strong>יש מספיק הקשר כדי לסיים onboarding</strong>
-            <p>עכשיו אפשר לצרף חומר תומך ידני ולפתוח את ה־workspace.</p>
-          </article>
-        `);
-      } else if (isAwaitingAiReply) {
-        transcript.push(`
-          <article class="onboarding-chat-bubble user entering">
-            <span class="mini-label">אתה</span>
-            <p>${escapeHtml(onboardingConversation.pendingAnswer)}</p>
-          </article>
-          <article class="onboarding-chat-bubble ai typing entering">
-            <span class="mini-label">AI</span>
-            <strong>מעבד את מה שכתבת</strong>
-            <p>מנסח את השאלה הבאה ומעדכן את ההבנה שלו על הפרויקט.</p>
-          </article>
-        `);
-      } else {
-        transcript.push(`
-          <article class="onboarding-chat-bubble ai entering">
-            <span class="mini-label">AI</span>
-            <strong>${escapeHtml(currentPrompt.title)}</strong>
-            <p>${escapeHtml(currentPrompt.body)}</p>
-          </article>
-        `);
-      }
-
-      elements.onboardingChatThread.innerHTML = transcript.join("");
+          return `
+            <div class="onboarding-route-message-row ai">
+              <div class="onboarding-route-bot-icon">♙</div>
+              <div class="onboarding-route-bubble ai">
+                ${escapeHtml(entry.text)}
+                ${entry.time ? `<span class="onboarding-route-time">${escapeHtml(entry.time)}</span>` : ""}
+              </div>
+            </div>
+          `;
+        })
+        .join("");
     }
 
     if (elements.onboardingCurrentQuestionTitle) {
@@ -2893,36 +6856,44 @@ export function createCockpitApp({
     }
     if (elements.onboardingNextButton) {
       elements.onboardingNextButton.hidden = isComplete || isAwaitingAiReply;
-      elements.onboardingNextButton.textContent = onboardingConversation.currentIndex === onboardingQuestionFlow.length - 1
-        ? "שלח תשובה אחרונה"
-        : "שלח והמשך";
+      elements.onboardingNextButton.disabled = isAwaitingAiReply;
+      elements.onboardingNextButton.textContent = "המשך ←";
     }
     if (elements.onboardingBackButton) {
-      elements.onboardingBackButton.textContent = currentProjectId ? "חזור ל־Workspace" : "חזור ליצירת הפרויקט";
+      elements.onboardingBackButton.textContent = currentProjectId ? "חזור למשטח העבודה" : "חזור ליצירת הפרויקט";
       elements.onboardingBackButton.disabled = isAwaitingAiReply;
     }
     if (elements.onboardingForwardButton) {
       elements.onboardingForwardButton.disabled = isAwaitingAiReply;
-      elements.onboardingForwardButton.textContent = isComplete ? "סיים Onboarding" : "קדימה";
+      elements.onboardingForwardButton.textContent = isComplete ? "לסיכום ההבנה" : "קדימה";
     }
     if (elements.onboardingMaterialStage) {
-      elements.onboardingMaterialStage.hidden = !isComplete;
+      elements.onboardingMaterialStage.hidden = true;
     }
     if (elements.onboardingFormStage) {
-      elements.onboardingFormStage.hidden = !isComplete;
+      elements.onboardingFormStage.hidden = true;
     }
     if (elements.finishOnboardingButton) {
-      elements.finishOnboardingButton.hidden = !isComplete;
+      elements.finishOnboardingButton.hidden = true;
+    }
+    if (elements.understandingCorrectButton) {
+      elements.understandingCorrectButton.disabled = isAwaitingAiReply;
+    }
+    if (elements.understandingContinueButton) {
+      elements.understandingContinueButton.disabled = isAwaitingAiReply;
+    }
+    if (isComplete) {
+      renderUnderstandingSummaryStage();
     }
     focusOnboardingAnswerInput();
   }
 
-  function advanceOnboardingConversation() {
+  async function advanceOnboardingConversation() {
     onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
     if (onboardingConversation.pendingAdvance) {
       return;
     }
-    const currentQuestion = onboardingQuestionFlow[onboardingConversation.currentIndex];
+    const currentQuestion = onboardingConversation.currentQuestion ?? onboardingQuestionFlow[onboardingConversation.currentIndex];
     if (!currentQuestion) {
       renderOnboardingConversation();
       return;
@@ -2949,27 +6920,123 @@ export function createCockpitApp({
     renderOnboardingConversation();
     persistFlowState("onboarding");
 
-    if (onboardingConversation.advanceTimer) {
-      clearTimeoutImpl(onboardingConversation.advanceTimer);
-    }
+    try {
+      if (onboardingConversation.mode === "repeated-loop-clarification") {
+        onboardingConversation.pendingAdvance = false;
+        onboardingConversation.pendingAnswer = "";
+        onboardingConversation.isComplete = true;
+        onboardingConversation.currentQuestion = null;
+        onboardingConversation.summary = {
+          understoodTitle: "מה נשמר עכשיו",
+          understoodItems: [
+            `נשמרה הבהרה שמחזקת את ${resolveRepeatedLoopContinuation(currentProject).artifactTitle ?? currentProject?.name ?? "התוצר שאושר"}`,
+          ],
+          missingTitle: "מה עוד חסר כדי לפתוח את הסבב הבא",
+          missingItems: [
+            "ההבהרה נשמרה רק במסלול הלייב של Wave 3. צריך עדיין חומר תומך מחובר runtime כדי לפתוח increment אמיתי בלי replay.",
+          ],
+        };
+        onboardingConversation.transcript = [
+          ...normalizeArray(onboardingConversation.transcript),
+          {
+            id: `user-clarification-${Date.now()}`,
+            speaker: "user",
+            text: answer,
+            time: "10:32",
+          },
+          {
+            id: `ai-clarification-${Date.now() + 1}`,
+            speaker: "ai",
+            text: "ההבהרה נשמרה. Nexus עצר כאן truthfully כדי לא למחזר את אותו artifact לפני שיש מספיק הקשר לסבב הבא.",
+            time: "10:32",
+          },
+        ];
+        if (elements.onboardingScreenStatus) {
+          elements.onboardingScreenStatus.textContent = "ההבהרה נשמרה, והלופ נשאר מושהה truthfully עד שיחובר חומר תומך שפותח את הסבב הבא.";
+        }
+        renderOnboardingNotes();
+        renderOnboardingConversation();
+        persistFlowState("onboarding");
+        return;
+      }
 
-    onboardingConversation.advanceTimer = setTimeoutImpl(() => {
+      if (onboardingFlow?.sessionId) {
+        await submitOnboardingConversationAnswerToBackend(answer);
+      } else {
+        if (onboardingConversation.advanceTimer) {
+          clearTimeoutImpl(onboardingConversation.advanceTimer);
+        }
+
+        await new Promise((resolve) => {
+          onboardingConversation.advanceTimer = setTimeoutImpl(resolve, 420);
+        });
+
+        onboardingConversation.pendingAdvance = false;
+        onboardingConversation.pendingAnswer = "";
+        onboardingConversation.currentIndex += 1;
+        onboardingConversation.isComplete = onboardingConversation.currentIndex >= onboardingQuestionFlow.length;
+        const nextPrompt = buildLocalOnboardingPrompt(onboardingConversation.currentIndex, onboardingConversation.answers);
+        const nextQuestionDefinition = onboardingQuestionFlow[onboardingConversation.currentIndex] ?? null;
+        const nextQuestionPresentation = resolveOnboardingQuestionPresentation(
+          nextQuestionDefinition?.id ?? "",
+          onboardingConversation.answers,
+          {
+            visionText: elements.createProjectVisionInput?.value?.trim() ?? onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
+            projectTypeHint: currentProject?.artifactExpectation?.projectType
+              ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+              ?? "",
+          },
+        );
+        onboardingConversation.currentQuestion = nextPrompt
+          ? {
+              id: nextQuestionDefinition?.id ?? null,
+              title: nextQuestionPresentation.title || nextPrompt,
+              placeholder: nextQuestionPresentation.placeholder || nextQuestionDefinition?.placeholder || "",
+              reason: nextQuestionPresentation.reason || "",
+            }
+          : null;
+        if (nextPrompt) {
+          onboardingConversation.transcript = [
+            ...normalizeArray(onboardingConversation.transcript),
+            {
+              id: `ai-${onboardingConversation.currentIndex + 1}`,
+              speaker: "ai",
+              text: nextPrompt,
+              time: "10:32",
+            },
+          ];
+        }
+        onboardingConversation.summary = buildLocalOnboardingSummary(onboardingConversation.answers);
+      }
+
       onboardingConversation.pendingAdvance = false;
       onboardingConversation.pendingAnswer = "";
-      onboardingConversation.currentIndex += 1;
       if (elements.onboardingScreenStatus) {
-        elements.onboardingScreenStatus.textContent = onboardingConversation.currentIndex >= onboardingQuestionFlow.length
+        elements.onboardingScreenStatus.textContent = onboardingConversation.isComplete
           ? "השיחה הושלמה. עכשיו אפשר להוסיף חומר תומך ולסיים onboarding."
           : "מעולה. ה־AI עדכן את ההבנה שלו על הפרויקט וממשיך להוביל את השיחה.";
       }
       renderOnboardingNotes();
       renderOnboardingConversation();
       persistFlowState("onboarding");
-    }, 420);
+    } catch (error) {
+      onboardingConversation.pendingAdvance = false;
+      onboardingConversation.pendingAnswer = "";
+      onboardingConversation.draftAnswer = answer;
+      if (elements.onboardingScreenStatus) {
+        elements.onboardingScreenStatus.textContent = `לא הצלחנו לשלוח את התשובה כרגע. ${formatOnboardingRetryStatus(error)}`;
+      }
+      renderOnboardingConversation();
+      persistFlowState("onboarding");
+    }
   }
 
   function formatOnboardingBlockedStatus(finished = {}) {
     const completionDecision = normalizeObject(finished.onboardingCompletionDecision);
+    const continuationGate = resolveOnboardingContinuationGate(finished);
+    if (continuationGate.gateType) {
+      return `${continuationGate.title}. ${continuationGate.detail ?? ""}`.trim();
+    }
     const clarificationPrompts = normalizeArray(completionDecision.clarificationPrompts)
       .filter((value) => typeof value === "string" && value.trim())
       .map((value) => value.trim());
@@ -2978,14 +7045,14 @@ export function createCockpitApp({
       .map((value) => value.trim());
 
     if (clarificationPrompts.length > 0) {
-      return `Onboarding נחסם עד להשלמת: ${clarificationPrompts.join(" | ")}`;
+      return `אי אפשר להמשיך עדיין. צריך להשלים קודם: ${clarificationPrompts.join(" | ")}`;
     }
 
     if (missingInputs.length > 0) {
-      return `Onboarding נחסם כי חסרים שדות חובה: ${missingInputs.join(", ")}`;
+      return `אי אפשר להמשיך עדיין כי חסרים שדות חובה: ${missingInputs.join(", ")}`;
     }
 
-    return finished.error ?? "Onboarding עדיין לא מוכן לבניית פרויקט usable.";
+    return finished.error ?? "אי אפשר להמשיך עדיין כי חסר מידע שמספיק לבניית פרויקט אמיתי.";
   }
 
   function renderEmptyAppState({
@@ -2994,33 +7061,41 @@ export function createCockpitApp({
     status = "כדי להתחיל צריך ליצור פרויקט ראשון ולעבור onboarding קצר.",
   } = {}) {
     clearFlowFeedback();
-    setAppScreen(mode === "onboarding" ? "onboarding" : "create");
+    const normalizedMode = mode === "onboarding" || mode === "settings" || mode === "help" ? mode : "create";
+    if (normalizedMode === "create") {
+      renderCreateScreenView(buildProjectCreateViewModel({ draftInputs: captureDraftInputs() }));
+    }
+    if (normalizedMode === "onboarding") {
+      ensureOnboardingScreenView();
+    }
+    setAppScreen(normalizedMode);
     if (mode === "onboarding") {
       if (elements.onboardingScreenMessage) {
         elements.onboardingScreenMessage.textContent = message;
       }
       if (elements.onboardingScreenStatus) {
+        elements.onboardingScreenStatus.hidden = false;
         elements.onboardingScreenStatus.textContent = status;
       }
     } else {
-      if (elements.emptyProjectMessage) {
-        elements.emptyProjectMessage.textContent = message;
+      if (elements.createScreenTitle) {
+        elements.createScreenTitle.textContent = message;
       }
-      if (elements.emptyProjectStatus) {
-        elements.emptyProjectStatus.textContent = status;
+      if (elements.createScreenStatus) {
+        elements.createScreenStatus.textContent = status;
       }
     }
-    if (elements.emptyProjectMessage && mode !== "onboarding") {
-      elements.emptyProjectMessage.textContent = message;
+    if (elements.createScreenTitle && mode !== "onboarding") {
+      elements.createScreenTitle.textContent = message;
     }
-    if (elements.emptyProjectStatus && mode !== "onboarding") {
-      elements.emptyProjectStatus.textContent = status;
+    if (elements.createScreenStatus && mode !== "onboarding") {
+      elements.createScreenStatus.textContent = status;
     }
     if (elements.emptyAppState) {
-      elements.emptyAppState.dataset.mode = "create";
+      elements.emptyAppState.dataset.mode = normalizedMode;
     }
     if (elements.projectCreateStage) {
-      elements.projectCreateStage.hidden = false;
+      elements.projectCreateStage.hidden = mode !== "create";
     }
     if (mode === "onboarding") {
       onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
@@ -3039,7 +7114,7 @@ export function createCockpitApp({
     setFlowButtonState({
       target: "create",
       disabled: false,
-      label: "צור פרויקט",
+      label: "צור פרויקט והתחל",
     });
     setFlowButtonState({
       target: "finish",
@@ -3053,7 +7128,9 @@ export function createCockpitApp({
       elements.heroGoal.textContent =
         mode === "onboarding"
           ? "השלב הבא הוא להשלים onboarding ורק אז לפתוח את ה־workspace."
-          : "צריך ליצור פרויקט ראשון כדי להיכנס ל־workspace.";
+          : mode === "create"
+            ? "צריך ליצור פרויקט ראשון כדי להיכנס ל־workspace."
+            : status;
     }
     if (elements.now && !currentProject) {
       elements.now.innerHTML = `<p class="empty">אין פרויקטים פעילים כרגע.</p>`;
@@ -3061,7 +7138,7 @@ export function createCockpitApp({
     if (elements.critical && !currentProject) {
       elements.critical.innerHTML = `<p class="empty">הפעולה הבאה היא ליצור פרויקט ראשון.</p>`;
     }
-    persistFlowState(mode === "onboarding" ? "onboarding" : "create");
+    persistFlowState(normalizedMode);
   }
 
   async function ensureAppUser() {
@@ -3109,8 +7186,8 @@ export function createCockpitApp({
   }
 
   async function createFirstProjectFlow() {
-    const projectName = elements.createProjectNameInput?.value?.trim() ?? "";
-    const visionText = elements.createProjectVisionInput?.value?.trim() ?? "";
+    const projectName = readCurrentCreateFieldValue("create-project-name-input").trim();
+    const visionText = readCurrentCreateFieldValue("create-project-vision-input").trim();
     if (!projectName || !visionText) {
       renderEmptyAppState({
         mode: "create",
@@ -3122,6 +7199,10 @@ export function createCockpitApp({
 
     let appUser = await ensureAppUser();
     let draftResult = null;
+
+    currentProjectId = null;
+    currentProject = null;
+    activeWorkspace = "create";
 
     try {
       draftResult = await fetchJson("/api/project-drafts", {
@@ -3174,13 +7255,25 @@ export function createCockpitApp({
       projectDraftId: draftResult.projectDraftId,
       projectName,
       visionText,
+      supportingLink: elements.createProjectLinkInput?.value?.trim() ?? "",
     };
-    onboardingConversation = createOnboardingConversationState();
+    try {
+      await syncOnboardingIntakeToSession({
+        sessionId: onboardingFlow.sessionId,
+      });
+    } catch {
+      // Let onboarding continue even if the first canonical intake sync fails.
+    }
+    try {
+      await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
+    } catch {
+      onboardingConversation = createOnboardingConversationState();
+    }
 
     renderEmptyAppState({
       mode: "onboarding",
       message: "עברנו ל־onboarding של הפרויקט",
-      status: "זה שלב נפרד מיצירת הפרויקט. עכשיו מוסיפים הקשר וחומר תומך לפני פתיחת ה־workspace.",
+      status: "זה שלב נפרד מיצירת הפרויקט. עכשיו מוסיפים הקשר וחומר תומך לפני פתיחת משטח העבודה.",
     });
     persistFlowState("onboarding");
   }
@@ -3189,8 +7282,8 @@ export function createCockpitApp({
     if (!onboardingFlow?.sessionId) {
       if (currentProjectId) {
         await loadProject(currentProjectId, {
-          title: "חזרת ל־workspace שלך",
-          message: "מסך ה־Onboarding נפתח במצב בדיקה מתוך ה־workspace, אז החזרנו אותך לאותו פרויקט בלי לפתוח flow חדש.",
+          title: "חזרת למשטח העבודה שלך",
+          message: "מסך ה־Onboarding נפתח במצב בדיקה מתוך משטח העבודה, אז החזרנו אותך לאותו פרויקט בלי לפתוח זרימה חדשה.",
         });
         return;
       }
@@ -3198,12 +7291,19 @@ export function createCockpitApp({
       renderEmptyAppState({
         mode: "onboarding",
         message: "אי אפשר לסיים onboarding עדיין",
-        status: "אין כרגע session פעיל ל־onboarding, ולכן אי אפשר לבנות workspace חדש מהשלב הזה.",
+        status: "אין כרגע session פעיל ל־onboarding, ולכן אי אפשר לבנות משטח עבודה חדש מהשלב הזה.",
       });
       return;
     }
 
-    if ((onboardingConversation?.currentIndex ?? 0) < onboardingQuestionFlow.length) {
+    try {
+      await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
+    } catch {
+      // Keep the current local conversation if the refresh fails; the finish path
+      // still needs to surface the live blocker truthfully.
+    }
+
+    if (onboardingConversation?.isComplete !== true && (onboardingConversation?.currentIndex ?? 0) < (onboardingConversation?.totalQuestions ?? onboardingQuestionFlow.length)) {
       renderEmptyAppState({
         mode: "onboarding",
         message: "ממשיכים ל־onboarding",
@@ -3214,14 +7314,16 @@ export function createCockpitApp({
 
     const projectName = elements.createProjectNameInput?.value?.trim() || onboardingFlow?.projectName?.trim?.() || "";
     const visionText = elements.createProjectVisionInput?.value?.trim() || onboardingFlow?.visionText?.trim?.() || "";
-    const supportingLink = elements.createProjectLinkInput?.value?.trim() ?? "";
+    const supportingLink = elements.createProjectLinkInput?.value?.trim()
+      || onboardingFlow?.supportingLink?.trim?.()
+      || "";
     const uploadedFiles = buildOnboardingUploadedFiles();
 
-    if (!projectName || !visionText || (!supportingLink && uploadedFiles.length === 0)) {
+    if (!projectName || !visionText) {
       renderEmptyAppState({
         mode: "onboarding",
         message: "ממשיכים ל־onboarding",
-        status: "כדי לסיים onboarding צריך שם פרויקט, תיאור, וקישור תומך או קובץ תומך אחד לפחות.",
+        status: "כדי לסיים onboarding צריך שם פרויקט ותיאור ברור של מה שאתה רוצה לבנות.",
       });
       return;
     }
@@ -3234,7 +7336,7 @@ export function createCockpitApp({
     renderEmptyAppState({
       mode: "onboarding",
       message: "מסיימים onboarding",
-      status: "הבקשה נשלחה. בודק readiness, משלים intake וטוען workspace ברגע שהפרויקט מוכן.",
+      status: "הבקשה נשלחה. בודק readiness, משלים intake וטוען את משטח העבודה ברגע שהפרויקט מוכן.",
     });
     setFlowButtonState({
       target: "finish",
@@ -3243,29 +7345,74 @@ export function createCockpitApp({
     });
 
     try {
-      await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/intake`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          visionText: formatVisionText(projectName, visionText),
-          uploadedFiles: [],
-          externalLinks: supportingLink ? [supportingLink] : [],
-        }),
+      await syncOnboardingIntakeToSession({
+        sessionId: onboardingFlow.sessionId,
+        projectName,
+        visionText,
+        supportingLink,
+        uploadedFiles,
       });
 
-      if (uploadedFiles.length > 0) {
-        await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/files`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            uploadedFiles,
-          }),
-        });
+      try {
+        await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
+      } catch {
+        // If the backend conversation refresh fails here, let the finish request
+        // surface the blocker from the authoritative session state.
       }
 
       const finished = await fetchJson(`/api/onboarding/sessions/${onboardingFlow.sessionId}/finish`, {
         method: "POST",
       });
+      const continuationPreview = !finished.project?.id && shouldUseOnboardingContinuationPreview(finished)
+        ? buildOnboardingContinuationPreviewProject({
+            projectName,
+            visionText,
+            finished,
+          })
+        : null;
+
+      if (finished.project?.id) {
+        activeWorkspace = "loop";
+        onboardingFlow = null;
+        onboardingConversation = null;
+        const loadedProject = await loadProject(finished.project.id, {
+          ...buildOnboardingContinuationFeedback({
+            projectName,
+            answers: onboardingConversation?.answers ?? {},
+            finished,
+          }),
+        });
+        renderLoopCoreScreenView(loadedProject);
+        renderShellChrome("workspace", activeWorkspace);
+        syncBrowserShellRoute("loop");
+        scrollViewportToTop();
+        persistFlowState("loop");
+        return;
+      }
+
+      if (continuationPreview) {
+        currentProjectId = null;
+        currentProject = continuationPreview;
+        activeWorkspace = "loop";
+        showFlowFeedback(
+          buildOnboardingContinuationFeedback({
+            projectName,
+            answers: onboardingConversation?.answers ?? {},
+            finished: {
+              ...finished,
+              onboardingStateHandoff: continuationPreview.onboardingStateHandoff,
+              onboardingCompletionDecision: continuationPreview.onboardingCompletionDecision,
+            },
+            previewOnly: true,
+          }),
+        );
+        renderLoopCoreScreenView(continuationPreview);
+        renderShellChrome("loop", activeWorkspace);
+        syncBrowserShellRoute("loop");
+        scrollViewportToTop();
+        persistFlowState("loop");
+        return;
+      }
 
       if (finished.blocked || !finished.project?.id) {
         renderEmptyAppState({
@@ -3275,20 +7422,49 @@ export function createCockpitApp({
         });
         return;
       }
-
-      await loadProject(finished.project.id, {
-        ...buildWorkspaceLandingFeedback({
-          projectName,
-          answers: onboardingConversation?.answers ?? {},
-        }),
-      });
     } catch (error) {
       renderEmptyAppState({
         mode: "onboarding",
         message: "סיום onboarding נכשל",
-        status: `לא הצלחנו לסיים onboarding כרגע. ${error?.message ?? "נסה שוב או השלם את שדות החובה."}`,
+        status: `לא הצלחנו לסיים onboarding כרגע. ${formatOnboardingRetryStatus(error, "נסה שוב בעוד רגע או השלם את שדות החובה.")}`,
       });
     }
+  }
+
+  async function executeCurrentLoopTask() {
+    if (!currentProjectId) {
+      return;
+    }
+
+    const previousProject = currentProject;
+    await fetchJson(`/api/projects/${currentProjectId}/run-cycle`, { method: "POST" });
+    const nextProject = await fetchJson(`/api/projects/${currentProjectId}`);
+    activeWorkspace = "execution";
+    const refreshedProject = await loadProject(currentProjectId, {
+      ...buildRunCycleFeedback(previousProject, nextProject),
+      pulseWorkspace: true,
+    }, nextProject);
+    currentProject = refreshedProject;
+  }
+
+  async function correctOnboardingUnderstanding() {
+    if (elements.onboardingScreenStatus) {
+      elements.onboardingScreenStatus.hidden = false;
+      elements.onboardingScreenStatus.textContent = "מחזיר את השיחה לעריכה כדי לדייק את ההבנה לפני שממשיכים.";
+    }
+
+    try {
+      await restartOnboardingConversationFromBackend();
+    } catch {
+      onboardingConversation = createOnboardingConversationState();
+    }
+
+    renderOnboardingNotes();
+    renderOnboardingConversation();
+    setAppScreen("onboarding");
+    renderShellChrome("onboarding", activeWorkspace);
+    scrollViewportToTop();
+    persistFlowState("onboarding");
   }
 
   async function submitProposalEditsFromUi() {
@@ -3722,16 +7898,49 @@ async function runSnapshotWorkerTickFromUi() {
   }
 
   async function loadProjects() {
+    await ensureAppUser();
     const storedFlowState = readStoredFlowState();
-    const { projects } = await fetchJson("/api/projects");
-    elements.projectSelect.innerHTML = normalizeArray(projects)
-      .map((project) => `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`)
-      .join("");
+    const storedProjectSnapshot = normalizeObject(storedFlowState?.currentProjectSnapshot);
+    const storedProjectAuditPayload = normalizeObject(storedFlowState?.currentProjectAuditPayload);
+    const requestedRouteKey = resolveShellRouteKeyFromPath(globalThis.location?.pathname ?? "/");
+    const storedWorkspaceProjectId = storedFlowState?.currentProjectId
+      ?? storedProjectSnapshot.id
+      ?? storedFlowState?.onboardingConversation?.projectId
+      ?? null;
+    let projects = [];
+    let projectListLoaded = false;
+
+    try {
+      const payload = await fetchJson("/api/projects");
+      projects = normalizeArray(payload.projects);
+      projectListLoaded = true;
+    } catch (error) {
+      if (storedProjectSnapshot.id) {
+        projects = [storedProjectSnapshot];
+      } else {
+        throw error;
+      }
+    }
+
+    cachedProjects = projects;
+    if (elements.projectSelect) {
+      elements.projectSelect.innerHTML = projects
+        .map((project) => `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}${projectListLoaded !== true && project.id === storedProjectSnapshot.id ? " (restore)" : ""}</option>`)
+        .join("");
+    }
 
     if (storedFlowState?.activeWorkspace) {
       activeWorkspace = workspaceKeys.includes(storedFlowState.activeWorkspace)
         ? storedFlowState.activeWorkspace
         : activeWorkspace;
+    } else if (workspaceKeys.includes(storedFlowState?.screen)) {
+      activeWorkspace = storedFlowState.screen;
+    } else if (storedFlowState?.screen === "workspace") {
+      activeWorkspace = "loop";
+    }
+
+    if (workspaceKeys.includes(requestedRouteKey)) {
+      activeWorkspace = requestedRouteKey;
     }
 
     if (storedFlowState?.draftInputs) {
@@ -3743,17 +7952,154 @@ async function runSnapshotWorkerTickFromUi() {
     }
 
     if (storedFlowState?.onboardingConversation && typeof storedFlowState.onboardingConversation === "object") {
-      onboardingConversation = storedFlowState.onboardingConversation;
+      onboardingConversation = storedFlowState.onboardingConversation.currentQuestion || storedFlowState.onboardingConversation.summary
+        ? refreshOnboardingConversationPresentation(storedFlowState.onboardingConversation, {
+          visionText: storedFlowState?.onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
+          projectTypeHint: currentProject?.artifactExpectation?.projectType
+            ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+            ?? "",
+        })
+        : createOnboardingConversationState();
     }
 
-    if (storedFlowState?.screen === "workspace" && storedFlowState.currentProjectId) {
-      await loadProject(storedFlowState.currentProjectId);
-    } else if (storedFlowState?.screen === "onboarding") {
+    if (
+      requestedRouteKey
+      && requestedRouteKey !== "create"
+      && requestedRouteKey !== "home"
+      && requestedRouteKey !== "files"
+      && requestedRouteKey !== "settings"
+      && requestedRouteKey !== "help"
+      && !canTruthfullyRestoreDirectRoute(requestedRouteKey, storedFlowState)
+    ) {
+      renderBlockedRouteFallback(requestedRouteKey);
+      return projects;
+    }
+
+    if (storedFlowState?.screen === "home") {
+      currentProjectId = storedFlowState.currentProjectId ?? storedProjectSnapshot.id ?? null;
+      currentProject = null;
+      if (currentProjectId) {
+        try {
+          currentProject = await fetchJson(`/api/projects/${currentProjectId}`);
+        } catch {
+          currentProject = storedProjectSnapshot.id ? storedProjectSnapshot : null;
+        }
+      } else if (storedProjectSnapshot.id) {
+        currentProject = storedProjectSnapshot;
+      }
+      renderHomeSupportScreenView(cachedProjects);
+    } else if (storedFlowState?.screen === "files") {
       currentProjectId = storedFlowState.currentProjectId ?? null;
       currentProject = null;
+      if (currentProjectId) {
+        try {
+          currentProject = await fetchJson(`/api/projects/${currentProjectId}`);
+        } catch {
+          currentProject = null;
+        }
+      }
+      renderFilesSupportScreenView();
+    } else if ((storedFlowState?.screen === "workspace" || storedFlowState?.screen === "loop" || storedFlowState?.screen === "execution" || storedFlowState?.screen === "proof" || storedFlowState?.screen === "artifact" || storedFlowState?.screen === "confirmation" || storedFlowState?.screen === "state-update" || storedFlowState?.screen === "next-task" || storedFlowState?.screen === "timeline") && storedWorkspaceProjectId) {
+      if (storedProjectAuditPayload && Object.keys(storedProjectAuditPayload).length > 0) {
+        currentProjectAuditPayload = storedProjectAuditPayload;
+      }
+      try {
+        await loadProject(storedWorkspaceProjectId);
+      } catch {
+        await loadProject(storedWorkspaceProjectId, null, storedProjectSnapshot.id ? storedProjectSnapshot : null);
+      }
+    } else if (storedFlowState?.screen === "understanding") {
+      currentProjectId = storedFlowState.currentProjectId ?? null;
+      currentProject = null;
+      if (currentProjectId) {
+        try {
+          currentProject = await fetchJson(`/api/projects/${currentProjectId}`);
+        } catch {
+          currentProject = null;
+        }
+      }
+      openUnderstandingPreviewScreen();
+    } else if (storedFlowState?.screen === "loop") {
+      openLoopPreviewScreen();
+    } else if (storedFlowState?.screen === "execution") {
+      openExecutionPreviewScreen();
+    } else if (storedFlowState?.screen === "proof") {
+      openProofPreviewScreen();
+    } else if (storedFlowState?.screen === "artifact") {
+      renderArtifactPreviewScreenView(null, { qaMode: true });
+    } else if (storedFlowState?.screen === "confirmation") {
+      openConfirmationPreviewScreen();
+    } else if (storedFlowState?.screen === "state-update") {
+      openStateUpdatePreviewScreen();
+    } else if (storedFlowState?.screen === "next-task") {
+      openNextTaskPreviewScreen();
+    } else if (storedFlowState?.screen === "timeline") {
+      openTimelinePreviewScreen();
+    } else if (storedFlowState?.screen === "onboarding") {
+      let onboardingSessionMissing = false;
+      if (onboardingFlow?.sessionId) {
+        try {
+          await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
+        } catch (error) {
+          if (error?.message === "Request failed: 404") {
+            onboardingSessionMissing = true;
+          } else {
+            throw error;
+          }
+        }
+      }
+
+      if (onboardingSessionMissing) {
+        currentProjectId = null;
+        currentProject = null;
+        currentProjectAuditPayload = null;
+        onboardingFlow = null;
+        onboardingConversation = createOnboardingConversationState();
+        renderBlockedRouteFallback("onboarding", {
+          title: "ה־Onboarding הקודם כבר לא זמין",
+          body: "שמרנו את פרטי הטיוטה שמילאת, אבל ה־session הקודם כבר לא קיים בשרת ולכן אי אפשר לשחזר את /onboarding truthfully מתוך השרת החי.",
+        });
+        return projects;
+      }
+
+      currentProjectId = storedFlowState.currentProjectId
+        ?? storedFlowState?.onboardingConversation?.projectId
+        ?? storedProjectSnapshot.id
+        ?? null;
+      currentProject = storedProjectSnapshot.id ? storedProjectSnapshot : null;
+      if (!currentProject && currentProjectId) {
+        currentProject = normalizeArray(cachedProjects).find((project) => project?.id === currentProjectId) ?? null;
+      }
+      if (!currentProject && currentProjectId) {
+        try {
+          currentProject = await fetchJson(`/api/projects/${currentProjectId}`);
+        } catch {
+          currentProject = null;
+        }
+      }
+      if (!currentProject && storedProjectSnapshot.id) {
+        currentProject = storedProjectSnapshot;
+      }
+      if (!currentProjectId && currentProject?.id) {
+        currentProjectId = currentProject.id;
+      }
+      if (storedProjectAuditPayload && Object.keys(storedProjectAuditPayload).length > 0) {
+        currentProjectAuditPayload = storedProjectAuditPayload;
+      }
+      if (currentProjectId && currentProject) {
+        reopenOnboardingFromWorkspace();
+      } else {
+        renderBlockedRouteFallback("onboarding", {
+          title: "אי אפשר לשחזר את ה־Onboarding כרגע",
+          body: "ה־URL חזר ל־/onboarding אבל אין כרגע project/session חי שמאפשר להמשיך את המסלול הזה בלי ליפול למסך יצירה כללי.",
+        });
+      }
+    } else if (requestedRouteKey === "create" || storedFlowState?.screen === "create") {
+      currentProjectId = null;
+      currentProject = null;
       renderEmptyAppState({
-        mode: "onboarding",
-        message: "חזרת ל־Onboarding",
+        mode: "create",
+        message: "מה אתה רוצה לבנות?",
         status: "המשכנו בדיוק מהמקום שבו היית לפני הרענון.",
       });
     } else if (projects?.[0]) {
@@ -3763,6 +8109,16 @@ async function runSnapshotWorkerTickFromUi() {
       currentProject = null;
       renderEmptyAppState();
     }
+
+    if ((requestedRouteKey === "home" || requestedRouteKey === "files") && storedWorkspaceProjectId) {
+      await hydrateStoredProjectContextForSupportRoute({
+        storedWorkspaceProjectId,
+        storedProjectSnapshot,
+        projects: cachedProjects,
+      });
+    }
+
+    applyRequestedShellRouteFromLocation({ replace: true });
 
     return projects;
   }
@@ -3775,27 +8131,264 @@ async function runSnapshotWorkerTickFromUi() {
     enterCreateProjectScreen();
   });
 
+  for (const routeButton of [
+    elements.navCreateButton,
+    elements.navOnboardingButton,
+    elements.navLoopButton,
+    elements.navTimelineButton,
+    elements.navDeveloperButton,
+    elements.navProjectBrainButton,
+    elements.navReleaseButton,
+    elements.navGrowthButton,
+    elements.navSettingsButton,
+    elements.navHelpButton,
+    elements.topbarProfileButton,
+    elements.flowStepCreateButton,
+    elements.flowStepOnboardingButton,
+    elements.flowStepUnderstandingButton,
+    elements.flowStepLoopButton,
+  ]) {
+    routeButton?.addEventListener("click", (event) => {
+      const target = event.currentTarget?.dataset?.shellTarget;
+      if (target) {
+        openShellRoute(target);
+      }
+    });
+  }
+
+  for (const qaButton of [
+    elements.qaScreenCreateButton,
+    elements.qaScreenOnboardingButton,
+    elements.qaScreenUnderstandingButton,
+    elements.qaScreenLoopButton,
+    elements.qaScreenExecutionButton,
+    elements.qaScreenProofButton,
+  ]) {
+    qaButton?.addEventListener("click", (event) => {
+      const target = resolveQaTargetFromButton(event.currentTarget);
+      if (target) {
+        openQaScreen(target);
+      }
+    });
+  }
+
+  if (typeof doc.addEventListener === "function") {
+    doc.addEventListener("click", async (event) => {
+      const settingsTabButton = event.target?.closest?.("[data-settings-tab]");
+      if (settingsTabButton && doc?.body?.dataset?.appScreen === "settings") {
+        event.preventDefault?.();
+        currentSettingsPanel = settingsTabButton.dataset?.settingsTab?.trim() || "profile";
+        await renderSettingsScreenView(currentSettingsProfileSurface);
+        return;
+      }
+
+      const settingsSaveButton = event.target?.closest?.("#settings-save-button");
+      if (settingsSaveButton && doc?.body?.dataset?.appScreen === "settings") {
+        event.preventDefault?.();
+        await saveSettingsProfileSurface();
+        return;
+      }
+
+      const settingsCancelButton = event.target?.closest?.("#settings-cancel-button");
+      if (settingsCancelButton && doc?.body?.dataset?.appScreen === "settings") {
+        event.preventDefault?.();
+        currentSettingsFlashMessage = "";
+        currentSettingsErrorMessage = "";
+        currentSettingsSavingState = "idle";
+        await renderSettingsScreenView(currentSettingsProfileSurface);
+        return;
+      }
+
+      const settingsToggleButton = event.target?.closest?.(
+        "#settings-email-toggle, #settings-email-toggle-clone, #settings-inapp-toggle, #settings-inapp-toggle-clone",
+      );
+      if (settingsToggleButton && doc?.body?.dataset?.appScreen === "settings") {
+        event.preventDefault?.();
+        const nextEnabled = settingsToggleButton.dataset.enabled !== "true";
+        const enabledValue = nextEnabled ? "true" : "false";
+        const pressedValue = nextEnabled ? "true" : "false";
+        const toggleKind = settingsToggleButton.id.includes("email") ? "email" : "inapp";
+        for (const toggleCandidate of [
+          elements.settingsEmailToggle,
+          elements.settingsEmailToggleClone,
+          elements.settingsInAppToggle,
+          elements.settingsInAppToggleClone,
+        ]) {
+          if (!toggleCandidate) {
+            continue;
+          }
+          const candidateKind = toggleCandidate.id.includes("email") ? "email" : "inapp";
+          if (candidateKind !== toggleKind) {
+            continue;
+          }
+          toggleCandidate.dataset.enabled = enabledValue;
+          toggleCandidate.setAttribute("aria-pressed", pressedValue);
+          const track = toggleCandidate.querySelector(".nexus-settings-screen__toggle-track");
+          if (track) {
+            track.dataset.enabled = enabledValue;
+          }
+        }
+        return;
+      }
+
+      const settingsThemeMirror = event.target?.closest?.("#settings-theme-select, #settings-theme-select-clone");
+      if (settingsThemeMirror && doc?.body?.dataset?.appScreen === "settings") {
+        const nextValue = settingsThemeMirror.value;
+        if (elements.settingsThemeSelect) {
+          elements.settingsThemeSelect.value = nextValue;
+        }
+        if (elements.settingsThemeSelectClone) {
+          elements.settingsThemeSelectClone.value = nextValue;
+        }
+      }
+
+      const qaTargetButton = event.target?.closest?.("[data-nexus-ui-qa-target]");
+      const qaTarget = qaTargetButton?.dataset?.nexusUiQaTarget;
+      if (qaTarget) {
+        event.preventDefault?.();
+        openQaScreen(qaTarget);
+        return;
+      }
+
+      const helpCategoryButton = event.target?.closest?.("[data-help-category]");
+      if (helpCategoryButton) {
+        event.preventDefault?.();
+        openHelpCategory(helpCategoryButton.dataset.helpCategory ?? "");
+        return;
+      }
+
+      const helpArticleButton = event.target?.closest?.("[data-help-article-id]");
+      if (helpArticleButton) {
+        event.preventDefault?.();
+        openHelpArticle(helpArticleButton.dataset.helpArticleId ?? "");
+        return;
+      }
+
+      const helpSupportToggleButton = event.target?.closest?.("[data-help-support-toggle]");
+      if (helpSupportToggleButton) {
+        event.preventDefault?.();
+        toggleHelpSupportPanel();
+        return;
+      }
+
+      const helpSupportCopyButton = event.target?.closest?.("[data-help-support-copy]");
+      if (helpSupportCopyButton) {
+        event.preventDefault?.();
+        void copyHelpSupportSummary();
+        return;
+      }
+
+      const helpSupportMailtoButton = event.target?.closest?.("[data-help-support-mailto]");
+      if (helpSupportMailtoButton) {
+        event.preventDefault?.();
+        const href = helpSupportMailtoButton.dataset.helpSupportMailto ?? "";
+        if (href) {
+          globalThis.location.href = href;
+        }
+        return;
+      }
+
+      const targetButton = event.target?.closest?.("[data-nexus-ui-target]");
+      const target = targetButton?.dataset?.nexusUiTarget;
+      if (target) {
+        event.preventDefault?.();
+        if (shouldBypassToQaRoute(target)) {
+          openQaScreen(target);
+          return;
+        }
+        openShellRoute(target);
+        return;
+      }
+
+      const supportRouteLink = event.target?.closest?.('.nexus-ui-sidebar__link[href^="/"]');
+      const supportHref = supportRouteLink?.getAttribute?.("href") ?? "";
+      const supportTarget = supportHref === "/home"
+        ? "home"
+        : supportHref === "/files"
+          ? "files"
+          : supportHref === "/settings"
+            ? "settings"
+            : supportHref === "/help"
+              ? "help"
+              : "";
+      if (supportTarget) {
+        event.preventDefault?.();
+        openShellRoute(supportTarget);
+      }
+    });
+
+    doc.addEventListener("change", (event) => {
+      const helpSearchInput = event.target?.closest?.("#help-search-input");
+      if (helpSearchInput) {
+        currentHelpSearchQuery = normalizeString(helpSearchInput.value);
+        currentHelpSupportCopyMessage = "";
+        renderHelpSupportScreenView();
+        return;
+      }
+
+      if (doc?.body?.dataset?.appScreen !== "settings") {
+        return;
+      }
+
+      const settingsThemeMirror = event.target?.closest?.("#settings-theme-select, #settings-theme-select-clone");
+      if (settingsThemeMirror) {
+        const nextValue = settingsThemeMirror.value;
+        if (elements.settingsThemeSelect) {
+          elements.settingsThemeSelect.value = nextValue;
+        }
+        if (elements.settingsThemeSelectClone) {
+          elements.settingsThemeSelectClone.value = nextValue;
+        }
+      }
+    });
+  }
+
+  elements.qaPrevScreenButton?.addEventListener("click", () => {
+    const currentIndex = qaScreenSequence.indexOf(resolveCurrentQaScreenKey());
+    if (currentIndex > 0) {
+      openQaScreen(qaScreenSequence[currentIndex - 1]);
+    }
+  });
+
+  elements.qaNextScreenButton?.addEventListener("click", () => {
+    const currentIndex = qaScreenSequence.indexOf(resolveCurrentQaScreenKey());
+    if (currentIndex >= 0 && currentIndex < qaScreenSequence.length - 1) {
+      openQaScreen(qaScreenSequence[currentIndex + 1]);
+    }
+  });
+
+  elements.loopTab?.addEventListener("click", () => {
+    activeWorkspace = "loop";
+    setActiveWorkspace(elements, activeWorkspace);
+    renderShellChrome("workspace", activeWorkspace);
+    updatePresence().catch(() => {});
+  });
+
   elements.developerTab?.addEventListener("click", () => {
     activeWorkspace = "developer";
     setActiveWorkspace(elements, activeWorkspace);
+    renderShellChrome("workspace", activeWorkspace);
     updatePresence().catch(() => {});
   });
 
   elements.projectBrainTab?.addEventListener("click", () => {
     activeWorkspace = "project-brain";
     setActiveWorkspace(elements, activeWorkspace);
+    renderShellChrome("workspace", activeWorkspace);
     updatePresence().catch(() => {});
   });
 
   elements.releaseTab?.addEventListener("click", () => {
     activeWorkspace = "release";
     setActiveWorkspace(elements, activeWorkspace);
+    renderShellChrome("workspace", activeWorkspace);
     updatePresence().catch(() => {});
   });
 
   elements.growthTab?.addEventListener("click", () => {
     activeWorkspace = "growth";
     setActiveWorkspace(elements, activeWorkspace);
+    renderShellChrome("workspace", activeWorkspace);
     updatePresence().catch(() => {});
   });
 
@@ -3837,66 +8430,464 @@ async function runSnapshotWorkerTickFromUi() {
     await loadProject(currentProjectId);
   });
 
-  elements.createProjectButton?.addEventListener("click", async () => {
-    await createFirstProjectFlow();
+  for (const draftInput of [
+    elements.createProjectNameInput,
+    elements.createProjectVisionInput,
+    elements.createProjectLinkInput,
+  ]) {
+    draftInput?.addEventListener("input", () => {
+      persistFlowState(resolveCurrentShellRouteKey());
+    });
+  }
+
+  elements.createProjectFilePickerButton?.addEventListener("click", () => {
+    elements.createProjectFileUploadInput?.click();
   });
 
-  elements.finishOnboardingButton?.addEventListener("click", async () => {
-    await finishFirstProjectOnboarding();
+  elements.createProjectFileUploadInput?.addEventListener("change", async (event) => {
+    await hydrateSelectedSupportFiles(event.currentTarget?.files ?? []);
   });
 
-  elements.onboardingNextButton?.addEventListener("click", () => {
-    advanceOnboardingConversation();
+  elements.createProjectFilePickerButton?.addEventListener("dragover", (event) => {
+    event.preventDefault?.();
+    elements.createProjectFilePickerButton?.classList?.add("drag-active");
   });
 
-  elements.onboardingBackButton?.addEventListener("click", async () => {
-    await exitOnboardingScreen();
+  elements.createProjectFilePickerButton?.addEventListener("dragleave", () => {
+    elements.createProjectFilePickerButton?.classList?.remove("drag-active");
   });
 
-  elements.onboardingForwardButton?.addEventListener("click", async () => {
-    const isComplete = (onboardingConversation?.currentIndex ?? 0) >= onboardingQuestionFlow.length;
-    if (isComplete) {
+  elements.createProjectFilePickerButton?.addEventListener("drop", async (event) => {
+    event.preventDefault?.();
+    elements.createProjectFilePickerButton?.classList?.remove("drag-active");
+    await hydrateSelectedSupportFiles(event.dataTransfer?.files ?? []);
+  });
+
+  if (typeof doc.addEventListener === "function") {
+    doc.addEventListener("click", async (event) => {
+    const createProjectButton = event.target?.closest?.("#create-project-button");
+    if (createProjectButton && doc?.body?.dataset?.appScreen === "create") {
+      event.preventDefault?.();
+      await createFirstProjectFlow();
+      return;
+    }
+
+    const finishOnboardingButton = event.target?.closest?.("#finish-onboarding-button");
+    if (finishOnboardingButton && doc?.body?.dataset?.appScreen === "onboarding") {
+      event.preventDefault?.();
       await finishFirstProjectOnboarding();
       return;
     }
-    advanceOnboardingConversation();
-  });
 
-  elements.onboardingAnswerInput?.addEventListener("input", () => {
-    onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
-    onboardingConversation.draftAnswer = elements.onboardingAnswerInput?.value ?? "";
-    persistFlowState("onboarding");
-  });
-
-  elements.onboardingAnswerInput?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    const onboardingNextButton = event.target?.closest?.("#onboarding-next-button");
+    if (onboardingNextButton && doc?.body?.dataset?.appScreen === "onboarding") {
       event.preventDefault?.();
-      advanceOnboardingConversation();
+      await advanceOnboardingConversation();
+      return;
     }
-  });
+
+    const onboardingBackButton = event.target?.closest?.("#onboarding-back-button");
+    if (onboardingBackButton && doc?.body?.dataset?.appScreen === "onboarding") {
+      event.preventDefault?.();
+      await exitOnboardingScreen();
+      return;
+    }
+
+    const onboardingForwardButton = event.target?.closest?.("#onboarding-forward-button");
+    if (onboardingForwardButton && doc?.body?.dataset?.appScreen === "onboarding") {
+      event.preventDefault?.();
+      const isComplete = onboardingConversation?.isComplete === true
+        || (onboardingConversation?.currentIndex ?? 0) >= (onboardingConversation?.totalQuestions ?? onboardingQuestionFlow.length);
+      if (isComplete) {
+        openUnderstandingPreviewScreen();
+      } else {
+        await advanceOnboardingConversation();
+      }
+      return;
+    }
+
+    const homeCreateProjectButton = event.target?.closest?.("#home-create-project-button");
+    if (homeCreateProjectButton && doc?.body?.dataset?.appScreen === "home") {
+      event.preventDefault?.();
+      enterCreateProjectScreen();
+      return;
+    }
+
+    const homeProjectButton = event.target?.closest?.("[data-home-project-id]");
+    if (homeProjectButton && doc?.body?.dataset?.appScreen === "home") {
+      event.preventDefault?.();
+      const projectId = homeProjectButton.dataset?.homeProjectId?.trim();
+      if (!projectId) {
+        return;
+      }
+      activeWorkspace = "loop";
+      await loadProject(projectId);
+      syncBrowserShellRoute("loop");
+      scrollViewportToTop();
+      return;
+    }
+
+    const continueButton = event.target?.closest?.("#understanding-continue-button");
+    if (continueButton) {
+      event.preventDefault?.();
+      await finishFirstProjectOnboarding();
+      return;
+    }
+
+    const correctButton = event.target?.closest?.("#understanding-correct-button");
+    if (correctButton) {
+      event.preventDefault?.();
+      await correctOnboardingUnderstanding();
+      return;
+    }
+
+    const loopPrimaryButton = event.target?.closest?.("#loop-primary-action-button");
+    if (loopPrimaryButton && doc?.body?.dataset?.appScreen === "loop") {
+      event.preventDefault?.();
+      const actionKind = loopPrimaryButton.dataset?.loopActionKind ?? "navigate";
+      if (actionKind === "execute") {
+        await executeCurrentLoopTask();
+        return;
+      }
+      navigateLoopTarget(loopPrimaryButton.dataset?.loopTarget ?? "onboarding");
+      return;
+    }
+
+    const loopSecondaryButton = event.target?.closest?.("#loop-secondary-action-button");
+    if (loopSecondaryButton && doc?.body?.dataset?.appScreen === "loop") {
+      event.preventDefault?.();
+      navigateLoopTarget(loopSecondaryButton.dataset?.loopTarget ?? "proof");
+      return;
+    }
+
+    const executionProofButton = event.target?.closest?.("#execution-proof-button");
+    if (executionProofButton && doc?.body?.dataset?.appScreen === "execution") {
+      event.preventDefault?.();
+      openShellRoute("proof");
+      return;
+    }
+
+    const executionRefreshButton = event.target?.closest?.("#execution-refresh-button");
+    if (executionRefreshButton && doc?.body?.dataset?.appScreen === "execution") {
+      event.preventDefault?.();
+      if (!currentProjectId) {
+        openExecutionPreviewScreen();
+        return;
+      }
+      await loadProject(currentProjectId);
+      return;
+    }
+
+    const proofForwardButton = event.target?.closest?.("#proof-full-button");
+    if (proofForwardButton && doc?.body?.dataset?.appScreen === "proof") {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderConfirmationDecisionScreenView(currentProject);
+        syncBrowserShellRoute("confirmation");
+      } else {
+        openConfirmationPreviewScreen();
+      }
+      return;
+    }
+
+    const confirmationApproveButton = event.target?.closest?.("#confirmation-approve-button");
+    if (confirmationApproveButton) {
+      event.preventDefault?.();
+      const approvalRequestId = confirmationApproveButton.dataset?.approvalRequestId?.trim() ?? "";
+      if (currentProjectId) {
+        await fetchJson(`/api/projects/${currentProjectId}/approvals/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            approvalRequestId: approvalRequestId || null,
+            userInput: {
+              actorRole: "owner",
+              actorName: activeAppUser?.email ?? "QA owner",
+            },
+          }),
+        });
+        await loadProject(currentProjectId);
+      }
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderStateUpdateScreenView(currentProject);
+        syncBrowserShellRoute("state-update");
+      } else {
+        openStateUpdatePreviewScreen();
+      }
+      return;
+    }
+
+    const confirmationArtifactButton = event.target?.closest?.("#confirmation-artifact-button");
+    if (confirmationArtifactButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderArtifactPreviewScreenView(currentProject);
+        syncBrowserShellRoute("artifact");
+      } else if (isQaModeEnabled()) {
+        renderArtifactPreviewScreenView(null, { qaMode: true });
+      }
+      return;
+    }
+
+    const proofOpenButton = event.target?.closest?.("#proof-open-button");
+    if (proofOpenButton && doc?.body?.dataset?.appScreen === "proof") {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderArtifactPreviewScreenView(currentProject);
+        syncBrowserShellRoute("artifact");
+      } else if (isQaModeEnabled()) {
+        renderArtifactPreviewScreenView(null, { qaMode: true });
+      }
+      return;
+    }
+
+    const proofDownloadButton = event.target?.closest?.("#proof-download-button");
+    if (proofDownloadButton && doc?.body?.dataset?.appScreen === "proof") {
+      event.preventDefault?.();
+      if (currentProject) {
+        triggerArtifactDownload(doc, currentProject);
+      }
+      return;
+    }
+
+    const artifactBackToProofButton = event.target?.closest?.("#artifact-back-to-proof-button");
+    if (artifactBackToProofButton && doc?.body?.dataset?.appScreen === "artifact") {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderProofResultScreenView(currentProject);
+        syncBrowserShellRoute("proof");
+      } else if (isQaModeEnabled()) {
+        openProofPreviewScreen();
+      }
+      return;
+    }
+
+    const artifactDownloadButton = event.target?.closest?.("#artifact-download-button");
+    if (artifactDownloadButton && doc?.body?.dataset?.appScreen === "artifact") {
+      event.preventDefault?.();
+      if (currentProject) {
+        triggerArtifactDownload(doc, currentProject);
+      }
+      return;
+    }
+
+    const artifactContinueButton = event.target?.closest?.("#artifact-continue-button");
+    if (artifactContinueButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderConfirmationDecisionScreenView(currentProject);
+        syncBrowserShellRoute("confirmation");
+      } else if (isQaModeEnabled()) {
+        openConfirmationPreviewScreen();
+      }
+      return;
+    }
+
+    const confirmationReviseButton = event.target?.closest?.("#confirmation-revise-button");
+    if (confirmationReviseButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderLoopCoreScreenView(currentProject);
+        syncBrowserShellRoute("loop");
+      } else {
+        openLoopPreviewScreen();
+      }
+      return;
+    }
+
+    const stateUpdateNextButton = event.target?.closest?.("#state-update-next-button");
+    if (stateUpdateNextButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderNextTaskScreenView(currentProject);
+        syncBrowserShellRoute("next-task");
+      } else {
+        openNextTaskPreviewScreen();
+      }
+      return;
+    }
+
+    const stateUpdateHistoryButton = event.target?.closest?.("#state-update-history-button");
+    if (stateUpdateHistoryButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderTimelineHistoryScreenView(currentProject);
+        syncBrowserShellRoute("timeline");
+      } else {
+        openTimelinePreviewScreen();
+      }
+      return;
+    }
+
+    const stateUpdateArtifactButton = event.target?.closest?.("#state-update-artifact-button");
+    if (stateUpdateArtifactButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderArtifactPreviewScreenView(currentProject);
+        syncBrowserShellRoute("artifact");
+      } else if (isQaModeEnabled()) {
+        renderArtifactPreviewScreenView(null, { qaMode: true });
+      }
+      return;
+    }
+
+    const nextTaskStartButton = event.target?.closest?.("#next-task-start-button");
+    if (nextTaskStartButton) {
+      event.preventDefault?.();
+      const target = nextTaskStartButton.dataset?.nextTaskTarget ?? "execution";
+      const actionKind = nextTaskStartButton.dataset?.nextTaskActionKind ?? "execute";
+      if (actionKind === "navigate") {
+        navigateLoopTarget(target);
+      } else if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderExecutionLiveScreenView(currentProject);
+        syncBrowserShellRoute("execution");
+      } else {
+        openExecutionPreviewScreen();
+      }
+      return;
+    }
+
+    const nextTaskDetailsButton = event.target?.closest?.("#next-task-details-button");
+    if (nextTaskDetailsButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderTimelineHistoryScreenView(currentProject);
+        syncBrowserShellRoute("timeline");
+      } else {
+        openTimelinePreviewScreen();
+      }
+      return;
+    }
+
+    const nextTaskArtifactButton = event.target?.closest?.("#next-task-artifact-button");
+    if (nextTaskArtifactButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderArtifactPreviewScreenView(currentProject);
+        syncBrowserShellRoute("artifact");
+      } else if (isQaModeEnabled()) {
+        renderArtifactPreviewScreenView(null, { qaMode: true });
+      }
+      return;
+    }
+
+    const timelineReturnButton = event.target?.closest?.("#timeline-return-button");
+    if (timelineReturnButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderLoopCoreScreenView(currentProject);
+        syncBrowserShellRoute("loop");
+      } else {
+        openLoopPreviewScreen();
+      }
+      return;
+    }
+
+    const timelineArtifactButton = event.target?.closest?.("#timeline-artifact-button");
+    if (timelineArtifactButton) {
+      event.preventDefault?.();
+      if (currentProject) {
+        qaPreviewRouteKey = null;
+        renderArtifactPreviewScreenView(currentProject);
+        syncBrowserShellRoute("artifact");
+      } else if (isQaModeEnabled()) {
+        renderArtifactPreviewScreenView(null, { qaMode: true });
+      }
+      return;
+    }
+    });
+  }
+
+  if (typeof doc.addEventListener === "function") {
+    doc.addEventListener("input", (event) => {
+      const target = event.target;
+      if (target?.id === "help-search-input" && doc?.body?.dataset?.appScreen === "help") {
+        currentHelpSearchQuery = normalizeString(target.value);
+        currentHelpSupportCopyMessage = "";
+        renderHelpSupportScreenView();
+        return;
+      }
+
+      if (target?.id === "onboarding-answer-input" && doc?.body?.dataset?.appScreen === "onboarding") {
+        onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
+        onboardingConversation.draftAnswer = elements.onboardingAnswerInput?.value ?? "";
+        persistFlowState("onboarding");
+        return;
+      }
+
+      if (
+        target?.id === "create-project-name-input"
+        || target?.id === "create-project-vision-input"
+        || target?.id === "create-project-file-name-input"
+        || target?.id === "create-project-file-content-input"
+      ) {
+        persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+        return;
+      }
+
+      if (target?.id === "create-project-link-input") {
+        if (onboardingFlow?.sessionId) {
+          onboardingFlow = {
+            ...onboardingFlow,
+            supportingLink: elements.createProjectLinkInput?.value?.trim() ?? "",
+          };
+        }
+        persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+      }
+    });
+
+    doc.addEventListener("keydown", (event) => {
+      if (
+        event.target?.id === "onboarding-answer-input"
+        && doc?.body?.dataset?.appScreen === "onboarding"
+        && event.key === "Enter"
+        && !event.shiftKey
+      ) {
+        event.preventDefault?.();
+        void advanceOnboardingConversation();
+      }
+    });
+  }
 
   elements.reopenOnboardingButton?.addEventListener("click", () => {
     reopenOnboardingFromWorkspace();
   });
 
-  elements.createProjectNameInput?.addEventListener("input", () => {
-    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  elements.loopOpenOnboardingButton?.addEventListener("click", () => {
+    reopenOnboardingFromWorkspace();
   });
 
-  elements.createProjectVisionInput?.addEventListener("input", () => {
-    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  elements.loopStageRail?.addEventListener("click", (event) => {
+    const target = event.target?.closest?.("[data-loop-target]")?.dataset?.loopTarget;
+    if (target) {
+      navigateLoopTarget(target);
+    }
   });
 
-  elements.createProjectLinkInput?.addEventListener("input", () => {
-    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  elements.loopOpenProjectBrainButton?.addEventListener("click", () => {
+    navigateLoopTarget("project-brain");
   });
 
-  elements.createProjectFileNameInput?.addEventListener("input", () => {
-    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  elements.loopOpenDeveloperButton?.addEventListener("click", () => {
+    navigateLoopTarget("developer");
   });
 
-  elements.createProjectFileContentInput?.addEventListener("input", () => {
-    persistFlowState(onboardingFlow?.sessionId ? "onboarding" : "create");
+  elements.loopOpenReleaseButton?.addEventListener("click", () => {
+    navigateLoopTarget("proof");
   });
 
   if (!resolveDevFlowControlsEnabled()) {
@@ -3960,6 +8951,13 @@ async function runSnapshotWorkerTickFromUi() {
     await refreshProjectAudit();
   });
 
+  globalThis.addEventListener?.("popstate", () => {
+    applyRequestedShellRouteFromLocation({ replace: true });
+  });
+
+  primeInitialShellRoute();
+  renderBootstrapRestoredScreen();
+
   const ready = loadProjects().catch((error) => {
     if (error?.message === "Request failed: 401") {
       currentProjectId = null;
@@ -3972,8 +8970,8 @@ async function runSnapshotWorkerTickFromUi() {
       return [];
     }
 
-    elements.now.innerHTML = `<p class="empty">טעינת המסך נכשלה: ${escapeHtml(error.message)}</p>`;
-    throw error;
+    renderBootstrapFailureScreen(error);
+    return [];
   });
 
   return {
@@ -3984,6 +8982,7 @@ async function runSnapshotWorkerTickFromUi() {
     setActiveWorkspace(workspaceKey) {
       activeWorkspace = workspaceKey;
       setActiveWorkspace(elements, activeWorkspace);
+      renderShellChrome("workspace", activeWorkspace);
     },
     closeLiveUpdates,
     ready,

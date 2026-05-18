@@ -1498,3 +1498,36 @@ test("server blocks route scanning abuse across unknown api routes", async () =>
   assert.equal(blocked.body.rateLimitDecision.decision, "abuse-blocked");
   assert.equal(blocked.body.rateLimitDecision.abuseSignals.routeScanning, 5);
 });
+
+test("server allows clustered restore reads without false 429", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-restore-rate-limit-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  const signedUp = service.signupUser({
+    userInput: {
+      email: "restore@example.com",
+      displayName: "Restore User",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+  service.seedDemoProject();
+  const server = createServer(service);
+
+  for (let index = 0; index < 20; index += 1) {
+    const response = await requestJson(
+      server,
+      index % 2 === 0 ? "/api/projects" : "/api/projects/giftwallet",
+      {
+        ipAddress: "10.0.0.54",
+        headers: {
+          "x-user-id": signedUp.authPayload.userIdentity.userId,
+        },
+      },
+    );
+
+    assert.equal(response.statusCode, 200);
+  }
+});

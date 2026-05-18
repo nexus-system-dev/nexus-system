@@ -1,0 +1,38 @@
+Wave 3 existing-project upload live note
+Date: 2026-05-16
+Source of truth: http://127.0.0.1:4011/
+
+What was verified live:
+- the in-app browser reached the live create surface on `4011`
+- the create surface shows a real upload dropzone:
+  - `גרור קבצים לכאן או לחץ להעלאה`
+- a real hidden `input[type=file]` exists behind that surface
+- accepted file types exposed by the live surface:
+  - `.pdf`
+  - `.doc`
+  - `.docx`
+  - `.txt`
+  - `.md`
+  - `.png`
+  - `.jpg`
+  - `.jpeg`
+  - `.json`
+- clicking the dropzone from the Codex in-app browser changes active focus state but did not produce a usable file-selection flow
+- a realistic existing project such as `/Users/yogevlavian/Desktop/milan.co` also hits a product-truth blocker because the live contract still limits upload to `10MB`
+- the current create flow behaves like one support-file intake, not like a believable project-bundle intake
+- the selected file is hydrated into onboarding as one text-like supporting artifact rather than a preserved project bundle path
+
+What was not proven:
+- a real local file selection
+- a created project from uploaded material
+- understanding truth derived from uploaded content
+- upload-driven loop / proof / artifact / timeline progression
+
+Truthful blocker:
+- `fresh live in-app upload verification unavailable / Codex iab backend cannot prove file-upload flow end-to-end`
+- `10MB upload ceiling is not product-truthful for real existing-project intake`
+
+Additional truth requirement:
+- uploaded-project closure cannot pass from file survival alone
+- Nexus must also prove upload comprehension, upload-driven loop relevance, and upload-driven product progression
+- the upload contract itself must be realistic enough for a believable existing-project intake

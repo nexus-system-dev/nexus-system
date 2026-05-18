@@ -1,0 +1,16 @@
+Project: Closure Gate Landing Live
+
+Evidence:
+- fresh create-to-onboarding handoff on `4011` is now class-aware for landing projects
+- the visible heading, transcript, and placeholder all use landing-specific wording:
+  - `למי דף הנחיתה הזה צריך לדבר?`
+- this replaced the earlier generic `למי המערכת הזאת נבנית?` truth on the fresh path
+
+Remaining closure-gap truth:
+- downstream loop / proof / artifact still feels too workflow-first
+- visible product structure exists, but the experience still talks too much about building the page instead of simply showing the page being built
+- proof still needs a broader product-direction pass before `W3-SL-005` can go `trueGreen`
+
+Verdict:
+- landing onboarding handoff is now truthful on the live fresh path
+- landing still contributes to the final closure-gate blocker because the downstream UX remains too orchestration-first

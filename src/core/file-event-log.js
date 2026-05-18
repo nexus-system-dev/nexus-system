@@ -20,11 +20,48 @@ export class FileEventLog {
   }
 
   readAll() {
-    const content = fs.readFileSync(this.filePath, "utf8").trim();
+    const stats = fs.statSync(this.filePath);
+    if (!stats.isFile() || stats.size === 0) {
+      return [];
+    }
+
+    const maxReadBytes = 16 * 1024 * 1024;
+    let content = "";
+
+    if (stats.size <= maxReadBytes) {
+      content = fs.readFileSync(this.filePath, "utf8");
+    } else {
+      const fileHandle = fs.openSync(this.filePath, "r");
+      try {
+        const start = Math.max(0, stats.size - maxReadBytes);
+        const buffer = Buffer.alloc(stats.size - start);
+        fs.readSync(fileHandle, buffer, 0, buffer.length, start);
+        content = buffer.toString("utf8");
+        const firstNewlineIndex = content.indexOf("\n");
+        if (firstNewlineIndex >= 0) {
+          content = content.slice(firstNewlineIndex + 1);
+        }
+      } finally {
+        fs.closeSync(fileHandle);
+      }
+    }
+
+    content = content.trim();
     if (!content) {
       return [];
     }
 
-    return content.split("\n").map((line) => JSON.parse(line));
+    return content
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
   }
 }

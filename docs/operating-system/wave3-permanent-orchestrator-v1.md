@@ -34,9 +34,10 @@ You must obey these sources in this order:
 1. the canonical `wave3OrderedExecutionMap`
 2. the permanent Wave 3 navigation rules in this prompt
 3. the canonical Wave 3 state artifact
-4. the codebase
-5. task-scoped locked contracts created during execution
-6. planning docs only where task-scoped doc sync is required
+4. the canonical Wave 3 product-truth hardening block when the active mission is post-`095` loop productization hardening
+5. the codebase
+6. task-scoped locked contracts created during execution
+7. planning docs only where task-scoped doc sync is required
 
 When prompt text and repository reality conflict:
 - canonical JSON wins for task state and ordering
@@ -66,6 +67,116 @@ The artifact records exactly one state per task:
 - `in-progress`
 
 A task state update is valid only if it is explicitly written back to this file.
+
+## Canonical Product-Truth Hardening Artifacts
+
+Wave 3 also has one canonical post-`095` product-truth hardening block and one canonical product-truth plan:
+
+- `/Users/yogevlavian/Desktop/The Nexus/docs/nexus-loop-productization-canonical-block.json`
+- `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-product-truth-hardening-plan.md`
+- `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-onboarding-intelligence-planning-track.md`
+
+These do NOT replace `wave3-canonical-state.json` as the task-state ledger for the original `001`-`103` queue.
+
+They DO become authoritative when:
+- the execution focus is the live Nexus loop productization and hardening layer after execution order `095`
+- Wave 3 is being hardened before deeper Wave 4 expansion
+- the work is about turning technically strong Wave 3 capabilities into product-truth-complete live surfaces on `127.0.0.1:4011`
+
+When this product-truth hardening block is active:
+- its executable queue is canonical for the hardening mission
+- its gaps, acceptance criteria, and `4011` verification requirements are mandatory
+- no deeper Wave 4 work may bypass it while its critical tasks remain incomplete
+
+Wave 3 also has one canonical parallel planning track for onboarding intelligence.
+
+That planning track:
+- does not replace the active `W3-PTH-*` execution queue
+- does not justify pausing the next executable hardening task
+- does become authoritative for onboarding-intelligence architecture, orchestration, contracts, decision logic, anti-generic rules, grounding rules, and loop/artifact integration design
+- must be treated as a required input to truthful Wave 4 readiness judgment
+
+When that planning track reaches a grounded canonical draft, it may be promoted into a parallel onboarding execution lane.
+
+That execution lane:
+- must remain non-blocking for the active `W3-PTH-*` queue
+- must be narrower than Wave 4 expansion
+- may execute only onboarding-intelligence truth hardening work that is already defined canonically
+- must write its own truthful task state back into the canonical onboarding track
+- must not silently change unrelated loop surfaces or bypass `4011` verification
+
+Wave 3 may also open one final blocking execution lane when a live audit proves the first loop is strong but the repeated loop is still not truthful.
+
+That lane:
+- is still Wave 3 work
+- blocks deeper Wave 4
+- is narrower than Wave 4 expansion
+- must be grounded in one real live repeated-loop audit on `4011`
+- must close second-loop truth, repeated-loop execution truth, restore truth, and clarification truth before Wave 4 may proceed
+
+## Wave 3 Product-Truth Hardening Doctrine
+
+After `095` and before deeper Wave 4 expansion, Wave 3 enters a permanent hardening mode:
+
+- no longer infrastructure-first
+- no longer schema-first
+- no longer preview-payload-first
+- product-truth hardening first
+- last-mile integration closure first
+
+In parallel, Wave 3 may run canonical planning tracks when they are needed to prevent repeated generic implementation.
+
+Such planning tracks are allowed only if they are:
+- repository-grounded
+- system-of-record-backed
+- non-blocking for the active executable queue
+- explicitly tied to future execution quality
+
+In this mode, a capability is NOT alive because:
+- code exists
+- runtime exists
+- schema exists
+- preview exists
+- tests pass
+
+A capability is alive only if it is:
+- visible
+- routeable
+- renderable
+- loop-connected
+- actionable
+- restore-safe
+- canonical across handoffs
+- product-credible
+- trustable
+- non-debuggy
+
+on `127.0.0.1:4011`.
+
+Any capability that claims to produce a visual outcome must terminate in a real visual product surface inside Nexus on `127.0.0.1:4011`.
+
+It may not stop at:
+- metadata
+- schema
+- regions
+- preview payload
+- bullets
+- summaries
+- validation output
+- internal renderer state
+
+If Nexus claims it created:
+- a site
+- a landing page
+- a dashboard
+- an onboarding flow
+- an artifact
+- generated UI
+- a product surface
+- a screen set
+- a visual flow
+
+then the user must be able to see the thing itself inside Nexus as part of the live loop.
 
 ---
 
@@ -223,6 +334,50 @@ Before marking any visual-impacting task `trueGreen`, the `Self-Enforcement Gate
 - `final visual verdict`
 
 If this report is missing, `trueGreen` is forbidden.
+
+### 7.5 Product-Truth Gate
+
+For every Wave 3 hardening or productization task, explicit product-truth validation is mandatory.
+
+The task must prove all relevant gates:
+
+1. runtime truth
+- the underlying runtime behavior is real
+
+2. route truth
+- the user can reach the capability through the live Nexus product
+
+3. renderer truth
+- the capability is rendered as a real visible surface, not merely represented as state or metadata
+
+4. handoff truth
+- the same truth survives downstream loop handoffs where relevant
+
+5. restore truth
+- refresh and restore reopen the correct truth without degrading to split truth or fallback truth
+
+6. product-grade truth
+- the visible surface:
+  - looks real enough
+  - feels like a product
+  - gives basic wow
+  - avoids metadata/debug/admin feel
+  - looks showable/shareable
+  - makes the user understand what Nexus built
+
+For visual-capability tasks, no task may become `trueGreen` while the capability still terminates in:
+- metadata
+- schema
+- regions
+- preview payloads
+- bullets
+- summaries
+- validation output
+- internal renderer state
+
+If the capability still stops there:
+- the task remains `in-progress` or `blocked`
+- even if code, schemas, runtime, previews, or tests exist
 
 ### 8. Guided Visual Proof & User Confirmation Doctrine
 For every visual-impacting task:
@@ -473,6 +628,7 @@ Every selected executable task must be classified into exactly one mode before i
 
 - `Full Execution Mode`
 - `Strict Revalidation Mode`
+- `Live Class Sweep Mode`
 
 If uncertainty remains after inspection, escalate to `Full Execution Mode`.
 
@@ -537,6 +693,116 @@ You may use `Strict Revalidation Mode` ONLY if ALL of these hold:
 10. required direct tests and required downstream tests can be run and pass
 
 Strict Revalidation Mode reduces ceremony only. It does NOT reduce correctness.
+
+---
+
+## Live Class Sweep Mode
+
+You may use `Live Class Sweep Mode` only when the active mission is the canonical live class sweep defined by:
+
+- `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-live-class-sweep-track.md`
+- `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/wave3-live-class-failure-ledger.md`
+
+This mode is for live browser class verification work.
+
+It is not a shortcut implementation mode.
+
+It is not a replacement for `Full Execution Mode` or `Strict Revalidation Mode` when writing product fixes.
+
+### Live Class Sweep Mode task selection
+
+When this mode is active:
+
+1. select only from the canonical sweep execution order
+2. run `create` before `upload-from-local-machine`
+3. within each intake path, run class-by-class in the canonical matrix order
+4. do not skip a class silently
+5. do not reorder by curiosity, convenience, or perceived importance
+
+### Live rerun discipline
+
+In this mode:
+
+- every pass/fail decision must come from live browser truth
+- no class/path/stage may be marked passed from code-only or API-only proof
+- evidence capture is mandatory
+- route, restore, and continuity must be checked where the sweep contract requires them
+
+### Failure truth write-back
+
+Every failure discovered in this mode must be written using the canonical failure ledger schema.
+
+Do not write:
+
+- vague summaries
+- merged unrelated failures
+- hypothetical blockers
+- code-only defects that never became product-visible
+
+Write exactly:
+
+- what class failed
+- what intake path failed
+- what live step failed
+- what was expected
+- what was actually visible
+- what lane should own closure
+
+### Failure promotion rules
+
+In this mode:
+
+- keep the failure inside the current task if it is a bounded truth gap in the currently tested class/path/stage
+- promote to a new task if the missing work is a narrower executable closure unit
+- promote to a new lane only if the failure is higher-order and cross-cutting across classes or stages
+
+No lane promotion may happen without explicit canonical write-back.
+
+### Unfinished-task return discipline
+
+If a failure does not block the rest of the same path:
+
+- record it
+- continue the sweep
+- do not stop the entire sweep early
+
+If a failure blocks the rest of the same path:
+
+- record it truthfully
+- stop only that blocked path
+- continue the remaining canonical sweep order where truthful
+
+### Rerun-after-fix discipline
+
+After any fix generated from sweep findings:
+
+- rerun the exact failed class/path/stage live in the browser
+- then rerun any downstream stages required by continuity truth
+- update the failure ledger with rerun status
+- do not close the failure without live rerun evidence
+
+### TrueGreen rule for this mode
+
+Nothing discovered or fixed under `Live Class Sweep Mode` may become `trueGreen` unless:
+
+- live browser evidence exists
+- the relevant stage passes visibly
+- the class-specific truth is visibly real
+- route truth survives
+- restore truth survives where relevant
+- continuity truth survives downstream
+
+### Wave 4 prohibition in this mode
+
+Do not move to Wave 4 while:
+
+- the sweep contract is still only in planning
+- the sweep execution has not run
+- reruns after fixes have not run
+- the sweep is not clean
+- or blockers have not been promoted canonically
+
+If the sweep is not `complete-clean`, Wave 4 is forbidden unless a blocker is truthfully written as a canonical blocking condition.
 
 ---
 
@@ -849,3 +1115,41 @@ If push fails:
 Pure read-only investigation turns do not require a push.
 
 Do NOT claim Wave 3 progress from markdown counts alone.
+
+## Wave 4 Readiness Gate
+
+No deeper Wave 4 execution may proceed while the canonical Wave 3 product-truth hardening block records unresolved critical tasks.
+
+The readiness gate must be enforced from the live `4011` smoke matrix, not inferred from code, docs, or partial class success.
+
+If even one required class remains visibly product-dead or metadata-heavy on `127.0.0.1:4011`, Wave 4 remains a truthful `no-go`.
+
+As of the current hardening verdict:
+- `small SaaS` is credible on the tested path
+- `internal tool` is credible through execution and proof continuity
+- `landing / marketing` is credible through `Proof`
+- `mobile app` is credible through `Proof`
+- the onboarding continuation gate no longer weakens the visible `Loop` handoff for landing and mobile
+
+So the current gate state is no longer permanently inherited from the first-loop hardening pass.
+
+If a later live audit proves that:
+- the second loop is still shallow
+- the approved artifact does not lead to one meaningful next increment
+- repeated-loop reload / revisit truth is still weak
+
+then Wave 4 must be reopened to `no-go` until the canonical second-loop closure lane is complete.
+
+Wave 3 is not ready for deeper Wave 4 expansion unless the important live capabilities are:
+- visible
+- routeable
+- renderable
+- loop-connected
+- actionable
+- restore-safe
+- canonical across handoffs
+- product-credible
+- trustable
+- non-debuggy
+
+on `127.0.0.1:4011`.
