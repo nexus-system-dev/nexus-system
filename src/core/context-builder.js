@@ -201,6 +201,7 @@ import { createNotificationPreferenceSettings } from "./notification-preference-
 import { createWebhookExternalNotificationAdapter } from "./webhook-external-notification-adapter.js";
 import { createReleasePlanGenerator } from "./release-plan-generator.js";
 import { createReleaseableProductStateContract } from "./releaseable-product-state-contract.js";
+import { createReleaseEvidenceHandoffModel } from "./release-evidence-handoff-model.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -5142,6 +5143,11 @@ export function buildProjectContext(
     launchConfirmationState,
     releaseReadinessEvaluation,
   });
+  const { releaseEvidenceHandoffModel } = createReleaseEvidenceHandoffModel({
+    proofArtifact,
+    releaseableProductStateContract,
+    releaseWorkspace,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5438,6 +5444,7 @@ export function buildProjectContext(
   context.launchConfirmationState = launchConfirmationState;
   context.releaseReadinessEvaluation = releaseReadinessEvaluation;
   context.releaseableProductStateContract = releaseableProductStateContract;
+  context.releaseEvidenceHandoffModel = releaseEvidenceHandoffModel;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;

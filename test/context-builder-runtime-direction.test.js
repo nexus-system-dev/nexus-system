@@ -59,4 +59,7 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.releaseableProductStateContract.releaseTarget, "private-deployment");
   assert.equal(context.releaseableProductStateContract.packageArtifactType, "deployable-web-bundle");
   assert.equal(context.releaseableProductStateContract.summary.label, "Not releaseable yet");
+  assert.equal(context.releaseEvidenceHandoffModel.evidenceFamily, "release-evidence-handoff");
+  assert.equal(context.releaseEvidenceHandoffModel.releaseTarget, "private-deployment");
+  assert.equal(context.releaseEvidenceHandoffModel.handoffSteps.length >= 1, true);
 });

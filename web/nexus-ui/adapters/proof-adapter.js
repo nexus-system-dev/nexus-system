@@ -36,6 +36,15 @@ function resolveArtifactExpectation(project) {
   );
 }
 
+function resolveReleaseEvidenceHandoffModel(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.releaseEvidenceHandoffModel
+      ?? safeProject.context?.releaseEvidenceHandoffModel
+      ?? safeProject.state?.releaseEvidenceHandoffModel,
+  );
+}
+
 function looksLikeInternalIdentifier(value = "") {
   const text = escapeText(value, "");
   return text.includes(":") || text.includes(".preview") || text.startsWith("generated-");
@@ -680,6 +689,7 @@ function resolveArtifacts(project, artifact) {
 export function buildProofResultViewModel({ project = null, qaMode = false } = {}) {
   const safeProject = normalizeObject(project);
   const artifactExpectation = resolveArtifactExpectation(safeProject);
+  const releaseEvidenceHandoffModel = resolveReleaseEvidenceHandoffModel(safeProject);
   const aiControlCenterSurface = normalizeObject(safeProject.aiControlCenterSurface);
   const generatedSurfaceProofSchema = normalizeObject(safeProject.generatedSurfaceProofSchema);
   const artifact = resolveCanonicalArtifact(safeProject);
@@ -737,6 +747,29 @@ export function buildProofResultViewModel({ project = null, qaMode = false } = {
     stats: resolveProofStats(safeProject),
     artifactSupportLine: previewSupportLine,
     artifactDisplayStatus: formatArtifactStatus(artifact.status),
+    releaseEvidenceHandoff: {
+      handoffStatusLabel: escapeText(releaseEvidenceHandoffModel.handoffStatusLabel, "עדיין לא מוכן ל־handoff"),
+      explainableReleasePath: escapeText(releaseEvidenceHandoffModel.explainableReleasePath, "generic-preview -> generic-package -> private-deployment"),
+      builtSurfaceTitle: escapeText(releaseEvidenceHandoffModel.builtSurfaceTitle, "active product surface"),
+      wrappedArtifactType: escapeText(releaseEvidenceHandoffModel.wrappedArtifactType, "generic-delivery-bundle"),
+      packagePath: escapeText(releaseEvidenceHandoffModel.packagePath, "generic-package -> private-deployment"),
+      previewPath: escapeText(releaseEvidenceHandoffModel.previewPath, "generic-preview -> generic-preview"),
+      releaseTarget: escapeText(releaseEvidenceHandoffModel.releaseTarget, "private-deployment"),
+      nextAction: escapeText(releaseEvidenceHandoffModel.nextAction, "resolve-release-readiness-gaps"),
+      narrative: escapeText(releaseEvidenceHandoffModel.narrative, "ה־release path חייב להיות מוסבר מתוך Nexus."),
+      evidenceItems: normalizeArray(releaseEvidenceHandoffModel.evidenceItems).map((item) => ({
+        label: escapeText(item.label, "evidence"),
+        value: escapeText(item.value, "n/a"),
+      })),
+      visibleChecks: normalizeArray(releaseEvidenceHandoffModel.visibleChecks).map((item) => ({
+        checkId: escapeText(item.checkId, "unknown-check"),
+        status: escapeText(item.status, "failed"),
+        reason: escapeText(item.reason, "not-passed"),
+      })),
+      blockers: normalizeArray(releaseEvidenceHandoffModel.blockers).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+      handoffSteps: normalizeArray(releaseEvidenceHandoffModel.handoffSteps).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+      persistenceRule: escapeText(releaseEvidenceHandoffModel.persistenceRule, "release evidence must survive revisit and restore"),
+    },
     primaryAction: { label: "המשך לאישור", target: "confirmation" },
     secondaryActions: [
       {

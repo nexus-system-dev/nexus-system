@@ -39,6 +39,29 @@ function renderArtifact(item) {
   `;
 }
 
+function renderReleaseEvidenceItem(item) {
+  return `
+    <article class="nexus-proof-artifact">
+      <div class="nexus-proof-artifact__meta">
+        <span class="nexus-proof-artifact__type">${escapeHtml(item.label)}</span>
+        <strong>${escapeHtml(item.value)}</strong>
+      </div>
+    </article>
+  `;
+}
+
+function renderReleaseCheck(item) {
+  return `
+    <article class="nexus-proof-criterion${item.status === "passed" ? " passed" : ""}">
+      <span class="nexus-proof-criterion__icon" aria-hidden="true">${item.status === "passed" ? "✓" : "!"}</span>
+      <div class="nexus-proof-criterion__copy">
+        <strong>${escapeHtml(item.checkId)}</strong>
+        <p>${escapeHtml(item.reason)}</p>
+      </div>
+    </article>
+  `;
+}
+
 export function renderProofResultScreen(viewModel) {
   const sidebar = {
     currentRoute: "/loop",
@@ -141,6 +164,64 @@ export function renderProofResultScreen(viewModel) {
               <h2>מה כבר נבנה בפנים</h2>
               <div class="nexus-proof-artifact-list">
                 ${viewModel.artifacts.map(renderArtifact).join("")}
+              </div>
+            `,
+          })}
+
+          ${renderNexusCard({
+            className: "nexus-proof-screen__artifacts-card",
+            padding: "lg",
+            content: `
+              <div class="nexus-proof-screen__artifact-head">
+                <div>
+                  <span class="nexus-proof-screen__artifact-label">Release evidence and handoff</span>
+                  <h2>${escapeHtml(viewModel.releaseEvidenceHandoff.handoffStatusLabel)}</h2>
+                  <p>${escapeHtml(viewModel.releaseEvidenceHandoff.narrative)}</p>
+                </div>
+                <span class="nexus-proof-screen__artifact-status">${escapeHtml(viewModel.releaseEvidenceHandoff.releaseTarget)}</span>
+              </div>
+              <div class="nexus-proof-artifact-list">
+                ${viewModel.releaseEvidenceHandoff.evidenceItems.map(renderReleaseEvidenceItem).join("")}
+              </div>
+              <div class="nexus-proof-screen__preview-body">
+                <div class="nexus-proof-screen__preview-frame">
+                  <strong>${escapeHtml(viewModel.releaseEvidenceHandoff.explainableReleasePath)}</strong>
+                  <span>${escapeHtml(viewModel.releaseEvidenceHandoff.persistenceRule)}</span>
+                </div>
+                <p class="nexus-proof-screen__preview-why">${escapeHtml(`Next action: ${viewModel.releaseEvidenceHandoff.nextAction}`)}</p>
+              </div>
+              <div class="nexus-proof-criteria-list">
+                ${viewModel.releaseEvidenceHandoff.visibleChecks.map(renderReleaseCheck).join("")}
+              </div>
+              <div class="nexus-proof-screen__preview-body">
+                <div class="nexus-proof-screen__preview-frame">
+                  <strong>${escapeHtml(viewModel.releaseEvidenceHandoff.builtSurfaceTitle)}</strong>
+                  <span>${escapeHtml(viewModel.releaseEvidenceHandoff.wrappedArtifactType)}</span>
+                </div>
+              </div>
+              <div class="nexus-proof-screen__preview-body">
+                <div class="nexus-proof-screen__preview-frame">
+                  <strong>${escapeHtml(viewModel.releaseEvidenceHandoff.packagePath)}</strong>
+                  <span>${escapeHtml(viewModel.releaseEvidenceHandoff.previewPath)}</span>
+                </div>
+              </div>
+              <div class="nexus-proof-artifact-list">
+                ${viewModel.releaseEvidenceHandoff.handoffSteps.map((item) => `
+                  <article class="nexus-proof-artifact">
+                    <div class="nexus-proof-artifact__meta">
+                      <span class="nexus-proof-artifact__type">Handoff step</span>
+                      <strong>${escapeHtml(item)}</strong>
+                    </div>
+                  </article>
+                `).join("")}
+                ${viewModel.releaseEvidenceHandoff.blockers.map((item) => `
+                  <article class="nexus-proof-artifact">
+                    <div class="nexus-proof-artifact__meta">
+                      <span class="nexus-proof-artifact__type">Open blocker</span>
+                      <strong>${escapeHtml(item)}</strong>
+                    </div>
+                  </article>
+                `).join("")}
               </div>
             `,
           })}

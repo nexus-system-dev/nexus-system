@@ -68,6 +68,7 @@ Nexus עצמה היא מנוע היצירה הפנימי.
 - לייצר `frontend/backend direction` אמיתיים
 - להחזיק loop שמתקדם אל `releaseable product state`
 - להחזיק `releaseable product state contract` גלוי שמראה readiness, package path, preview path, ו־next action אמיתי
+- להחזיק `release evidence and handoff model` גלוי שמסביר מה נבנה, איך הוא נעטף, ולאן ה־release path ממשיך
 - לאפשר continuation אמיתי אחרי release
 
 ## Full Long-Term Nexus Vision

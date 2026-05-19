@@ -718,8 +718,17 @@ Tasks:
   - release evidence survives revisit
 - trueGreen:
   - release handoff model is explicit
+  - one governing implementation model exists across context and proof surface
 - not trueGreen:
   - release hidden behind internal events
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-19`
+  - contract artifact: `docs/operating-system/wave4-release-evidence-handoff-model.md`
+  - governing implementation anchors:
+    - `src/core/release-evidence-handoff-model.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/proof-adapter.js`
+    - `web/nexus-ui/screens/ProofResultScreen.js`
 
 ### Lane 8 — Continuation / Growth Loop
 
