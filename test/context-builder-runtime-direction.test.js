@@ -62,4 +62,7 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.releaseEvidenceHandoffModel.evidenceFamily, "release-evidence-handoff");
   assert.equal(context.releaseEvidenceHandoffModel.releaseTarget, "private-deployment");
   assert.equal(context.releaseEvidenceHandoffModel.handoffSteps.length >= 1, true);
+  assert.equal(context.postReleaseContinuationLoop.loopFamily, "post-release-continuation");
+  assert.equal(context.postReleaseContinuationLoop.originReleaseTarget, "private-deployment");
+  assert.equal(context.postReleaseContinuationLoop.continuationMoves.length >= 1, true);
 });

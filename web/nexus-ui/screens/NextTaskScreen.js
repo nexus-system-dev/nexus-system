@@ -116,6 +116,38 @@ export function renderNextTaskScreen(viewModel) {
             `,
           })}
 
+          ${renderNexusCard({
+            className: "nexus-next-task-screen__ready-card",
+            padding: "lg",
+            content: `
+              <div class="nexus-next-task-screen__artifact-header">
+                <div>
+                  <span class="nexus-next-task-screen__artifact-label">Post-release continuation</span>
+                  <h2>${escapeHtml(viewModel.postReleaseContinuation.statusLabel)}</h2>
+                  <p>${escapeHtml(viewModel.postReleaseContinuation.visibleContinuationRule)}</p>
+                </div>
+                <span class="nexus-next-task-screen__artifact-label">${escapeHtml(viewModel.postReleaseContinuation.originReleaseTarget)}</span>
+              </div>
+              <div class="nexus-next-task-screen__details-grid">
+                <div>
+                  <h2>${escapeHtml(viewModel.postReleaseContinuation.nextMoveTitle)}</h2>
+                  <p>${escapeHtml(viewModel.postReleaseContinuation.nextMoveDescription)}</p>
+                  <ul class="nexus-next-task-screen__list">
+                    ${viewModel.postReleaseContinuation.continuationMoves.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                  </ul>
+                </div>
+                <div>
+                  <h2>למה זה נשאר bounded</h2>
+                  <ul class="nexus-next-task-screen__list">
+                    <li>${escapeHtml(viewModel.postReleaseContinuation.boundedGrowthRule)}</li>
+                    <li>${escapeHtml(viewModel.postReleaseContinuation.continuityRule)}</li>
+                    <li>${escapeHtml(`${viewModel.postReleaseContinuation.originArtifactTitle} -> ${viewModel.postReleaseContinuation.nextMoveFamily}`)}</li>
+                  </ul>
+                </div>
+              </div>
+            `,
+          })}
+
           <div class="nexus-next-task-screen__actions">
             ${renderNexusButton({
               label: viewModel.secondaryAction.label,

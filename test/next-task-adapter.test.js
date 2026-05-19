@@ -18,12 +18,29 @@ test("next-task adapter keeps second-loop continuation truthful when no assigned
       developerWorkspace: {
         contextSummary: {},
       },
+      postReleaseContinuationLoop: {
+        statusLabel: "מוכן לפתוח סבב המשך",
+        originArtifactTitle: "Family Flow mobile flow",
+        originReleaseTarget: "app-store",
+        nextMoveTitle: "לקדם את Family Flow mobile flow",
+        nextMoveDescription: "הסבב הבא כבר נפתח כדי לקדם את המסך הראשון לצעד המשך ברור יותר.",
+        nextMoveFamily: "derived-loop-move",
+        visibleContinuationRule: "release is not a terminal end state; the next move must appear visibly inside Nexus",
+        continuationMoves: [
+          "לחדד את מסך הבית סביב מה שקורה היום",
+          "להפוך את הפעולה הראשונה להחלטה אחת ברורה",
+        ],
+        boundedGrowthRule: "continuation may surface only product-connected moves",
+        continuityRule: "post-release continuation must survive revisit and route restore",
+      },
     },
   });
 
   assert.equal(viewModel.mission.title, "לקדם את Family Flow mobile flow");
   assert.match(viewModel.mission.description, /הסבב הבא כבר נפתח/);
   assert.equal(viewModel.mission.metadata[2].value, "סבב ההמשך מוכן לפתיחה");
+  assert.equal(viewModel.postReleaseContinuation.originReleaseTarget, "app-store");
+  assert.equal(viewModel.postReleaseContinuation.continuationMoves[0], "לחדד את מסך הבית סביב מה שקורה היום");
 });
 
 test("next-task adapter prefers persisted repeated-loop continuation over empty roadmap fallback", () => {

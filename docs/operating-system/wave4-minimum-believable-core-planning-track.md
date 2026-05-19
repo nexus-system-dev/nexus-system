@@ -766,8 +766,17 @@ Tasks:
   - continuation survives return
 - trueGreen:
   - first post-release loop is explicitly defined
+  - one governing implementation model exists across context and next-task surface
 - not trueGreen:
   - release is terminal end state
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-19`
+  - contract artifact: `docs/operating-system/wave4-post-release-continuation-loop.md`
+  - governing implementation anchors:
+    - `src/core/post-release-continuation-loop.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/next-task-adapter.js`
+    - `web/nexus-ui/screens/NextTaskScreen.js`
 
 16. `W4-MBN-016 — Define growth/opportunity surfacing boundary for Wave 4`
 - source of truth: Wave 4 end-state definition

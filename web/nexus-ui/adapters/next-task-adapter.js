@@ -46,6 +46,15 @@ function resolveRepeatedLoopContinuation(project) {
   );
 }
 
+function resolvePostReleaseContinuationLoop(project) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.postReleaseContinuationLoop
+      ?? safeProject.context?.postReleaseContinuationLoop
+      ?? safeProject.state?.postReleaseContinuationLoop,
+  );
+}
+
 function resolveNextMission(project) {
   const roadmap = resolveRoadmap(project);
   const assignedTask = resolveAssignedTask(roadmap);
@@ -177,6 +186,7 @@ export function buildNextTaskViewModel({ project = null, qaMode = false } = {}) 
   const roadmap = resolveRoadmap(safeProject);
   const mission = resolveNextMission(safeProject);
   const repeatedLoopContinuation = resolveRepeatedLoopContinuation(safeProject);
+  const postReleaseContinuationLoop = resolvePostReleaseContinuationLoop(safeProject);
   const repeatedLoopClarification = normalizeObject(repeatedLoopContinuation.clarification);
   const requiresClarification = repeatedLoopContinuation.requiresClarification === true;
   const blockedItems = buildBlockerItems(roadmap);
@@ -221,6 +231,18 @@ export function buildNextTaskViewModel({ project = null, qaMode = false } = {}) 
       { label: "משימות בתור", value: String(roadmap.length) },
       { label: "חסמים פתוחים", value: String(blockedItems.length) },
     ],
+    postReleaseContinuation: {
+      statusLabel: escapeText(postReleaseContinuationLoop.statusLabel, "עדיין אין סבב המשך אמיתי"),
+      originArtifactTitle: escapeText(postReleaseContinuationLoop.originArtifactTitle, safeProject.name ?? "התוצר שאושר"),
+      originReleaseTarget: escapeText(postReleaseContinuationLoop.originReleaseTarget, "private-deployment"),
+      nextMoveTitle: escapeText(postReleaseContinuationLoop.nextMoveTitle, mission.title),
+      nextMoveDescription: escapeText(postReleaseContinuationLoop.nextMoveDescription, mission.description),
+      nextMoveFamily: escapeText(postReleaseContinuationLoop.nextMoveFamily, "derived-loop-move"),
+      visibleContinuationRule: escapeText(postReleaseContinuationLoop.visibleContinuationRule, "release is not a terminal end state; the next move must appear visibly inside Nexus"),
+      continuationMoves: normalizeArray(postReleaseContinuationLoop.continuationMoves).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+      boundedGrowthRule: escapeText(postReleaseContinuationLoop.boundedGrowthRule, "continuation may surface only product-connected moves"),
+      continuityRule: escapeText(postReleaseContinuationLoop.continuityRule, "post-release continuation must survive revisit and route restore"),
+    },
     primaryAction: requiresClarification
       ? {
           label: "חזור להבנה והוסף חומר תומך",
