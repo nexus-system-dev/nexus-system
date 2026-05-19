@@ -33,6 +33,22 @@ test("next-task adapter keeps second-loop continuation truthful when no assigned
         boundedGrowthRule: "continuation may surface only product-connected moves",
         continuityRule: "post-release continuation must survive revisit and route restore",
       },
+      growthOpportunitySurfacingBoundary: {
+        statusLabel: "הצעות ההמשך נשארות bounded",
+        visibleBoundaryRule: "Wave 4 may surface only meaningful next product moves, never fake autonomous company behavior or implied Wave 7 autonomy",
+        allowedMoves: [
+          "לחדד את מסך הבית סביב מה שקורה היום",
+          "להפוך את הפעולה הראשונה להחלטה אחת ברורה",
+        ],
+        disallowedMoves: [
+          "inventing company goals disconnected from the released product",
+        ],
+        deferredOpportunityFamilies: [
+          "portfolio-optimization",
+        ],
+        credibilityRule: "every surfaced next move must stay directly attached to the last approved artifact, release target, and current product bottleneck",
+        continuityRule: "opportunity state must survive revisit, route restore, and handoff back into execution without changing scope silently",
+      },
     },
   });
 
@@ -41,6 +57,8 @@ test("next-task adapter keeps second-loop continuation truthful when no assigned
   assert.equal(viewModel.mission.metadata[2].value, "סבב ההמשך מוכן לפתיחה");
   assert.equal(viewModel.postReleaseContinuation.originReleaseTarget, "app-store");
   assert.equal(viewModel.postReleaseContinuation.continuationMoves[0], "לחדד את מסך הבית סביב מה שקורה היום");
+  assert.equal(viewModel.growthOpportunityBoundary.statusLabel, "הצעות ההמשך נשארות bounded");
+  assert.match(viewModel.growthOpportunityBoundary.disallowedMoves[0], /disconnected/);
 });
 
 test("next-task adapter prefers persisted repeated-loop continuation over empty roadmap fallback", () => {

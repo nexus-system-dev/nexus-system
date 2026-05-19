@@ -203,6 +203,7 @@ import { createReleasePlanGenerator } from "./release-plan-generator.js";
 import { createReleaseableProductStateContract } from "./releaseable-product-state-contract.js";
 import { createReleaseEvidenceHandoffModel } from "./release-evidence-handoff-model.js";
 import { createPostReleaseContinuationLoop } from "./post-release-continuation-loop.js";
+import { createGrowthOpportunitySurfacingBoundary } from "./growth-opportunity-surfacing-boundary.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -5156,6 +5157,10 @@ export function buildProjectContext(
     releaseableProductStateContract,
     repeatedLoopContinuation: project.repeatedLoopContinuation ?? project.state?.repeatedLoopContinuation ?? project.context?.repeatedLoopContinuation ?? null,
   });
+  const { growthOpportunitySurfacingBoundary } = createGrowthOpportunitySurfacingBoundary({
+    productClass,
+    postReleaseContinuationLoop,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5454,6 +5459,7 @@ export function buildProjectContext(
   context.releaseableProductStateContract = releaseableProductStateContract;
   context.releaseEvidenceHandoffModel = releaseEvidenceHandoffModel;
   context.postReleaseContinuationLoop = postReleaseContinuationLoop;
+  context.growthOpportunitySurfacingBoundary = growthOpportunitySurfacingBoundary;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;

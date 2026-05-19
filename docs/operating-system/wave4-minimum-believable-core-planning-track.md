@@ -797,6 +797,14 @@ Tasks:
   - bounded growth loop scope is explicit
 - not trueGreen:
   - Wave 7 autonomy implied as Wave 4
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-19`
+  - contract artifact: `docs/operating-system/wave4-growth-opportunity-surfacing-boundary.md`
+  - governing implementation anchors:
+    - `src/core/growth-opportunity-surfacing-boundary.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/next-task-adapter.js`
+    - `web/nexus-ui/screens/NextTaskScreen.js`
 
 ### Lane 9 — Deployment / Release Path
 

@@ -71,6 +71,7 @@ Nexus עצמה היא מנוע היצירה הפנימי.
 - להחזיק `release evidence and handoff model` גלוי שמסביר מה נבנה, איך הוא נעטף, ולאן ה־release path ממשיך
 - לאפשר continuation אמיתי אחרי release
 - להחזיק `post-release continuation loop` גלוי שמראה מה נפתח מיד אחרי release ולמה זה bounded
+- להחזיק `growth opportunity surfacing boundary` גלוי שמבהיר מה מותר להציע עכשיו ומה נשאר מחוץ ל־Wave 4
 
 ## Full Long-Term Nexus Vision
 

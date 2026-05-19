@@ -124,6 +124,7 @@
     "canonicalReleaseableProductStateContractPath": "docs/operating-system/wave4-releaseable-product-state-contract.md",
     "canonicalReleaseEvidenceHandoffModelPath": "docs/operating-system/wave4-release-evidence-handoff-model.md",
     "canonicalPostReleaseContinuationLoopPath": "docs/operating-system/wave4-post-release-continuation-loop.md",
+    "canonicalGrowthOpportunitySurfacingBoundaryPath": "docs/operating-system/wave4-growth-opportunity-surfacing-boundary.md",
     "canonicalExternalIntelligencePath": "docs/operating-system/wave4-external-product-intelligence-pass-2026-05-18.md",
     "planningMode": "minimum-believable-nexus-first",
     "nonNegotiableRequirements": [
@@ -169,8 +170,8 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "W4-MBN-016",
-      "title": "Define growth/opportunity surfacing boundary for Wave 4",
+      "taskId": "W4-MBN-017",
+      "title": "Define canonical deployment/release path per core class",
       "source": "docs/operating-system/wave4-minimum-believable-core-planning-track.md",
       "status": "selected-not-started"
     },
@@ -398,6 +399,24 @@
           "web/nexus-ui/adapters/next-task-adapter.js",
           "web/nexus-ui/screens/NextTaskScreen.js",
           "test/post-release-continuation-loop.test.js",
+          "test/next-task-adapter.test.js",
+          "test/next-task-screen-render.test.js",
+          "test/context-builder-runtime-direction.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-016",
+        "title": "Define growth/opportunity surfacing boundary for Wave 4",
+        "status": "trueGreen",
+        "closedAt": "2026-05-19",
+        "closureEvidence": [
+          "docs/operating-system/wave4-growth-opportunity-surfacing-boundary.md",
+          "src/core/growth-opportunity-surfacing-boundary.js",
+          "src/core/context-builder.js",
+          "web/nexus-ui/adapters/next-task-adapter.js",
+          "web/nexus-ui/screens/NextTaskScreen.js",
+          "web/app.js",
+          "test/growth-opportunity-surfacing-boundary.test.js",
           "test/next-task-adapter.test.js",
           "test/next-task-screen-render.test.js",
           "test/context-builder-runtime-direction.test.js"

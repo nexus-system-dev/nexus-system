@@ -57,12 +57,30 @@ test("next task screen renders post-release continuation card", () => {
       boundedGrowthRule: "continuation may surface only product-connected moves, not fake autonomous company behavior",
       continuityRule: "post-release continuation must survive revisit, route restore, and transition back into execution",
     },
+    growthOpportunityBoundary: {
+      statusLabel: "הצעות ההמשך נשארות bounded",
+      visibleBoundaryRule: "Wave 4 may surface only meaningful next product moves, never fake autonomous company behavior or implied Wave 7 autonomy",
+      allowedMoves: [
+        "לחדד את המסך הראשון סביב מה שהמשתמש צריך להבין עכשיו",
+        "להפוך את הפעולה הראשונה להחלטה אחת ברורה",
+      ],
+      disallowedMoves: [
+        "inventing company goals disconnected from the released product",
+      ],
+      deferredOpportunityFamilies: [
+        "portfolio-optimization",
+      ],
+      credibilityRule: "every surfaced next move must stay directly attached to the last approved artifact, release target, and current product bottleneck",
+      continuityRule: "opportunity state must survive revisit, route restore, and handoff back into execution without changing scope silently",
+    },
     primaryAction: { label: "התחל משימה", target: "execution", actionKind: "execute" },
     secondaryAction: { label: "הצג פירוט", target: "timeline" },
   });
 
   assert.match(html, /Post-release continuation/);
+  assert.match(html, /Growth boundary/);
   assert.match(html, /סבב ההמשך כבר פתוח/);
+  assert.match(html, /הצעות ההמשך נשארות bounded/);
   assert.match(html, /app-store/);
   assert.match(html, /לקדם את Coach Mobile mobile flow/);
   assert.match(html, /fake autonomous company behavior/);

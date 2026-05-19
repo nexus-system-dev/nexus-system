@@ -55,6 +55,15 @@ function resolvePostReleaseContinuationLoop(project) {
   );
 }
 
+function resolveGrowthOpportunitySurfacingBoundary(project) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.growthOpportunitySurfacingBoundary
+      ?? safeProject.context?.growthOpportunitySurfacingBoundary
+      ?? safeProject.state?.growthOpportunitySurfacingBoundary,
+  );
+}
+
 function resolveNextMission(project) {
   const roadmap = resolveRoadmap(project);
   const assignedTask = resolveAssignedTask(roadmap);
@@ -187,6 +196,7 @@ export function buildNextTaskViewModel({ project = null, qaMode = false } = {}) 
   const mission = resolveNextMission(safeProject);
   const repeatedLoopContinuation = resolveRepeatedLoopContinuation(safeProject);
   const postReleaseContinuationLoop = resolvePostReleaseContinuationLoop(safeProject);
+  const growthOpportunitySurfacingBoundary = resolveGrowthOpportunitySurfacingBoundary(safeProject);
   const repeatedLoopClarification = normalizeObject(repeatedLoopContinuation.clarification);
   const requiresClarification = repeatedLoopContinuation.requiresClarification === true;
   const blockedItems = buildBlockerItems(roadmap);
@@ -242,6 +252,18 @@ export function buildNextTaskViewModel({ project = null, qaMode = false } = {}) 
       continuationMoves: normalizeArray(postReleaseContinuationLoop.continuationMoves).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
       boundedGrowthRule: escapeText(postReleaseContinuationLoop.boundedGrowthRule, "continuation may surface only product-connected moves"),
       continuityRule: escapeText(postReleaseContinuationLoop.continuityRule, "post-release continuation must survive revisit and route restore"),
+    },
+    growthOpportunityBoundary: {
+      statusLabel: escapeText(growthOpportunitySurfacingBoundary.statusLabel, "עוד לא אפשרי לפתוח opportunity אמיתי"),
+      visibleBoundaryRule: escapeText(
+        growthOpportunitySurfacingBoundary.visibleBoundaryRule,
+        "Wave 4 may surface only meaningful next product moves",
+      ),
+      allowedMoves: normalizeArray(growthOpportunitySurfacingBoundary.allowedMoves).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+      disallowedMoves: normalizeArray(growthOpportunitySurfacingBoundary.disallowedMoves).map((item) => escapeText(item)).filter(Boolean).slice(0, 3),
+      deferredOpportunityFamilies: normalizeArray(growthOpportunitySurfacingBoundary.deferredOpportunityFamilies).map((item) => escapeText(item)).filter(Boolean).slice(0, 3),
+      credibilityRule: escapeText(growthOpportunitySurfacingBoundary.credibilityRule, "every surfaced move must stay tied to the current product"),
+      continuityRule: escapeText(growthOpportunitySurfacingBoundary.continuityRule, "opportunity state must survive revisit and restore"),
     },
     primaryAction: requiresClarification
       ? {

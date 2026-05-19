@@ -4439,6 +4439,30 @@ export function createCockpitApp({
         boundedGrowthRule: "continuation may surface only product-connected moves, not fake autonomous company behavior",
         continuityRule: "post-release continuation must survive revisit, route restore, and transition back into execution",
       },
+      growthOpportunitySurfacingBoundary: {
+        boundaryId: "growth-opportunity-boundary:qa-preview",
+        boundaryFamily: "wave4-growth-opportunity-boundary",
+        status: "bounded",
+        statusLabel: "הצעות ההמשך נשארות bounded",
+        visibleBoundaryRule: "Wave 4 may surface only meaningful next product moves, never fake autonomous company behavior or implied Wave 7 autonomy",
+        allowedMoves: [
+          "לחדד את ההבטחה הראשית מעל הקפל",
+          "לחזק את בלוק האמון שמצדיק את ההמשך",
+          "לקבע CTA אחד ברור למסלול ההמרה הבא",
+        ],
+        deferredOpportunityFamilies: [
+          "broad-autonomous-growth-ops",
+          "portfolio-optimization",
+          "self-directed-company-strategy",
+        ],
+        disallowedMoves: [
+          "inventing company goals disconnected from the released product",
+          "implying autonomous GTM ownership beyond the current product loop",
+          "opening broad experimentation programs without product-connected proof",
+        ],
+        credibilityRule: "every surfaced next move must stay directly attached to the last approved artifact, release target, and current product bottleneck",
+        continuityRule: "opportunity state must survive revisit, route restore, and handoff back into execution without changing scope silently",
+      },
       progressState: {
         status: "active",
         percent: 72,

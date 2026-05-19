@@ -122,6 +122,37 @@ export function renderNextTaskScreen(viewModel) {
             content: `
               <div class="nexus-next-task-screen__artifact-header">
                 <div>
+                  <span class="nexus-next-task-screen__artifact-label">Growth boundary</span>
+                  <h2>${escapeHtml(viewModel.growthOpportunityBoundary.statusLabel)}</h2>
+                  <p>${escapeHtml(viewModel.growthOpportunityBoundary.visibleBoundaryRule)}</p>
+                </div>
+              </div>
+              <div class="nexus-next-task-screen__details-grid">
+                <div>
+                  <h2>מה מותר להציע עכשיו</h2>
+                  <ul class="nexus-next-task-screen__list">
+                    ${viewModel.growthOpportunityBoundary.allowedMoves.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                  </ul>
+                </div>
+                <div>
+                  <h2>מה נשאר מחוץ ל־Wave 4</h2>
+                  <ul class="nexus-next-task-screen__list">
+                    ${viewModel.growthOpportunityBoundary.disallowedMoves.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                    ${viewModel.growthOpportunityBoundary.deferredOpportunityFamilies.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                    <li>${escapeHtml(viewModel.growthOpportunityBoundary.credibilityRule)}</li>
+                    <li>${escapeHtml(viewModel.growthOpportunityBoundary.continuityRule)}</li>
+                  </ul>
+                </div>
+              </div>
+            `,
+          })}
+
+          ${renderNexusCard({
+            className: "nexus-next-task-screen__ready-card",
+            padding: "lg",
+            content: `
+              <div class="nexus-next-task-screen__artifact-header">
+                <div>
                   <span class="nexus-next-task-screen__artifact-label">Post-release continuation</span>
                   <h2>${escapeHtml(viewModel.postReleaseContinuation.statusLabel)}</h2>
                   <p>${escapeHtml(viewModel.postReleaseContinuation.visibleContinuationRule)}</p>
