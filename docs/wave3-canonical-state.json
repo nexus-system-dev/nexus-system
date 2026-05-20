@@ -290,6 +290,17 @@
             ]
           },
           {
+            "taskId": "W4-INTAKE-003",
+            "title": "Connect learning signals to adaptive onboarding question selection",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-INTAKE-002",
+              "W4-LEARN-002",
+              "W4-GEN-001",
+              "docs/operating-system/wave3-onboarding-intelligence-planning-track.md"
+            ]
+          },
+          {
             "taskId": "W4-GEN-002",
             "title": "Implement feedback-driven product mutation loop",
             "status": "prepared-not-started",
@@ -297,6 +308,7 @@
               "W4-LEARN-002",
               "W4-GEN-001",
               "W4-INTAKE-002",
+              "W4-INTAKE-003",
               "W4-MBN-015"
             ]
           }

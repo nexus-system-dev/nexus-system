@@ -375,6 +375,50 @@ Closure truth on `2026-05-20`:
   - no contract-only closure
   - no backend-only adaptive logic while the visible flow remains fixed-shell
 
+### W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-INTAKE-002`
+  - `W4-LEARN-002`
+  - `W4-GEN-001`
+  - `docs/operating-system/wave3-onboarding-intelligence-planning-track.md`
+- mission:
+  - make the learning layer the decision-making brain behind adaptive onboarding by letting stored learning signals influence which question is asked next, when weak or generic answers must trigger clarification, when readiness is still blocked, and how the final handoff into generation is shaped
+- pass/fail truth:
+  - pass if prior learning signals measurably influence question selection, clarification pressure, readiness gating, and generation handoff on the live onboarding path
+  - fail if the system remains only:
+    - class-aware
+    - answer-aware
+    - readiness-aware
+    - but not learning-guided from prior outcomes
+- continuity rules:
+  - learned intake behavior must survive restore, revisit, rerun, and project resume without silently resetting to a generic question path
+  - per-project intake truth may not be overwritten silently by cross-project learning
+- generation integration rules:
+  - learning-guided intake must improve the canonical handoff that Generation actually consumes
+  - weak or generic answers must block premature generation and force a sharper clarification loop instead
+- explicit visible product change required:
+  - at least two product classes must show different learned question paths on the live onboarding route
+  - a weak or generic answer such as “I want a system for a business” must visibly trigger clarification instead of progression
+  - the final handoff into Understanding / Generation must visibly reflect the stronger learned intake path
+- explicit prohibitions:
+  - no docs-only closure
+  - no contract-only closure
+  - no card-only closure
+  - no hidden scoring model without visible question-path change
+  - no claiming learning-guided intake when the fixed shell still controls real progression
+- live verification requirement:
+  - verify on `http://127.0.0.1:4011/?qa=1` that:
+    - different product classes receive different learned question paths
+    - weak or generic answers trigger clarification instead of progression
+    - learning signals affect question choice or readiness
+    - the final intake handoff into generation is visibly stronger
+  - verify restore truth by revisiting the same project and proving the learned intake path does not silently reset
+  - docs, contracts, summaries, or hidden state alone can never close this task
+
 ### W4-GEN-002 — Implement feedback-driven product mutation loop
 
 - lane: `post-wave4-learning-and-intake-continuation`
@@ -384,6 +428,7 @@ Closure truth on `2026-05-20`:
   - `W4-LEARN-002`
   - `W4-GEN-001`
   - `W4-INTAKE-002`
+  - `W4-INTAKE-003`
   - `W4-MBN-015`
 - mission:
   - turn approved feedback, failures, reruns, release outcomes, and continuation outcomes into bounded later product mutations instead of passive recommendations
