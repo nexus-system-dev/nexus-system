@@ -1010,6 +1010,30 @@ but shell scope may not be treated as deferred if it is required by class experi
 
 No Wave 4 execution lane may claim truthful closure before Phase 6 is canonically defined.
 
+## Post-Wave-4 Continuation Preparation
+
+After `W4-MBN-020` closes truthfully, Nexus must prepare one canonical post-Wave-4 continuation lane for learning and intake intelligence.
+
+This prepared lane is not part of the active `W4-MBN-*` core order.
+
+It exists so that:
+- learning does not remain optional polish
+- adaptive intake does not remain a disconnected future note
+- both systems enter canonical execution structure with dependencies, pass/fail truth, live verification requirements, continuity rules, and generation integration rules
+
+Prepared continuation lane:
+- `post-wave4-learning-and-intake-continuation`
+- canonical contract:
+  - `docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md`
+
+Prepared tasks:
+- `W4-LEARN-001 — Define canonical learning system contract`
+- `W4-INTAKE-001 — Define adaptive onboarding agent contract`
+
+Preparation rule:
+- these tasks may be written back immediately after `W4-MBN-020` closes
+- they may not begin implementation ahead of unresolved active Wave 4 core tasks
+
 ## Cross-Lane Dependency Rules
 
 - lanes 2 and 3 cannot proceed truthfully without lane 1
