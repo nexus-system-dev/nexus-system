@@ -303,7 +303,7 @@ Closure truth on `2026-05-20`:
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
-- status: `selected-not-started`
+- status: `trueGreen`
 - depends_on:
   - `W4-LEARN-002`
   - `W4-MBN-007`
@@ -324,6 +324,28 @@ Closure truth on `2026-05-20`:
 - explicit prohibitions:
   - no claim of generation improvement from artifact labels alone
   - no cross-project mutation without visible explanation
+- closure write-back:
+  - canonical contract path:
+    - `docs/operating-system/wave4-generation-learning-signal-integration.md`
+  - governing implementation anchors:
+    - `src/core/learning-aware-generation-decision.js`
+    - `src/core/context-builder.js`
+    - `src/core/canonical-learning-system-contract.js`
+    - `web/nexus-ui/adapters/understanding-adapter.js`
+    - `web/nexus-ui/screens/UnderstandingSummaryScreen.js`
+    - `web/nexus-ui/adapters/proof-adapter.js`
+    - `web/app.js`
+  - visible closure proof:
+    - `Understanding` shows `כיוון generation חי`
+    - `Understanding` shows `איך Nexus עומדת לבנות את זה עכשיו`
+    - `Proof` shows `הלמידה כבר שינתה את כיוון היצירה`
+    - `Proof` shows `כיוון generation שנלמד מהסבב האחרון`
+
+Closure truth on `2026-05-20`:
+- generation is now learning-aware instead of only class-aware
+- stored signals now change generation framing, focus, and primary action
+- the learned generation shift is visible on `Understanding` and `Proof`
+- QA proof fallback was fixed so the same route no longer collapses back to generic proof framing
 
 ### W4-INTAKE-002 — Replace fixed 3-question onboarding with adaptive intake flow
 

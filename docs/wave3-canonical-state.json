@@ -135,6 +135,7 @@
     "canonicalLearningSystemContractPath": "docs/operating-system/wave4-canonical-learning-system-contract.md",
     "canonicalDeepAdaptiveLearningDecisionImpactPath": "docs/operating-system/wave4-deep-adaptive-learning-decision-impact.md",
     "canonicalAdaptiveOnboardingAgentContractPath": "docs/operating-system/wave4-adaptive-onboarding-agent-contract.md",
+    "canonicalGenerationLearningSignalIntegrationPath": "docs/operating-system/wave4-generation-learning-signal-integration.md",
     "canonicalExternalIntelligencePath": "docs/operating-system/wave4-external-product-intelligence-pass-2026-05-18.md",
     "planningMode": "minimum-believable-nexus-first",
     "nonNegotiableRequirements": [
@@ -253,18 +254,34 @@
           {
             "taskId": "W4-GEN-001",
             "title": "Connect learning signals to generation decisions",
-            "status": "selected-not-started",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-LEARN-002",
               "W4-MBN-007",
               "W4-MBN-011",
               "W4-MBN-012"
+            ],
+            "closedAt": "2026-05-20",
+            "closureEvidence": [
+              "docs/operating-system/wave4-generation-learning-signal-integration.md",
+              "src/core/learning-aware-generation-decision.js",
+              "src/core/context-builder.js",
+              "src/core/canonical-learning-system-contract.js",
+              "web/nexus-ui/adapters/understanding-adapter.js",
+              "web/nexus-ui/screens/UnderstandingSummaryScreen.js",
+              "web/nexus-ui/adapters/proof-adapter.js",
+              "web/app.js",
+              "test/class-aware-generation-contract.test.js",
+              "test/ai-design-generation-intent.test.js",
+              "test/proof-adapter.test.js",
+              "test/understanding-summary-screen-render.test.js",
+              "test/context-builder-runtime-direction.test.js"
             ]
           },
           {
             "taskId": "W4-INTAKE-002",
             "title": "Replace fixed 3-question onboarding with adaptive intake flow",
-            "status": "prepared-not-started",
+            "status": "selected-not-started",
             "dependsOn": [
               "W4-INTAKE-001",
               "W4-LEARN-002",
@@ -300,8 +317,8 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "W4-GEN-001",
-      "title": "Connect learning signals to generation decisions",
+      "taskId": "W4-INTAKE-002",
+      "title": "Replace fixed 3-question onboarding with adaptive intake flow",
       "source": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
       "status": "selected-not-started"
     },
@@ -327,6 +344,27 @@
           "test/next-task-screen-render.test.js",
           "test/timeline-adapter.test.js",
           "test/timeline-history-screen-render.test.js",
+          "test/context-builder-runtime-direction.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-GEN-001",
+        "title": "Connect learning signals to generation decisions",
+        "status": "trueGreen",
+        "closedAt": "2026-05-20",
+        "closureEvidence": [
+          "docs/operating-system/wave4-generation-learning-signal-integration.md",
+          "src/core/learning-aware-generation-decision.js",
+          "src/core/context-builder.js",
+          "src/core/canonical-learning-system-contract.js",
+          "web/nexus-ui/adapters/understanding-adapter.js",
+          "web/nexus-ui/screens/UnderstandingSummaryScreen.js",
+          "web/nexus-ui/adapters/proof-adapter.js",
+          "web/app.js",
+          "test/class-aware-generation-contract.test.js",
+          "test/ai-design-generation-intent.test.js",
+          "test/proof-adapter.test.js",
+          "test/understanding-summary-screen-render.test.js",
           "test/context-builder-runtime-direction.test.js"
         ]
       },

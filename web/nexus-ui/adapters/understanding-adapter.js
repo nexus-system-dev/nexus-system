@@ -11,6 +11,10 @@ function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
 
+function normalizeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function detectProjectTypeFromText(value = "") {
   const normalized = String(value ?? "").toLowerCase();
   if (/(landing page|landing-page|website|marketing site|marketing page|homepage|web site|site|דף נחיתה|אתר שיווקי|שיווק)/i.test(normalized)) {
@@ -72,6 +76,15 @@ function resolveArtifactExpectation({ currentProject = null } = {}) {
       ?? currentProject?.context?.artifactExpectation
       ?? currentProject?.onboardingStateHandoff?.artifactExpectation
       ?? currentProject?.context?.onboardingStateHandoff?.artifactExpectation,
+  );
+}
+
+function resolveGenerationIntent({ currentProject = null } = {}) {
+  return normalizeObject(
+    currentProject?.generationIntent
+      ?? currentProject?.context?.generationIntent
+      ?? currentProject?.aiDesignRequest?.generationIntent
+      ?? currentProject?.context?.aiDesignRequest?.generationIntent,
   );
 }
 
@@ -355,9 +368,24 @@ export function buildUnderstandingSummaryViewModel({
     onboardingFlow,
     onboardingConversation,
   });
+  const generationIntent = resolveGenerationIntent({ currentProject });
   const artifactExpectationLine = derivedArtifactExpectation.title
     ? `מה אנחנו מכוונים לבנות עכשיו: ${derivedArtifactExpectation.title}. ${derivedArtifactExpectation.summary ?? ""}`.trim()
     : "";
+  const generationLearningCard = generationIntent.intentId
+    ? {
+        badge: generationIntent.learningAware ? "כיוון generation חי" : "כיוון generation",
+        title: generationIntent.artifactTitle ?? "התוצר הבא",
+        body: generationIntent.learningAware
+          ? `${generationIntent.learningStrategyLabel ?? "הלמידה כבר משנה את כיוון היצירה"}. ${generationIntent.learningReason ?? ""}`.trim()
+          : generationIntent.generationGoal ?? generationIntent.framingLine ?? "השלב הבא כבר מחובר לתוצר שאליו Nexus מכוונת.",
+        proofLine: generationIntent.learnedProofRequirement
+          ?? generationIntent.generationGoal
+          ?? generationIntent.framingLine
+          ?? "השלב הבא צריך להישאר צמוד למה שסגרנו כאן.",
+        focusAreas: normalizeArray(generationIntent.learnedFocusAreas ?? generationIntent.focusAreas).slice(0, 3),
+      }
+    : null;
 
   return {
     projectName,
@@ -369,6 +397,7 @@ export function buildUnderstandingSummaryViewModel({
     confidenceLabel: onboardingConversation?.isComplete
       ? "רמת ביטחון גבוהה על בסיס שיחת ה־onboarding"
       : "רמת ביטחון ראשונית עד להשלמת ההבנה",
+    generationLearningCard,
     cards: [
       resolveAudienceCard(answers, summary),
       resolveProblemCard(answers, summary),

@@ -44,6 +44,7 @@ import { createBuildProgressionStateMachine } from "./build-progression-state-ma
 import { createAutomaticProductSkeletonContract } from "./automatic-product-skeleton-contract.js";
 import { createClassSpecificSkeletonQualityBaseline } from "./class-specific-skeleton-quality-baseline.js";
 import { createClassAwareGenerationContract } from "./class-aware-generation-contract.js";
+import { createLearningAwareGenerationDecision } from "./learning-aware-generation-decision.js";
 import { createClassSpecificSurfaceEvolutionRules } from "./class-specific-surface-evolution-rules.js";
 import { createLocalWorkspaceContract } from "./local-workspace-contract.js";
 import { createDesktopShellScopeContract } from "./desktop-shell-scope-contract.js";
@@ -3054,7 +3055,7 @@ export function buildProjectContext(
     productClass,
     skeletonContract: automaticProductSkeletonContract,
   });
-  const classAwareGenerationContract = createClassAwareGenerationContract({
+  let classAwareGenerationContract = createClassAwareGenerationContract({
     productClass,
     artifactExpectation,
     runtimeDirection,
@@ -3694,6 +3695,15 @@ export function buildProjectContext(
   const { productIterationInsights } = createProductIterationFeedbackEngine({
     outcomeFeedbackState,
   });
+  ({ classAwareGenerationContract } = createLearningAwareGenerationDecision({
+    productClass,
+    classAwareGenerationContract,
+    outcomeFeedbackState,
+    learningInsights,
+    approvalStatus,
+    crossProjectPatternPanel,
+    productIterationInsights,
+  }));
   const { firstProjectKickoff } = createFirstProjectKickoffFlow({
     postLoginDestination,
     activationFunnel,

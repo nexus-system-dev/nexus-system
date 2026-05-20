@@ -36,6 +36,16 @@ function resolveArtifactExpectation(project) {
   );
 }
 
+function resolveGenerationIntent(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.generationIntent
+      ?? safeProject.aiDesignRequest?.generationIntent
+      ?? safeProject.context?.generationIntent
+      ?? safeProject.context?.aiDesignRequest?.generationIntent,
+  );
+}
+
 function resolveReleaseEvidenceHandoffModel(project = null) {
   const safeProject = normalizeObject(project);
   return normalizeObject(
@@ -279,6 +289,7 @@ function hasOpenProductSurface(artifact) {
 function resolveSuccessCriteria(project, artifact) {
   const state = normalizeObject(project.state);
   const artifactExpectation = resolveArtifactExpectation(project);
+  const generationIntent = resolveGenerationIntent(project);
   const generatedSurfaceProofSchema = normalizeObject(project.generatedSurfaceProofSchema ?? state.generatedSurfaceProofSchema);
   const releaseValidation = normalizeObject(normalizeObject(project.releaseWorkspace).validation);
   const proposalApplyDecision = normalizeObject(project.proposalApplyDecision ?? state.proposalApplyDecision);
@@ -431,6 +442,16 @@ function resolveSuccessCriteria(project, artifact) {
           }]
         : []),
       ...resolveWeakClassProofCriteria(artifactExpectation),
+      ...(generationIntent.learningAware
+        ? [{
+            title: "הלמידה כבר שינתה את כיוון היצירה",
+            body: sanitizeProductFacingCopy(
+              generationIntent.learnedProofRequirement,
+              generationIntent.learningReason || "ה־generation הבא כבר נשען על כשלונות, approvals, ודפוסים קודמים במקום לחזור למסלול גנרי.",
+            ),
+            passed: true,
+          }]
+        : []),
       {
         title: "יש surface שאפשר לבדוק בפועל",
         body: generatedSurfaceProofSchema.evidence?.isPreviewable
@@ -472,6 +493,16 @@ function resolveSuccessCriteria(project, artifact) {
       ),
       passed: true,
     },
+    ...(generationIntent.learningAware
+      ? [{
+          title: "הלמידה כבר חידדה את ה־generation הבא",
+          body: sanitizeProductFacingCopy(
+            generationIntent.learnedProofRequirement,
+            generationIntent.learningReason || "ה־generation הבא כבר מושפע מהלמידה של הסבב האחרון.",
+          ),
+          passed: true,
+        }]
+      : []),
     {
       title: "יש צעד המשך ברור",
       body: sanitizeProductFacingCopy(
@@ -494,6 +525,7 @@ function resolveArtifacts(project, artifact) {
   const generatedSurfaceProofSchema = normalizeObject(project.generatedSurfaceProofSchema);
   const aiControlCenterSurface = normalizeObject(project.aiControlCenterSurface);
   const artifactExpectation = resolveArtifactExpectation(project);
+  const generationIntent = resolveGenerationIntent(project);
   const previewScreenId = aiControlCenterSurface.generatedSurfacePreview?.screenId ?? "generated-preview";
   const payload = normalizeObject(artifact.previewPayload);
   const weakClassGeneratedSurface = isWeakGeneratedSurfaceClass(artifact, artifactExpectation);
@@ -514,6 +546,17 @@ function resolveArtifacts(project, artifact) {
         meta: artifactExpectation.projectTypeLabel ?? "Proof focus",
         description: item.description,
       })),
+      ...(generationIntent.learningAware
+        ? normalizeArray(generationIntent.learnedFocusAreas).slice(0, 2).map((focus) => ({
+            name: focus,
+            type: "כיוון generation שנלמד מהסבב האחרון",
+            meta: generationIntent.learningStrategyLabel ?? "Learning-aware generation",
+            description: sanitizeProductFacingCopy(
+              generationIntent.learnedProofRequirement,
+              generationIntent.learningReason || "זה הפוקוס החדש שהלמידה הכניסה ליצירה הבאה.",
+            ),
+          }))
+        : []),
       {
         name: looksLikeInternalIdentifier(previewScreenId)
           ? buildHumanProofSurfaceTitle({ artifactExpectation, fallback: "המסך שנבדק ב־Proof" })

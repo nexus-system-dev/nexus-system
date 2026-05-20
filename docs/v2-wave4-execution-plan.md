@@ -151,6 +151,7 @@
 - [docs/operating-system/wave4-canonical-learning-system-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-canonical-learning-system-contract.md)
 - [docs/operating-system/wave4-adaptive-onboarding-agent-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-adaptive-onboarding-agent-contract.md)
 - [docs/operating-system/wave4-deep-adaptive-learning-decision-impact.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-deep-adaptive-learning-decision-impact.md)
+- [docs/operating-system/wave4-generation-learning-signal-integration.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-generation-learning-signal-integration.md)
 
 הוא כולל יכולות שלא ניתן לדחות:
 - automatic class-aware skeleton generation

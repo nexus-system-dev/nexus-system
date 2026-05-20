@@ -82,8 +82,9 @@ test("ai design request carries landing generation intent into proposal inputs",
   const proposal = aiDesignServiceResult.aiDesignProviderResult.aiDesignProposal;
 
   assert.equal(request.generationIntent.projectType, "landing-page");
-  assert.match(request.generationIntent.generationGoal, /promise, trust proof, and one clear CTA/i);
-  assert.deepEqual(request.generationIntent.focusAreas, artifactExpectation.proofFocus);
+  assert.match(request.generationIntent.generationGoal, /הבטחה ברורה/);
+  assert.deepEqual(request.generationIntent.focusAreas.slice(0, artifactExpectation.proofFocus.length), artifactExpectation.proofFocus);
+  assert.equal(request.generationIntent.focusAreas.includes("headline promise"), true);
   assert.match(proposal.copy[0].proposedText, /הבטחה ראשית מעל הקפל/);
   assert.equal(proposal.interactions[0].label, "Open primary CTA");
 });
@@ -109,9 +110,60 @@ test("ai design request carries mobile generation intent into proposal inputs", 
   const proposal = aiDesignServiceResult.aiDesignProviderResult.aiDesignProposal;
 
   assert.equal(request.generationIntent.projectType, "mobile-app");
-  assert.match(request.generationIntent.generationGoal, /first screen, first action, and next-step continuity/i);
+  assert.match(request.generationIntent.generationGoal, /מסך פתיחה ברור/);
   assert.equal(proposal.interactions[0].label, "Start the first mobile action");
   assert.match(proposal.copy[0].proposedText, /מסך ראשון ברור למשתמש הנכון/);
+});
+
+test("ai design request carries learning-aware generation direction into proposal inputs", () => {
+  const artifactExpectation = {
+    expectationId: "artifact-expectation:landing-page:clinic-landing",
+    projectType: "landing-page",
+    projectTypeLabel: "דף נחיתה / שיווק",
+    proofArtifactType: "generated-surface",
+    title: "Clinic Landing landing page",
+    summary: "דף נחיתה חד עם הבטחה ברורה, הוכחת אמון וקריאה אחת לפעולה.",
+    continuityLine: "ב-Proof נרצה לראות דף נחיתה עם הבטחה ברורה, אמון ופעולה מיידית.",
+    proofFocus: [
+      "הבטחה ראשית מעל הקפל",
+      "הוכחת אמון שתומכת בהחלטה",
+      "CTA מרכזי אחד שקל להבין",
+    ],
+  };
+
+  const baseInput = createBaseDesignInput(artifactExpectation);
+  baseInput.classAwareGenerationContract = {
+    contractId: "class-aware-generation:landing-page",
+    productClass: "landing-page",
+    generationIntent: {
+      intentId: "generation-intent:landing-page:clinic-landing",
+      source: "learning-aware-generation-contract",
+      projectType: "landing-page",
+      artifactTitle: "Clinic Landing landing page",
+      generationGoal: "Clinic Landing landing page should make the promise, trust proof, and one clear CTA visible before Proof. Stabilize value proof, trust, and CTA clarity before expanding the landing surface.",
+      focusAreas: [
+        "הבטחה ראשית מעל הקפל",
+        "הוכחת אמון שתומכת בהחלטה",
+        "CTA מרכזי אחד שקל להבין",
+        "לחזק את הוכחת הערך לפני הרחבת המסר",
+      ],
+      primaryAction: {
+        label: "Stabilize value proof before expanding CTA",
+        actionIntent: "convert",
+      },
+      learningAware: true,
+      learnedFocusAreas: [
+        "לחזק את הוכחת הערך לפני הרחבת המסר",
+      ],
+    },
+  };
+
+  const { aiDesignServiceResult } = createAiDesignService(baseInput);
+  const request = aiDesignServiceResult.aiDesignRequest;
+
+  assert.equal(request.generationIntent.source, "learning-aware-generation-contract");
+  assert.match(request.generationIntent.generationGoal, /Stabilize value proof/i);
+  assert.match(request.generationIntent.primaryAction.label, /Stabilize value proof/i);
 });
 
 test("loop view model exposes generation intent before proof for weak classes", () => {

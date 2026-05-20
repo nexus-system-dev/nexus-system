@@ -42,6 +42,28 @@ function renderUnderstandingCard(card, index) {
   `;
 }
 
+function renderGenerationLearningCard(card) {
+  if (!card) {
+    return "";
+  }
+
+  return renderNexusCard({
+    className: "nexus-understanding-screen__why-card",
+    padding: "lg",
+    content: `
+      <div class="nexus-understanding-screen__badge">${escapeHtml(card.badge)}</div>
+      <h2>איך Nexus עומדת לבנות את זה עכשיו</h2>
+      <p><strong>${escapeHtml(card.title)}</strong></p>
+      <p>${escapeHtml(card.body)}</p>
+      <p>${escapeHtml(card.proofLine)}</p>
+      <div class="nexus-understanding-screen__confidence">
+        <span class="nexus-understanding-screen__confidence-dot" aria-hidden="true"></span>
+        <span>${escapeHtml(card.focusAreas.join(" · "))}</span>
+      </div>
+    `,
+  });
+}
+
 export function renderUnderstandingSummaryScreen(viewModel) {
   const sidebar = {
     currentRoute: "/onboarding",
@@ -102,6 +124,8 @@ export function renderUnderstandingSummaryScreen(viewModel) {
           </div>
         `,
       })}
+
+      ${renderGenerationLearningCard(viewModel.generationLearningCard)}
 
       <div class="nexus-understanding-screen__actions">
         ${renderNexusButton({

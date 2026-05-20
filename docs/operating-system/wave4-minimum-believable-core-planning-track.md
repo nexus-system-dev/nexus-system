@@ -1055,13 +1055,14 @@ Prepared tasks:
 - `W4-LEARN-001 — Define canonical learning system contract` — `trueGreen`
 - `W4-INTAKE-001 — Define adaptive onboarding agent contract` — `trueGreen`
 - `W4-LEARN-002 — Implement deep adaptive learning decision impact` — `trueGreen`
-- `W4-GEN-001 — Connect learning signals to generation decisions` — `selected-not-started`
+- `W4-GEN-001 — Connect learning signals to generation decisions` — `trueGreen`
 - `W4-INTAKE-002 — Replace fixed 3-question onboarding with adaptive intake flow` — `prepared-not-started`
 - `W4-GEN-002 — Implement feedback-driven product mutation loop` — `prepared-not-started`
 
 Reality-audit reopeners required after repository inspection:
 - `W4-LEARN-002` is now closed truthfully as the first real decision-impact implementation layer
-- `W4-GEN-001` remains the next released continuation task
+- `W4-GEN-001` is now closed truthfully as the first generation-facing learning integration layer
+- `W4-INTAKE-002` is now the next released continuation task
 
 Preparation rule:
 - these tasks may be written back immediately after `W4-MBN-020` closes

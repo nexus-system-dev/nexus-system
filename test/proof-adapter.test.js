@@ -153,3 +153,38 @@ test("proof adapter uses mobile artifact expectation to frame weak-class proof",
   assert.equal(viewModel.releaseEvidenceHandoff.explainableReleasePath, "live-browser-preview -> web-build -> web-deployment");
   assert.equal(viewModel.releaseEvidenceHandoff.handoffSteps[2], "continue to confirmation");
 });
+
+test("proof adapter exposes learning-aware generation shifts on weak-class proof routes", () => {
+  const viewModel = buildProofResultViewModel({
+    project: {
+      ...buildWeakClassProject({
+        expectationId: "artifact-expectation:landing-page:clinic-landing-page",
+        projectType: "landing-page",
+        projectTypeLabel: "דף נחיתה / שיווק",
+        proofArtifactType: "generated-surface",
+        title: "Clinic Landing landing page",
+        summary: "דף נחיתה חד עם הבטחה ברורה, הוכחת אמון וקריאה אחת לפעולה.",
+        continuityLine: "ב-Proof נרצה לראות דף נחיתה עם הבטחה ברורה, אמון ופעולה מיידית.",
+        proofFocus: [
+          "הבטחה ראשית מעל הקפל",
+          "הוכחת אמון שתומכת בהחלטה",
+          "CTA מרכזי אחד שקל להבין",
+        ],
+      }),
+      generationIntent: {
+        intentId: "generation-intent:landing-page:clinic-landing-page",
+        learningAware: true,
+        learningStrategyLabel: "הלמידה מזיזה את ה־generation לייצוב לפני הרחבה",
+        learningReason: "הסבב האחרון חשף friction שחייב חיזוק proof לפני הרחבה.",
+        learnedFocusAreas: [
+          "לחזק את הוכחת הערך לפני הרחבת המסר",
+          "לייצב את אזור האמון לפני פתיחת וריאציות נוספות",
+        ],
+        learnedProofRequirement: "ה־Proof הבא צריך להוכיח שהבטחת הערך והאמון כבר יציבים לפני הרחבת המסר.",
+      },
+    },
+  });
+
+  assert.equal(viewModel.successCriteria.some((item) => item.title === "הלמידה כבר שינתה את כיוון היצירה"), true);
+  assert.equal(viewModel.artifacts.some((item) => item.type === "כיוון generation שנלמד מהסבב האחרון"), true);
+});

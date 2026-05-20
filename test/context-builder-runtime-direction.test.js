@@ -84,6 +84,9 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.canonicalLearningSystemContract.contractFamily, "canonical-learning-system");
   assert.equal(context.canonicalLearningSystemContract.memoryLayers.length, 3);
   assert.equal(context.canonicalLearningSystemContract.decisionImpacts.length, 8);
+  assert.equal(context.classAwareGenerationContract.generationIntent.learningAware, true);
+  assert.equal(context.generationIntent.learningAware, true);
+  assert.equal(context.canonicalLearningSystemContract.decisionImpacts[0].impactId, "generation-quality");
   assert.equal(context.learningDecisionImpact.impactFamily, "deep-adaptive-learning-decision-impact");
   assert.equal(context.canonicalLearningSystemContract.learningDecisionImpact.impactFamily, "deep-adaptive-learning-decision-impact");
 });

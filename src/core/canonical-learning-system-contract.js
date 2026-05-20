@@ -267,9 +267,11 @@ export function createCanonicalLearningSystemContract({
     createLearningInput({
       inputId: "generation-outcomes",
       label: "Generation outcomes",
-      status: generationContract.surfaceMutationModel ? "partial" : "next",
+      status: generationContract.generationIntent?.learningAware ? "live" : generationContract.surfaceMutationModel ? "partial" : "next",
       source: "class-aware generation contract and proof artifact intent",
-      decisionUse: "Generation outcomes are classified, but not yet upgraded by later learning loops.",
+      decisionUse: generationContract.generationIntent?.learningAware
+        ? "Generation now reuses stored failure and pattern signals to change later generation direction visibly."
+        : "Generation outcomes are classified, but not yet upgraded by later learning loops.",
     }),
     createLearningInput({
       inputId: "cross-project-patterns",
@@ -284,9 +286,16 @@ export function createCanonicalLearningSystemContract({
     createDecisionImpact({
       impactId: "generation-quality",
       label: "generation quality",
-      status: "next",
-      currentEffect: "Generation remains class-aware, but later learning-driven quality improvement is not yet closed visibly.",
-      nextRequirement: "Generation must consume learned failure signals, outcome patterns, and class-specific lessons visibly.",
+      status: generationContract.generationIntent?.learningAware ? "live" : "next",
+      currentEffect: generationContract.generationIntent?.learningAware
+        ? normalizeString(
+            generationContract.generationIntent?.learningReason,
+            "Generation now changes direction visibly because stored learning signals push it toward a stronger next artifact.",
+          )
+        : "Generation remains class-aware, but later learning-driven quality improvement is not yet closed visibly.",
+      nextRequirement: generationContract.generationIntent?.learningAware
+        ? "Later generation must keep reusing stored failure signals, outcome patterns, and class lessons without resetting to static class defaults."
+        : "Generation must consume learned failure signals, outcome patterns, and class-specific lessons visibly.",
     }),
     createDecisionImpact({
       impactId: "onboarding-refinement",
@@ -353,9 +362,13 @@ export function createCanonicalLearningSystemContract({
     createDecisionImpact({
       impactId: "class-specific-behavior",
       label: "class-specific behavior",
-      status: "next",
-      currentEffect: "Class-specific behavior exists through class contracts, but not yet through canonical learning loops.",
-      nextRequirement: "Later class behavior must improve through stored class outcome patterns instead of static contracts alone.",
+      status: generationContract.generationIntent?.learningAware ? "partial" : "next",
+      currentEffect: generationContract.generationIntent?.learningAware
+        ? "Class-specific behavior now starts from learning-aware generation rules, but broader class behavior still needs deeper intake and mutation loops."
+        : "Class-specific behavior exists through class contracts, but not yet through canonical learning loops.",
+      nextRequirement: generationContract.generationIntent?.learningAware
+        ? "Later class behavior must extend beyond generation direction into intake, runtime, and mutation loops."
+        : "Later class behavior must improve through stored class outcome patterns instead of static contracts alone.",
     }),
   ];
 
