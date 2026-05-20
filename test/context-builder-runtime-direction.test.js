@@ -81,4 +81,7 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.wave4LiveVerificationMatrix.status, "ready");
   assert.equal(context.wave4LiveVerificationMatrix.verificationLanes.length, 10);
   assert.equal(context.wave4LiveVerificationMatrix.verificationLanes[0].routeKey, "understanding");
+  assert.equal(context.canonicalLearningSystemContract.contractFamily, "canonical-learning-system");
+  assert.equal(context.canonicalLearningSystemContract.memoryLayers.length, 3);
+  assert.equal(context.canonicalLearningSystemContract.decisionImpacts.length, 8);
 });

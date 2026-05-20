@@ -208,6 +208,7 @@ import { createClassAwareDeploymentReleasePath } from "./class-aware-deployment-
 import { createDeploymentStateFeedbackContract } from "./deployment-state-feedback-contract.js";
 import { createCrossSurfaceContinuityContract } from "./cross-surface-continuity-contract.js";
 import { createWave4LiveVerificationMatrix } from "./wave4-live-verification-matrix.js";
+import { createCanonicalLearningSystemContract } from "./canonical-learning-system-contract.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -5255,6 +5256,21 @@ export function buildProjectContext(
     systemOptimizationPlan,
     productIterationInsights,
   });
+  const { canonicalLearningSystemContract } = createCanonicalLearningSystemContract({
+    learningInsights,
+    outcomeFeedbackState,
+    userPreferenceSignals,
+    crossProjectPatternPanel,
+    approvalStatus,
+    adaptiveExecutionDecision,
+    canonicalBacklogRegeneration,
+    classAwareGenerationContract,
+    classAwareRuntimeResolver,
+    classAwarePackagingPreviewContract,
+    releaseEvidenceHandoffModel,
+    deploymentStateFeedbackContract,
+    postReleaseContinuationLoop,
+  });
   const { ownerAuditView } = createOwnerAuditLogViewer({
     auditLogRecord,
     projectAuditPayload,
@@ -5506,6 +5522,7 @@ export function buildProjectContext(
   context.deploymentStateFeedbackContract = deploymentStateFeedbackContract;
   context.crossSurfaceContinuityContract = crossSurfaceContinuityContract;
   context.wave4LiveVerificationMatrix = wave4LiveVerificationMatrix;
+  context.canonicalLearningSystemContract = canonicalLearningSystemContract;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;

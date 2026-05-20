@@ -54,7 +54,7 @@ Prepare the next Nexus execution structure so that:
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `architecture`
-- status: `prepared-not-started`
+- status: `trueGreen`
 - depends_on:
   - `W4-MBN-020`
   - `W4-MBN-019`
@@ -116,12 +116,35 @@ Prepare the next Nexus execution structure so that:
   - reduced drift
   - better continuation decisions
   - better runtime/release choices where canonically allowed
+- closure write-back:
+  - canonical contract path:
+    - `docs/operating-system/wave4-canonical-learning-system-contract.md`
+  - governing implementation anchors:
+    - `src/core/canonical-learning-system-contract.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/timeline-adapter.js`
+    - `web/nexus-ui/screens/TimelineHistoryScreen.js`
+    - `web/app.js`
+  - visible closure proof:
+    - `Timeline` on `http://127.0.0.1:4011/?qa=1`
+    - visible `Canonical learning system`
+    - visible `Project memory`
+    - visible `User preference memory`
+    - visible `System learning`
+    - visible `next-task selection`
+
+Closure truth on `2026-05-20`:
+- one canonical learning-system contract now exists
+- it separates `project memory`, `user preference memory`, and `system learning`
+- it truthfully marks current decision impacts as `live`, `partial`, or `next`
+- it is visible on the live `Timeline` surface inside Nexus
+- it does not falsely claim that all later learning-driven behavior is already implemented
 
 ### W4-INTAKE-001 — Define adaptive onboarding agent contract
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `architecture`
-- status: `prepared-not-started`
+- status: `selected-not-started`
 - depends_on:
   - `W4-MBN-020`
   - `W4-LEARN-001`
@@ -179,6 +202,14 @@ Prepare the next Nexus execution structure so that:
 - this lane does not replace `W4-MBN-022`
 - this lane may not preempt the active Wave 4 core order
 
+## Active Continuation State
+
+Current continuation truth on `2026-05-20`:
+
+- `W4-LEARN-001` is `trueGreen`
+- `W4-INTAKE-001` is the next canonical task
+- the continuation lane is no longer only prepared; it is now the active canonical post-Wave-4 execution lane
+
 ## Write-Back Rule
 
 When this lane is added to canonical state:
@@ -187,3 +218,9 @@ When this lane is added to canonical state:
 - keep `W4-MBN-021` as the next active core task
 - do not mark either prepared task as selected for implementation
 - do not mark either prepared task as `trueGreen`
+
+After Wave 4 core closes and this lane activates:
+
+- update only the selected continuation task truthfully
+- do not silently mark `W4-INTAKE-001` complete when only `W4-LEARN-001` closes
+- keep visible proof requirements active for every continuation task

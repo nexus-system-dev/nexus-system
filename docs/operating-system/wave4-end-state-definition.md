@@ -79,6 +79,7 @@ Nexus עצמה היא מנוע היצירה הפנימי.
 - להחזיק `Figma-backed live-build workspace contract` כ־design authority מחייב לכל שינוי מבני ב־workspace וב־build surfaces
 - להחזיק `Figma-backed desktop shell and local workspace frame` כ־design authority מחייב לכל shell-level framing path ב־Wave 4
 - להכין מיד אחרי סגירת core Wave 4 continuation lane קנוני עבור learning system ו־adaptive intake כך שלא יישארו רק future notes
+- להחזיק `canonical learning system contract` גלוי שמפריד truthfully בין `project memory`, `user preference memory`, ו־`system learning`, ומסמן מה כבר `live`, מה `partial`, ומה עדיין `next`
 
 ## Full Long-Term Nexus Vision
 

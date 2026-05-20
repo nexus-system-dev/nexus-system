@@ -190,12 +190,22 @@ function resolveWave4LiveVerificationMatrix(project = null) {
   );
 }
 
+function resolveCanonicalLearningSystemContract(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.canonicalLearningSystemContract
+      ?? safeProject.context?.canonicalLearningSystemContract
+      ?? safeProject.state?.canonicalLearningSystemContract,
+  );
+}
+
 export function buildTimelineViewModel({ project = null, qaMode = false } = {}) {
   const safeProject = normalizeObject(project);
   const artifactTruth = buildArtifactTruthViewModel(safeProject);
   const entries = resolveTimelineEntries(safeProject);
   const crossSurfaceContinuityContract = resolveCrossSurfaceContinuityContract(safeProject);
   const wave4LiveVerificationMatrix = resolveWave4LiveVerificationMatrix(safeProject);
+  const canonicalLearningSystemContract = resolveCanonicalLearningSystemContract(safeProject);
 
   return {
     title: "איך התוצר התקדם עד כאן",
@@ -264,6 +274,44 @@ export function buildTimelineViewModel({ project = null, qaMode = false } = {}) 
         restoreChecks: normalizeArray(item.restoreChecks).map((entry) => escapeText(entry)).filter(Boolean).slice(0, 2),
         strongerPreviewPath: escapeText(item.strongerPreviewPath, "qa-route-or-live-project"),
       })).slice(0, 10),
+    },
+    canonicalLearningSystemContract: {
+      statusLabel: escapeText(
+        canonicalLearningSystemContract.statusLabel,
+        "Canonical learning system contract is not yet visible",
+      ),
+      contractRule: escapeText(
+        canonicalLearningSystemContract.contractRule,
+        "Nexus must separate project memory, user preference memory, and system learning before calling feedback a real learning system.",
+      ),
+      summary: {
+        memoryLayers: escapeText(canonicalLearningSystemContract.summary?.memoryLayers, "0"),
+        liveInputs: escapeText(canonicalLearningSystemContract.summary?.liveInputs, "0"),
+        partialInputs: escapeText(canonicalLearningSystemContract.summary?.partialInputs, "0"),
+        liveImpacts: escapeText(canonicalLearningSystemContract.summary?.liveImpacts, "0"),
+        partialImpacts: escapeText(canonicalLearningSystemContract.summary?.partialImpacts, "0"),
+        crossProjectPatterns: escapeText(canonicalLearningSystemContract.summary?.crossProjectPatterns, "0"),
+      },
+      memoryLayers: normalizeArray(canonicalLearningSystemContract.memoryLayers).map((item) => ({
+        layerId: escapeText(item.layerId, "unknown-layer"),
+        title: escapeText(item.title, "Learning layer"),
+        status: escapeText(item.status, "next"),
+        scope: escapeText(item.scope, "learning scope is not yet defined"),
+        storedInputs: normalizeArray(item.storedInputs).map((entry) => escapeText(entry)).filter(Boolean).slice(0, 5),
+        decisionImpact: normalizeArray(item.decisionImpact).map((entry) => escapeText(entry)).filter(Boolean).slice(0, 4),
+        continuityRule: escapeText(item.continuityRule, "learning truth must survive restore"),
+      })).slice(0, 3),
+      decisionImpacts: normalizeArray(canonicalLearningSystemContract.decisionImpacts).map((item) => ({
+        impactId: escapeText(item.impactId, "unknown-impact"),
+        label: escapeText(item.label, "learning impact"),
+        status: escapeText(item.status, "next"),
+        currentEffect: escapeText(item.currentEffect, "not yet changing visible product behavior"),
+        nextRequirement: escapeText(item.nextRequirement, "later implementation must prove this visibly"),
+      })).slice(0, 8),
+      continuityRules: normalizeArray(canonicalLearningSystemContract.continuityRules).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+      generationIntegrationRules: normalizeArray(canonicalLearningSystemContract.generationIntegrationRules).map((item) => escapeText(item)).filter(Boolean).slice(0, 3),
+      explicitProhibitions: normalizeArray(canonicalLearningSystemContract.explicitProhibitions).map((item) => escapeText(item)).filter(Boolean).slice(0, 3),
+      visibleProductExpectations: normalizeArray(canonicalLearningSystemContract.visibleProductExpectations).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
     },
     stats: buildStats(safeProject, entries),
     primaryAction: {

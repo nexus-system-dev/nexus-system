@@ -4688,6 +4688,102 @@ export function createCockpitApp({
           },
         ],
       },
+      canonicalLearningSystemContract: {
+        contractId: "canonical-learning-system-contract:qa-preview",
+        contractFamily: "canonical-learning-system",
+        status: "defined",
+        statusLabel: "מערכת הלמידה מוגדרת עכשיו כחוזה קנוני אחד",
+        contractRule: "Nexus must separate project memory, user preference memory, and system learning, and only call it learning where stored signals change later decisions truthfully.",
+        memoryLayers: [
+          {
+            layerId: "project-memory",
+            title: "Project memory",
+            status: "live",
+            scope: "Stores project-specific outcomes, approvals, release state, deployment state, and continuation state without pretending it is global learning.",
+            storedInputs: ["execution history", "approval records", "release evidence", "deployment feedback"],
+            decisionImpact: ["next-task framing", "continuation quality", "project-specific context reuse"],
+            continuityRule: "Project memory must stay attached to the same project identity across restore, revisit, rerun, and route transitions.",
+          },
+          {
+            layerId: "user-preference-memory",
+            title: "User preference memory",
+            status: "live",
+            scope: "Separates user preference signals from project truth so approvals and corrections remain reusable without blurring scopes.",
+            storedInputs: ["approval feedback memory", "explicit user corrections", "stable preference signals"],
+            decisionImpact: ["approval-facing explanation style", "visible preference reuse"],
+            continuityRule: "User preference memory may influence later decisions, but it may not silently overwrite approved project truth.",
+          },
+          {
+            layerId: "system-learning",
+            title: "System learning",
+            status: "partial",
+            scope: "Cross-project patterns are visible, but they remain bounded until they change later Nexus decisions visibly and canonically.",
+            storedInputs: ["cross-project patterns", "recommendation hints", "aggregated outcome signals"],
+            decisionImpact: ["future class-specific behavior", "future generation focus", "future runtime and release quality improvements"],
+            continuityRule: "System learning may not mutate active project truth without visible explanation and must stay distinct from per-project memory.",
+          },
+        ],
+        decisionImpacts: [
+          {
+            impactId: "next-task-selection",
+            label: "next-task selection",
+            status: "live",
+            currentEffect: "Adaptive execution and canonical backlog regeneration already use feedback to steer next work.",
+            nextRequirement: "Later next-task selection must expose stronger class-specific and cross-project learning effects visibly.",
+          },
+          {
+            impactId: "continuation-quality",
+            label: "continuation quality",
+            status: "partial",
+            currentEffect: "Continuation is bounded and product-connected, with project memory available for later reuse.",
+            nextRequirement: "Later continuation moves must improve visibly through stored release, deployment, and rerun outcomes.",
+          },
+          {
+            impactId: "release-decisions",
+            label: "release decisions",
+            status: "partial",
+            currentEffect: "Release and deployment state are visible, but later release choices are not yet learning-optimized.",
+            nextRequirement: "Release gating must eventually use stored release and deployment outcomes visibly.",
+          },
+          {
+            impactId: "generation-quality",
+            label: "generation quality",
+            status: "next",
+            currentEffect: "Generation remains class-aware, but later learning-driven quality improvement is not yet closed visibly.",
+            nextRequirement: "Generation must consume learned failure signals, outcome patterns, and class-specific lessons visibly.",
+          },
+        ],
+        continuityRules: [
+          "learning state may not silently reset across restore, revisit, rerun, or route transitions",
+          "project memory must stay attached to project identity",
+          "system learning may not overwrite active project truth silently",
+        ],
+        generationIntegrationRules: [
+          "generation must later consume learned class signals, failure signals, and outcome patterns from this contract",
+          "runtime and release decisions may not claim learning-driven improvement until the visible product proves it",
+        ],
+        explicitProhibitions: [
+          "no hidden AI intuition without canonical trace",
+          "no feedback summary treated as proof of learning",
+          "no cross-project pattern may silently mutate active project truth",
+        ],
+        visibleProductExpectations: [
+          "smarter generation direction",
+          "reduced drift",
+          "better continuation decisions",
+          "better runtime and release choices where canonically allowed",
+        ],
+        summary: {
+          memoryLayers: 3,
+          liveInputs: 5,
+          partialInputs: 6,
+          nextInputs: 2,
+          liveImpacts: 1,
+          partialImpacts: 2,
+          nextImpacts: 1,
+          crossProjectPatterns: 2,
+        },
+      },
       progressState: {
         status: "active",
         percent: 72,
@@ -4730,7 +4826,7 @@ export function createCockpitApp({
   }
 
   function ensureQaProjectPreviewState() {
-    if (!currentProject) {
+    if (!currentProject || currentProject.id === "qa-preview-project") {
       currentProject = buildQaPreviewProject();
     }
     return currentProject;
@@ -6875,7 +6971,9 @@ export function createCockpitApp({
   }
 
   function renderTimelineHistoryScreenView(projectOverride = null, { qaMode = false } = {}) {
-    const sourceProject = projectOverride ?? currentProject ?? (qaMode ? ensureQaProjectPreviewState() : null);
+    const sourceProject = projectOverride
+      ?? currentProject
+      ?? ((qaMode || isQaModeEnabled()) ? ensureQaProjectPreviewState() : null);
     const viewModel = buildTimelineViewModel({
       project: sourceProject,
       qaMode,

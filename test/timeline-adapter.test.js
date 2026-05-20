@@ -74,6 +74,50 @@ test("timeline adapter exposes cross-surface continuity contract", () => {
           },
         ],
       },
+      canonicalLearningSystemContract: {
+        statusLabel: "מערכת הלמידה מוגדרת עכשיו כחוזה קנוני אחד",
+        contractRule: "Nexus must separate project memory, user preference memory, and system learning, and only call it learning where stored signals change later decisions truthfully.",
+        summary: {
+          memoryLayers: 3,
+          liveInputs: 5,
+          partialInputs: 6,
+          liveImpacts: 1,
+          partialImpacts: 2,
+          crossProjectPatterns: 2,
+        },
+        memoryLayers: [
+          {
+            layerId: "project-memory",
+            title: "Project memory",
+            status: "live",
+            scope: "Stores project-specific outcomes.",
+            storedInputs: ["execution history"],
+            decisionImpact: ["next-task framing"],
+            continuityRule: "Project memory stays attached to the same project identity.",
+          },
+        ],
+        decisionImpacts: [
+          {
+            impactId: "next-task-selection",
+            label: "next-task selection",
+            status: "live",
+            currentEffect: "Adaptive execution uses feedback to steer next work.",
+            nextRequirement: "Later selection should expose stronger class-specific effects visibly.",
+          },
+        ],
+        continuityRules: [
+          "learning state may not silently reset across restore",
+        ],
+        generationIntegrationRules: [
+          "generation must later consume learned class signals",
+        ],
+        explicitProhibitions: [
+          "no hidden AI intuition without canonical trace",
+        ],
+        visibleProductExpectations: [
+          "smarter generation direction",
+        ],
+      },
       events: [
         {
           type: "task.completed",
@@ -95,4 +139,7 @@ test("timeline adapter exposes cross-surface continuity contract", () => {
   assert.equal(viewModel.wave4LiveVerificationMatrix.statusLabel, "ל־Wave 4 יש מטריצת אימות חיה אחת");
   assert.equal(viewModel.wave4LiveVerificationMatrix.verificationLanes[0].routeKey, "understanding");
   assert.equal(viewModel.wave4LiveVerificationMatrix.summary.totalLanes, "10");
+  assert.equal(viewModel.canonicalLearningSystemContract.statusLabel, "מערכת הלמידה מוגדרת עכשיו כחוזה קנוני אחד");
+  assert.equal(viewModel.canonicalLearningSystemContract.memoryLayers[0].title, "Project memory");
+  assert.equal(viewModel.canonicalLearningSystemContract.decisionImpacts[0].label, "next-task selection");
 });

@@ -56,6 +56,47 @@ test("timeline screen renders cross-surface continuity card", () => {
         },
       ],
     },
+    canonicalLearningSystemContract: {
+      statusLabel: "מערכת הלמידה מוגדרת עכשיו כחוזה קנוני אחד",
+      contractRule: "Nexus must separate project memory, user preference memory, and system learning, and only call it learning where stored signals change later decisions truthfully.",
+      summary: {
+        memoryLayers: "3",
+        liveInputs: "5",
+        partialInputs: "6",
+        liveImpacts: "1",
+        partialImpacts: "2",
+        crossProjectPatterns: "2",
+      },
+      memoryLayers: [
+        {
+          title: "Project memory",
+          status: "live",
+          scope: "Stores project-specific outcomes.",
+          storedInputs: ["execution history"],
+          decisionImpact: ["next-task framing"],
+          continuityRule: "Project memory stays attached to the same project identity.",
+        },
+      ],
+      decisionImpacts: [
+        {
+          label: "next-task selection",
+          status: "live",
+          currentEffect: "Adaptive execution uses feedback to steer next work.",
+        },
+      ],
+      continuityRules: [
+        "learning state may not silently reset across restore",
+      ],
+      generationIntegrationRules: [
+        "generation must later consume learned class signals",
+      ],
+      explicitProhibitions: [
+        "no hidden AI intuition without canonical trace",
+      ],
+      visibleProductExpectations: [
+        "smarter generation direction",
+      ],
+    },
     entries: [
       {
         id: "event-1",
@@ -74,6 +115,9 @@ test("timeline screen renders cross-surface continuity card", () => {
   });
 
   assert.match(html, /Wave 4 live verification matrix/);
+  assert.match(html, /Canonical learning system/);
+  assert.match(html, /Project memory/);
+  assert.match(html, /next-task selection/);
   assert.match(html, /ל־Wave 4 יש מטריצת אימות חיה אחת/);
   assert.match(html, /understanding · Product understanding and class resolution/);
   assert.match(html, /Cross-surface continuity/);

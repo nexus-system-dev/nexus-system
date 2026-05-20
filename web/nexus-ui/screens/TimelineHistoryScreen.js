@@ -117,6 +117,55 @@ export function renderTimelineHistoryScreen(viewModel) {
             content: `
               <div class="nexus-timeline-screen__artifact-header">
                 <div>
+                  <span class="nexus-timeline-screen__artifact-label">Canonical learning system</span>
+                  <h2>${escapeHtml(viewModel.canonicalLearningSystemContract.statusLabel)}</h2>
+                  <p>${escapeHtml(viewModel.canonicalLearningSystemContract.contractRule)}</p>
+                </div>
+              </div>
+              <div class="nexus-timeline-screen__stats">
+                <article class="nexus-timeline-screen__stat">
+                  <span>Memory layers</span>
+                  <strong>${escapeHtml(viewModel.canonicalLearningSystemContract.summary.memoryLayers)}</strong>
+                </article>
+                <article class="nexus-timeline-screen__stat">
+                  <span>Live inputs</span>
+                  <strong>${escapeHtml(viewModel.canonicalLearningSystemContract.summary.liveInputs)}</strong>
+                </article>
+                <article class="nexus-timeline-screen__stat">
+                  <span>Partial inputs</span>
+                  <strong>${escapeHtml(viewModel.canonicalLearningSystemContract.summary.partialInputs)}</strong>
+                </article>
+                <article class="nexus-timeline-screen__stat">
+                  <span>Cross-project patterns</span>
+                  <strong>${escapeHtml(viewModel.canonicalLearningSystemContract.summary.crossProjectPatterns)}</strong>
+                </article>
+              </div>
+              <div class="nexus-timeline-screen__stats">
+                ${viewModel.canonicalLearningSystemContract.memoryLayers.map((item) => `
+                  <article class="nexus-timeline-screen__stat">
+                    <span>${escapeHtml(`${item.title} · ${item.status}`)}</span>
+                    <strong>${escapeHtml(item.storedInputs[0] ?? item.scope)}</strong>
+                  </article>
+                `).join("")}
+              </div>
+              <ul>
+                ${viewModel.canonicalLearningSystemContract.memoryLayers.flatMap((item) => [
+                  `${item.title}: ${item.scope}`,
+                  ...item.decisionImpact.map((entry) => `${item.title}: ${entry}`),
+                  `${item.title}: ${item.continuityRule}`,
+                ]).slice(0, 9).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                ${viewModel.canonicalLearningSystemContract.generationIntegrationRules.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                ${viewModel.canonicalLearningSystemContract.explicitProhibitions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+              </ul>
+            `,
+          })}
+
+          ${renderNexusCard({
+            className: "nexus-timeline-screen__events-card",
+            padding: "lg",
+            content: `
+              <div class="nexus-timeline-screen__artifact-header">
+                <div>
                   <span class="nexus-timeline-screen__artifact-label">Wave 4 live verification matrix</span>
                   <h2>${escapeHtml(viewModel.wave4LiveVerificationMatrix.statusLabel)}</h2>
                   <p>${escapeHtml(viewModel.wave4LiveVerificationMatrix.matrixRule)}</p>
@@ -179,6 +228,9 @@ export function renderTimelineHistoryScreen(viewModel) {
                 `).join("")}
               </div>
               <ul>
+                ${viewModel.canonicalLearningSystemContract.decisionImpacts.map((item) => `<li>${escapeHtml(`${item.label} · ${item.status} · ${item.currentEffect}`)}</li>`).slice(0, 8).join("")}
+                ${viewModel.canonicalLearningSystemContract.continuityRules.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                ${viewModel.canonicalLearningSystemContract.visibleProductExpectations.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
                 ${viewModel.crossSurfaceContinuity.continuityChecks.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
                 <li>${escapeHtml(viewModel.crossSurfaceContinuity.restoreRule)}</li>
                 <li>${escapeHtml(viewModel.crossSurfaceContinuity.explainablePath)}</li>
