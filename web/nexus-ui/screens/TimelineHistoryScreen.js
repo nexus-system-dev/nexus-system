@@ -117,6 +117,54 @@ export function renderTimelineHistoryScreen(viewModel) {
             content: `
               <div class="nexus-timeline-screen__artifact-header">
                 <div>
+                  <span class="nexus-timeline-screen__artifact-label">Wave 4 live verification matrix</span>
+                  <h2>${escapeHtml(viewModel.wave4LiveVerificationMatrix.statusLabel)}</h2>
+                  <p>${escapeHtml(viewModel.wave4LiveVerificationMatrix.matrixRule)}</p>
+                </div>
+              </div>
+              <div class="nexus-timeline-screen__stats">
+                <article class="nexus-timeline-screen__stat">
+                  <span>Total lanes</span>
+                  <strong>${escapeHtml(viewModel.wave4LiveVerificationMatrix.summary.totalLanes)}</strong>
+                </article>
+                <article class="nexus-timeline-screen__stat">
+                  <span>Execution routes</span>
+                  <strong>${escapeHtml(viewModel.wave4LiveVerificationMatrix.summary.executionRoutes)}</strong>
+                </article>
+                <article class="nexus-timeline-screen__stat">
+                  <span>Proof routes</span>
+                  <strong>${escapeHtml(viewModel.wave4LiveVerificationMatrix.summary.proofRoutes)}</strong>
+                </article>
+                <article class="nexus-timeline-screen__stat">
+                  <span>Restore checks</span>
+                  <strong>${escapeHtml(viewModel.wave4LiveVerificationMatrix.summary.restoreChecks)}</strong>
+                </article>
+              </div>
+              <div class="nexus-timeline-screen__stats">
+                ${viewModel.wave4LiveVerificationMatrix.verificationLanes.map((item) => `
+                  <article class="nexus-timeline-screen__stat">
+                    <span>${escapeHtml(`${item.routeKey} · ${item.title}`)}</span>
+                    <strong>${escapeHtml(item.visibleAnchor)}</strong>
+                  </article>
+                `).join("")}
+              </div>
+              <ul>
+                <li>${escapeHtml(viewModel.wave4LiveVerificationMatrix.strongerPreviewRule)}</li>
+                <li>${escapeHtml(viewModel.wave4LiveVerificationMatrix.restoreRule)}</li>
+                ${viewModel.wave4LiveVerificationMatrix.verificationLanes.flatMap((item) => [
+                  ...item.passCriteria.map((entry) => `${item.laneId}: ${entry}`),
+                  ...item.restoreChecks.map((entry) => `${item.laneId}: ${entry}`),
+                ]).slice(0, 10).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+              </ul>
+            `,
+          })}
+
+          ${renderNexusCard({
+            className: "nexus-timeline-screen__events-card",
+            padding: "lg",
+            content: `
+              <div class="nexus-timeline-screen__artifact-header">
+                <div>
                   <span class="nexus-timeline-screen__artifact-label">Cross-surface continuity</span>
                   <h2>${escapeHtml(viewModel.crossSurfaceContinuity.statusLabel)}</h2>
                   <p>${escapeHtml(viewModel.crossSurfaceContinuity.visibleContinuityRule)}</p>

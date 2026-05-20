@@ -207,6 +207,7 @@ import { createGrowthOpportunitySurfacingBoundary } from "./growth-opportunity-s
 import { createClassAwareDeploymentReleasePath } from "./class-aware-deployment-release-path.js";
 import { createDeploymentStateFeedbackContract } from "./deployment-state-feedback-contract.js";
 import { createCrossSurfaceContinuityContract } from "./cross-surface-continuity-contract.js";
+import { createWave4LiveVerificationMatrix } from "./wave4-live-verification-matrix.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -5185,6 +5186,23 @@ export function buildProjectContext(
     deploymentStateFeedbackContract,
     postReleaseContinuationLoop,
   });
+  const { wave4LiveVerificationMatrix } = createWave4LiveVerificationMatrix({
+    productClass,
+    projectStage,
+    buildProgressionStateMachine,
+    classAwareGenerationContract,
+    classSpecificSurfaceEvolutionRules,
+    localWorkspaceContract,
+    classAwareRuntimeResolver,
+    classAwarePackagingPreviewContract,
+    releaseableProductStateContract,
+    releaseEvidenceHandoffModel,
+    postReleaseContinuationLoop,
+    growthOpportunitySurfacingBoundary,
+    classAwareDeploymentReleasePath,
+    deploymentStateFeedbackContract,
+    crossSurfaceContinuityContract,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5487,6 +5505,7 @@ export function buildProjectContext(
   context.classAwareDeploymentReleasePath = classAwareDeploymentReleasePath;
   context.deploymentStateFeedbackContract = deploymentStateFeedbackContract;
   context.crossSurfaceContinuityContract = crossSurfaceContinuityContract;
+  context.wave4LiveVerificationMatrix = wave4LiveVerificationMatrix;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;

@@ -181,11 +181,21 @@ function resolveCrossSurfaceContinuityContract(project = null) {
   );
 }
 
+function resolveWave4LiveVerificationMatrix(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.wave4LiveVerificationMatrix
+      ?? safeProject.context?.wave4LiveVerificationMatrix
+      ?? safeProject.state?.wave4LiveVerificationMatrix,
+  );
+}
+
 export function buildTimelineViewModel({ project = null, qaMode = false } = {}) {
   const safeProject = normalizeObject(project);
   const artifactTruth = buildArtifactTruthViewModel(safeProject);
   const entries = resolveTimelineEntries(safeProject);
   const crossSurfaceContinuityContract = resolveCrossSurfaceContinuityContract(safeProject);
+  const wave4LiveVerificationMatrix = resolveWave4LiveVerificationMatrix(safeProject);
 
   return {
     title: "איך התוצר התקדם עד כאן",
@@ -220,6 +230,40 @@ export function buildTimelineViewModel({ project = null, qaMode = false } = {}) 
         crossSurfaceContinuityContract.restoreRule,
         "cross-surface continuity must survive refresh, route restore, revisit, and transition back into execution",
       ),
+    },
+    wave4LiveVerificationMatrix: {
+      statusLabel: escapeText(
+        wave4LiveVerificationMatrix.statusLabel,
+        "Wave 4 still lacks one deterministic live verification matrix",
+      ),
+      matrixRule: escapeText(
+        wave4LiveVerificationMatrix.matrixRule,
+        "every major Wave 4 capability must declare one visible route, one visible anchor, and restore checks before live reruns can close truthfully",
+      ),
+      strongerPreviewRule: escapeText(
+        wave4LiveVerificationMatrix.strongerPreviewRule,
+        "use the stronger preview path when available",
+      ),
+      restoreRule: escapeText(
+        wave4LiveVerificationMatrix.restoreRule,
+        "refresh, route restore, revisit, and transition checks must be explicit where product truth can silently break",
+      ),
+      summary: {
+        totalLanes: escapeText(wave4LiveVerificationMatrix.summary?.totalLanes, "0"),
+        executionRoutes: escapeText(wave4LiveVerificationMatrix.summary?.executionRoutes, "0"),
+        proofRoutes: escapeText(wave4LiveVerificationMatrix.summary?.proofRoutes, "0"),
+        restoreChecks: escapeText(wave4LiveVerificationMatrix.summary?.restoreChecks, "0"),
+      },
+      verificationLanes: normalizeArray(wave4LiveVerificationMatrix.verificationLanes).map((item) => ({
+        laneId: escapeText(item.laneId, "unknown-lane"),
+        title: escapeText(item.title, "Wave 4 capability"),
+        routeKey: escapeText(item.routeKey, "unknown-route"),
+        visibleAnchor: escapeText(item.visibleAnchor, "not-yet-visible"),
+        verificationFocus: normalizeArray(item.verificationFocus).map((entry) => escapeText(entry)).filter(Boolean).slice(0, 3),
+        passCriteria: normalizeArray(item.passCriteria).map((entry) => escapeText(entry)).filter(Boolean).slice(0, 2),
+        restoreChecks: normalizeArray(item.restoreChecks).map((entry) => escapeText(entry)).filter(Boolean).slice(0, 2),
+        strongerPreviewPath: escapeText(item.strongerPreviewPath, "qa-route-or-live-project"),
+      })).slice(0, 10),
     },
     stats: buildStats(safeProject, entries),
     primaryAction: {

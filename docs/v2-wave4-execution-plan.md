@@ -144,6 +144,7 @@
 - [docs/operating-system/wave4-class-aware-deployment-release-path.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-class-aware-deployment-release-path.md)
 - [docs/operating-system/wave4-deployment-state-feedback-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-deployment-state-feedback-contract.md)
 - [docs/operating-system/wave4-cross-surface-continuity-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-cross-surface-continuity-contract.md)
+- [docs/operating-system/wave4-live-verification-matrix.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-live-verification-matrix.md)
 
 הוא כולל יכולות שלא ניתן לדחות:
 - automatic class-aware skeleton generation

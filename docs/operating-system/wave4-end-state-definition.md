@@ -75,6 +75,7 @@ Nexus עצמה היא מנוע היצירה הפנימי.
 - להחזיק `class-aware deployment release path` גלוי שמראה לאן כל build הולכת operationally ב־Wave 4
 - להחזיק `deployment state feedback contract` גלוי שמציג progress, blockers, ו־provider status מתוך Nexus
 - להחזיק `cross-surface continuity contract` גלוי שמחבר truthfully בין execution, proof, release evidence, deployment feedback, timeline, והמשך הלולאה
+- להחזיק `Wave 4 live verification matrix` גלוי שמחייב route, visible anchor, pass/fail truth, ו־restore checks לכל capability מרכזי
 
 ## Full Long-Term Nexus Vision
 

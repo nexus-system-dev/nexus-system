@@ -948,6 +948,15 @@ Tasks:
   - one canonical verification matrix exists
 - not trueGreen:
   - verification left to ad hoc agent interpretation
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-20`
+  - contract artifact: `docs/operating-system/wave4-live-verification-matrix.md`
+  - governing implementation anchors:
+    - `src/core/wave4-live-verification-matrix.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/timeline-adapter.js`
+    - `web/nexus-ui/screens/TimelineHistoryScreen.js`
+    - `web/app.js`
 
 ## Canonical Execution Order
 

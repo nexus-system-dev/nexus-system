@@ -34,6 +34,28 @@ test("timeline screen renders cross-surface continuity card", () => {
       ],
       restoreRule: "cross-surface continuity must survive refresh, route restore, revisit, and transition back into execution",
     },
+    wave4LiveVerificationMatrix: {
+      statusLabel: "ל־Wave 4 יש מטריצת אימות חיה אחת",
+      matrixRule: "every major Wave 4 capability must declare one visible route, one visible anchor, pass/fail truth, and restore/continuity checks before later live reruns can close the wave truthfully",
+      strongerPreviewRule: "use the stronger preview path when available",
+      restoreRule: "the live verification matrix must include refresh, route restore, revisit, and transition checks wherever the capability changes user-facing product truth",
+      summary: {
+        totalLanes: "10",
+        executionRoutes: "4",
+        proofRoutes: "2",
+        restoreChecks: "20",
+      },
+      verificationLanes: [
+        {
+          laneId: "product-understanding-and-class-resolution",
+          title: "Product understanding and class resolution",
+          routeKey: "understanding",
+          visibleAnchor: "landing-page · bootstrap",
+          passCriteria: ["pass if class and stage are visible before execution"],
+          restoreChecks: ["class identity survives route restore"],
+        },
+      ],
+    },
     entries: [
       {
         id: "event-1",
@@ -51,6 +73,9 @@ test("timeline screen renders cross-surface continuity card", () => {
     primaryAction: { label: "חזור לצעד הנוכחי", target: "loop" },
   });
 
+  assert.match(html, /Wave 4 live verification matrix/);
+  assert.match(html, /ל־Wave 4 יש מטריצת אימות חיה אחת/);
+  assert.match(html, /understanding · Product understanding and class resolution/);
   assert.match(html, /Cross-surface continuity/);
   assert.match(html, /הרצף בין המסכים נשאר מחובר/);
   assert.match(html, /execution · Build \/ execution/);

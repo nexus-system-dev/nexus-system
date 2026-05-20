@@ -77,4 +77,8 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.crossSurfaceContinuityContract.continuityFamily, "cross-surface-continuity");
   assert.equal(context.crossSurfaceContinuityContract.status, "connected");
   assert.equal(context.crossSurfaceContinuityContract.continuitySteps.length >= 5, true);
+  assert.equal(context.wave4LiveVerificationMatrix.matrixFamily, "wave4-live-verification-matrix");
+  assert.equal(context.wave4LiveVerificationMatrix.status, "ready");
+  assert.equal(context.wave4LiveVerificationMatrix.verificationLanes.length, 10);
+  assert.equal(context.wave4LiveVerificationMatrix.verificationLanes[0].routeKey, "understanding");
 });
