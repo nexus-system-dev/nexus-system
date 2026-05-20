@@ -384,13 +384,20 @@ Tasks:
   - Figma-backed workspace contract exists for structural build surfaces
 - not trueGreen:
   - layout left to ad hoc implementation per feature
-- active blocker on `2026-05-20`:
-  - Figma authenticated write path returned `token_expired`
-  - without restored Figma auth, this task may not be marked `trueGreen`
-  - the active Wave 4 order must remain pinned to `W4-MBN-021` until the design artifact can be created or updated truthfully
-
 - future execution note:
   - this task may truthfully open or update a Figma design file as part of execution
+  - Figma auth health must be rechecked at design-pass start, before meaningful write, and before closure write-back
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-20`
+  - contract artifact: `docs/operating-system/wave4-figma-backed-live-build-workspace-contract.md`
+  - design artifact:
+    - `https://www.figma.com/design/eKC3qzCYpgqIekEmyDc74o`
+  - governing implementation anchors:
+    - `web/shared/split-workspace-live-build-surface-model.js`
+    - `src/core/build-progression-state-machine.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/execution-adapter.js`
+    - `web/nexus-ui/screens/ExecutionLiveScreen.js`
 
 ### Lane 4 — Class-Aware Product Generation
 
