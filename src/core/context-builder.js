@@ -210,6 +210,7 @@ import { createCrossSurfaceContinuityContract } from "./cross-surface-continuity
 import { createWave4LiveVerificationMatrix } from "./wave4-live-verification-matrix.js";
 import { createCanonicalLearningSystemContract } from "./canonical-learning-system-contract.js";
 import { createAdaptiveOnboardingAgentContract } from "./adaptive-onboarding-agent-contract.js";
+import { createDeepAdaptiveLearningDecisionImpact } from "./deep-adaptive-learning-decision-impact.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -5247,6 +5248,18 @@ export function buildProjectContext(
     taskThroughputSummary,
     progressState,
   });
+  const { learningDecisionImpact } = createDeepAdaptiveLearningDecisionImpact({
+    projectId: project.id ?? null,
+    productClass,
+    outcomeFeedbackState,
+    approvalStatus,
+    adaptiveExecutionDecision,
+    releaseEvidenceHandoffModel,
+    deploymentStateFeedbackContract,
+    postReleaseContinuationLoop,
+    classAwareRuntimeResolver,
+    classAwarePackagingPreviewContract,
+  });
   const { systemOptimizationPlan } = createSystemOptimizationCycle({
     projectId: project.id ?? null,
     adaptiveExecutionDecision,
@@ -5278,6 +5291,7 @@ export function buildProjectContext(
     releaseEvidenceHandoffModel,
     deploymentStateFeedbackContract,
     postReleaseContinuationLoop,
+    learningDecisionImpact,
   });
   const { ownerAuditView } = createOwnerAuditLogViewer({
     auditLogRecord,
@@ -5528,6 +5542,7 @@ export function buildProjectContext(
   context.growthOpportunitySurfacingBoundary = growthOpportunitySurfacingBoundary;
   context.classAwareDeploymentReleasePath = classAwareDeploymentReleasePath;
   context.deploymentStateFeedbackContract = deploymentStateFeedbackContract;
+  context.learningDecisionImpact = learningDecisionImpact;
   context.crossSurfaceContinuityContract = crossSurfaceContinuityContract;
   context.wave4LiveVerificationMatrix = wave4LiveVerificationMatrix;
   context.canonicalLearningSystemContract = canonicalLearningSystemContract;

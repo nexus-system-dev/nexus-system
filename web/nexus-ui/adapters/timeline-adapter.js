@@ -199,6 +199,17 @@ function resolveCanonicalLearningSystemContract(project = null) {
   );
 }
 
+function resolveLearningDecisionImpact(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.learningDecisionImpact
+      ?? safeProject.context?.learningDecisionImpact
+      ?? safeProject.state?.learningDecisionImpact
+      ?? safeProject.canonicalLearningSystemContract?.learningDecisionImpact
+      ?? safeProject.context?.canonicalLearningSystemContract?.learningDecisionImpact,
+  );
+}
+
 export function buildTimelineViewModel({ project = null, qaMode = false } = {}) {
   const safeProject = normalizeObject(project);
   const artifactTruth = buildArtifactTruthViewModel(safeProject);
@@ -206,6 +217,7 @@ export function buildTimelineViewModel({ project = null, qaMode = false } = {}) 
   const crossSurfaceContinuityContract = resolveCrossSurfaceContinuityContract(safeProject);
   const wave4LiveVerificationMatrix = resolveWave4LiveVerificationMatrix(safeProject);
   const canonicalLearningSystemContract = resolveCanonicalLearningSystemContract(safeProject);
+  const learningDecisionImpact = resolveLearningDecisionImpact(safeProject);
 
   return {
     title: "איך התוצר התקדם עד כאן",
@@ -312,6 +324,32 @@ export function buildTimelineViewModel({ project = null, qaMode = false } = {}) 
       generationIntegrationRules: normalizeArray(canonicalLearningSystemContract.generationIntegrationRules).map((item) => escapeText(item)).filter(Boolean).slice(0, 3),
       explicitProhibitions: normalizeArray(canonicalLearningSystemContract.explicitProhibitions).map((item) => escapeText(item)).filter(Boolean).slice(0, 3),
       visibleProductExpectations: normalizeArray(canonicalLearningSystemContract.visibleProductExpectations).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+    },
+    learningDecisionImpact: {
+      statusLabel: escapeText(learningDecisionImpact.statusLabel, "learning impact עדיין לא משנה החלטות חיות"),
+      strategy: escapeText(learningDecisionImpact.strategy, "not-yet-connected"),
+      drivingSignals: normalizeArray(learningDecisionImpact.drivingSignals).map((item) => escapeText(item)).filter(Boolean).slice(0, 6),
+      runtimeDecision: {
+        label: escapeText(learningDecisionImpact.runtimeDecision?.label, "runtime decision not yet learning-driven"),
+        currentEffect: escapeText(learningDecisionImpact.runtimeDecision?.currentEffect, "אין עדיין השפעה גלויה על runtime/package."),
+      },
+      releaseDecision: {
+        label: escapeText(learningDecisionImpact.releaseDecision?.label, "release decision not yet learning-driven"),
+        currentEffect: escapeText(learningDecisionImpact.releaseDecision?.currentEffect, "אין עדיין השפעה גלויה על release/deploy."),
+      },
+      continuationDecision: {
+        title: escapeText(learningDecisionImpact.continuationDecision?.title, "continuation impact not yet learning-driven"),
+        description: escapeText(learningDecisionImpact.continuationDecision?.description, "אין עדיין שינוי גלוי בהמשך הלולאה."),
+        moves: normalizeArray(learningDecisionImpact.continuationDecision?.moves).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+      },
+      nextTaskDecision: {
+        title: escapeText(learningDecisionImpact.nextTaskDecision?.title, "next-task impact not yet learning-driven"),
+        whyNow: escapeText(learningDecisionImpact.nextTaskDecision?.whyNow, "אין עדיין השפעה גלויה על next task selection."),
+      },
+      continuityRule: escapeText(
+        learningDecisionImpact.continuityRule,
+        "learning-driven decisions must survive revisit and route restore",
+      ),
     },
     stats: buildStats(safeProject, entries),
     primaryAction: {

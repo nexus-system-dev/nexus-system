@@ -224,13 +224,160 @@ Current continuation truth on `2026-05-20`:
 
 - `W4-LEARN-001` is `trueGreen`
 - `W4-INTAKE-001` is `trueGreen`
-- the continuation lane is no longer only prepared; it is now closed truthfully as the active canonical post-Wave-4 execution lane
+- the continuation lane was initially closed at the contract layer, but repository reality still leaves deep decision impact and real adaptive-flow replacement unclosed
 
 Closure truth on `2026-05-20`:
 - one canonical adaptive onboarding contract now exists
 - it keeps class-aware branching, sufficiency gate, and bounded handoff under one visible product contract
 - it truthfully marks weak / generic answer detection as `partial`
 - it is visible on the live `Onboarding` surface inside Nexus
+
+Reality-audit reopen truth on `2026-05-20`:
+- `W4-LEARN-001` and `W4-INTAKE-001` closed contract coverage, not full implementation coverage
+- repository reality still does not prove that stored learning signals change later generation behavior
+- repository reality still does not prove that the visible fixed `3-question` onboarding shell has been replaced
+- therefore the continuation lane must reopen as active canonical execution until those missing truths are covered
+
+## Reopened Tasks From Reality Audit
+
+### W4-LEARN-002 — Implement deep adaptive learning decision impact
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `trueGreen`
+- depends_on:
+  - `W4-LEARN-001`
+  - `W4-INTAKE-001`
+  - `W4-MBN-018`
+  - `W4-MBN-019`
+- mission:
+  - turn stored learning signals into later decision-changing behavior across runtime, release, continuation, rerun, and next-task paths instead of stopping at memory, summaries, and contracts
+- pass/fail truth:
+  - pass if stored learning signals measurably change later Nexus decisions on real execution paths and those changes survive restore and revisit
+  - fail if learning remains only:
+    - memory layers
+    - summaries
+    - recommendation cards
+    - passive state with no later decision impact
+- continuity rules:
+  - learned project truth must remain attached to the same project across restore, rerun, revisit, and route changes
+  - system-level learning may not silently overwrite approved per-project truth
+- generation integration rules:
+  - this task may prepare generation-facing learning inputs but may not claim generation improvement complete before `W4-GEN-001`
+- explicit visible product change required:
+  - at least one live Nexus decision must visibly change because of prior failures, approvals, release outcomes, deployment outcomes, or continuation outcomes
+- explicit prohibitions:
+  - no docs-only closure
+  - no contract-only closure
+  - no UI-card-only closure
+  - no hidden learning logic without visible downstream effect
+- closure write-back:
+  - canonical contract path:
+    - `docs/operating-system/wave4-deep-adaptive-learning-decision-impact.md`
+  - governing implementation anchors:
+    - `src/core/deep-adaptive-learning-decision-impact.js`
+    - `src/core/context-builder.js`
+    - `src/core/canonical-learning-system-contract.js`
+    - `web/nexus-ui/adapters/next-task-adapter.js`
+    - `web/nexus-ui/screens/NextTaskScreen.js`
+    - `web/nexus-ui/adapters/timeline-adapter.js`
+    - `web/nexus-ui/screens/TimelineHistoryScreen.js`
+    - `web/app.js`
+  - visible closure proof:
+    - `Next Task` on `http://127.0.0.1:4011/?qa=1&v=intake001c`
+    - visible `לייצב את Landing page לפני הרחבה נוספת`
+    - visible `מסלול: stabilization`
+    - visible `repair-before-expand`
+    - visible runtime/package and release/continuation decisions driven by prior signals
+    - `Timeline` on `http://127.0.0.1:4011/?qa=1&v=intake001c`
+    - visible `Deep learning decision impact`
+    - visible `repair-before-expand`
+
+Closure truth on `2026-05-20`:
+- stored learning signals now change later visible Nexus decisions
+- the change is visible on `Next Task` and `Timeline`
+- learning now changes continuation direction, next-task selection, runtime/package framing, and release/deploy promotion framing
+- generation learning remains explicitly unclosed and deferred to `W4-GEN-001`
+
+### W4-GEN-001 — Connect learning signals to generation decisions
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `selected-not-started`
+- depends_on:
+  - `W4-LEARN-002`
+  - `W4-MBN-007`
+  - `W4-MBN-011`
+  - `W4-MBN-012`
+- mission:
+  - connect prior outcome signals, class-specific learning, and safe cross-project patterns back into generation framing, proof focus, runtime direction, and packaging choices
+- pass/fail truth:
+  - pass if generation decisions change measurably after prior outcomes and the changed generation direction is visible in Nexus surfaces
+  - fail if generation remains class-aware but not learning-aware
+- continuity rules:
+  - learned generation preferences must survive restore and rerun without drifting into generic defaults
+- generation integration rules:
+  - generation must consume canonical learning inputs directly, not parallel ad hoc summaries
+  - runtime and packaging changes caused by learning must remain class-safe and visibly explained
+- explicit visible product change required:
+  - at least two comparable runs must show visibly different generation framing or proof focus because of prior learning signals
+- explicit prohibitions:
+  - no claim of generation improvement from artifact labels alone
+  - no cross-project mutation without visible explanation
+
+### W4-INTAKE-002 — Replace fixed 3-question onboarding with adaptive intake flow
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-INTAKE-001`
+  - `W4-LEARN-002`
+  - `W4-GEN-001`
+  - `docs/operating-system/wave3-onboarding-intelligence-planning-track.md`
+- mission:
+  - replace the visible fixed `3-question` onboarding shell with a real adaptive intake flow that varies by class, answer quality, and readiness while staying bounded and product-connected
+- pass/fail truth:
+  - pass if visible onboarding no longer relies on a fixed question count and different project classes visibly receive different question sequences, clarification loops, and readiness-based stop conditions
+  - fail if the system still shows the same fixed shell and only changes copy or contract cards
+- continuity rules:
+  - intake state and approved handoff must survive restore, revisit, and transition into Understanding and Generation
+  - adaptive questioning may not silently rewrite already-approved project truth
+- generation integration rules:
+  - intake must emit one canonical structured handoff that Generation actually consumes
+  - readiness stop must be based on sufficient information, not fixed count
+- explicit visible product change required:
+  - the live onboarding route must stop presenting the fixed `3-question` shell as the real user flow
+- explicit prohibitions:
+  - no free-form chat drift
+  - no contract-only closure
+  - no backend-only adaptive logic while the visible flow remains fixed-shell
+
+### W4-GEN-002 — Implement feedback-driven product mutation loop
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-LEARN-002`
+  - `W4-GEN-001`
+  - `W4-INTAKE-002`
+  - `W4-MBN-015`
+- mission:
+  - turn approved feedback, failures, reruns, release outcomes, and continuation outcomes into bounded later product mutations instead of passive recommendations
+- pass/fail truth:
+  - pass if later Nexus product iterations visibly mutate because of recorded prior outcomes and those mutations remain continuity-safe
+  - fail if the system only recommends changes without driving later product behavior
+- continuity rules:
+  - mutation history must survive restore and remain attributable to the same project and decision chain
+- generation integration rules:
+  - feedback-driven mutation must enter through canonical generation and continuation paths, not side channels
+- explicit visible product change required:
+  - a later build, proof, or continuation route must visibly differ because of prior approved feedback or failure history
+- explicit prohibitions:
+  - no hidden mutation engine
+  - no mutation based only on unapproved summaries
+  - no docs-only closure
 
 ## Write-Back Rule
 

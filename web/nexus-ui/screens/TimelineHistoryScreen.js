@@ -166,6 +166,41 @@ export function renderTimelineHistoryScreen(viewModel) {
             content: `
               <div class="nexus-timeline-screen__artifact-header">
                 <div>
+                  <span class="nexus-timeline-screen__artifact-label">Deep learning decision impact</span>
+                  <h2>${escapeHtml(viewModel.learningDecisionImpact.statusLabel)}</h2>
+                  <p>${escapeHtml(viewModel.learningDecisionImpact.continuityRule)}</p>
+                </div>
+              </div>
+              <div class="nexus-timeline-screen__stats">
+                <article class="nexus-timeline-screen__stat">
+                  <span>Strategy</span>
+                  <strong>${escapeHtml(viewModel.learningDecisionImpact.strategy)}</strong>
+                </article>
+                <article class="nexus-timeline-screen__stat">
+                  <span>Next task</span>
+                  <strong>${escapeHtml(viewModel.learningDecisionImpact.nextTaskDecision.title)}</strong>
+                </article>
+              </div>
+              <ul>
+                <li>${escapeHtml(viewModel.learningDecisionImpact.nextTaskDecision.whyNow)}</li>
+                <li>${escapeHtml(viewModel.learningDecisionImpact.runtimeDecision.label)}</li>
+                <li>${escapeHtml(viewModel.learningDecisionImpact.runtimeDecision.currentEffect)}</li>
+                <li>${escapeHtml(viewModel.learningDecisionImpact.releaseDecision.label)}</li>
+                <li>${escapeHtml(viewModel.learningDecisionImpact.releaseDecision.currentEffect)}</li>
+                <li>${escapeHtml(viewModel.learningDecisionImpact.continuationDecision.title)}</li>
+                <li>${escapeHtml(viewModel.learningDecisionImpact.continuationDecision.description)}</li>
+                ${viewModel.learningDecisionImpact.continuationDecision.moves.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                ${viewModel.learningDecisionImpact.drivingSignals.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+              </ul>
+            `,
+          })}
+
+          ${renderNexusCard({
+            className: "nexus-timeline-screen__events-card",
+            padding: "lg",
+            content: `
+              <div class="nexus-timeline-screen__artifact-header">
+                <div>
                   <span class="nexus-timeline-screen__artifact-label">Wave 4 live verification matrix</span>
                   <h2>${escapeHtml(viewModel.wave4LiveVerificationMatrix.statusLabel)}</h2>
                   <p>${escapeHtml(viewModel.wave4LiveVerificationMatrix.matrixRule)}</p>

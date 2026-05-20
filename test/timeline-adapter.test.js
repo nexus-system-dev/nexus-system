@@ -118,6 +118,35 @@ test("timeline adapter exposes cross-surface continuity contract", () => {
           "smarter generation direction",
         ],
       },
+      learningDecisionImpact: {
+        statusLabel: "הלמידה כבר משנה את ההמשך לכיוון repair לפני expansion",
+        strategy: "repair-before-expand",
+        drivingSignals: [
+          "outcome:attention-required",
+          "adaptive:stabilize",
+        ],
+        runtimeDecision: {
+          label: "לייצב את runtime/package הנוכחי לפני הרחבה",
+          currentEffect: "Nexus שומרת על runtime קיים עד שהסימנים הבעייתיים יירדו.",
+        },
+        releaseDecision: {
+          label: "להחזיק את קידום ה־release עד שהלמידה תאשר יציבות",
+          currentEffect: "ה־release הבא לא מקודם אוטומטית.",
+        },
+        continuationDecision: {
+          title: "לייצב את Landing page לפני הרחבה נוספת",
+          description: "הסבב הבא משתנה עכשיו בגלל friction שנצבר.",
+          moves: [
+            "לחזק את הוכחת הערך",
+            "לאסוף עוד proof חי",
+          ],
+        },
+        nextTaskDecision: {
+          title: "לייצב את Landing page לפני הרחבה נוספת",
+          whyNow: "זה הצעד הנכון עכשיו כי outcome feedback כבר מראה שצריך repair.",
+        },
+        continuityRule: "learning-driven decisions must survive revisit and route restore",
+      },
       events: [
         {
           type: "task.completed",
@@ -142,4 +171,6 @@ test("timeline adapter exposes cross-surface continuity contract", () => {
   assert.equal(viewModel.canonicalLearningSystemContract.statusLabel, "מערכת הלמידה מוגדרת עכשיו כחוזה קנוני אחד");
   assert.equal(viewModel.canonicalLearningSystemContract.memoryLayers[0].title, "Project memory");
   assert.equal(viewModel.canonicalLearningSystemContract.decisionImpacts[0].label, "next-task selection");
+  assert.equal(viewModel.learningDecisionImpact.strategy, "repair-before-expand");
+  assert.match(viewModel.learningDecisionImpact.runtimeDecision.label, /runtime\/package/);
 });

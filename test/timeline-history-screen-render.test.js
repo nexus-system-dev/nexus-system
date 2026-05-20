@@ -97,6 +97,29 @@ test("timeline screen renders cross-surface continuity card", () => {
         "smarter generation direction",
       ],
     },
+    learningDecisionImpact: {
+      statusLabel: "הלמידה כבר משנה את ההמשך לכיוון repair לפני expansion",
+      strategy: "repair-before-expand",
+      drivingSignals: ["outcome:attention-required", "adaptive:stabilize"],
+      runtimeDecision: {
+        label: "לייצב את runtime/package הנוכחי לפני הרחבה",
+        currentEffect: "Nexus שומרת על runtime קיים עד שהסימנים הבעייתיים יירדו.",
+      },
+      releaseDecision: {
+        label: "להחזיק את קידום ה־release עד שהלמידה תאשר יציבות",
+        currentEffect: "ה־release הבא לא מקודם אוטומטית.",
+      },
+      continuationDecision: {
+        title: "לייצב את Landing page לפני הרחבה נוספת",
+        description: "הסבב הבא משתנה עכשיו בגלל friction שנצבר.",
+        moves: ["לחזק את הוכחת הערך", "לאסוף עוד proof חי"],
+      },
+      nextTaskDecision: {
+        title: "לייצב את Landing page לפני הרחבה נוספת",
+        whyNow: "זה הצעד הנכון עכשיו כי outcome feedback כבר מראה שצריך repair.",
+      },
+      continuityRule: "learning-driven decisions must survive revisit and route restore",
+    },
     entries: [
       {
         id: "event-1",
@@ -115,7 +138,9 @@ test("timeline screen renders cross-surface continuity card", () => {
   });
 
   assert.match(html, /Wave 4 live verification matrix/);
+  assert.match(html, /Deep learning decision impact/);
   assert.match(html, /Canonical learning system/);
+  assert.match(html, /repair-before-expand/);
   assert.match(html, /Project memory/);
   assert.match(html, /next-task selection/);
   assert.match(html, /ל־Wave 4 יש מטריצת אימות חיה אחת/);

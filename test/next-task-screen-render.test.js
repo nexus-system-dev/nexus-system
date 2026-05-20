@@ -57,6 +57,20 @@ test("next task screen renders post-release continuation card", () => {
       boundedGrowthRule: "continuation may surface only product-connected moves, not fake autonomous company behavior",
       continuityRule: "post-release continuation must survive revisit, route restore, and transition back into execution",
     },
+    learningDecisionImpact: {
+      statusLabel: "הלמידה כבר משנה את ההמשך לכיוון repair לפני expansion",
+      strategy: "repair-before-expand",
+      drivingSignals: ["outcome:attention-required", "adaptive:stabilize"],
+      runtimeDecision: {
+        label: "לייצב את runtime/package הנוכחי לפני הרחבה",
+        currentEffect: "Nexus שומרת על runtime קיים עד שהסימנים הבעייתיים יירדו.",
+      },
+      releaseDecision: {
+        label: "להחזיק את קידום ה־release עד שהלמידה תאשר יציבות",
+        currentEffect: "ה־release הבא לא מקודם אוטומטית.",
+      },
+      continuityRule: "learning-driven decisions must survive revisit and route restore",
+    },
     growthOpportunityBoundary: {
       statusLabel: "הצעות ההמשך נשארות bounded",
       visibleBoundaryRule: "Wave 4 may surface only meaningful next product moves, never fake autonomous company behavior or implied Wave 7 autonomy",
@@ -78,8 +92,10 @@ test("next task screen renders post-release continuation card", () => {
   });
 
   assert.match(html, /Post-release continuation/);
+  assert.match(html, /Learning decision impact/);
   assert.match(html, /Growth boundary/);
   assert.match(html, /סבב ההמשך כבר פתוח/);
+  assert.match(html, /repair-before-expand/);
   assert.match(html, /הצעות ההמשך נשארות bounded/);
   assert.match(html, /app-store/);
   assert.match(html, /לקדם את Coach Mobile mobile flow/);

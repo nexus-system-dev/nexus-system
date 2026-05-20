@@ -122,6 +122,38 @@ export function renderNextTaskScreen(viewModel) {
             content: `
               <div class="nexus-next-task-screen__artifact-header">
                 <div>
+                  <span class="nexus-next-task-screen__artifact-label">Learning decision impact</span>
+                  <h2>${escapeHtml(viewModel.learningDecisionImpact.statusLabel)}</h2>
+                  <p>${escapeHtml(viewModel.learningDecisionImpact.continuityRule)}</p>
+                </div>
+              </div>
+              <div class="nexus-next-task-screen__details-grid">
+                <div>
+                  <h2>Runtime / package</h2>
+                  <p>${escapeHtml(viewModel.learningDecisionImpact.runtimeDecision.label)}</p>
+                  <ul class="nexus-next-task-screen__list">
+                    <li>${escapeHtml(viewModel.learningDecisionImpact.strategy)}</li>
+                    <li>${escapeHtml(viewModel.learningDecisionImpact.runtimeDecision.currentEffect)}</li>
+                  </ul>
+                </div>
+                <div>
+                  <h2>Release / continuation</h2>
+                  <p>${escapeHtml(viewModel.learningDecisionImpact.releaseDecision.label)}</p>
+                  <ul class="nexus-next-task-screen__list">
+                    <li>${escapeHtml(viewModel.learningDecisionImpact.releaseDecision.currentEffect)}</li>
+                    ${viewModel.learningDecisionImpact.drivingSignals.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                  </ul>
+                </div>
+              </div>
+            `,
+          })}
+
+          ${renderNexusCard({
+            className: "nexus-next-task-screen__ready-card",
+            padding: "lg",
+            content: `
+              <div class="nexus-next-task-screen__artifact-header">
+                <div>
                   <span class="nexus-next-task-screen__artifact-label">Growth boundary</span>
                   <h2>${escapeHtml(viewModel.growthOpportunityBoundary.statusLabel)}</h2>
                   <p>${escapeHtml(viewModel.growthOpportunityBoundary.visibleBoundaryRule)}</p>

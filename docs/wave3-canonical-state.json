@@ -133,6 +133,7 @@
     "canonicalFigmaBackedDesktopShellLocalWorkspaceFramePath": "docs/operating-system/wave4-figma-backed-desktop-shell-local-workspace-frame.md",
     "canonicalPostWave4LearningIntakeContinuationLanePath": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
     "canonicalLearningSystemContractPath": "docs/operating-system/wave4-canonical-learning-system-contract.md",
+    "canonicalDeepAdaptiveLearningDecisionImpactPath": "docs/operating-system/wave4-deep-adaptive-learning-decision-impact.md",
     "canonicalAdaptiveOnboardingAgentContractPath": "docs/operating-system/wave4-adaptive-onboarding-agent-contract.md",
     "canonicalExternalIntelligencePath": "docs/operating-system/wave4-external-product-intelligence-pass-2026-05-18.md",
     "planningMode": "minimum-believable-nexus-first",
@@ -168,7 +169,7 @@
     "postWave4PreparedContinuationLanes": [
       {
         "laneId": "post-wave4-learning-and-intake-continuation",
-        "status": "trueGreen",
+        "status": "active-canonical-execution",
         "canonicalPlanPath": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
         "activationRule": "may begin only after active Wave 4 core tasks no longer select unresolved W4-MBN work ahead of it",
         "preparedTasks": [
@@ -218,6 +219,69 @@
               "test/smart-onboarding-screen-render.test.js",
               "test/context-builder.test.js"
             ]
+          },
+          {
+            "taskId": "W4-LEARN-002",
+            "title": "Implement deep adaptive learning decision impact",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-LEARN-001",
+              "W4-INTAKE-001",
+              "W4-MBN-018",
+              "W4-MBN-019"
+            ],
+            "closedAt": "2026-05-20",
+            "closureEvidence": [
+              "docs/operating-system/wave4-deep-adaptive-learning-decision-impact.md",
+              "src/core/deep-adaptive-learning-decision-impact.js",
+              "src/core/context-builder.js",
+              "src/core/canonical-learning-system-contract.js",
+              "web/nexus-ui/adapters/next-task-adapter.js",
+              "web/nexus-ui/screens/NextTaskScreen.js",
+              "web/nexus-ui/adapters/timeline-adapter.js",
+              "web/nexus-ui/screens/TimelineHistoryScreen.js",
+              "web/app.js",
+              "test/deep-adaptive-learning-decision-impact.test.js",
+              "test/canonical-learning-system-contract.test.js",
+              "test/next-task-adapter.test.js",
+              "test/next-task-screen-render.test.js",
+              "test/timeline-adapter.test.js",
+              "test/timeline-history-screen-render.test.js",
+              "test/context-builder-runtime-direction.test.js"
+            ]
+          },
+          {
+            "taskId": "W4-GEN-001",
+            "title": "Connect learning signals to generation decisions",
+            "status": "selected-not-started",
+            "dependsOn": [
+              "W4-LEARN-002",
+              "W4-MBN-007",
+              "W4-MBN-011",
+              "W4-MBN-012"
+            ]
+          },
+          {
+            "taskId": "W4-INTAKE-002",
+            "title": "Replace fixed 3-question onboarding with adaptive intake flow",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-INTAKE-001",
+              "W4-LEARN-002",
+              "W4-GEN-001",
+              "docs/operating-system/wave3-onboarding-intelligence-planning-track.md"
+            ]
+          },
+          {
+            "taskId": "W4-GEN-002",
+            "title": "Implement feedback-driven product mutation loop",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-LEARN-002",
+              "W4-GEN-001",
+              "W4-INTAKE-002",
+              "W4-MBN-015"
+            ]
           }
         ]
       }
@@ -236,12 +300,36 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": null,
-      "title": null,
+      "taskId": "W4-GEN-001",
+      "title": "Connect learning signals to generation decisions",
       "source": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
-      "status": "no-further-canonical-task-released"
+      "status": "selected-not-started"
     },
     "completedCanonicalExecutionTasks": [
+      {
+        "taskId": "W4-LEARN-002",
+        "title": "Implement deep adaptive learning decision impact",
+        "status": "trueGreen",
+        "closedAt": "2026-05-20",
+        "closureEvidence": [
+          "docs/operating-system/wave4-deep-adaptive-learning-decision-impact.md",
+          "src/core/deep-adaptive-learning-decision-impact.js",
+          "src/core/context-builder.js",
+          "src/core/canonical-learning-system-contract.js",
+          "web/nexus-ui/adapters/next-task-adapter.js",
+          "web/nexus-ui/screens/NextTaskScreen.js",
+          "web/nexus-ui/adapters/timeline-adapter.js",
+          "web/nexus-ui/screens/TimelineHistoryScreen.js",
+          "web/app.js",
+          "test/deep-adaptive-learning-decision-impact.test.js",
+          "test/canonical-learning-system-contract.test.js",
+          "test/next-task-adapter.test.js",
+          "test/next-task-screen-render.test.js",
+          "test/timeline-adapter.test.js",
+          "test/timeline-history-screen-render.test.js",
+          "test/context-builder-runtime-direction.test.js"
+        ]
+      },
       {
         "taskId": "W4-INTAKE-001",
         "title": "Define adaptive onboarding agent contract",

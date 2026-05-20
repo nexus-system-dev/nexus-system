@@ -64,6 +64,15 @@ function resolveGrowthOpportunitySurfacingBoundary(project) {
   );
 }
 
+function resolveLearningDecisionImpact(project) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.learningDecisionImpact
+      ?? safeProject.context?.learningDecisionImpact
+      ?? safeProject.state?.learningDecisionImpact,
+  );
+}
+
 function resolveNextMission(project) {
   const roadmap = resolveRoadmap(project);
   const assignedTask = resolveAssignedTask(roadmap);
@@ -71,6 +80,7 @@ function resolveNextMission(project) {
   const developerSummary = normalizeObject(project.developerWorkspace?.contextSummary);
   const artifactExpectation = resolveArtifactExpectation(project);
   const repeatedLoopContinuation = resolveRepeatedLoopContinuation(project);
+  const learningDecisionImpact = resolveLearningDecisionImpact(project);
   if (repeatedLoopContinuation.active) {
     if (repeatedLoopContinuation.requiresClarification === true) {
       const clarification = normalizeObject(repeatedLoopContinuation.clarification);
@@ -86,6 +96,18 @@ function resolveNextMission(project) {
         estimatedTime: "לפני סבב ההמשך",
         dependencyStatus: `חסר עכשיו: ${requestedMaterialLabel}`,
         upcomingItems: normalizeArray(repeatedLoopContinuation.upcomingItems),
+      };
+    }
+    const learningMission = normalizeObject(learningDecisionImpact.nextTaskDecision);
+    if (learningMission.title) {
+      return {
+        title: escapeText(learningMission.title, escapeText(repeatedLoopContinuation.missionTitle, "המשך העבודה על הפרויקט")),
+        description: escapeText(learningMission.description, escapeText(repeatedLoopContinuation.missionDescription, "הסבב הבא כבר נפתח על גבי התוצר שאושר.")),
+        status: "assigned",
+        lane: escapeText(learningMission.lane, "loop"),
+        estimatedTime: "נפתח עכשיו",
+        dependencyStatus: escapeText(learningMission.dependencyStatus, "סבב ההמשך מוכן לפתיחה"),
+        upcomingItems: normalizeArray(learningDecisionImpact.continuationDecision?.moves ?? repeatedLoopContinuation.upcomingItems),
       };
     }
     return {
@@ -123,6 +145,10 @@ function resolveNextMission(project) {
 }
 
 function buildWhyNow(project, mission, roadmap) {
+  const learningDecisionImpact = resolveLearningDecisionImpact(project);
+  if (learningDecisionImpact.nextTaskDecision?.whyNow) {
+    return escapeText(learningDecisionImpact.nextTaskDecision.whyNow);
+  }
   const bottleneck = escapeText(project.overview?.bottleneck, "");
   if (mission.status === "blocked") {
     return `זה הצעד הנכון עכשיו כי החסם המרכזי הוא ${mission.title}, וכל עוד הוא פתוח שאר המסלול יישאר תקוע.`;
@@ -197,6 +223,7 @@ export function buildNextTaskViewModel({ project = null, qaMode = false } = {}) 
   const repeatedLoopContinuation = resolveRepeatedLoopContinuation(safeProject);
   const postReleaseContinuationLoop = resolvePostReleaseContinuationLoop(safeProject);
   const growthOpportunitySurfacingBoundary = resolveGrowthOpportunitySurfacingBoundary(safeProject);
+  const learningDecisionImpact = resolveLearningDecisionImpact(safeProject);
   const repeatedLoopClarification = normalizeObject(repeatedLoopContinuation.clarification);
   const requiresClarification = repeatedLoopContinuation.requiresClarification === true;
   const blockedItems = buildBlockerItems(roadmap);
@@ -245,13 +272,30 @@ export function buildNextTaskViewModel({ project = null, qaMode = false } = {}) 
       statusLabel: escapeText(postReleaseContinuationLoop.statusLabel, "עדיין אין סבב המשך אמיתי"),
       originArtifactTitle: escapeText(postReleaseContinuationLoop.originArtifactTitle, safeProject.name ?? "התוצר שאושר"),
       originReleaseTarget: escapeText(postReleaseContinuationLoop.originReleaseTarget, "private-deployment"),
-      nextMoveTitle: escapeText(postReleaseContinuationLoop.nextMoveTitle, mission.title),
-      nextMoveDescription: escapeText(postReleaseContinuationLoop.nextMoveDescription, mission.description),
-      nextMoveFamily: escapeText(postReleaseContinuationLoop.nextMoveFamily, "derived-loop-move"),
+      nextMoveTitle: escapeText(learningDecisionImpact.continuationDecision?.title, escapeText(postReleaseContinuationLoop.nextMoveTitle, mission.title)),
+      nextMoveDescription: escapeText(learningDecisionImpact.continuationDecision?.description, escapeText(postReleaseContinuationLoop.nextMoveDescription, mission.description)),
+      nextMoveFamily: escapeText(learningDecisionImpact.continuationDecision?.nextMoveFamily, escapeText(postReleaseContinuationLoop.nextMoveFamily, "derived-loop-move")),
       visibleContinuationRule: escapeText(postReleaseContinuationLoop.visibleContinuationRule, "release is not a terminal end state; the next move must appear visibly inside Nexus"),
-      continuationMoves: normalizeArray(postReleaseContinuationLoop.continuationMoves).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+      continuationMoves: normalizeArray(learningDecisionImpact.continuationDecision?.moves ?? postReleaseContinuationLoop.continuationMoves).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
       boundedGrowthRule: escapeText(postReleaseContinuationLoop.boundedGrowthRule, "continuation may surface only product-connected moves"),
       continuityRule: escapeText(postReleaseContinuationLoop.continuityRule, "post-release continuation must survive revisit and route restore"),
+    },
+    learningDecisionImpact: {
+      statusLabel: escapeText(learningDecisionImpact.statusLabel, "learning impact עדיין לא משנה החלטות חיות"),
+      strategy: escapeText(learningDecisionImpact.strategy, "not-yet-connected"),
+      drivingSignals: normalizeArray(learningDecisionImpact.drivingSignals).map((item) => escapeText(item)).filter(Boolean).slice(0, 6),
+      runtimeDecision: {
+        label: escapeText(learningDecisionImpact.runtimeDecision?.label, "runtime decision not yet learning-driven"),
+        currentEffect: escapeText(learningDecisionImpact.runtimeDecision?.currentEffect, "אין עדיין השפעה גלויה על runtime/package."),
+      },
+      releaseDecision: {
+        label: escapeText(learningDecisionImpact.releaseDecision?.label, "release decision not yet learning-driven"),
+        currentEffect: escapeText(learningDecisionImpact.releaseDecision?.currentEffect, "אין עדיין השפעה גלויה על release/deploy."),
+      },
+      continuityRule: escapeText(
+        learningDecisionImpact.continuityRule,
+        "learning-driven decisions must survive revisit and route restore",
+      ),
     },
     growthOpportunityBoundary: {
       statusLabel: escapeText(growthOpportunitySurfacingBoundary.statusLabel, "עוד לא אפשרי לפתוח opportunity אמיתי"),

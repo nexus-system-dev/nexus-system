@@ -108,6 +108,7 @@ export function createCanonicalLearningSystemContract({
   releaseEvidenceHandoffModel = null,
   deploymentStateFeedbackContract = null,
   postReleaseContinuationLoop = null,
+  learningDecisionImpact = null,
 } = {}) {
   const insights = normalizeObject(learningInsights);
   const feedbackState = normalizeObject(outcomeFeedbackState);
@@ -122,6 +123,7 @@ export function createCanonicalLearningSystemContract({
   const releaseEvidence = normalizeObject(releaseEvidenceHandoffModel);
   const deploymentFeedback = normalizeObject(deploymentStateFeedbackContract);
   const continuationLoop = normalizeObject(postReleaseContinuationLoop);
+  const learningImpact = normalizeObject(learningDecisionImpact);
 
   const insightCount = normalizeArray(insights.items).length;
   const preferenceSignalCount = normalizeArray(preferenceSignals.signals).length;
@@ -296,9 +298,14 @@ export function createCanonicalLearningSystemContract({
     createDecisionImpact({
       impactId: "runtime-decisions",
       label: "runtime decisions",
-      status: "next",
-      currentEffect: "Runtime direction is explicit, but not yet improved by learned runtime/package outcomes.",
-      nextRequirement: "Later runtime decisions must reuse class-specific outcome memory visibly.",
+      status: learningImpact.runtimeDecision?.status ? "live" : "next",
+      currentEffect: normalizeString(
+        learningImpact.runtimeDecision?.currentEffect,
+        "Runtime direction is explicit, but not yet improved by learned runtime/package outcomes.",
+      ),
+      nextRequirement: learningImpact.runtimeDecision?.status
+        ? "Later runtime decisions must keep reusing stored runtime/package outcomes without resetting to generic defaults."
+        : "Later runtime decisions must reuse class-specific outcome memory visibly.",
     }),
     createDecisionImpact({
       impactId: "bootstrap-quality",
@@ -310,23 +317,38 @@ export function createCanonicalLearningSystemContract({
     createDecisionImpact({
       impactId: "continuation-quality",
       label: "continuation quality",
-      status: continuationLoop.nextMoveTitle ? "partial" : "next",
-      currentEffect: "Continuation is bounded and product-connected, with project memory available for later reuse.",
-      nextRequirement: "Later continuation moves must improve visibly through stored release, deployment, and rerun outcomes.",
+      status: learningImpact.continuationDecision?.status ? "live" : continuationLoop.nextMoveTitle ? "partial" : "next",
+      currentEffect: normalizeString(
+        learningImpact.continuationDecision?.description,
+        "Continuation is bounded and product-connected, with project memory available for later reuse.",
+      ),
+      nextRequirement: learningImpact.continuationDecision?.status
+        ? "Later continuation moves must preserve the visible learning trace while improving through new release, deployment, and rerun outcomes."
+        : "Later continuation moves must improve visibly through stored release, deployment, and rerun outcomes.",
     }),
     createDecisionImpact({
       impactId: "release-decisions",
       label: "release decisions",
-      status: releaseEvidence.nextAction || deploymentFeedback.policyDecision ? "partial" : "next",
-      currentEffect: "Release and deployment state are visible, but later release choices are not yet learning-optimized.",
-      nextRequirement: "Release gating must eventually use stored release and deployment outcomes visibly.",
+      status: learningImpact.releaseDecision?.status ? "live" : releaseEvidence.nextAction || deploymentFeedback.policyDecision ? "partial" : "next",
+      currentEffect: normalizeString(
+        learningImpact.releaseDecision?.currentEffect,
+        "Release and deployment state are visible, but later release choices are not yet learning-optimized.",
+      ),
+      nextRequirement: learningImpact.releaseDecision?.status
+        ? "Release gating must keep using stored release and deployment outcomes visibly instead of falling back to generic promotion."
+        : "Release gating must eventually use stored release and deployment outcomes visibly.",
     }),
     createDecisionImpact({
       impactId: "next-task-selection",
       label: "next-task selection",
       status: backlogRegeneration.regenerationId || adaptiveDecision.decisionId ? "live" : "partial",
-      currentEffect: "Adaptive execution and canonical backlog regeneration already use feedback to steer next work.",
-      nextRequirement: "Later next-task selection must expose stronger class-specific and cross-project learning effects visibly.",
+      currentEffect: normalizeString(
+        learningImpact.nextTaskDecision?.whyNow,
+        "Adaptive execution and canonical backlog regeneration already use feedback to steer next work.",
+      ),
+      nextRequirement: learningImpact.nextTaskDecision?.title
+        ? "Later next-task selection must keep exposing visible learning effects instead of resetting to generic continuation copy."
+        : "Later next-task selection must expose stronger class-specific and cross-project learning effects visibly.",
     }),
     createDecisionImpact({
       impactId: "class-specific-behavior",
@@ -370,6 +392,7 @@ export function createCanonicalLearningSystemContract({
         "better continuation decisions",
         "better runtime and release choices where canonically allowed",
       ],
+      learningDecisionImpact: learningImpact,
       summary: {
         memoryLayers: memoryLayers.length,
         liveInputs: inputSummary.live,

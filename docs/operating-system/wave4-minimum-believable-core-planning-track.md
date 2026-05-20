@@ -1054,10 +1054,19 @@ Prepared continuation lane:
 Prepared tasks:
 - `W4-LEARN-001 — Define canonical learning system contract` — `trueGreen`
 - `W4-INTAKE-001 — Define adaptive onboarding agent contract` — `trueGreen`
+- `W4-LEARN-002 — Implement deep adaptive learning decision impact` — `trueGreen`
+- `W4-GEN-001 — Connect learning signals to generation decisions` — `selected-not-started`
+- `W4-INTAKE-002 — Replace fixed 3-question onboarding with adaptive intake flow` — `prepared-not-started`
+- `W4-GEN-002 — Implement feedback-driven product mutation loop` — `prepared-not-started`
+
+Reality-audit reopeners required after repository inspection:
+- `W4-LEARN-002` is now closed truthfully as the first real decision-impact implementation layer
+- `W4-GEN-001` remains the next released continuation task
 
 Preparation rule:
 - these tasks may be written back immediately after `W4-MBN-020` closes
 - they may not begin implementation ahead of unresolved active Wave 4 core tasks
+- if repository reality proves contract-only closure without real behavior change, the continuation lane must reopen and release the missing implementation task canonically instead of leaving the gap as a future note
 
 ## Cross-Lane Dependency Rules
 

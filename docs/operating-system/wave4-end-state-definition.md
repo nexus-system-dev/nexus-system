@@ -80,6 +80,7 @@ Nexus עצמה היא מנוע היצירה הפנימי.
 - להחזיק `Figma-backed desktop shell and local workspace frame` כ־design authority מחייב לכל shell-level framing path ב־Wave 4
 - להכין מיד אחרי סגירת core Wave 4 continuation lane קנוני עבור learning system ו־adaptive intake כך שלא יישארו רק future notes
 - להחזיק `canonical learning system contract` גלוי שמפריד truthfully בין `project memory`, `user preference memory`, ו־`system learning`, ומסמן מה כבר `live`, מה `partial`, ומה עדיין `next`
+- להחזיק `deep adaptive learning decision impact` גלוי שמוכיח ש־stored learning signals משנים later continuation / next-task / runtime / release decisions לפני שאפשר לקרוא ל־Nexus learning engine אמיתי
 - להחזיק `adaptive onboarding agent contract` גלוי שמסמן class-aware branching, sufficiency gate, bounded handoff, ו־explicit anti-chat prohibitions בלי לטעון ש־weak-answer detection כבר סגור מעבר למה שהמוצר באמת מוכיח
 
 ## Full Long-Term Nexus Vision

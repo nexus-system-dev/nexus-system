@@ -97,6 +97,66 @@ test("next-task adapter prefers persisted repeated-loop continuation over empty 
   assert.match(viewModel.readyNowItems[0], /האישור האחרון פתח סבב המשך/);
 });
 
+test("next-task adapter lets learning impact override continuation when repair is required", () => {
+  const viewModel = buildNextTaskViewModel({
+    project: {
+      name: "Landing QA",
+      state: {
+        repeatedLoopContinuation: {
+          active: true,
+          missionTitle: "להמשיך את Landing QA",
+          missionDescription: "סבב ההמשך כבר פתוח.",
+          upcomingItems: [
+            "לחדד את ההבטחה הראשית",
+          ],
+        },
+      },
+      learningDecisionImpact: {
+        strategy: "repair-before-expand",
+        nextTaskDecision: {
+          title: "לייצב את Landing page לפני הרחבה נוספת",
+          description: "הסבב הבא משתנה עכשיו truthfully בגלל friction שנצבר.",
+          lane: "stabilization",
+          dependencyStatus: "הלמידה זיהתה שצריך repair לפני move נוסף",
+          whyNow: "זה הצעד הנכון עכשיו כי outcome feedback כבר מראה שצריך repair.",
+        },
+        continuationDecision: {
+          moves: [
+            "לחזק את הוכחת הערך",
+            "לאסוף עוד proof חי",
+          ],
+          title: "לייצב את Landing page לפני הרחבה נוספת",
+          description: "הסבב הבא משתנה עכשיו truthfully בגלל friction שנצבר.",
+          nextMoveFamily: "learning-repair-move",
+        },
+        runtimeDecision: {
+          label: "לייצב את runtime/package הנוכחי לפני הרחבה",
+          currentEffect: "Nexus שומרת על runtime קיים.",
+        },
+        releaseDecision: {
+          label: "להחזיק את קידום ה־release עד שהלמידה תאשר יציבות",
+          currentEffect: "ה־release הבא לא מקודם אוטומטית.",
+        },
+        drivingSignals: ["outcome:attention-required"],
+        statusLabel: "הלמידה כבר משנה את ההמשך לכיוון repair לפני expansion",
+        continuityRule: "learning-driven decisions must survive revisit and route restore",
+      },
+      cycle: {
+        roadmap: [],
+      },
+      developerWorkspace: {
+        contextSummary: {},
+      },
+    },
+  });
+
+  assert.equal(viewModel.mission.title, "לייצב את Landing page לפני הרחבה נוספת");
+  assert.equal(viewModel.mission.metadata[0].value, "stabilization");
+  assert.match(viewModel.whyNow, /repair/);
+  assert.equal(viewModel.postReleaseContinuation.nextMoveFamily, "learning-repair-move");
+  assert.equal(viewModel.learningDecisionImpact.strategy, "repair-before-expand");
+});
+
 test("next-task adapter opens clarification path instead of execution when repeated-loop continuation is under-specified", () => {
   const viewModel = buildNextTaskViewModel({
     project: {
