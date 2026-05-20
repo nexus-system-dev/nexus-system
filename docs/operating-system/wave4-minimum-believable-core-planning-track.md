@@ -384,6 +384,10 @@ Tasks:
   - Figma-backed workspace contract exists for structural build surfaces
 - not trueGreen:
   - layout left to ad hoc implementation per feature
+- active blocker on `2026-05-20`:
+  - Figma authenticated write path returned `token_expired`
+  - without restored Figma auth, this task may not be marked `trueGreen`
+  - the active Wave 4 order must remain pinned to `W4-MBN-021` until the design artifact can be created or updated truthfully
 
 - future execution note:
   - this task may truthfully open or update a Figma design file as part of execution
