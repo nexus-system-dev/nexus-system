@@ -117,6 +117,15 @@ function resolveReleaseableProductStateContract(project = null) {
   );
 }
 
+function resolveClassAwareDeploymentReleasePath(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.classAwareDeploymentReleasePath
+      ?? safeProject.context?.classAwareDeploymentReleasePath
+      ?? safeProject.state?.classAwareDeploymentReleasePath,
+  );
+}
+
 function resolveLoopTaskSignal(project) {
   const approvals = normalizeArray(project.approvals);
   const roadmap = normalizeArray(project.cycle?.roadmap);
@@ -242,6 +251,7 @@ export function buildExecutionLiveViewModel({ project = null, qaMode = false } =
   const classAwareRuntimeResolver = resolveClassAwareRuntimeResolver(safeProject);
   const classAwarePackagingPreviewContract = resolveClassAwarePackagingPreviewContract(safeProject);
   const releaseableProductStateContract = resolveReleaseableProductStateContract(safeProject);
+  const classAwareDeploymentReleasePath = resolveClassAwareDeploymentReleasePath(safeProject);
   const repeatedLoopContinuation = resolveRepeatedLoopContinuation(safeProject);
   const splitWorkspaceLiveBuildSurfaceModel = resolveSplitWorkspaceLiveBuildSurfaceModel(safeProject);
   const buildProgressionStateMachine = resolveBuildProgressionStateMachine(safeProject);
@@ -452,6 +462,21 @@ export function buildExecutionLiveViewModel({ project = null, qaMode = false } =
       label: escapeText(releaseableProductStateContract.summary?.label, "Not releaseable yet"),
       nextAction: escapeText(releaseableProductStateContract.summary?.nextAction, "resolve-release-readiness-gaps"),
       readinessScore: String(releaseableProductStateContract.summary?.readinessScore ?? 0),
+    },
+    classAwareDeploymentReleasePath: {
+      pathFamily: escapeText(classAwareDeploymentReleasePath.pathFamily, "generic-release-path"),
+      providerType: escapeText(classAwareDeploymentReleasePath.providerType, "generic"),
+      releaseStatus: escapeText(classAwareDeploymentReleasePath.releaseStatus, "not-ready"),
+      primaryTarget: escapeText(classAwareDeploymentReleasePath.primaryTarget, "private-deployment"),
+      environmentPath: escapeText(classAwareDeploymentReleasePath.environmentPath, "staging -> production"),
+      previewPath: escapeText(classAwareDeploymentReleasePath.previewPath, "generic-preview -> generic-preview"),
+      packagePath: escapeText(classAwareDeploymentReleasePath.packagePath, "generic-package -> private-deployment"),
+      operationalPath: escapeText(classAwareDeploymentReleasePath.operationalPath, "generic-preview -> generic-package -> private-deployment"),
+      deploymentArtifactType: escapeText(classAwareDeploymentReleasePath.deploymentArtifactType, "generic-delivery-bundle"),
+      nextGate: escapeText(classAwareDeploymentReleasePath.nextGate, "resolve-deployment-target"),
+      visibleReleaseRule: escapeText(classAwareDeploymentReleasePath.visibleReleaseRule, "release path must stay visible and bounded"),
+      continuityRule: escapeText(classAwareDeploymentReleasePath.continuityRule, "deployment/release path status must survive reopen and restore"),
+      boundedTargets: normalizeArray(classAwareDeploymentReleasePath.boundedTargets).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
     },
     progressPercent: reactiveWorkspaceState.progressBar?.percent ?? progressState.percent ?? 0,
     stats: [

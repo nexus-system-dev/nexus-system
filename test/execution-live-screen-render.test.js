@@ -106,6 +106,21 @@ test("execution live screen renders workspace contract inside visible surface", 
       nextAction: "complete-release-handoff",
       readinessScore: "84",
     },
+    classAwareDeploymentReleasePath: {
+      pathFamily: "product-web-release-path",
+      providerType: "render",
+      releaseStatus: "active",
+      primaryTarget: "web-deployment",
+      environmentPath: "staging -> production",
+      previewPath: "product-workspace-preview -> product-workspace-preview",
+      packagePath: "saas-package -> web-deployment",
+      operationalPath: "product-workspace-preview -> product-workspace-preview -> saas-package -> web-deployment -> web-deployment",
+      deploymentArtifactType: "deployable-product-web-bundle",
+      nextGate: "verify-runtime-and-promote-service",
+      visibleReleaseRule: "SaaS delivery must stay visible as one bounded product release path",
+      continuityRule: "deployment/release path status must survive reopen, route restore, and handoff into deployment feedback",
+      boundedTargets: ["web-deployment", "private-deployment"],
+    },
     buildProgressionStateMachine: {
       currentLabel: "ה־surface מתפתח",
       currentRouteKey: "execution",
@@ -145,4 +160,8 @@ test("execution live screen renders workspace contract inside visible surface", 
   assert.match(html, /complete-release-handoff/);
   assert.match(html, /launch-confirmed/);
   assert.match(html, /84%/);
+  assert.match(html, /Deployment \/ release path/);
+  assert.match(html, /product-web-release-path/);
+  assert.match(html, /verify-runtime-and-promote-service/);
+  assert.match(html, /render/);
 });

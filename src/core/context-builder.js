@@ -204,6 +204,7 @@ import { createReleaseableProductStateContract } from "./releaseable-product-sta
 import { createReleaseEvidenceHandoffModel } from "./release-evidence-handoff-model.js";
 import { createPostReleaseContinuationLoop } from "./post-release-continuation-loop.js";
 import { createGrowthOpportunitySurfacingBoundary } from "./growth-opportunity-surfacing-boundary.js";
+import { createClassAwareDeploymentReleasePath } from "./class-aware-deployment-release-path.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -5161,6 +5162,12 @@ export function buildProjectContext(
     productClass,
     postReleaseContinuationLoop,
   });
+  const { classAwareDeploymentReleasePath } = createClassAwareDeploymentReleasePath({
+    productClass,
+    classAwareRuntimeResolver,
+    classAwarePackagingPreviewContract,
+    releaseableProductStateContract,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5460,6 +5467,7 @@ export function buildProjectContext(
   context.releaseEvidenceHandoffModel = releaseEvidenceHandoffModel;
   context.postReleaseContinuationLoop = postReleaseContinuationLoop;
   context.growthOpportunitySurfacingBoundary = growthOpportunitySurfacingBoundary;
+  context.classAwareDeploymentReleasePath = classAwareDeploymentReleasePath;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;

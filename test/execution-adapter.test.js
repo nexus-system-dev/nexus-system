@@ -141,6 +141,21 @@ test("execution adapter keeps internal-tool continuity alive when no roadmap tas
           readinessScore: 80,
         },
       },
+      classAwareDeploymentReleasePath: {
+        pathFamily: "private-workspace-release-path",
+        providerType: "railway",
+        releaseStatus: "active",
+        primaryTarget: "private-deployment",
+        environmentPath: "staging -> production",
+        previewPath: "workspace-preview -> workspace-preview",
+        packagePath: "workspace-package -> private-deployment",
+        operationalPath: "workspace-preview -> workspace-preview -> workspace-package -> private-deployment -> private-deployment",
+        deploymentArtifactType: "authenticated-web-workspace-bundle",
+        nextGate: "verify-authenticated-workspace-and-promote",
+        visibleReleaseRule: "internal-tool delivery must stay visible as a bounded private workspace release path",
+        continuityRule: "deployment/release path status must survive reopen, route restore, and handoff into deployment feedback",
+        boundedTargets: ["private-deployment", "web-deployment"],
+      },
       buildProgressionStateMachine: {
         summary: {
           currentLabel: "השלד נראה על המסך",
@@ -217,6 +232,9 @@ test("execution adapter keeps internal-tool continuity alive when no roadmap tas
   assert.equal(viewModel.releaseableProductStateContract.packageArtifactType, "authenticated-web-workspace-bundle");
   assert.equal(viewModel.releaseableProductStateContract.label, "Release prep active");
   assert.equal(viewModel.releaseableProductStateContract.visibleChecks[1].checkId, "launch-confirmed");
+  assert.equal(viewModel.classAwareDeploymentReleasePath.providerType, "railway");
+  assert.equal(viewModel.classAwareDeploymentReleasePath.primaryTarget, "private-deployment");
+  assert.equal(viewModel.classAwareDeploymentReleasePath.nextGate, "verify-authenticated-workspace-and-promote");
 });
 
 test("execution adapter hides runtime shell leak during repeated-loop continuation", () => {

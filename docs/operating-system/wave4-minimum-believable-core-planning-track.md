@@ -844,6 +844,14 @@ Tasks:
   - each major class has a bounded release path
 - not trueGreen:
   - “deployment later” with no Wave 4 path
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-20`
+  - contract artifact: `docs/operating-system/wave4-class-aware-deployment-release-path.md`
+  - governing implementation anchors:
+    - `src/core/class-aware-deployment-release-path.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/execution-adapter.js`
+    - `web/nexus-ui/screens/ExecutionLiveScreen.js`
 
 18. `W4-MBN-018 — Define deployment-state feedback contract`
 - source of truth: Wave 4 end-state definition

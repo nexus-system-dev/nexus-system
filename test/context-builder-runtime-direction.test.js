@@ -68,4 +68,7 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.growthOpportunitySurfacingBoundary.boundaryFamily, "wave4-growth-opportunity-boundary");
   assert.equal(context.growthOpportunitySurfacingBoundary.status, "not-ready");
   assert.equal(context.growthOpportunitySurfacingBoundary.disallowedMoves.length >= 1, true);
+  assert.equal(context.classAwareDeploymentReleasePath.pathFamily, "web-deployment-path");
+  assert.equal(context.classAwareDeploymentReleasePath.primaryTarget, "private-deployment");
+  assert.equal(context.classAwareDeploymentReleasePath.boundedTargets.length >= 1, true);
 });

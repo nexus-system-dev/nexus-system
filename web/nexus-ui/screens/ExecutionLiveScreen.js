@@ -356,6 +356,47 @@ export function renderExecutionLiveScreen(viewModel) {
                   `).join("")}
                 </div>
               </div>
+              <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--deployment-path">
+                <div class="nexus-execution-screen__workspace-contract-head">
+                  <strong>Deployment / release path</strong>
+                  <span>${escapeHtml(viewModel.classAwareDeploymentReleasePath.pathFamily)}</span>
+                </div>
+                <p>${escapeHtml(viewModel.classAwareDeploymentReleasePath.visibleReleaseRule)}</p>
+                <div class="nexus-execution-screen__workspace-contract-grid">
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Provider</span>
+                    <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.providerType)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Primary target</span>
+                    <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.primaryTarget)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Next gate</span>
+                    <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.nextGate)}</strong>
+                  </div>
+                </div>
+                <div class="nexus-execution-screen__workspace-contract-grid">
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Environment path</span>
+                    <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.environmentPath)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Operational path</span>
+                    <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.operationalPath)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Artifact</span>
+                    <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.deploymentArtifactType)}</strong>
+                  </div>
+                </div>
+                <div class="nexus-execution-screen__workspace-contract-milestones">
+                  ${viewModel.classAwareDeploymentReleasePath.boundedTargets.map((item) => `
+                    <span>${escapeHtml(item)}</span>
+                  `).join("")}
+                  <span>${escapeHtml(viewModel.classAwareDeploymentReleasePath.continuityRule)}</span>
+                </div>
+              </div>
               <div id="execution-live-list" class="nexus-execution-live-list">
                 ${viewModel.liveItems.map((item) => `<div>${escapeHtml(item)}</div>`).join("")}
                 <div class="execution-route-spinner" aria-hidden="true"></div>
