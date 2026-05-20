@@ -149,6 +149,7 @@
 - [docs/operating-system/wave4-figma-backed-desktop-shell-local-workspace-frame.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-figma-backed-desktop-shell-local-workspace-frame.md)
 - [docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md)
 - [docs/operating-system/wave4-canonical-learning-system-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-canonical-learning-system-contract.md)
+- [docs/operating-system/wave4-adaptive-onboarding-agent-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-adaptive-onboarding-agent-contract.md)
 
 הוא כולל יכולות שלא ניתן לדחות:
 - automatic class-aware skeleton generation

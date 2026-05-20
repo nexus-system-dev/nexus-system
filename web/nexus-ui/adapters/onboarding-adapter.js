@@ -1,3 +1,5 @@
+import { createAdaptiveOnboardingAgentContract } from "../../shared/adaptive-onboarding-agent-contract.js";
+
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
@@ -62,6 +64,16 @@ export function buildSmartOnboardingViewModel({
 } = {}) {
   const projectName = resolveProjectName({ currentProject, onboardingFlow });
   const summary = normalizeObject(onboardingConversation?.summary);
+  const adaptiveOnboardingAgentContract = normalizeObject(
+    currentProject?.adaptiveOnboardingAgentContract
+      ?? createAdaptiveOnboardingAgentContract({
+        projectIntake: currentProject?.projectIntake ?? onboardingFlow?.projectIntake ?? null,
+        onboardingConversation,
+        onboardingCompletionDecision: currentProject?.onboardingCompletionDecision ?? null,
+        onboardingStateHandoff: currentProject?.onboardingStateHandoff ?? null,
+        artifactExpectation: currentProject?.artifactExpectation ?? currentProject?.onboardingStateHandoff?.artifactExpectation ?? null,
+      }).adaptiveOnboardingAgentContract,
+  );
 
   return {
     title: "רוצה להבין את הפרויקט שלך",
@@ -75,6 +87,18 @@ export function buildSmartOnboardingViewModel({
     summary: {
       understood: Array.isArray(summary.understoodItems) ? summary.understoodItems : [],
       missing: Array.isArray(summary.missingItems) ? summary.missingItems : [],
+    },
+    adaptiveOnboardingAgentContract: {
+      statusLabel: adaptiveOnboardingAgentContract.statusLabel ?? "ה־adaptive intake agent מוגדר עכשיו כחוזה קנוני אחד",
+      contractRule: adaptiveOnboardingAgentContract.contractRule ?? "",
+      currentProjectTypeLabel: adaptiveOnboardingAgentContract.currentProjectTypeLabel ?? "סוג הפרויקט עדיין מתחדד",
+      currentQuestionPathLabel: adaptiveOnboardingAgentContract.currentQuestionPathLabel ?? "target-audience -> active-question",
+      handoffStatus: adaptiveOnboardingAgentContract.handoffStatus ?? "needs-clarification",
+      readinessLevel: adaptiveOnboardingAgentContract.readinessLevel ?? "blocked",
+      behaviors: Array.isArray(adaptiveOnboardingAgentContract.behaviors) ? adaptiveOnboardingAgentContract.behaviors : [],
+      explicitProhibitions: Array.isArray(adaptiveOnboardingAgentContract.explicitProhibitions)
+        ? adaptiveOnboardingAgentContract.explicitProhibitions
+        : [],
     },
   };
 }

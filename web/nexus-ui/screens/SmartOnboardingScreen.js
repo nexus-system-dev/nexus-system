@@ -20,6 +20,14 @@ function renderSummaryList(items, emptyText) {
   return source.map((item) => `<p>${escapeHtml(item)}</p>`).join("");
 }
 
+function renderContractBehaviorList(items, emptyText) {
+  const safeItems = Array.isArray(items) ? items : [];
+  const source = safeItems.length
+    ? safeItems.map((item) => `${item.label} · ${item.status}`)
+    : [emptyText];
+  return source.map((item) => `<p>${escapeHtml(item)}</p>`).join("");
+}
+
 function renderUnderstandingCard({ icon, title, strongId, bodyId, strongText, bodyText }) {
   return `
     <article class="nexus-onboarding-understanding-card">
@@ -217,6 +225,29 @@ export function renderSmartOnboardingScreen(viewModel) {
               <div id="onboarding-notes-list" class="nexus-onboarding-notes-list"></div>
             `,
           })}
+          ${renderNexusCard({
+            padding: "md",
+            className: "nexus-onboarding-summary-card",
+            content: `
+              <h3>Adaptive intake contract</h3>
+              <p id="onboarding-adaptive-contract-status">${escapeHtml(viewModel.adaptiveOnboardingAgentContract.statusLabel)}</p>
+              <p id="onboarding-adaptive-contract-project-type">${escapeHtml(viewModel.adaptiveOnboardingAgentContract.currentProjectTypeLabel)}</p>
+              <p id="onboarding-adaptive-contract-path">${escapeHtml(viewModel.adaptiveOnboardingAgentContract.currentQuestionPathLabel)}</p>
+              <p id="onboarding-adaptive-contract-gate">${escapeHtml(`handoff: ${viewModel.adaptiveOnboardingAgentContract.handoffStatus} · readiness: ${viewModel.adaptiveOnboardingAgentContract.readinessLevel}`)}</p>
+              <div id="onboarding-adaptive-contract-behaviors" class="onboarding-route-summary-list">
+                ${renderContractBehaviorList(
+                  viewModel.adaptiveOnboardingAgentContract.behaviors,
+                  "adaptive-intake behaviors are not yet exposed",
+                )}
+              </div>
+              <div id="onboarding-adaptive-contract-prohibitions" class="onboarding-route-summary-list">
+                ${renderSummaryList(
+                  viewModel.adaptiveOnboardingAgentContract.explicitProhibitions,
+                  "no explicit prohibitions are available yet.",
+                )}
+              </div>
+            `,
+          })}
         </aside>
       </section>
     </section>
@@ -249,6 +280,12 @@ export function bindSmartOnboardingScreenElements(doc, elements) {
     onboardingNotesList: "#onboarding-notes-list",
     onboardingUnderstoodList: "#onboarding-understood-list",
     onboardingMissingList: "#onboarding-missing-list",
+    onboardingAdaptiveContractStatus: "#onboarding-adaptive-contract-status",
+    onboardingAdaptiveContractProjectType: "#onboarding-adaptive-contract-project-type",
+    onboardingAdaptiveContractPath: "#onboarding-adaptive-contract-path",
+    onboardingAdaptiveContractGate: "#onboarding-adaptive-contract-gate",
+    onboardingAdaptiveContractBehaviors: "#onboarding-adaptive-contract-behaviors",
+    onboardingAdaptiveContractProhibitions: "#onboarding-adaptive-contract-prohibitions",
     onboardingChatThread: "#onboarding-chat-thread",
     onboardingCurrentQuestionTitle: "#onboarding-current-question-title",
     onboardingCurrentQuestionBody: "#onboarding-current-question-body",

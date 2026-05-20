@@ -133,6 +133,7 @@
     "canonicalFigmaBackedDesktopShellLocalWorkspaceFramePath": "docs/operating-system/wave4-figma-backed-desktop-shell-local-workspace-frame.md",
     "canonicalPostWave4LearningIntakeContinuationLanePath": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
     "canonicalLearningSystemContractPath": "docs/operating-system/wave4-canonical-learning-system-contract.md",
+    "canonicalAdaptiveOnboardingAgentContractPath": "docs/operating-system/wave4-adaptive-onboarding-agent-contract.md",
     "canonicalExternalIntelligencePath": "docs/operating-system/wave4-external-product-intelligence-pass-2026-05-18.md",
     "planningMode": "minimum-believable-nexus-first",
     "nonNegotiableRequirements": [
@@ -167,7 +168,7 @@
     "postWave4PreparedContinuationLanes": [
       {
         "laneId": "post-wave4-learning-and-intake-continuation",
-        "status": "active-canonical-execution",
+        "status": "trueGreen",
         "canonicalPlanPath": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
         "activationRule": "may begin only after active Wave 4 core tasks no longer select unresolved W4-MBN work ahead of it",
         "preparedTasks": [
@@ -197,11 +198,25 @@
           {
             "taskId": "W4-INTAKE-001",
             "title": "Define adaptive onboarding agent contract",
-            "status": "selected-not-started",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-MBN-020",
               "W4-LEARN-001",
               "docs/operating-system/wave3-onboarding-intelligence-planning-track.md"
+            ],
+            "closedAt": "2026-05-20",
+            "closureEvidence": [
+              "docs/operating-system/wave4-adaptive-onboarding-agent-contract.md",
+              "src/core/adaptive-onboarding-agent-contract.js",
+              "web/shared/adaptive-onboarding-agent-contract.js",
+              "src/core/context-builder.js",
+              "web/nexus-ui/adapters/onboarding-adapter.js",
+              "web/nexus-ui/screens/SmartOnboardingScreen.js",
+              "web/app.js",
+              "test/adaptive-onboarding-agent-contract.test.js",
+              "test/onboarding-adapter.test.js",
+              "test/smart-onboarding-screen-render.test.js",
+              "test/context-builder.test.js"
             ]
           }
         ]
@@ -221,12 +236,31 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "W4-INTAKE-001",
-      "title": "Define adaptive onboarding agent contract",
+      "taskId": null,
+      "title": null,
       "source": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
-      "status": "selected-not-started"
+      "status": "no-further-canonical-task-released"
     },
     "completedCanonicalExecutionTasks": [
+      {
+        "taskId": "W4-INTAKE-001",
+        "title": "Define adaptive onboarding agent contract",
+        "status": "trueGreen",
+        "closedAt": "2026-05-20",
+        "closureEvidence": [
+          "docs/operating-system/wave4-adaptive-onboarding-agent-contract.md",
+          "src/core/adaptive-onboarding-agent-contract.js",
+          "web/shared/adaptive-onboarding-agent-contract.js",
+          "src/core/context-builder.js",
+          "web/nexus-ui/adapters/onboarding-adapter.js",
+          "web/nexus-ui/screens/SmartOnboardingScreen.js",
+          "web/app.js",
+          "test/adaptive-onboarding-agent-contract.test.js",
+          "test/onboarding-adapter.test.js",
+          "test/smart-onboarding-screen-render.test.js",
+          "test/context-builder.test.js"
+        ]
+      },
       {
         "taskId": "W4-LEARN-001",
         "title": "Define canonical learning system contract",

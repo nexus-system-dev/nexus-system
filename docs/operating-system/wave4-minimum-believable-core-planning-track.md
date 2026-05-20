@@ -1049,10 +1049,11 @@ Prepared continuation lane:
 - canonical contract:
   - `docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md`
   - `docs/operating-system/wave4-canonical-learning-system-contract.md`
+  - `docs/operating-system/wave4-adaptive-onboarding-agent-contract.md`
 
 Prepared tasks:
 - `W4-LEARN-001 — Define canonical learning system contract` — `trueGreen`
-- `W4-INTAKE-001 — Define adaptive onboarding agent contract` — `selected-not-started`
+- `W4-INTAKE-001 — Define adaptive onboarding agent contract` — `trueGreen`
 
 Preparation rule:
 - these tasks may be written back immediately after `W4-MBN-020` closes

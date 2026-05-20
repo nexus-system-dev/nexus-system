@@ -144,7 +144,7 @@ Closure truth on `2026-05-20`:
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `architecture`
-- status: `selected-not-started`
+- status: `trueGreen`
 - depends_on:
   - `W4-MBN-020`
   - `W4-LEARN-001`
@@ -194,6 +194,22 @@ Closure truth on `2026-05-20`:
   - different questioning paths
   - stronger generation focus
   - reduced drift
+- closure write-back:
+  - canonical contract path:
+    - `docs/operating-system/wave4-adaptive-onboarding-agent-contract.md`
+  - governing implementation anchors:
+    - `src/core/adaptive-onboarding-agent-contract.js`
+    - `web/shared/adaptive-onboarding-agent-contract.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/onboarding-adapter.js`
+    - `web/nexus-ui/screens/SmartOnboardingScreen.js`
+    - `web/app.js`
+  - visible closure proof:
+    - `Onboarding` on `http://127.0.0.1:4011/?qa=1`
+    - visible `Adaptive intake contract`
+    - visible `class-aware branching`
+    - visible `bounded handoff into generation`
+    - visible `no free-form general assistant behavior`
 
 ## Canonical Relationship To Active Wave 4 Core
 
@@ -207,8 +223,14 @@ Closure truth on `2026-05-20`:
 Current continuation truth on `2026-05-20`:
 
 - `W4-LEARN-001` is `trueGreen`
-- `W4-INTAKE-001` is the next canonical task
-- the continuation lane is no longer only prepared; it is now the active canonical post-Wave-4 execution lane
+- `W4-INTAKE-001` is `trueGreen`
+- the continuation lane is no longer only prepared; it is now closed truthfully as the active canonical post-Wave-4 execution lane
+
+Closure truth on `2026-05-20`:
+- one canonical adaptive onboarding contract now exists
+- it keeps class-aware branching, sufficiency gate, and bounded handoff under one visible product contract
+- it truthfully marks weak / generic answer detection as `partial`
+- it is visible on the live `Onboarding` surface inside Nexus
 
 ## Write-Back Rule
 

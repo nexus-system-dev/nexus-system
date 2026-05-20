@@ -7103,6 +7103,55 @@ export function createCockpitApp({
     }
   }
 
+  function renderAdaptiveOnboardingContract() {
+    if (
+      !elements.onboardingAdaptiveContractStatus
+      && !elements.onboardingAdaptiveContractProjectType
+      && !elements.onboardingAdaptiveContractPath
+      && !elements.onboardingAdaptiveContractGate
+      && !elements.onboardingAdaptiveContractBehaviors
+      && !elements.onboardingAdaptiveContractProhibitions
+    ) {
+      return;
+    }
+
+    const viewModel = buildSmartOnboardingViewModel({
+      currentProject,
+      onboardingFlow,
+      onboardingConversation,
+    });
+    const contract = normalizeObject(viewModel.adaptiveOnboardingAgentContract);
+
+    if (elements.onboardingAdaptiveContractStatus) {
+      elements.onboardingAdaptiveContractStatus.textContent = contract.statusLabel ?? "";
+    }
+    if (elements.onboardingAdaptiveContractProjectType) {
+      elements.onboardingAdaptiveContractProjectType.textContent = contract.currentProjectTypeLabel ?? "";
+    }
+    if (elements.onboardingAdaptiveContractPath) {
+      elements.onboardingAdaptiveContractPath.textContent = contract.currentQuestionPathLabel ?? "";
+    }
+    if (elements.onboardingAdaptiveContractGate) {
+      elements.onboardingAdaptiveContractGate.textContent = `handoff: ${contract.handoffStatus ?? "needs-clarification"} · readiness: ${contract.readinessLevel ?? "blocked"}`;
+    }
+    if (elements.onboardingAdaptiveContractBehaviors) {
+      const items = normalizeArray(contract.behaviors).length
+        ? normalizeArray(contract.behaviors).map((item) => `${item.label} · ${item.status}`)
+        : ["adaptive-intake behaviors are not yet exposed"];
+      elements.onboardingAdaptiveContractBehaviors.innerHTML = items
+        .map((item) => `<p>${escapeHtml(item)}</p>`)
+        .join("");
+    }
+    if (elements.onboardingAdaptiveContractProhibitions) {
+      const items = normalizeArray(contract.explicitProhibitions).length
+        ? normalizeArray(contract.explicitProhibitions)
+        : ["no explicit prohibitions are available yet."];
+      elements.onboardingAdaptiveContractProhibitions.innerHTML = items
+        .map((item) => `<p>${escapeHtml(item)}</p>`)
+        .join("");
+    }
+  }
+
   function buildOnboardingCurrentPrompt() {
     const currentQuestion = onboardingConversation?.currentQuestion ?? null;
     const audience = getOnboardingAnswer("target-audience");
@@ -7229,6 +7278,7 @@ export function createCockpitApp({
         ? "עוד רגע מופיעה השאלה הבאה. אפשר להמשיך מיד כשהתגובה תעלה."
         : currentPrompt.body;
     }
+    renderAdaptiveOnboardingContract();
     if (elements.onboardingAnswerInput) {
       elements.onboardingAnswerInput.hidden = isComplete || isAwaitingAiReply;
       elements.onboardingAnswerInput.placeholder = currentQuestion?.placeholder ?? "";

@@ -209,6 +209,7 @@ import { createDeploymentStateFeedbackContract } from "./deployment-state-feedba
 import { createCrossSurfaceContinuityContract } from "./cross-surface-continuity-contract.js";
 import { createWave4LiveVerificationMatrix } from "./wave4-live-verification-matrix.js";
 import { createCanonicalLearningSystemContract } from "./canonical-learning-system-contract.js";
+import { createAdaptiveOnboardingAgentContract } from "./adaptive-onboarding-agent-contract.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -3036,6 +3037,13 @@ export function buildProjectContext(
     onboardingSession: project.onboardingSession ?? null,
   });
   const artifactExpectation = onboardingStateHandoff?.artifactExpectation ?? null;
+  const { adaptiveOnboardingAgentContract } = createAdaptiveOnboardingAgentContract({
+    projectIntake: project.projectIntake ?? project.onboardingSession?.projectIntake ?? null,
+    onboardingConversation: project.onboardingConversation ?? project.onboardingSession?.conversation ?? null,
+    onboardingCompletionDecision,
+    onboardingStateHandoff,
+    artifactExpectation,
+  });
   const automaticProductSkeletonContract = createAutomaticProductSkeletonContract({
     productClass,
     runtimeDirection,
@@ -5528,6 +5536,7 @@ export function buildProjectContext(
   context.onboardingViewState = onboardingViewState;
   context.onboardingCompletionDecision = onboardingCompletionDecision;
   context.onboardingStateHandoff = onboardingStateHandoff;
+  context.adaptiveOnboardingAgentContract = adaptiveOnboardingAgentContract;
   context.artifactExpectation = artifactExpectation;
   context.classAwareGenerationContract = classAwareGenerationContract;
   context.classSpecificSurfaceEvolutionRules = classSpecificSurfaceEvolutionRules;
