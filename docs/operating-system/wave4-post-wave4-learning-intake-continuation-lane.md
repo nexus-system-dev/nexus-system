@@ -351,7 +351,7 @@ Closure truth on `2026-05-20`:
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
-- status: `prepared-not-started`
+- status: `blocked`
 - depends_on:
   - `W4-INTAKE-001`
   - `W4-LEARN-002`
@@ -374,6 +374,24 @@ Closure truth on `2026-05-20`:
   - no free-form chat drift
   - no contract-only closure
   - no backend-only adaptive logic while the visible flow remains fixed-shell
+
+Implementation truth on `2026-05-20`:
+- repository reality now removes fixed-index progression from the local onboarding fallback and the visible onboarding progress model
+- backend-backed onboarding already exposes adaptive question count, adaptive class disambiguation, and readiness-based stopping truth
+- the visible onboarding UI now renders adaptive progress wording instead of presenting a fixed `3-question` shell as the canonical route truth
+
+Active blocker on `2026-05-20`:
+- live QA verification is still blocked because the direct onboarding QA route still renders `אין onboarding פעיל לשחזור` / `אין onboarding session או פרויקט פעיל לשחזור`
+- this means the live browser surface still does not truthfully prove the adaptive conversation path on-demand without a restored session
+- `W4-INTAKE-002` therefore may not become `trueGreen` yet
+
+Resume rule:
+- repair the onboarding QA route so it can open the adaptive onboarding surface directly for live verification
+- rerun live verification until the route visibly shows:
+  - no fixed `3-question` shell
+  - class-varying question sequence
+  - readiness-based stop behavior
+  - continuity-safe handoff into Understanding
 
 ### W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection
 

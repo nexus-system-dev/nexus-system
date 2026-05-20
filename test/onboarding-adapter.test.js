@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { buildSmartOnboardingViewModel } from "../web/nexus-ui/adapters/onboarding-adapter.js";
 
-test("onboarding adapter exposes adaptive intake contract without replacing the current onboarding flow", () => {
+test("onboarding adapter exposes adaptive intake progress and contract truth", () => {
   const viewModel = buildSmartOnboardingViewModel({
     currentProject: {
       name: "Ops Queue",
@@ -43,7 +43,7 @@ test("onboarding adapter exposes adaptive intake contract without replacing the 
     },
   });
 
-  assert.equal(viewModel.progressLabel, "שאלה 3 מתוך 3");
+  assert.equal(viewModel.progressLabel, "שאלה 3 במסלול אדפטיבי · עד 3 צעדים כרגע");
   assert.equal(viewModel.adaptiveOnboardingAgentContract.currentProjectTypeLabel, "כלי פנימי");
   assert.match(viewModel.adaptiveOnboardingAgentContract.currentQuestionPathLabel, /successful-solution/);
   assert.equal(viewModel.adaptiveOnboardingAgentContract.handoffStatus, "ready");

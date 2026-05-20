@@ -281,13 +281,22 @@
           {
             "taskId": "W4-INTAKE-002",
             "title": "Replace fixed 3-question onboarding with adaptive intake flow",
-            "status": "selected-not-started",
+            "status": "blocked",
             "dependsOn": [
               "W4-INTAKE-001",
               "W4-LEARN-002",
               "W4-GEN-001",
               "docs/operating-system/wave3-onboarding-intelligence-planning-track.md"
-            ]
+            ],
+            "blockedAt": "2026-05-20",
+            "blocker": {
+              "type": "live-verification-surface",
+              "surface": "Onboarding QA route",
+              "code": "qa-onboarding-sessionless-fallback",
+              "message": "The direct QA onboarding route still renders 'אין onboarding פעיל לשחזור' instead of the adaptive conversation surface, so visible proof for W4-INTAKE-002 is still missing.",
+              "impact": "W4-INTAKE-002 cannot become trueGreen until the live onboarding route visibly proves the adaptive conversation path without falling back to the blocked fixed-shell recovery state.",
+              "resumeRule": "Repair the onboarding QA route/sessionless preview path and rerun live verification until the adaptive onboarding conversation is visible on the live route."
+            }
           },
           {
             "taskId": "W4-INTAKE-003",
@@ -332,7 +341,7 @@
       "taskId": "W4-INTAKE-002",
       "title": "Replace fixed 3-question onboarding with adaptive intake flow",
       "source": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
-      "status": "selected-not-started"
+      "status": "blocked"
     },
     "completedCanonicalExecutionTasks": [
       {

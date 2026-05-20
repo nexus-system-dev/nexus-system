@@ -53,8 +53,8 @@ function resolveProgressLabel({ onboardingConversation = null } = {}) {
   }
 
   const currentIndex = Number(onboardingConversation?.currentIndex ?? 0);
-  const totalQuestions = Number(onboardingConversation?.totalQuestions ?? 3);
-  return `שאלה ${currentIndex + 1} מתוך ${Math.max(totalQuestions, currentIndex + 1)}`;
+  const totalQuestions = Number(onboardingConversation?.totalQuestions ?? (currentIndex + 1));
+  return `שאלה ${currentIndex + 1} במסלול אדפטיבי · עד ${Math.max(totalQuestions, currentIndex + 1)} צעדים כרגע`;
 }
 
 export function buildSmartOnboardingViewModel({

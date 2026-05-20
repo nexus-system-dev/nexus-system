@@ -135,7 +135,7 @@ test("onboarding conversation summary stays class-safe for internal tools", () =
   ]);
   assert.equal(completed.onboardingConversation.summary.missingItems.includes("כמה מכירות קיימות"), false);
   assert.equal(completed.onboardingConversation.summary.missingItems.includes("כמה לקוחות יש להם"), false);
-  assert.match(completed.onboardingConversation.summary.missingItems[0], /ownership/);
+  assert.match(completed.onboardingConversation.summary.missingItems[0], /הבעלות על התור/);
 });
 
 test("onboarding inserts a class-disambiguation question when the class is ambiguous", () => {

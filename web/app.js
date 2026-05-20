@@ -462,6 +462,29 @@ function detectOnboardingProjectType(text = "") {
   }).productClass;
 }
 
+function detectOnboardingProjectTypeCandidates(text = "") {
+  const normalized = String(text ?? "").toLowerCase();
+  const candidates = new Set();
+
+  if (/(landing page|landing-page|website|marketing site|marketing page|homepage|web site|site|דף נחיתה|אתר שיווקי|שיווק)/i.test(normalized)) {
+    candidates.add("landing-page");
+  }
+  if (/(ecommerce|shop|store|catalog|checkout|cart|order|orders|inventory|merchant|fulfillment|commerce|מסחר|קטלוג|הזמנות|מלאי)/i.test(normalized)) {
+    candidates.add("commerce-ops");
+  }
+  if (/(internal tool|ops|operations|backoffice|back office|admin panel|portal|workspace|queue|תפעול|צוות פנימי|כלי פנימי)/i.test(normalized)) {
+    candidates.add("internal-tool");
+  }
+  if (/(saas|subscription|mvp|web app|platform|crm|customer|client|follow-up|reminder|dashboard|מערכת|כלי|לקוחות)/i.test(normalized)) {
+    candidates.add("saas");
+  }
+  if (/(mobile app|react native|expo|ios|android|אפליקציה)/i.test(normalized)) {
+    candidates.add("mobile-app");
+  }
+
+  return [...candidates];
+}
+
 function resolveOnboardingProjectType(options = {}) {
   const draftVisionText =
     options.visionText
@@ -494,8 +517,143 @@ function resolveOnboardingProjectType(options = {}) {
   }).productClass;
 }
 
+function resolveLocalOnboardingClassification(answers = {}, options = {}) {
+  const projectTypeHint = normalizeString(options.projectTypeHint, "");
+  if (projectTypeHint && projectTypeHint !== "unknown") {
+    return {
+      projectType: projectTypeHint,
+      candidateTypes: [projectTypeHint],
+      isAmbiguous: false,
+    };
+  }
+
+  const projectClassAnswer = normalizeString(answers["project-class"], "");
+  if (projectClassAnswer) {
+    const answerType = detectOnboardingProjectType(projectClassAnswer);
+    if (answerType !== "unknown") {
+      return {
+        projectType: answerType,
+        candidateTypes: [answerType],
+        isAmbiguous: false,
+      };
+    }
+  }
+
+  const sourceText = [
+    options.visionText,
+    projectTypeHint,
+    normalizeString(answers["target-audience"], ""),
+    normalizeString(answers["core-problem"], ""),
+    normalizeString(answers["successful-solution"], ""),
+  ]
+    .filter((value) => typeof value === "string" && value.trim())
+    .join("\n");
+  const candidateTypes = detectOnboardingProjectTypeCandidates(sourceText);
+  const detectedProjectType = resolveCanonicalProductClass({
+    texts: [sourceText],
+    hintedClass: projectTypeHint || null,
+    fallback: "unknown",
+  }).productClass;
+  const projectType = detectedProjectType !== "unknown"
+    ? detectedProjectType
+    : candidateTypes.length === 1
+      ? candidateTypes[0]
+      : "unknown";
+
+  return {
+    projectType,
+    candidateTypes,
+    isAmbiguous: candidateTypes.length > 1 || projectType === "unknown",
+  };
+}
+
+function resolveLocalOnboardingProjectType(answers = {}, options = {}) {
+  return resolveLocalOnboardingClassification(answers, options).projectType;
+}
+
+function localRequiresSolutionQuestion(projectType) {
+  return projectType !== "landing-page";
+}
+
+function localHasSufficientUnderstanding({ projectType, audience, problem, solution }) {
+  if (!audience || !problem) {
+    return false;
+  }
+
+  if (projectType === "landing-page") {
+    return true;
+  }
+
+  return Boolean(solution);
+}
+
+function buildLocalAdaptiveQuestionPlan(answers = {}, options = {}) {
+  const audience = normalizeString(answers["target-audience"], "");
+  const problem = normalizeString(answers["core-problem"], "");
+  const solution = normalizeString(answers["successful-solution"], "");
+  const classification = resolveLocalOnboardingClassification(answers, options);
+  const plan = ["target-audience"];
+
+  if (audience && classification.isAmbiguous && !answers["project-class"]) {
+    plan.push("project-class");
+  }
+
+  if (audience) {
+    plan.push("core-problem");
+  }
+
+  if (!localHasSufficientUnderstanding({
+    projectType: classification.projectType,
+    audience,
+    problem,
+    solution,
+  })) {
+    const shouldAskSolution = audience && problem && localRequiresSolutionQuestion(classification.projectType);
+    if (shouldAskSolution) {
+      plan.push("successful-solution");
+    }
+  }
+
+  return [...new Set(plan)];
+}
+
+function resolveLocalNextQuestionId(answers = {}, options = {}) {
+  const audience = normalizeString(answers["target-audience"], "");
+  const problem = normalizeString(answers["core-problem"], "");
+  const solution = normalizeString(answers["successful-solution"], "");
+  const projectClassAnswer = normalizeString(answers["project-class"], "");
+  const classification = resolveLocalOnboardingClassification(answers, options);
+
+  if (!audience) {
+    return "target-audience";
+  }
+
+  if (!projectClassAnswer && classification.isAmbiguous) {
+    return "project-class";
+  }
+
+  if (!problem) {
+    return "core-problem";
+  }
+
+  if (localHasSufficientUnderstanding({
+    projectType: classification.projectType,
+    audience,
+    problem,
+    solution,
+  })) {
+    return null;
+  }
+
+  if (!solution) {
+    return "successful-solution";
+  }
+
+  return null;
+}
+
 function resolveOnboardingQuestionPresentation(questionId, answers = {}, options = {}) {
-  const projectType = resolveOnboardingProjectType(options);
+  const projectType = resolveLocalOnboardingProjectType(answers, options) || resolveOnboardingProjectType(options);
   const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
   const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
 
@@ -621,6 +779,70 @@ function refreshOnboardingConversationPresentation(conversation, options = {}) {
       reason: presentation.reason || currentQuestion.reason || "",
     },
   };
+}
+
+function buildLocalOnboardingPromptForQuestion(questionId, answers = {}, options = {}) {
+  if (!questionId) {
+    return null;
+  }
+
+  const presentation = resolveOnboardingQuestionPresentation(questionId, answers, options);
+  const audience = normalizeString(answers["target-audience"], "");
+  const problem = normalizeString(answers["core-problem"], "");
+
+  if (questionId === "project-class" && audience) {
+    return `כדי לא להוביל את ${audience} למסלול הלא נכון, מה הדבר המרכזי שאתה בונה כאן: דף נחיתה שיווקי, כלי פנימי לצוות, או מוצר SaaS קטן?`;
+  }
+  if (questionId === "core-problem" && audience) {
+    return `מעולה. אם המערכת נבנית עבור ${audience}, מה הבעיה המרכזית שהם מתמודדים איתה?`;
+  }
+  if (questionId === "successful-solution" && audience && problem) {
+    return `יש כבר תמונה טובה: הקהל הוא ${audience} והכאב המרכזי הוא ${problem}. איך נראה פתרון מוצלח מבחינתם?`;
+  }
+
+  return presentation.title;
+}
+
+function buildLocalOnboardingQuestionReason(questionId, answers = {}, options = {}) {
+  if (!questionId) {
+    return "";
+  }
+
+  const audience = normalizeString(answers["target-audience"], "");
+  const problem = normalizeString(answers["core-problem"], "");
+  const classification = resolveLocalOnboardingClassification(answers, options);
+
+  if (questionId === "project-class") {
+    return "יש כאן כמה אותות אפשריים, ואני צריך לנעול את סוג הפרויקט כדי לא לערבב בין דף שיווקי, כלי פנימי ומוצר SaaS.";
+  }
+  if (questionId === "core-problem" && audience) {
+    return `כבר ברור לי מי המשתמש המרכזי. עכשיו אני צריך להבין מה הכאב שחוזר אצל ${audience} כדי לכוון את ה-onboarding נכון.`;
+  }
+  if (questionId === "successful-solution" && audience && problem) {
+    return `יש לי כבר קהל יעד וכאב מרכזי. נשאר לחדד איך נראה פתרון שעובד בפועל עבור ${audience}.`;
+  }
+  if (questionId === "target-audience" && classification.projectType !== "unknown") {
+    return "השאלה הזו תעזור לי לדייק את סוג המשטח, הפעולה הראשונה, וההקשר שבו הפרויקט צריך להתחיל לבנות.";
+  }
+
+  return "השאלה הזו סוגרת את פער ההבנה הבא שחסר כדי להבין נכון את הפרויקט.";
+}
+
+function buildLocalOnboardingCompletionReason(answers = {}, options = {}) {
+  const audience = normalizeString(answers["target-audience"], "");
+  const problem = normalizeString(answers["core-problem"], "");
+  const solution = normalizeString(answers["successful-solution"], "");
+  const classification = resolveLocalOnboardingClassification(answers, options);
+
+  if (classification.projectType === "landing-page" && audience && problem) {
+    return "יש כבר מספיק הבנה כדי לסכם דף נחיתה: ברור מי הקהל ומה צריך לתקן במסר או בהמרה, ולכן לא נדרש עוד סבב שאלות לפני סיכום ההבנה.";
+  }
+
+  if (audience && problem && solution) {
+    return "יש כבר קהל יעד, כאב מרכזי ותמונת פתרון. זה מספיק כדי לעצור את השיחה ולעבור לסיכום ההבנה.";
+  }
+
+  return "יש מספיק הבנה ראשונית כדי לעצור כאן ולעבור לסיכום ההבנה.";
 }
 
 function workspaceTabHtml(title, metaItems = []) {
@@ -4075,6 +4297,18 @@ export function createCockpitApp({
   }
 
   function applyRequestedShellRouteFromLocation(options = {}) {
+    const searchParams = new URLSearchParams(globalThis.location?.search ?? "");
+    const requestedQaScreen = normalizeString(searchParams.get("qaScreen") ?? searchParams.get("qa-screen"));
+    if (requestedQaScreen && isQaModeEnabled() && isPrimaryQaRoute(requestedQaScreen)) {
+      suppressShellRouteHistorySync = true;
+      try {
+        openQaScreen(requestedQaScreen);
+      } finally {
+        suppressShellRouteHistorySync = false;
+      }
+      return;
+    }
+
     const requestedRoute = resolveShellRouteKeyFromPath(globalThis.location?.pathname ?? "/");
     if (!requestedRoute) {
       return;
@@ -4214,9 +4448,15 @@ export function createCockpitApp({
 
     const completeConversation = createOnboardingConversationState();
     completeConversation.answers = baseAnswers;
-    completeConversation.currentIndex = onboardingQuestionFlow.length;
+    completeConversation.currentIndex = Object.keys(baseAnswers).length;
     completeConversation.currentQuestion = null;
     completeConversation.isComplete = true;
+    completeConversation.completionReason = buildLocalOnboardingCompletionReason(baseAnswers, {
+      visionText: currentProject?.goal ?? onboardingFlow?.visionText?.trim?.() ?? "",
+      projectTypeHint: currentProject?.artifactExpectation?.projectType
+        ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+        ?? "",
+    });
     completeConversation.transcript = [
       { speaker: "agent", text: "למי המערכת הזאת נבנית?", time: "10:30" },
       { speaker: "user", text: baseAnswers["target-audience"], time: "10:30" },
@@ -4225,8 +4465,21 @@ export function createCockpitApp({
       { speaker: "agent", text: "איך נראה פתרון מוצלח מבחינתם?", time: "10:32" },
       { speaker: "user", text: baseAnswers["successful-solution"], time: "10:32" },
     ];
-    completeConversation.summary = buildLocalOnboardingSummary(baseAnswers);
-    completeConversation.totalQuestions = onboardingQuestionFlow.length;
+    completeConversation.summary = buildLocalOnboardingSummary(baseAnswers, {
+      visionText: currentProject?.goal ?? onboardingFlow?.visionText?.trim?.() ?? "",
+      projectTypeHint: currentProject?.artifactExpectation?.projectType
+        ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+        ?? "",
+    });
+    completeConversation.totalQuestions = Math.max(
+      buildLocalAdaptiveQuestionPlan(baseAnswers, {
+        visionText: currentProject?.goal ?? onboardingFlow?.visionText?.trim?.() ?? "",
+        projectTypeHint: currentProject?.artifactExpectation?.projectType
+          ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+          ?? "",
+      }).length,
+      completeConversation.currentIndex,
+    );
     onboardingConversation = completeConversation;
   }
 
@@ -5430,30 +5683,11 @@ export function createCockpitApp({
     button.textContent = label ?? (target === "finish" ? "סיים Onboarding" : "צור פרויקט והתחל");
   }
 
-  function buildLocalOnboardingPrompt(questionIndex, answers = {}) {
-    const question = onboardingQuestionFlow[questionIndex] ?? null;
-    if (!question) {
-      return null;
-    }
-
-    const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
-    const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
-
-    if (question.id === "core-problem" && audience) {
-      return `מעולה. אם המערכת נבנית עבור ${audience}, מה הבעיה המרכזית שהם מתמודדים איתה?`;
-    }
-
-    if (question.id === "successful-solution" && audience && problem) {
-      return `יש כבר תמונה טובה: הקהל הוא ${audience} והכאב המרכזי הוא ${problem}. איך נראה פתרון מוצלח מבחינתם?`;
-    }
-
-    return question.title;
-  }
-
-  function buildLocalOnboardingSummary(answers = {}) {
-    const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
-    const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
-    const solution = typeof answers["successful-solution"] === "string" ? answers["successful-solution"].trim() : "";
+  function buildLocalOnboardingSummary(answers = {}, options = {}) {
+    const audience = normalizeString(answers["target-audience"], "");
+    const problem = normalizeString(answers["core-problem"], "");
+    const solution = normalizeString(answers["successful-solution"], "");
+    const projectType = resolveLocalOnboardingProjectType(answers, options);
     const understoodItems = [];
     const missingItems = [];
 
@@ -5469,21 +5703,33 @@ export function createCockpitApp({
 
     if (!audience) {
       missingItems.push("מי קהל היעד המרכזי");
+    } else if (!problem && projectType === "landing-page") {
+      missingItems.push("מה גורם לקהל לא לעצור ולהשאיר פרטים היום");
+    } else if (!problem && projectType === "internal-tool") {
+      missingItems.push("איזה צוואר בקבוק תפעולי פוגע בעבודה היומית");
+    } else if (!problem && projectType === "commerce-ops") {
+      missingItems.push("איפה הזמנות, קטלוג או מלאי נופלים בין בעלי תפקידים");
     } else if (!problem) {
       missingItems.push("מה הבעיה הכי כואבת של קהל היעד");
+    } else if (projectType === "landing-page") {
+      missingItems.push("מה ההבטחה הראשית שחייבת להופיע מעל הקפל");
+    } else if (projectType === "internal-tool") {
+      missingItems.push("איפה הבעלות על התור חייבת להיות גלויה");
+    } else if (projectType === "commerce-ops") {
+      missingItems.push("איפה חריגות הזמנה או מלאי חייבות להיות גלויות מיד");
     } else {
       missingItems.push("איך הם משתמשים היום");
     }
 
     if (!problem) {
       missingItems.push("מה עוצר אותם היום מלהתקדם");
-    } else if (!solution) {
+    } else if (!solution && projectType !== "landing-page") {
       missingItems.push("איך נראה פתרון מוצלח מבחינתם");
-    } else {
+    } else if (projectType !== "landing-page") {
       missingItems.push("כמה מכירות קיימות");
     }
 
-    if (solution) {
+    if (solution && projectType !== "landing-page") {
       missingItems.push("כמה לקוחות יש להם");
     }
 
@@ -5497,22 +5743,26 @@ export function createCockpitApp({
 
   function createOnboardingConversationState() {
     const answers = {};
-    const openingPrompt = buildLocalOnboardingPrompt(0, answers);
-    const openingQuestion = resolveOnboardingQuestionPresentation(
-      onboardingQuestionFlow[0]?.id ?? "target-audience",
-      answers,
-      {
-        visionText: elements.createProjectVisionInput?.value?.trim() ?? onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
-        projectTypeHint: currentProject?.artifactExpectation?.projectType
-          ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
-          ?? "",
-      },
+    const conversationOptions = {
+      visionText: elements.createProjectVisionInput?.value?.trim() ?? onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
+      projectTypeHint: currentProject?.artifactExpectation?.projectType
+        ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+        ?? "",
+    };
+    const openingQuestionId = resolveLocalNextQuestionId(answers, conversationOptions);
+    const openingPrompt = buildLocalOnboardingPromptForQuestion(openingQuestionId, answers, conversationOptions);
+    const openingQuestion = openingQuestionId
+      ? resolveOnboardingQuestionPresentation(openingQuestionId, answers, conversationOptions)
+      : null;
+    const totalQuestions = Math.max(
+      buildLocalAdaptiveQuestionPlan(answers, conversationOptions).length,
+      openingQuestionId ? 1 : 0,
     );
     return {
       mode: "local",
       currentIndex: 0,
-      totalQuestions: onboardingQuestionFlow.length,
-      isComplete: false,
+      totalQuestions,
+      isComplete: openingQuestionId === null,
       answers,
       transcript: openingPrompt
         ? [
@@ -5524,15 +5774,16 @@ export function createCockpitApp({
             },
           ]
         : [],
-      summary: buildLocalOnboardingSummary(answers),
+      summary: buildLocalOnboardingSummary(answers, conversationOptions),
       currentQuestion: openingPrompt
         ? {
-            id: onboardingQuestionFlow[0]?.id ?? null,
+            id: openingQuestionId ?? null,
             title: openingQuestion.title || openingPrompt,
-            placeholder: openingQuestion.placeholder || onboardingQuestionFlow[0]?.placeholder || "",
-            reason: openingQuestion.reason || "",
+            placeholder: openingQuestion.placeholder || "",
+            reason: buildLocalOnboardingQuestionReason(openingQuestionId, answers, conversationOptions) || openingQuestion.reason || "",
           }
         : null,
+      completionReason: openingQuestionId === null ? buildLocalOnboardingCompletionReason(answers, conversationOptions) : "",
       draftAnswer: "",
       pendingAdvance: false,
       pendingAnswer: "",
@@ -5591,7 +5842,7 @@ export function createCockpitApp({
           }
         : null,
       currentIndex: Number(conversation.currentIndex ?? 0),
-      totalQuestions: Number(conversation.totalQuestions ?? onboardingQuestionFlow.length),
+      totalQuestions: Number(conversation.totalQuestions ?? (Number(conversation.currentIndex ?? 0) + (currentQuestion.id ? 1 : 0))),
       isComplete: conversation.isComplete === true,
       completionReason: typeof conversation.completionReason === "string" ? conversation.completionReason : "",
       answers,
@@ -7373,15 +7624,11 @@ export function createCockpitApp({
     onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
     const currentQuestion = onboardingConversation.currentQuestion ?? null;
     const hasActiveQuestion = Boolean(currentQuestion?.id);
-    const isComplete = onboardingConversation.isComplete === true
-      || (
-        hasActiveQuestion !== true
-        && (onboardingConversation.currentIndex ?? 0) >= (onboardingConversation.totalQuestions ?? onboardingQuestionFlow.length)
-      );
+    const isComplete = onboardingConversation.isComplete === true || hasActiveQuestion !== true;
     const currentPrompt = buildOnboardingCurrentPrompt();
     const isAwaitingAiReply = onboardingConversation.pendingAdvance === true;
     const totalQuestions = Math.max(
-      Number(onboardingConversation.totalQuestions ?? onboardingQuestionFlow.length),
+      Number(onboardingConversation.totalQuestions ?? ((onboardingConversation.currentIndex ?? 0) + (hasActiveQuestion ? 1 : 0))),
       (onboardingConversation.currentIndex ?? 0) + (hasActiveQuestion ? 1 : 0),
     );
 
@@ -7473,7 +7720,7 @@ export function createCockpitApp({
     if (onboardingConversation.pendingAdvance) {
       return;
     }
-    const currentQuestion = onboardingConversation.currentQuestion ?? onboardingQuestionFlow[onboardingConversation.currentIndex];
+    const currentQuestion = onboardingConversation.currentQuestion ?? null;
     if (!currentQuestion) {
       renderOnboardingConversation();
       return;
@@ -7553,28 +7800,44 @@ export function createCockpitApp({
 
         onboardingConversation.pendingAdvance = false;
         onboardingConversation.pendingAnswer = "";
-        onboardingConversation.currentIndex += 1;
-        onboardingConversation.isComplete = onboardingConversation.currentIndex >= onboardingQuestionFlow.length;
-        const nextPrompt = buildLocalOnboardingPrompt(onboardingConversation.currentIndex, onboardingConversation.answers);
-        const nextQuestionDefinition = onboardingQuestionFlow[onboardingConversation.currentIndex] ?? null;
-        const nextQuestionPresentation = resolveOnboardingQuestionPresentation(
-          nextQuestionDefinition?.id ?? "",
+        const conversationOptions = {
+          visionText: elements.createProjectVisionInput?.value?.trim() ?? onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
+          projectTypeHint: currentProject?.artifactExpectation?.projectType
+            ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
+            ?? "",
+        };
+        const nextQuestionId = resolveLocalNextQuestionId(onboardingConversation.answers, conversationOptions);
+        const nextPrompt = buildLocalOnboardingPromptForQuestion(
+          nextQuestionId,
           onboardingConversation.answers,
-          {
-            visionText: elements.createProjectVisionInput?.value?.trim() ?? onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
-            projectTypeHint: currentProject?.artifactExpectation?.projectType
-              ?? currentProject?.onboardingStateHandoff?.artifactExpectation?.projectType
-              ?? "",
-          },
+          conversationOptions,
+        );
+        const nextQuestionPresentation = nextQuestionId
+          ? resolveOnboardingQuestionPresentation(nextQuestionId, onboardingConversation.answers, conversationOptions)
+          : null;
+        onboardingConversation.currentIndex = Object.values(onboardingConversation.answers ?? {})
+          .filter((value) => typeof value === "string" && value.trim())
+          .length;
+        onboardingConversation.isComplete = nextQuestionId === null;
+        onboardingConversation.totalQuestions = Math.max(
+          buildLocalAdaptiveQuestionPlan(onboardingConversation.answers, conversationOptions).length,
+          onboardingConversation.currentIndex + (nextQuestionId ? 1 : 0),
         );
         onboardingConversation.currentQuestion = nextPrompt
           ? {
-              id: nextQuestionDefinition?.id ?? null,
+              id: nextQuestionId ?? null,
               title: nextQuestionPresentation.title || nextPrompt,
-              placeholder: nextQuestionPresentation.placeholder || nextQuestionDefinition?.placeholder || "",
-              reason: nextQuestionPresentation.reason || "",
+              placeholder: nextQuestionPresentation?.placeholder || "",
+              reason: buildLocalOnboardingQuestionReason(
+                nextQuestionId,
+                onboardingConversation.answers,
+                conversationOptions,
+              ) || nextQuestionPresentation?.reason || "",
             }
           : null;
+        onboardingConversation.completionReason = onboardingConversation.isComplete
+          ? buildLocalOnboardingCompletionReason(onboardingConversation.answers, conversationOptions)
+          : "";
         if (nextPrompt) {
           onboardingConversation.transcript = [
             ...normalizeArray(onboardingConversation.transcript),
@@ -7586,7 +7849,7 @@ export function createCockpitApp({
             },
           ];
         }
-        onboardingConversation.summary = buildLocalOnboardingSummary(onboardingConversation.answers);
+        onboardingConversation.summary = buildLocalOnboardingSummary(onboardingConversation.answers, conversationOptions);
       }
 
       onboardingConversation.pendingAdvance = false;
@@ -7883,11 +8146,11 @@ export function createCockpitApp({
       // still needs to surface the live blocker truthfully.
     }
 
-    if (onboardingConversation?.isComplete !== true && (onboardingConversation?.currentIndex ?? 0) < (onboardingConversation?.totalQuestions ?? onboardingQuestionFlow.length)) {
+    if (onboardingConversation?.isComplete !== true) {
       renderEmptyAppState({
         mode: "onboarding",
         message: "ממשיכים ל־onboarding",
-        status: "לפני שסוגרים את השלב הזה צריך לענות על כל 3 שאלות ה־AI.",
+        status: "לפני שסוגרים את השלב הזה Nexus חייבת להגיע ל־readiness אמיתי ולא רק לספור שאלות.",
       });
       return;
     }
@@ -9076,8 +9339,7 @@ async function runSnapshotWorkerTickFromUi() {
     const onboardingForwardButton = event.target?.closest?.("#onboarding-forward-button");
     if (onboardingForwardButton && doc?.body?.dataset?.appScreen === "onboarding") {
       event.preventDefault?.();
-      const isComplete = onboardingConversation?.isComplete === true
-        || (onboardingConversation?.currentIndex ?? 0) >= (onboardingConversation?.totalQuestions ?? onboardingQuestionFlow.length);
+      const isComplete = onboardingConversation?.isComplete === true || !onboardingConversation?.currentQuestion?.id;
       if (isComplete) {
         openUnderstandingPreviewScreen();
       } else {
