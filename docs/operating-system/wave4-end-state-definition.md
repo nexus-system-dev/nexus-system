@@ -73,6 +73,7 @@ Nexus עצמה היא מנוע היצירה הפנימי.
 - להחזיק `post-release continuation loop` גלוי שמראה מה נפתח מיד אחרי release ולמה זה bounded
 - להחזיק `growth opportunity surfacing boundary` גלוי שמבהיר מה מותר להציע עכשיו ומה נשאר מחוץ ל־Wave 4
 - להחזיק `class-aware deployment release path` גלוי שמראה לאן כל build הולכת operationally ב־Wave 4
+- להחזיק `deployment state feedback contract` גלוי שמציג progress, blockers, ו־provider status מתוך Nexus
 
 ## Full Long-Term Nexus Vision
 

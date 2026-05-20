@@ -872,6 +872,14 @@ Tasks:
   - deployment feedback contract is explicit
 - not trueGreen:
   - deploy state only in logs
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-20`
+  - contract artifact: `docs/operating-system/wave4-deployment-state-feedback-contract.md`
+  - governing implementation anchors:
+    - `src/core/deployment-state-feedback-contract.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/execution-adapter.js`
+    - `web/nexus-ui/screens/ExecutionLiveScreen.js`
 
 ### Lane 10 — Live Orchestration Continuity
 

@@ -126,6 +126,15 @@ function resolveClassAwareDeploymentReleasePath(project = null) {
   );
 }
 
+function resolveDeploymentStateFeedbackContract(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.deploymentStateFeedbackContract
+      ?? safeProject.context?.deploymentStateFeedbackContract
+      ?? safeProject.state?.deploymentStateFeedbackContract,
+  );
+}
+
 function resolveLoopTaskSignal(project) {
   const approvals = normalizeArray(project.approvals);
   const roadmap = normalizeArray(project.cycle?.roadmap);
@@ -252,6 +261,7 @@ export function buildExecutionLiveViewModel({ project = null, qaMode = false } =
   const classAwarePackagingPreviewContract = resolveClassAwarePackagingPreviewContract(safeProject);
   const releaseableProductStateContract = resolveReleaseableProductStateContract(safeProject);
   const classAwareDeploymentReleasePath = resolveClassAwareDeploymentReleasePath(safeProject);
+  const deploymentStateFeedbackContract = resolveDeploymentStateFeedbackContract(safeProject);
   const repeatedLoopContinuation = resolveRepeatedLoopContinuation(safeProject);
   const splitWorkspaceLiveBuildSurfaceModel = resolveSplitWorkspaceLiveBuildSurfaceModel(safeProject);
   const buildProgressionStateMachine = resolveBuildProgressionStateMachine(safeProject);
@@ -477,6 +487,29 @@ export function buildExecutionLiveViewModel({ project = null, qaMode = false } =
       visibleReleaseRule: escapeText(classAwareDeploymentReleasePath.visibleReleaseRule, "release path must stay visible and bounded"),
       continuityRule: escapeText(classAwareDeploymentReleasePath.continuityRule, "deployment/release path status must survive reopen and restore"),
       boundedTargets: normalizeArray(classAwareDeploymentReleasePath.boundedTargets).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+    },
+    deploymentStateFeedbackContract: {
+      status: escapeText(deploymentStateFeedbackContract.status, "pending"),
+      statusLabel: escapeText(deploymentStateFeedbackContract.statusLabel, "מצב ה־deploy עדיין בהכנה"),
+      providerType: escapeText(deploymentStateFeedbackContract.providerType, "generic"),
+      primaryTarget: escapeText(deploymentStateFeedbackContract.primaryTarget, "private-deployment"),
+      environment: escapeText(deploymentStateFeedbackContract.environment, "staging"),
+      currentStepLabel: escapeText(deploymentStateFeedbackContract.currentStepLabel, "resolve-deployment-target"),
+      policyDecision: escapeText(deploymentStateFeedbackContract.policyDecision, "blocked"),
+      deploymentOutcome: escapeText(deploymentStateFeedbackContract.deploymentOutcome, "pending"),
+      launchDecision: escapeText(deploymentStateFeedbackContract.launchDecision, "blocked"),
+      latestProviderStatus: escapeText(deploymentStateFeedbackContract.latestProviderStatus, "pending"),
+      nextPollInSeconds: deploymentStateFeedbackContract.nextPollInSeconds ?? null,
+      visibleFeedbackRule: escapeText(
+        deploymentStateFeedbackContract.visibleFeedbackRule,
+        "deployment/release progress must stay visible on product surfaces",
+      ),
+      feedbackItems: normalizeArray(deploymentStateFeedbackContract.feedbackItems).map((item) => ({
+        label: escapeText(item.label),
+        value: escapeText(item.value),
+      })).slice(0, 4),
+      blockedReasons: normalizeArray(deploymentStateFeedbackContract.blockedReasons).map((item) => escapeText(item)).filter(Boolean).slice(0, 4),
+      continuityRule: escapeText(deploymentStateFeedbackContract.continuityRule, "deployment state must survive refresh and restore"),
     },
     progressPercent: reactiveWorkspaceState.progressBar?.percent ?? progressState.percent ?? 0,
     stats: [

@@ -397,6 +397,47 @@ export function renderExecutionLiveScreen(viewModel) {
                   <span>${escapeHtml(viewModel.classAwareDeploymentReleasePath.continuityRule)}</span>
                 </div>
               </div>
+              <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--deployment-feedback">
+                <div class="nexus-execution-screen__workspace-contract-head">
+                  <strong>Deployment feedback</strong>
+                  <span>${escapeHtml(viewModel.deploymentStateFeedbackContract.statusLabel)}</span>
+                </div>
+                <p>${escapeHtml(viewModel.deploymentStateFeedbackContract.visibleFeedbackRule)}</p>
+                <div class="nexus-execution-screen__workspace-contract-grid">
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Provider</span>
+                    <strong>${escapeHtml(viewModel.deploymentStateFeedbackContract.providerType)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Environment</span>
+                    <strong>${escapeHtml(viewModel.deploymentStateFeedbackContract.environment)}</strong>
+                  </div>
+                  <div class="nexus-execution-screen__workspace-contract-item">
+                    <span>Current step</span>
+                    <strong>${escapeHtml(viewModel.deploymentStateFeedbackContract.currentStepLabel)}</strong>
+                  </div>
+                </div>
+                <div class="nexus-execution-screen__build-state-list">
+                  ${viewModel.deploymentStateFeedbackContract.feedbackItems.map((item) => `
+                    <div class="nexus-execution-build-state nexus-execution-build-state--${escapeHtml(viewModel.deploymentStateFeedbackContract.status)}">
+                      <div class="nexus-execution-build-state__main">
+                        <strong>${escapeHtml(item.label)}</strong>
+                        <span>${escapeHtml(item.value)}</span>
+                      </div>
+                      <span class="nexus-execution-build-state__status">${escapeHtml(viewModel.deploymentStateFeedbackContract.status)}</span>
+                    </div>
+                  `).join("")}
+                </div>
+                <div class="nexus-execution-screen__workspace-contract-milestones">
+                  ${viewModel.deploymentStateFeedbackContract.blockedReasons.map((item) => `
+                    <span>${escapeHtml(item)}</span>
+                  `).join("")}
+                  ${viewModel.deploymentStateFeedbackContract.nextPollInSeconds !== null
+                    ? `<span>poll in ${escapeHtml(String(viewModel.deploymentStateFeedbackContract.nextPollInSeconds))}s</span>`
+                    : ""}
+                  <span>${escapeHtml(viewModel.deploymentStateFeedbackContract.continuityRule)}</span>
+                </div>
+              </div>
               <div id="execution-live-list" class="nexus-execution-live-list">
                 ${viewModel.liveItems.map((item) => `<div>${escapeHtml(item)}</div>`).join("")}
                 <div class="execution-route-spinner" aria-hidden="true"></div>

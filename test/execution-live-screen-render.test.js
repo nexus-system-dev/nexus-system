@@ -121,6 +121,27 @@ test("execution live screen renders workspace contract inside visible surface", 
       continuityRule: "deployment/release path status must survive reopen, route restore, and handoff into deployment feedback",
       boundedTargets: ["web-deployment", "private-deployment"],
     },
+    deploymentStateFeedbackContract: {
+      status: "active",
+      statusLabel: "מצב ה־deploy גלוי ומתקדם",
+      providerType: "render",
+      primaryTarget: "web-deployment",
+      environment: "staging",
+      currentStepLabel: "verify-runtime-and-promote-service",
+      policyDecision: "allowed",
+      deploymentOutcome: "accepted",
+      launchDecision: "blocked",
+      latestProviderStatus: "published",
+      nextPollInSeconds: null,
+      visibleFeedbackRule: "deployment/release progress must stay visible on product surfaces rather than hiding in backend events or logs",
+      feedbackItems: [
+        { label: "Policy decision", value: "allowed" },
+        { label: "Deployment outcome", value: "accepted" },
+        { label: "Launch decision", value: "blocked" },
+      ],
+      blockedReasons: ["production-health-unconfirmed"],
+      continuityRule: "deployment state must survive refresh, route restore, and the handoff from execution into later release feedback",
+    },
     buildProgressionStateMachine: {
       currentLabel: "ה־surface מתפתח",
       currentRouteKey: "execution",
@@ -164,4 +185,8 @@ test("execution live screen renders workspace contract inside visible surface", 
   assert.match(html, /product-web-release-path/);
   assert.match(html, /verify-runtime-and-promote-service/);
   assert.match(html, /render/);
+  assert.match(html, /Deployment feedback/);
+  assert.match(html, /מצב ה־deploy גלוי ומתקדם/);
+  assert.match(html, /Policy decision/);
+  assert.match(html, /accepted/);
 });

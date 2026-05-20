@@ -205,6 +205,7 @@ import { createReleaseEvidenceHandoffModel } from "./release-evidence-handoff-mo
 import { createPostReleaseContinuationLoop } from "./post-release-continuation-loop.js";
 import { createGrowthOpportunitySurfacingBoundary } from "./growth-opportunity-surfacing-boundary.js";
 import { createClassAwareDeploymentReleasePath } from "./class-aware-deployment-release-path.js";
+import { createDeploymentStateFeedbackContract } from "./deployment-state-feedback-contract.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -5168,6 +5169,14 @@ export function buildProjectContext(
     classAwarePackagingPreviewContract,
     releaseableProductStateContract,
   });
+  const { deploymentStateFeedbackContract } = createDeploymentStateFeedbackContract({
+    classAwareDeploymentReleasePath,
+    deployPolicyDecision,
+    deploymentResultEnvelope,
+    launchConfirmationState,
+    statusEvents,
+    pollingMetadata,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5468,6 +5477,7 @@ export function buildProjectContext(
   context.postReleaseContinuationLoop = postReleaseContinuationLoop;
   context.growthOpportunitySurfacingBoundary = growthOpportunitySurfacingBoundary;
   context.classAwareDeploymentReleasePath = classAwareDeploymentReleasePath;
+  context.deploymentStateFeedbackContract = deploymentStateFeedbackContract;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;

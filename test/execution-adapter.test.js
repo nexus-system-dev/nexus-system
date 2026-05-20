@@ -156,6 +156,26 @@ test("execution adapter keeps internal-tool continuity alive when no roadmap tas
         continuityRule: "deployment/release path status must survive reopen, route restore, and handoff into deployment feedback",
         boundedTargets: ["private-deployment", "web-deployment"],
       },
+      deploymentStateFeedbackContract: {
+        status: "active",
+        statusLabel: "מצב ה־deploy גלוי ומתקדם",
+        providerType: "railway",
+        primaryTarget: "private-deployment",
+        environment: "staging",
+        currentStepLabel: "verify-authenticated-workspace-and-promote",
+        policyDecision: "allowed",
+        deploymentOutcome: "accepted",
+        launchDecision: "blocked",
+        latestProviderStatus: "published",
+        nextPollInSeconds: null,
+        visibleFeedbackRule: "deployment/release progress must stay visible on product surfaces rather than hiding in backend events or logs",
+        feedbackItems: [
+          { label: "Policy decision", value: "allowed" },
+          { label: "Deployment outcome", value: "accepted" },
+        ],
+        blockedReasons: ["production-health-unconfirmed"],
+        continuityRule: "deployment state must survive refresh, route restore, and the handoff from execution into later release feedback",
+      },
       buildProgressionStateMachine: {
         summary: {
           currentLabel: "השלד נראה על המסך",
@@ -235,6 +255,8 @@ test("execution adapter keeps internal-tool continuity alive when no roadmap tas
   assert.equal(viewModel.classAwareDeploymentReleasePath.providerType, "railway");
   assert.equal(viewModel.classAwareDeploymentReleasePath.primaryTarget, "private-deployment");
   assert.equal(viewModel.classAwareDeploymentReleasePath.nextGate, "verify-authenticated-workspace-and-promote");
+  assert.equal(viewModel.deploymentStateFeedbackContract.statusLabel, "מצב ה־deploy גלוי ומתקדם");
+  assert.equal(viewModel.deploymentStateFeedbackContract.feedbackItems[0].label, "Policy decision");
 });
 
 test("execution adapter hides runtime shell leak during repeated-loop continuation", () => {

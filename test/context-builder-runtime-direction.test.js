@@ -71,4 +71,7 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.classAwareDeploymentReleasePath.pathFamily, "web-deployment-path");
   assert.equal(context.classAwareDeploymentReleasePath.primaryTarget, "private-deployment");
   assert.equal(context.classAwareDeploymentReleasePath.boundedTargets.length >= 1, true);
+  assert.equal(context.deploymentStateFeedbackContract.feedbackFamily, "deployment-state-feedback");
+  assert.equal(context.deploymentStateFeedbackContract.providerType, "vercel");
+  assert.equal(context.deploymentStateFeedbackContract.feedbackItems.length >= 1, true);
 });

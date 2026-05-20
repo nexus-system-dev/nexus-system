@@ -126,6 +126,7 @@
     "canonicalPostReleaseContinuationLoopPath": "docs/operating-system/wave4-post-release-continuation-loop.md",
     "canonicalGrowthOpportunitySurfacingBoundaryPath": "docs/operating-system/wave4-growth-opportunity-surfacing-boundary.md",
     "canonicalClassAwareDeploymentReleasePath": "docs/operating-system/wave4-class-aware-deployment-release-path.md",
+    "canonicalDeploymentStateFeedbackContractPath": "docs/operating-system/wave4-deployment-state-feedback-contract.md",
     "canonicalExternalIntelligencePath": "docs/operating-system/wave4-external-product-intelligence-pass-2026-05-18.md",
     "planningMode": "minimum-believable-nexus-first",
     "nonNegotiableRequirements": [
@@ -171,8 +172,8 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "W4-MBN-018",
-      "title": "Define deployment-state feedback contract",
+      "taskId": "W4-MBN-019",
+      "title": "Define cross-surface continuity contract",
       "source": "docs/operating-system/wave4-minimum-believable-core-planning-track.md",
       "status": "selected-not-started"
     },
@@ -436,6 +437,24 @@
           "web/nexus-ui/screens/ExecutionLiveScreen.js",
           "web/app.js",
           "test/class-aware-deployment-release-path.test.js",
+          "test/execution-adapter.test.js",
+          "test/execution-live-screen-render.test.js",
+          "test/context-builder-runtime-direction.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-MBN-018",
+        "title": "Define deployment-state feedback contract",
+        "status": "trueGreen",
+        "closedAt": "2026-05-20",
+        "closureEvidence": [
+          "docs/operating-system/wave4-deployment-state-feedback-contract.md",
+          "src/core/deployment-state-feedback-contract.js",
+          "src/core/context-builder.js",
+          "web/nexus-ui/adapters/execution-adapter.js",
+          "web/nexus-ui/screens/ExecutionLiveScreen.js",
+          "web/app.js",
+          "test/deployment-state-feedback-contract.test.js",
           "test/execution-adapter.test.js",
           "test/execution-live-screen-render.test.js",
           "test/context-builder-runtime-direction.test.js"
