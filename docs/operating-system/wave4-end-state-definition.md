@@ -77,6 +77,7 @@ Nexus עצמה היא מנוע היצירה הפנימי.
 - להחזיק `cross-surface continuity contract` גלוי שמחבר truthfully בין execution, proof, release evidence, deployment feedback, timeline, והמשך הלולאה
 - להחזיק `Wave 4 live verification matrix` גלוי שמחייב route, visible anchor, pass/fail truth, ו־restore checks לכל capability מרכזי
 - להחזיק `Figma-backed live-build workspace contract` כ־design authority מחייב לכל שינוי מבני ב־workspace וב־build surfaces
+- להחזיק `Figma-backed desktop shell and local workspace frame` כ־design authority מחייב לכל shell-level framing path ב־Wave 4
 - להכין מיד אחרי סגירת core Wave 4 continuation lane קנוני עבור learning system ו־adaptive intake כך שלא יישארו רק future notes
 
 ## Full Long-Term Nexus Vision
@@ -613,6 +614,7 @@ Nexus חייבת להציג:
 - class-specific frontend/backend/scene evolution
 - browser-backed local workspace continuity before Electron shell closure
 - Figma-backed structural workspace authority before shell-frame expansion
+- Figma-backed shell-frame authority before desktop-wrapper implementation
 - explicit desktop shell scope before shell implementation
 - deterministic runtime family assignment per core class
 - deterministic packaging and preview contract per core class

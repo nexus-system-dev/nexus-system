@@ -586,6 +586,18 @@ Tasks:
 
 - future execution note:
   - this task may truthfully open or update a Figma design file as part of execution
+  - Figma auth health must be rechecked at design-pass start, before meaningful write, and before closure write-back
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-20`
+  - contract artifact: `docs/operating-system/wave4-figma-backed-desktop-shell-local-workspace-frame.md`
+  - design artifact:
+    - `https://www.figma.com/design/0517zfC9FgOpBMo50bc9Mi`
+  - governing implementation anchors:
+    - `src/core/local-workspace-contract.js`
+    - `src/core/desktop-shell-scope-contract.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/execution-adapter.js`
+    - `web/nexus-ui/screens/ExecutionLiveScreen.js`
 
 ### Lane 6 — Runtime / Packaging Resolver
 

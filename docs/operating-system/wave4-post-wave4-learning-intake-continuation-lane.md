@@ -25,6 +25,12 @@ Its role is to preserve canonical continuity between:
 - future learning-system execution
 - future adaptive intake execution
 
+Activation truth on `2026-05-20`:
+- `W4-MBN-021` closed truthfully
+- `W4-MBN-022` closed truthfully
+- no unresolved `W4-MBN-*` task remains ahead of this lane
+- the lane may now be selected canonically without violating the core Wave 4 order
+
 ## Lane Ownership
 
 - lane id: `post-wave4-learning-and-intake-continuation`

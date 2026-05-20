@@ -146,6 +146,7 @@
 - [docs/operating-system/wave4-cross-surface-continuity-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-cross-surface-continuity-contract.md)
 - [docs/operating-system/wave4-live-verification-matrix.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-live-verification-matrix.md)
 - [docs/operating-system/wave4-figma-backed-live-build-workspace-contract.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-figma-backed-live-build-workspace-contract.md)
+- [docs/operating-system/wave4-figma-backed-desktop-shell-local-workspace-frame.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-figma-backed-desktop-shell-local-workspace-frame.md)
 - [docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md)
 
 הוא כולל יכולות שלא ניתן לדחות:
