@@ -115,6 +115,33 @@ export function renderTimelineHistoryScreen(viewModel) {
             className: "nexus-timeline-screen__events-card",
             padding: "lg",
             content: `
+              <div class="nexus-timeline-screen__artifact-header">
+                <div>
+                  <span class="nexus-timeline-screen__artifact-label">Cross-surface continuity</span>
+                  <h2>${escapeHtml(viewModel.crossSurfaceContinuity.statusLabel)}</h2>
+                  <p>${escapeHtml(viewModel.crossSurfaceContinuity.visibleContinuityRule)}</p>
+                </div>
+              </div>
+              <div class="nexus-timeline-screen__stats">
+                ${viewModel.crossSurfaceContinuity.continuitySteps.map((item) => `
+                  <article class="nexus-timeline-screen__stat">
+                    <span>${escapeHtml(`${item.routeKey} · ${item.title}`)}</span>
+                    <strong>${escapeHtml(item.visibleAnchor)}</strong>
+                  </article>
+                `).join("")}
+              </div>
+              <ul>
+                ${viewModel.crossSurfaceContinuity.continuityChecks.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                <li>${escapeHtml(viewModel.crossSurfaceContinuity.restoreRule)}</li>
+                <li>${escapeHtml(viewModel.crossSurfaceContinuity.explainablePath)}</li>
+              </ul>
+            `,
+          })}
+
+          ${renderNexusCard({
+            className: "nexus-timeline-screen__events-card",
+            padding: "lg",
+            content: `
               <h2>רצף ההתקדמות</h2>
               <div class="nexus-timeline-screen__events">
                 ${viewModel.entries.map(renderTimelineEntry).join("")}

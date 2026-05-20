@@ -921,6 +921,14 @@ Tasks:
   - cross-surface continuity contract is explicit
 - not trueGreen:
   - each surface truthful in isolation only
+- canonical closure write-back:
+  - status: `trueGreen` on `2026-05-20`
+  - contract artifact: `docs/operating-system/wave4-cross-surface-continuity-contract.md`
+  - governing implementation anchors:
+    - `src/core/cross-surface-continuity-contract.js`
+    - `src/core/context-builder.js`
+    - `web/nexus-ui/adapters/timeline-adapter.js`
+    - `web/nexus-ui/screens/TimelineHistoryScreen.js`
 
 20. `W4-MBN-020 — Define Wave 4 live verification matrix`
 - source of truth: Wave 4 end-state definition

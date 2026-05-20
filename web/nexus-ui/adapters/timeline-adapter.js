@@ -172,10 +172,20 @@ function buildStats(project, entries) {
   ];
 }
 
+function resolveCrossSurfaceContinuityContract(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.crossSurfaceContinuityContract
+      ?? safeProject.context?.crossSurfaceContinuityContract
+      ?? safeProject.state?.crossSurfaceContinuityContract,
+  );
+}
+
 export function buildTimelineViewModel({ project = null, qaMode = false } = {}) {
   const safeProject = normalizeObject(project);
   const artifactTruth = buildArtifactTruthViewModel(safeProject);
   const entries = resolveTimelineEntries(safeProject);
+  const crossSurfaceContinuityContract = resolveCrossSurfaceContinuityContract(safeProject);
 
   return {
     title: "איך התוצר התקדם עד כאן",
@@ -186,6 +196,31 @@ export function buildTimelineViewModel({ project = null, qaMode = false } = {}) 
     badge: qaMode ? "QA preview override" : "ציר עבודה",
     artifactTruth,
     entries,
+    crossSurfaceContinuity: {
+      statusLabel: escapeText(crossSurfaceContinuityContract.statusLabel, "הרצף בין המסכים עוד לא הוגדר"),
+      visibleContinuityRule: escapeText(
+        crossSurfaceContinuityContract.visibleContinuityRule,
+        "build, proof, release, timeline, and continuation must stay visibly connected",
+      ),
+      explainablePath: escapeText(
+        crossSurfaceContinuityContract.explainablePath,
+        "execution:build -> proof:artifact -> proof:release-evidence -> execution:deployment-feedback -> next-task:continuation -> timeline:timeline",
+      ),
+      continuityChecks: normalizeArray(crossSurfaceContinuityContract.continuityChecks)
+        .map((item) => escapeText(item))
+        .filter(Boolean)
+        .slice(0, 5),
+      continuitySteps: normalizeArray(crossSurfaceContinuityContract.continuitySteps).map((step) => ({
+        title: escapeText(step.title, "surface"),
+        routeKey: escapeText(step.routeKey, "unknown-route"),
+        visibleAnchor: escapeText(step.visibleAnchor, "not-yet-visible"),
+        continuityRule: escapeText(step.continuityRule, "continuity must survive route restore"),
+      })).slice(0, 6),
+      restoreRule: escapeText(
+        crossSurfaceContinuityContract.restoreRule,
+        "cross-surface continuity must survive refresh, route restore, revisit, and transition back into execution",
+      ),
+    },
     stats: buildStats(safeProject, entries),
     primaryAction: {
       label: "חזור לצעד הנוכחי",

@@ -206,6 +206,7 @@ import { createPostReleaseContinuationLoop } from "./post-release-continuation-l
 import { createGrowthOpportunitySurfacingBoundary } from "./growth-opportunity-surfacing-boundary.js";
 import { createClassAwareDeploymentReleasePath } from "./class-aware-deployment-release-path.js";
 import { createDeploymentStateFeedbackContract } from "./deployment-state-feedback-contract.js";
+import { createCrossSurfaceContinuityContract } from "./cross-surface-continuity-contract.js";
 import { resolveProjectStageAndRuntimeDirection } from "./project-stage-runtime-direction-resolver.js";
 import { defineReleaseRequirementsSchema } from "./release-requirements-schema.js";
 import { createApprovalReadinessValidator } from "./approval-readiness-validator.js";
@@ -5177,6 +5178,13 @@ export function buildProjectContext(
     statusEvents,
     pollingMetadata,
   });
+  const { crossSurfaceContinuityContract } = createCrossSurfaceContinuityContract({
+    buildProgressionStateMachine,
+    proofArtifact,
+    releaseEvidenceHandoffModel,
+    deploymentStateFeedbackContract,
+    postReleaseContinuationLoop,
+  });
   const { executionConsistencyReport } = createExecutionConsistencyValidator({
     atomicExecutionEnvelope,
     externalExecutionResult,
@@ -5478,6 +5486,7 @@ export function buildProjectContext(
   context.growthOpportunitySurfacingBoundary = growthOpportunitySurfacingBoundary;
   context.classAwareDeploymentReleasePath = classAwareDeploymentReleasePath;
   context.deploymentStateFeedbackContract = deploymentStateFeedbackContract;
+  context.crossSurfaceContinuityContract = crossSurfaceContinuityContract;
   context.executionConsistencyReport = executionConsistencyReport;
   context.onboardingProgress = onboardingProgress;
   context.onboardingViewState = onboardingViewState;

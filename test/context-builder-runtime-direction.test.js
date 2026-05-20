@@ -74,4 +74,7 @@ test("context builder exposes canonical product class, stage, and runtime direct
   assert.equal(context.deploymentStateFeedbackContract.feedbackFamily, "deployment-state-feedback");
   assert.equal(context.deploymentStateFeedbackContract.providerType, "vercel");
   assert.equal(context.deploymentStateFeedbackContract.feedbackItems.length >= 1, true);
+  assert.equal(context.crossSurfaceContinuityContract.continuityFamily, "cross-surface-continuity");
+  assert.equal(context.crossSurfaceContinuityContract.status, "connected");
+  assert.equal(context.crossSurfaceContinuityContract.continuitySteps.length >= 5, true);
 });
