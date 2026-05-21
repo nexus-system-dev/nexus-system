@@ -281,32 +281,52 @@
           {
             "taskId": "W4-INTAKE-002",
             "title": "Replace fixed 3-question onboarding with adaptive intake flow",
-            "status": "blocked",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-001",
               "W4-LEARN-002",
               "W4-GEN-001",
               "docs/operating-system/wave3-onboarding-intelligence-planning-track.md"
             ],
-            "blockedAt": "2026-05-21",
-            "blocker": {
-              "type": "live-verification-surface",
-              "surface": "Onboarding QA route",
-              "code": "qa-onboarding-preview-rerun-gap",
-              "message": "The direct QA onboarding route now opens the adaptive conversation surface, but the preview flow still reuses persisted QA onboarding state too aggressively, so a fresh ambiguous-class clarification path could not be rerun cleanly in the same live verification pass.",
-              "impact": "W4-INTAKE-002 cannot become trueGreen until the live onboarding route proves not only adaptive entry and landing-page early-stop behavior, but also a fresh ambiguous clarification path on demand.",
-              "resumeRule": "Keep the repaired QA onboarding route active, repair the QA preview reset/reseed path, and rerun live verification until both landing-page early-stop and ambiguous clarification paths are visible on the live route."
-            }
+            "closedAt": "2026-05-21",
+            "closureEvidence": [
+              "web/app.js",
+              "web/nexus-ui/adapters/onboarding-adapter.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/onboarding-adapter.test.js",
+              "test/smart-onboarding-screen-render.test.js"
+            ]
           },
           {
             "taskId": "W4-INTAKE-003",
             "title": "Connect learning signals to adaptive onboarding question selection",
-            "status": "prepared-not-started",
+            "status": "selected-not-started",
             "dependsOn": [
               "W4-INTAKE-002",
               "W4-LEARN-002",
               "W4-GEN-001",
               "docs/operating-system/wave3-onboarding-intelligence-planning-track.md"
+            ]
+          },
+          {
+            "taskId": "W4-INTAKE-004",
+            "title": "Implement provider-backed canonical onboarding agent runtime",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-INTAKE-002",
+              "W4-INTAKE-003",
+              "W4-LEARN-002",
+              "W4-GEN-001"
+            ]
+          },
+          {
+            "taskId": "W4-INTAKE-005",
+            "title": "Inject smart onboarding agent truth into canonical downstream system surfaces",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-INTAKE-003",
+              "W4-INTAKE-004",
+              "W4-GEN-001"
             ]
           },
           {
@@ -318,6 +338,7 @@
               "W4-GEN-001",
               "W4-INTAKE-002",
               "W4-INTAKE-003",
+              "W4-INTAKE-005",
               "W4-MBN-015"
             ]
           }
@@ -338,10 +359,10 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "W4-INTAKE-002",
-      "title": "Replace fixed 3-question onboarding with adaptive intake flow",
+      "taskId": "W4-INTAKE-003",
+      "title": "Connect learning signals to adaptive onboarding question selection",
       "source": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
-      "status": "blocked"
+      "status": "selected-not-started"
     },
     "completedCanonicalExecutionTasks": [
       {
@@ -406,6 +427,19 @@
           "test/onboarding-adapter.test.js",
           "test/smart-onboarding-screen-render.test.js",
           "test/context-builder.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-INTAKE-002",
+        "title": "Replace fixed 3-question onboarding with adaptive intake flow",
+        "status": "trueGreen",
+        "closedAt": "2026-05-21",
+        "closureEvidence": [
+          "web/app.js",
+          "web/nexus-ui/adapters/onboarding-adapter.js",
+          "test/onboarding-service-conversation.test.js",
+          "test/onboarding-adapter.test.js",
+          "test/smart-onboarding-screen-render.test.js"
         ]
       },
       {

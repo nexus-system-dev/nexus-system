@@ -4490,19 +4490,32 @@ export function createCockpitApp({
 
   function openCreatePreviewScreen() {
     qaPreviewRouteKey = "create";
+    onboardingConversation = null;
     seedCreatePreviewInputs();
     renderEmptyAppState({
       mode: "create",
       message: "מה אתה רוצה לבנות?",
       status: "ספר לנו על הרעיון שלך כדי שנוכל להפוך אותו למציאות",
     });
+    persistFlowState("create");
     scrollViewportToTop();
   }
 
   function openOnboardingPreviewScreen() {
     qaPreviewRouteKey = "onboarding";
+    const storedFlowState = readStoredFlowState();
+    const shouldSeedFreshPreviewConversation = (
+      storedFlowState?.screen === "create"
+      && !onboardingFlow?.sessionId
+      && !currentProjectId
+      && !currentProject?.id
+    );
     ensureOnboardingScreenView({ force: true });
-    onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
+    if (shouldSeedFreshPreviewConversation) {
+      onboardingConversation = createOnboardingConversationState();
+    } else {
+      onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
+    }
     renderEmptyAppState({
       mode: "onboarding",
       message: "רוצה להבין את הפרויקט שלך 👋",
@@ -4510,6 +4523,7 @@ export function createCockpitApp({
     });
     renderOnboardingNotes();
     renderOnboardingConversation();
+    persistFlowState("onboarding");
     scrollViewportToTop();
   }
 

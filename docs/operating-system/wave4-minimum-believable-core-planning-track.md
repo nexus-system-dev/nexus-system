@@ -1056,15 +1056,21 @@ Prepared tasks:
 - `W4-INTAKE-001 — Define adaptive onboarding agent contract` — `trueGreen`
 - `W4-LEARN-002 — Implement deep adaptive learning decision impact` — `trueGreen`
 - `W4-GEN-001 — Connect learning signals to generation decisions` — `trueGreen`
-- `W4-INTAKE-002 — Replace fixed 3-question onboarding with adaptive intake flow` — `blocked`
-- `W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection` — `prepared-not-started`
+- `W4-INTAKE-002 — Replace fixed 3-question onboarding with adaptive intake flow` — `trueGreen`
+- `W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection` — `selected-not-started`
+- `W4-INTAKE-004 — Implement provider-backed canonical onboarding agent runtime` — `prepared-not-started`
+- `W4-INTAKE-005 — Inject smart onboarding agent truth into canonical downstream system surfaces` — `prepared-not-started`
 - `W4-GEN-002 — Implement feedback-driven product mutation loop` — `prepared-not-started`
 
 Reality-audit reopeners required after repository inspection:
 - `W4-LEARN-002` is now closed truthfully as the first real decision-impact implementation layer
 - `W4-GEN-001` is now closed truthfully as the first generation-facing learning integration layer
-- `W4-INTAKE-002` remains the next released continuation task; the direct onboarding QA route now opens the adaptive conversation surface, but live proof is still incomplete because the QA preview state is not yet resetting cleanly enough to rerun the required ambiguous clarification path on demand
+- `W4-INTAKE-002` is now closed truthfully after live QA proof covered direct onboarding entry, landing-page early-stop, fresh ambiguous clarification rerun, and non-blocked refresh/revisit behavior
 - `W4-INTAKE-003` is required after `W4-INTAKE-002` because repository reality still does not prove that prior learning signals choose the next onboarding question or clarification path
+- canonical coverage is still insufficient for the clarified smart-onboarding direction because repository reality and current tasks still do not explicitly cover:
+  - provider-backed onboarding agent runtime with user provider choice
+  - canonical Nexus rule enforcement across provider choice
+  - mandatory structured downstream injection of learned intake into the correct Nexus system surfaces
 
 Preparation rule:
 - these tasks may be written back immediately after `W4-MBN-020` closes

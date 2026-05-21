@@ -351,7 +351,7 @@ Closure truth on `2026-05-20`:
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
-- status: `blocked`
+- status: `trueGreen`
 - depends_on:
   - `W4-INTAKE-001`
   - `W4-LEARN-002`
@@ -380,30 +380,25 @@ Implementation truth on `2026-05-21`:
 - backend-backed onboarding already exposes adaptive question count, adaptive class disambiguation, and readiness-based stopping truth
 - the visible onboarding UI now renders adaptive progress wording instead of presenting a fixed `3-question` shell as the canonical route truth
 - the direct QA onboarding route now opens the adaptive onboarding conversation surface instead of falling into `אין onboarding פעיל לשחזור`
-- live QA proof now shows one landing-page-like path can stop after `target-audience` + `core-problem` and move into `השיחה הושלמה` / `לסיכום ההבנה` without a forced fixed third question
-- live QA refresh/revisit no longer collapses back into the blocked sessionless fallback state
+- live QA proof shows one landing-page-like path can stop after `target-audience` + `core-problem` and move into `השיחה הושלמה` / `לסיכום ההבנה` without a forced fixed third question
+- live QA proof also shows a fresh ambiguous rerun can be seeded from `Create`, then surface `project-class` clarification before proceeding when mixed signals are present (`Build a CRM landing page for clinic leads` + `Clinic owners`)
+- the QA preview reset/reseed path now truthfully starts a fresh adaptive onboarding conversation from `Create` instead of reusing stale preview conversation state
+- direct live QA onboarding refresh/revisit no longer collapses back into `אין onboarding פעיל לשחזור`
 
-Active blocker on `2026-05-21`:
-- the original sessionless fallback blocker is closed
-- live QA verification is still incomplete because the preview flow currently reuses persisted QA onboarding state too aggressively, which prevented a fresh ambiguous-class clarification path from being rerun cleanly on-demand in the same verification pass
-- this means the live browser surface now truthfully proves adaptive entry, adaptive progress wording, landing-page early-stop behavior, and revisit safety, but it still does not fully prove the required ambiguous clarification path on a fresh rerun
-- `W4-INTAKE-002` therefore may not become `trueGreen` yet
-
-Resume rule:
-- keep the repaired QA onboarding route active
-- repair the QA preview reset/reseed path so a fresh adaptive onboarding conversation can be rerun on-demand without inheriting the previous completed preview state
-- rerun live verification until the route visibly shows:
-  - no fixed `3-question` shell
-  - class-varying question sequence
-  - readiness-based stop behavior
-  - continuity-safe handoff into Understanding
-  - ambiguous-class clarification before proceeding when the audience signal is still underspecified or multi-class
+Closure truth on `2026-05-21`:
+- `W4-INTAKE-002` is now closed truthfully
+- visible proof now covers:
+  - direct QA onboarding entry without blocked restore fallback
+  - adaptive progress language instead of a fixed `3-question` shell
+  - landing-page early-stop behavior based on readiness
+  - fresh ambiguous clarification before progression when project class is still mixed
+  - continuity-safe revisit on the live onboarding route
 
 ### W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
-- status: `prepared-not-started`
+- status: `selected-not-started`
 - depends_on:
   - `W4-INTAKE-002`
   - `W4-LEARN-002`
@@ -411,6 +406,10 @@ Resume rule:
   - `docs/operating-system/wave3-onboarding-intelligence-planning-track.md`
 - mission:
   - make the learning layer the decision-making brain behind adaptive onboarding by letting stored learning signals influence which question is asked next, when weak or generic answers must trigger clarification, when readiness is still blocked, and how the final handoff into generation is shaped
+- ownership boundary:
+  - this task owns learning-guided question strategy and clarification pressure
+  - it does not own provider-backed conversation runtime
+  - it does not by itself close downstream structured injection into every Nexus system surface
 - pass/fail truth:
   - pass if prior learning signals measurably influence question selection, clarification pressure, readiness gating, and generation handoff on the live onboarding path
   - fail if the system remains only:
@@ -443,6 +442,98 @@ Resume rule:
   - verify restore truth by revisiting the same project and proving the learned intake path does not silently reset
   - docs, contracts, summaries, or hidden state alone can never close this task
 
+### W4-INTAKE-004 — Implement provider-backed canonical onboarding agent runtime
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-INTAKE-002`
+  - `W4-INTAKE-003`
+  - `W4-LEARN-002`
+  - `W4-GEN-001`
+- mission:
+  - turn the adaptive onboarding system into a real provider-backed agent runtime that lets the user choose a model company while keeping one canonical Nexus rule layer above provider choice
+- pass/fail truth:
+  - pass if the live onboarding route runs through a real provider-backed agent runtime, the user can choose a provider/company, and the same Nexus intake rules still govern behavior across provider choice
+  - fail if the system remains only:
+    - local branching logic
+    - model-call wiring without user-facing provider runtime truth
+    - provider selector UI without real agent-led intake behavior
+- continuity rules:
+  - provider choice, active intake state, and approved intake truth must survive restore, revisit, rerun, and project resume without silently switching providers or dropping rule enforcement
+- generation integration rules:
+  - provider-backed intake may not emit free-form summaries only
+  - it must preserve one canonical intake truth that later Generation and Understanding can consume
+- provider integration rules:
+  - Nexus rules must stay provider-agnostic even when:
+    - the user selects OpenAI
+    - the user selects Anthropic
+    - additional providers are introduced later
+  - provider choice must not remove class gates, readiness gates, clarification pressure, or bounded handoff rules
+- explicit visible product change required:
+  - the user can choose which provider/company to talk to on the live onboarding route
+  - the live conversation visibly runs as a real onboarding agent rather than a fixed local script
+  - the same onboarding constraints remain visible across at least two provider choices
+- explicit prohibitions:
+  - no docs-only closure
+  - no contract-only closure
+  - no hidden provider wiring without visible runtime behavior
+  - no provider-specific rule drift
+  - no free-form general chat mode that escapes Nexus intake constraints
+- live verification requirement:
+  - verify on `http://127.0.0.1:4011/?qa=1` that:
+    - the user can select a provider/company on the live onboarding route
+    - the onboarding agent visibly talks through the chosen provider runtime
+    - the same Nexus intake rules remain active across provider choice
+    - weak or generic answers still trigger bounded clarification rather than open-ended chat
+  - verify restore truth by revisiting the same onboarding session and proving provider choice and canonical rule enforcement do not silently reset
+  - docs, cards, contracts, provider selector UI, or hidden runtime state alone can never close this task
+
+### W4-INTAKE-005 — Inject smart onboarding agent truth into canonical downstream system surfaces
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-INTAKE-003`
+  - `W4-INTAKE-004`
+  - `W4-GEN-001`
+- mission:
+  - ensure everything the smart onboarding agent learns becomes structured system truth that the correct Nexus surfaces actually consume instead of stopping at better questions or better handoff copy
+- pass/fail truth:
+  - pass if the learned intake is canonically injected into the correct downstream Nexus system surfaces and those surfaces visibly change behavior because of it
+  - fail if the system only:
+    - produces a better summary
+    - improves handoff text
+    - stores richer intake without downstream consumption
+- continuity rules:
+  - injected intake truth must survive restore, revisit, project resume, and transitions into downstream routes without silently mutating or resetting
+- generation integration rules:
+  - Generation must consume the injected structured intake truth directly instead of rebuilding weaker generic intent downstream
+- provider integration rules:
+  - the downstream injected truth must stay canonical and stable regardless of which provider/company the user selected during onboarding
+- explicit visible product change required:
+  - the live product must visibly show that smart onboarding truth is consumed by:
+    - `Understanding`
+    - `Generation`
+    - `context builder`
+    - `next-task / execution direction`
+    - `proof expectations`
+    - `continuation state`
+  - later product behavior must be measurably smarter because of what the onboarding agent learned
+- explicit prohibitions:
+  - no docs-only closure
+  - no contract-only closure
+  - no summary-only closure
+  - no hidden state injection without visible downstream effect
+  - no claiming smart onboarding completeness when learned intake is not consumed by downstream Nexus systems
+- live verification requirement:
+  - verify on `http://127.0.0.1:4011/?qa=1` that the learned onboarding truth visibly changes downstream product behavior in the correct surfaces
+  - verify that `Understanding`, `Generation`, `next-task`, `proof`, and `continuation` no longer behave like generic downstream consumers after onboarding completes
+  - verify restore truth by revisiting the same project and proving the injected downstream truth stays attached to the same project identity
+  - docs, contracts, cards, summaries, or hidden state alone can never close this task
+
 ### W4-GEN-002 — Implement feedback-driven product mutation loop
 
 - lane: `post-wave4-learning-and-intake-continuation`
@@ -453,6 +544,7 @@ Resume rule:
   - `W4-GEN-001`
   - `W4-INTAKE-002`
   - `W4-INTAKE-003`
+  - `W4-INTAKE-005`
   - `W4-MBN-015`
 - mission:
   - turn approved feedback, failures, reruns, release outcomes, and continuation outcomes into bounded later product mutations instead of passive recommendations
