@@ -1063,7 +1063,7 @@ Prepared tasks:
 Reality-audit reopeners required after repository inspection:
 - `W4-LEARN-002` is now closed truthfully as the first real decision-impact implementation layer
 - `W4-GEN-001` is now closed truthfully as the first generation-facing learning integration layer
-- `W4-INTAKE-002` remains the next released continuation task, but live QA verification is still blocked because the direct onboarding QA route falls back to `אין onboarding פעיל לשחזור` instead of proving the adaptive conversation path
+- `W4-INTAKE-002` remains the next released continuation task; the direct onboarding QA route now opens the adaptive conversation surface, but live proof is still incomplete because the QA preview state is not yet resetting cleanly enough to rerun the required ambiguous clarification path on demand
 - `W4-INTAKE-003` is required after `W4-INTAKE-002` because repository reality still does not prove that prior learning signals choose the next onboarding question or clarification path
 
 Preparation rule:

@@ -288,14 +288,14 @@
               "W4-GEN-001",
               "docs/operating-system/wave3-onboarding-intelligence-planning-track.md"
             ],
-            "blockedAt": "2026-05-20",
+            "blockedAt": "2026-05-21",
             "blocker": {
               "type": "live-verification-surface",
               "surface": "Onboarding QA route",
-              "code": "qa-onboarding-sessionless-fallback",
-              "message": "The direct QA onboarding route still renders 'אין onboarding פעיל לשחזור' instead of the adaptive conversation surface, so visible proof for W4-INTAKE-002 is still missing.",
-              "impact": "W4-INTAKE-002 cannot become trueGreen until the live onboarding route visibly proves the adaptive conversation path without falling back to the blocked fixed-shell recovery state.",
-              "resumeRule": "Repair the onboarding QA route/sessionless preview path and rerun live verification until the adaptive onboarding conversation is visible on the live route."
+              "code": "qa-onboarding-preview-rerun-gap",
+              "message": "The direct QA onboarding route now opens the adaptive conversation surface, but the preview flow still reuses persisted QA onboarding state too aggressively, so a fresh ambiguous-class clarification path could not be rerun cleanly in the same live verification pass.",
+              "impact": "W4-INTAKE-002 cannot become trueGreen until the live onboarding route proves not only adaptive entry and landing-page early-stop behavior, but also a fresh ambiguous clarification path on demand.",
+              "resumeRule": "Keep the repaired QA onboarding route active, repair the QA preview reset/reseed path, and rerun live verification until both landing-page early-stop and ambiguous clarification paths are visible on the live route."
             }
           },
           {

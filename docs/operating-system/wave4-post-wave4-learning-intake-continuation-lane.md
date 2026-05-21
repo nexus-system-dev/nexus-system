@@ -375,23 +375,29 @@ Closure truth on `2026-05-20`:
   - no contract-only closure
   - no backend-only adaptive logic while the visible flow remains fixed-shell
 
-Implementation truth on `2026-05-20`:
+Implementation truth on `2026-05-21`:
 - repository reality now removes fixed-index progression from the local onboarding fallback and the visible onboarding progress model
 - backend-backed onboarding already exposes adaptive question count, adaptive class disambiguation, and readiness-based stopping truth
 - the visible onboarding UI now renders adaptive progress wording instead of presenting a fixed `3-question` shell as the canonical route truth
+- the direct QA onboarding route now opens the adaptive onboarding conversation surface instead of falling into `אין onboarding פעיל לשחזור`
+- live QA proof now shows one landing-page-like path can stop after `target-audience` + `core-problem` and move into `השיחה הושלמה` / `לסיכום ההבנה` without a forced fixed third question
+- live QA refresh/revisit no longer collapses back into the blocked sessionless fallback state
 
-Active blocker on `2026-05-20`:
-- live QA verification is still blocked because the direct onboarding QA route still renders `אין onboarding פעיל לשחזור` / `אין onboarding session או פרויקט פעיל לשחזור`
-- this means the live browser surface still does not truthfully prove the adaptive conversation path on-demand without a restored session
+Active blocker on `2026-05-21`:
+- the original sessionless fallback blocker is closed
+- live QA verification is still incomplete because the preview flow currently reuses persisted QA onboarding state too aggressively, which prevented a fresh ambiguous-class clarification path from being rerun cleanly on-demand in the same verification pass
+- this means the live browser surface now truthfully proves adaptive entry, adaptive progress wording, landing-page early-stop behavior, and revisit safety, but it still does not fully prove the required ambiguous clarification path on a fresh rerun
 - `W4-INTAKE-002` therefore may not become `trueGreen` yet
 
 Resume rule:
-- repair the onboarding QA route so it can open the adaptive onboarding surface directly for live verification
+- keep the repaired QA onboarding route active
+- repair the QA preview reset/reseed path so a fresh adaptive onboarding conversation can be rerun on-demand without inheriting the previous completed preview state
 - rerun live verification until the route visibly shows:
   - no fixed `3-question` shell
   - class-varying question sequence
   - readiness-based stop behavior
   - continuity-safe handoff into Understanding
+  - ambiguous-class clarification before proceeding when the audience signal is still underspecified or multi-class
 
 ### W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection
 

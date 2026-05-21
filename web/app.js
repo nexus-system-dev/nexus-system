@@ -3512,19 +3512,24 @@ export function createCockpitApp({
     bindCreateScreenElements();
   }
 
-  function ensureOnboardingScreenView() {
+  function ensureOnboardingScreenView({ force = false } = {}) {
     if (!elements.screenOnboarding) {
       return;
     }
-    if (!elements.screenOnboarding.innerHTML.trim()) {
+    const hasConversationSurface = Boolean(
+      elements.screenOnboarding.querySelector("#onboarding-current-question-title")
+      && elements.screenOnboarding.querySelector("#onboarding-progress-pill")
+      && elements.screenOnboarding.querySelector("#onboarding-chat-thread"),
+    );
+    if (force || !elements.screenOnboarding.innerHTML.trim() || !hasConversationSurface) {
       const viewModel = buildSmartOnboardingViewModel({
         onboardingConversation,
         onboardingFlow,
         currentProject,
       });
       elements.screenOnboarding.innerHTML = renderSmartOnboardingScreen(viewModel);
-      bindSmartOnboardingScreenElements(doc, elements);
     }
+    bindSmartOnboardingScreenElements(doc, elements);
   }
 
   function buildCanonicalSupportSidebar(currentRoute) {
@@ -4496,6 +4501,7 @@ export function createCockpitApp({
 
   function openOnboardingPreviewScreen() {
     qaPreviewRouteKey = "onboarding";
+    ensureOnboardingScreenView({ force: true });
     onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
     renderEmptyAppState({
       mode: "onboarding",
@@ -7635,7 +7641,7 @@ export function createCockpitApp({
     if (elements.onboardingProgressPill) {
       elements.onboardingProgressPill.textContent = isComplete
         ? "השיחה הושלמה"
-        : `שאלה ${(onboardingConversation.currentIndex ?? 0) + 1} מתוך ${totalQuestions}`;
+        : `שאלה ${(onboardingConversation.currentIndex ?? 0) + 1} במסלול אדפטיבי · עד ${totalQuestions} צעדים כרגע`;
     }
 
     if (elements.onboardingChatThread) {
