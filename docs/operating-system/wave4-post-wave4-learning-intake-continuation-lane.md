@@ -398,7 +398,7 @@ Closure truth on `2026-05-21`:
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
-- status: `blocked`
+- status: `trueGreen`
 - depends_on:
   - `W4-INTAKE-002`
   - `W4-LEARN-002`
@@ -446,15 +446,22 @@ Closure truth on `2026-05-21`:
   - generic answers such as `לעסק` now visibly trigger sharper clarification instead of progression
   - landing-page onboarding now visibly holds on `successful-solution` when stored learning says `repair-before-expand`
   - Understanding now visibly receives a stronger learning-aware generation handoff from onboarding
-- active blocker on `2026-05-21`:
-  - the same QA onboarding route still resets to the opening question on revisit / reload instead of restoring the learned clarification path for the same project
-  - this task cannot become `trueGreen` until restore truth survives on the same learned intake path
+- closure truth written on `2026-05-21`:
+  - the same learned onboarding conversation now survives restore / revisit on the QA onboarding route instead of being reset by sessionless bootstrap fallback
+  - direct QA reopen on a saved clarification path now returns to the learned clarification question instead of the generic opening question
+  - reload on that same route preserves the learned clarification path and keeps the project on the same learning-guided intake state
+  - final visible proof now covers:
+    - different product classes receiving different learned question paths
+    - weak or generic answers triggering clarification instead of progression
+    - learning signals affecting question choice and readiness
+    - stronger Understanding / Generation handoff
+    - restore truth on the same learned intake path
 
 ### W4-INTAKE-004 — Implement provider-backed canonical onboarding agent runtime
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
-- status: `prepared-not-started`
+- status: `selected-not-started`
 - depends_on:
   - `W4-INTAKE-002`
   - `W4-INTAKE-003`

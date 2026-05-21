@@ -300,7 +300,7 @@
           {
             "taskId": "W4-INTAKE-003",
             "title": "Connect learning signals to adaptive onboarding question selection",
-            "status": "blocked",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-002",
               "W4-LEARN-002",
@@ -319,20 +319,24 @@
               "test/onboarding-adapter.test.js",
               "test/canonical-learning-system-contract.test.js"
             ],
-            "blockedAt": "2026-05-21",
-            "blocker": {
-              "type": "restore-truth-gap",
-              "surface": "QA onboarding route",
-              "code": "learning-guided-onboarding-restore-reset",
-              "message": "Live QA verification now proves learning-guided question selection, generic-answer clarification, and stronger Understanding/Generation handoff, but revisiting the same onboarding route still resets to the opening question instead of restoring the learned clarification path.",
-              "impact": "W4-INTAKE-003 cannot become trueGreen until the learned intake path survives restore/revisit on the same project without silently resetting to a generic opening path.",
-              "resumeRule": "Repair client-side persistence/restore for the learning-guided onboarding conversation and rerun live verification until the same project reopens on the learned clarification path."
-            }
+            "closedAt": "2026-05-21",
+            "closureEvidence": [
+              "web/shared/learning-guided-onboarding.js",
+              "src/core/onboarding-service.js",
+              "web/app.js",
+              "web/nexus-ui/adapters/understanding-adapter.js",
+              "web/shared/adaptive-onboarding-agent-contract.js",
+              "src/core/canonical-learning-system-contract.js",
+              "src/core/context-builder.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/onboarding-adapter.test.js",
+              "test/canonical-learning-system-contract.test.js"
+            ]
           },
           {
             "taskId": "W4-INTAKE-004",
             "title": "Implement provider-backed canonical onboarding agent runtime",
-            "status": "prepared-not-started",
+            "status": "selected-not-started",
             "dependsOn": [
               "W4-INTAKE-002",
               "W4-INTAKE-003",
@@ -422,10 +426,10 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "W4-INTAKE-003",
-      "title": "Connect learning signals to adaptive onboarding question selection",
+      "taskId": "W4-INTAKE-004",
+      "title": "Implement provider-backed canonical onboarding agent runtime",
       "source": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
-      "status": "blocked"
+      "status": "selected-not-started"
     },
     "completedCanonicalExecutionTasks": [
       {
@@ -503,6 +507,24 @@
           "test/onboarding-service-conversation.test.js",
           "test/onboarding-adapter.test.js",
           "test/smart-onboarding-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-INTAKE-003",
+        "title": "Connect learning signals to adaptive onboarding question selection",
+        "status": "trueGreen",
+        "closedAt": "2026-05-21",
+        "closureEvidence": [
+          "web/shared/learning-guided-onboarding.js",
+          "src/core/onboarding-service.js",
+          "web/app.js",
+          "web/nexus-ui/adapters/understanding-adapter.js",
+          "web/shared/adaptive-onboarding-agent-contract.js",
+          "src/core/canonical-learning-system-contract.js",
+          "src/core/context-builder.js",
+          "test/onboarding-service-conversation.test.js",
+          "test/onboarding-adapter.test.js",
+          "test/canonical-learning-system-contract.test.js"
         ]
       },
       {

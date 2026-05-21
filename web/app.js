@@ -3787,47 +3787,56 @@ export function createCockpitApp({
   let currentHelpSupportPanelOpen = false;
   let currentHelpSupportCopyMessage = "";
   const presenceParticipantId = `presence-${Math.random().toString(36).slice(2, 10)}`;
-  const fallbackStorageWindow = doc?.defaultView ?? globalThis;
-  function readFallbackStorageState() {
-    const raw = typeof fallbackStorageWindow?.name === "string" ? fallbackStorageWindow.name : "";
-    if (!raw.trim()) {
-      return {};
-    }
-    try {
-      const parsed = JSON.parse(raw);
-      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
-    } catch {
-      return {};
-    }
-  }
-  function writeFallbackStorageState(nextState) {
-    try {
-      fallbackStorageWindow.name = JSON.stringify(nextState);
-    } catch {}
-  }
-  const appStorage = storageImpl && typeof storageImpl.getItem === "function" && typeof storageImpl.setItem === "function"
+  const hasNativeAppStorage = Boolean(
+    storageImpl
+    && typeof storageImpl.getItem === "function"
+    && typeof storageImpl.setItem === "function",
+  );
+  const appStorage = hasNativeAppStorage
     ? storageImpl
     : {
-        getItem(key) {
-          const state = readFallbackStorageState();
-          return Object.prototype.hasOwnProperty.call(state, key) ? state[key] : null;
+        getItem() {
+          return null;
         },
-        setItem(key, value) {
-          const state = readFallbackStorageState();
-          state[key] = value;
-          writeFallbackStorageState(state);
-        },
-        removeItem(key) {
-          const state = readFallbackStorageState();
-          if (!Object.prototype.hasOwnProperty.call(state, key)) {
-            return;
-          }
-          delete state[key];
-          writeFallbackStorageState(state);
-        },
+        setItem() {},
+        removeItem() {},
       };
   const locationHost = globalThis.location?.hostname ?? "";
   let suppressShellRouteHistorySync = false;
+
+  function readUrlBackedFlowState() {
+    const locationApi = globalThis.location;
+    if (!locationApi) {
+      return null;
+    }
+    try {
+      const searchParams = new URLSearchParams(locationApi.search ?? "");
+      const raw = searchParams.get("qaState");
+      if (!raw) {
+        return null;
+      }
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return JSON.parse(decodeURIComponent(raw));
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  function writeUrlBackedFlowState(flowState) {
+    const historyApi = globalThis.history;
+    const locationApi = globalThis.location;
+    if (!historyApi || !locationApi || typeof historyApi.replaceState !== "function") {
+      return;
+    }
+    try {
+      const url = new URL(locationApi.href);
+      url.searchParams.set("qaState", JSON.stringify(flowState));
+      historyApi.replaceState(historyApi.state ?? {}, "", url.toString());
+    } catch {}
+  }
 
   function resolveCurrentShellRouteKey(screen = null, workspaceKey = null) {
     if (qaPreviewRouteKey) {
@@ -4604,7 +4613,13 @@ export function createCockpitApp({
       && !currentProject?.id
     );
     ensureOnboardingScreenView({ force: true });
-    if (shouldSeedFreshPreviewConversation) {
+    if (storedFlowState?.onboardingConversation && typeof storedFlowState.onboardingConversation === "object") {
+      onboardingConversation = storedFlowState.onboardingConversation.currentQuestion || storedFlowState.onboardingConversation.summary
+        ? refreshOnboardingConversationPresentation(storedFlowState.onboardingConversation, buildOnboardingConversationOptions({
+          visionTextOverride: storedFlowState?.onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
+        }))
+        : createOnboardingConversationState();
+    } else if (shouldSeedFreshPreviewConversation) {
       onboardingConversation = createOnboardingConversationState();
     } else {
       onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
@@ -5503,18 +5518,34 @@ export function createCockpitApp({
   }
 
   function readStoredFlowState() {
+    if (isQaModeEnabled()) {
+      const urlBackedState = readUrlBackedFlowState();
+      if (urlBackedState) {
+        return urlBackedState;
+      }
+    }
     try {
       const raw = appStorage.getItem("nexus.flowState");
-      return raw ? JSON.parse(raw) : null;
+      if (raw) {
+        return JSON.parse(raw);
+      }
     } catch {
-      return null;
+      // Fall through to the QA route fallback below.
     }
+    return isQaModeEnabled() ? readUrlBackedFlowState() : null;
   }
 
   function writeStoredFlowState(flowState) {
+    let wroteToAppStorage = false;
     try {
       appStorage.setItem("nexus.flowState", JSON.stringify(flowState));
-    } catch {}
+      wroteToAppStorage = true;
+    } catch {
+      wroteToAppStorage = false;
+    }
+    if (isQaModeEnabled() || wroteToAppStorage !== true) {
+      writeUrlBackedFlowState(flowState);
+    }
   }
 
   function buildStoredProjectSnapshot(project) {
@@ -6714,16 +6745,43 @@ export function createCockpitApp({
       renderOnboardingNotes();
       renderOnboardingConversation();
     } else {
-      syncOnboardingConversationFromBackend(onboardingFlow?.sessionId)
-        .then(() => {
-          renderOnboardingNotes();
-          renderOnboardingConversation();
-        })
-        .catch(() => {
-          onboardingConversation = createOnboardingConversationState();
-          renderOnboardingNotes();
-          renderOnboardingConversation();
-        });
+      const hasRestorableLocalConversation = (
+        onboardingConversation
+        && typeof onboardingConversation === "object"
+        && (
+          onboardingConversation.currentQuestion
+          || onboardingConversation.summary
+          || normalizeArray(onboardingConversation.transcript).length > 0
+        )
+      );
+
+      if (onboardingFlow?.sessionId) {
+        syncOnboardingConversationFromBackend(onboardingFlow.sessionId)
+          .then(() => {
+            renderOnboardingNotes();
+            renderOnboardingConversation();
+          })
+          .catch(() => {
+            onboardingConversation = createOnboardingConversationState();
+            renderOnboardingNotes();
+            renderOnboardingConversation();
+          });
+      } else if (hasRestorableLocalConversation) {
+        onboardingConversation = refreshOnboardingConversationPresentation(
+          onboardingConversation,
+          buildOnboardingConversationOptions(),
+        );
+        onboardingConversation.projectId = onboardingConversation.projectId
+          ?? currentProjectId
+          ?? currentProject?.id
+          ?? null;
+        renderOnboardingNotes();
+        renderOnboardingConversation();
+      } else {
+        onboardingConversation = createOnboardingConversationState();
+        renderOnboardingNotes();
+        renderOnboardingConversation();
+      }
     }
     renderShellChrome("onboarding", activeWorkspace);
     persistFlowState("onboarding");
