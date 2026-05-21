@@ -29,6 +29,19 @@ test("onboarding adapter exposes adaptive intake progress and contract truth", (
     onboardingConversation: {
       currentIndex: 2,
       totalQuestions: 3,
+      providerRuntime: {
+        selectedProviderId: "anthropic",
+        selectedProviderLabel: "Anthropic",
+        selectedRuntimeLabel: "Anthropic onboarding runtime",
+        canonicalRuleLayer: "nexus-onboarding-rules-v1",
+        summaryLine: "Anthropic פעיל עכשיו, אבל עדיין כפוף לכללי ה־intake הקנוניים של Nexus.",
+        enforcementLine: "בחירת provider לא מבטלת class gates, clarification pressure, readiness gates או bounded handoff.",
+        runtimeMode: "provider-backed",
+        availableProviders: [
+          { providerId: "openai", companyLabel: "OpenAI" },
+          { providerId: "anthropic", companyLabel: "Anthropic" },
+        ],
+      },
       currentQuestion: {
         id: "successful-solution",
         title: "איך נראה פתרון מוצלח מבחינתם?",
@@ -47,6 +60,9 @@ test("onboarding adapter exposes adaptive intake progress and contract truth", (
   assert.equal(viewModel.adaptiveOnboardingAgentContract.currentProjectTypeLabel, "כלי פנימי");
   assert.match(viewModel.adaptiveOnboardingAgentContract.currentQuestionPathLabel, /successful-solution/);
   assert.equal(viewModel.adaptiveOnboardingAgentContract.handoffStatus, "ready");
+  assert.equal(viewModel.providerRuntime.selectedProviderId, "anthropic");
+  assert.equal(viewModel.providerRuntime.availableProviders.length, 2);
+  assert.match(viewModel.providerRuntime.enforcementLine, /class gates/i);
   const weakAnswerBehavior = viewModel.adaptiveOnboardingAgentContract.behaviors.find((behavior) => behavior.behaviorId === "weak-answer-detection");
   assert.equal(weakAnswerBehavior?.status, "partial");
   assert.match(viewModel.adaptiveOnboardingAgentContract.explicitProhibitions[1], /open-ended chat drift/i);

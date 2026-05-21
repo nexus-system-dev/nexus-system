@@ -45,6 +45,10 @@ import {
   resolveCanonicalOnboardingAnswers,
   resolveLearningGuidedOnboardingDecision,
 } from "./shared/learning-guided-onboarding.js";
+import {
+  createOnboardingProviderRuntime,
+  resolveOnboardingAgentProvider,
+} from "./shared/onboarding-provider-runtime.js";
 
 function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
@@ -273,12 +277,18 @@ function queryElements(doc) {
     onboardingStageTitle: doc.querySelector("#onboarding-stage-title"),
     onboardingStageDescription: doc.querySelector("#onboarding-stage-description"),
     onboardingProgressPill: doc.querySelector("#onboarding-progress-pill"),
+    onboardingProviderRuntimePill: doc.querySelector("#onboarding-provider-runtime-pill"),
     onboardingBackButton: doc.querySelector("#onboarding-back-button"),
     onboardingForwardButton: doc.querySelector("#onboarding-forward-button"),
     onboardingNotesList: doc.querySelector("#onboarding-notes-list"),
     onboardingUnderstoodList: doc.querySelector("#onboarding-understood-list"),
     onboardingMissingList: doc.querySelector("#onboarding-missing-list"),
     onboardingChatThread: doc.querySelector("#onboarding-chat-thread"),
+    onboardingProviderSelect: doc.querySelector("#onboarding-provider-select"),
+    onboardingProviderRuntimeLabel: doc.querySelector("#onboarding-provider-runtime-label"),
+    onboardingProviderRuleLine: doc.querySelector("#onboarding-provider-rule-line"),
+    onboardingProviderSummaryLine: doc.querySelector("#onboarding-provider-summary-line"),
+    onboardingProviderCanonicalRule: doc.querySelector("#onboarding-provider-canonical-rule"),
     understandingAudienceTitle: doc.querySelector("#understanding-audience-title"),
     understandingAudienceBody: doc.querySelector("#understanding-audience-body"),
     understandingProblemTitle: doc.querySelector("#understanding-problem-title"),
@@ -4627,12 +4637,21 @@ export function createCockpitApp({
     renderEmptyAppState({
       mode: "onboarding",
       message: "רוצה להבין את הפרויקט שלך 👋",
-      status: "זה מצב בדיקה למסך ה־Onboarding, כדי לעבור על השיחה, הכפתורים, וה־AI flow בלי לאבד הקשר.",
+      status: "זה מצב בדיקה למסך ה־Onboarding, אבל עכשיו הוא צריך לרוץ דרך provider-backed agent runtime ולא להישאר flow מקומי בלבד.",
     });
     renderOnboardingNotes();
     renderOnboardingConversation();
     persistFlowState("onboarding");
     scrollViewportToTop();
+    if (isQaModeEnabled()) {
+      void ensureQaProviderBackedOnboardingSession({
+        selectedProviderId: storedFlowState?.onboardingFlow?.selectedProviderId ?? resolveSelectedOnboardingProviderId(),
+      }).catch((error) => {
+        if (elements.onboardingScreenStatus) {
+          elements.onboardingScreenStatus.textContent = `לא הצלחנו לפתוח provider-backed onboarding session כרגע. ${formatOnboardingRetryStatus(error)}`;
+        }
+      });
+    }
   }
 
   function openUnderstandingPreviewScreen() {
@@ -5818,6 +5837,124 @@ export function createCockpitApp({
     return response.json();
   }
 
+  async function ensureQaProviderBackedOnboardingSession({ selectedProviderId = resolveSelectedOnboardingProviderId() } = {}) {
+    if (!isQaModeEnabled()) {
+      return null;
+    }
+
+    if (onboardingFlow?.sessionId) {
+      await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
+      return onboardingFlow.sessionId;
+    }
+
+    const previewProject = ensureQaProjectPreviewState();
+    const projectName = readCurrentCreateFieldValue("create-project-name-input").trim() || previewProject.name || "My SaaS App";
+    const visionText = readCurrentCreateFieldValue("create-project-vision-input").trim() || previewProject.goal || "להכין ניסוי ראשון לרכישת משתמשים";
+    const appUser = await ensureAppUser();
+    const draftResult = await fetchJson("/api/project-drafts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userInput: {
+          email: appUser.email,
+        },
+        projectCreationInput: {
+          projectName,
+          visionText,
+        },
+      }),
+    });
+
+    const session = await fetchJson("/api/onboarding/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: appUser.userId,
+        projectDraftId: draftResult.projectDraftId,
+        initialInput: {
+          projectName,
+          visionText,
+          providerChoice: selectedProviderId,
+          learningContext: {
+            learningDecisionImpact: previewProject.learningDecisionImpact ?? null,
+            generationIntent: previewProject.generationIntent ?? null,
+          },
+        },
+      }),
+    });
+
+    onboardingFlow = {
+      mode: "onboarding",
+      sessionId: session.onboardingSession?.sessionId ?? null,
+      projectDraftId: draftResult.projectDraftId,
+      projectName,
+      visionText,
+      supportingLink: elements.createProjectLinkInput?.value?.trim() ?? "",
+      selectedProviderId,
+      providerRuntime: normalizeObject(session.onboardingSession?.providerRuntime)
+        .selectedProviderId
+        ? session.onboardingSession.providerRuntime
+        : createOnboardingProviderRuntime({
+          selectedProviderId,
+          sessionId: session.onboardingSession?.sessionId ?? null,
+        }),
+    };
+
+    await syncOnboardingIntakeToSession({
+      sessionId: onboardingFlow.sessionId,
+      projectName,
+      visionText,
+      supportingLink: onboardingFlow.supportingLink,
+      uploadedFiles: buildOnboardingUploadedFiles(),
+    }).catch(() => {});
+    await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
+    renderOnboardingNotes();
+    renderOnboardingConversation();
+    persistFlowState("onboarding");
+    return onboardingFlow.sessionId;
+  }
+
+  async function updateOnboardingProviderSelection(providerId = "openai") {
+    const selectedProvider = resolveOnboardingAgentProvider(providerId);
+    onboardingFlow = {
+      ...(onboardingFlow ?? {}),
+      selectedProviderId: selectedProvider.providerId,
+      providerRuntime: createOnboardingProviderRuntime({
+        selectedProviderId: selectedProvider.providerId,
+        sessionId: onboardingFlow?.sessionId ?? null,
+        currentQuestionPath: normalizeArray(onboardingConversation?.summary?.learnedQuestionPath),
+        learningStatus: normalizeString(onboardingConversation?.summary?.learningStatus, "partial"),
+      }),
+    };
+
+    if (!onboardingFlow?.sessionId && isQaModeEnabled()) {
+      await ensureQaProviderBackedOnboardingSession({ selectedProviderId: selectedProvider.providerId });
+      return;
+    }
+
+    if (!onboardingFlow?.sessionId) {
+      renderOnboardingProviderRuntime();
+      persistFlowState("onboarding");
+      return;
+    }
+
+    await fetchJson("/api/onboarding/commands", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: onboardingFlow.sessionId,
+        actionType: "select-provider",
+        payload: {
+          providerId: selectedProvider.providerId,
+        },
+      }),
+    });
+    await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
+    renderOnboardingNotes();
+    renderOnboardingConversation();
+    persistFlowState("onboarding");
+  }
+
   function setFlowButtonState({
     target = "create",
     disabled = false,
@@ -5940,6 +6077,32 @@ export function createCockpitApp({
     };
   }
 
+  function resolveSelectedOnboardingProviderId() {
+    return normalizeString(
+      onboardingConversation?.providerRuntime?.selectedProviderId
+        ?? onboardingFlow?.providerRuntime?.selectedProviderId
+        ?? onboardingFlow?.selectedProviderId
+        ?? "openai",
+    ).toLowerCase() || "openai";
+  }
+
+  function resolveOnboardingProviderRuntime() {
+    const availableRuntime = normalizeObject(
+      onboardingConversation?.providerRuntime
+        ?? onboardingFlow?.providerRuntime
+        ?? null,
+    );
+    if (availableRuntime.selectedProviderId) {
+      return availableRuntime;
+    }
+    return createOnboardingProviderRuntime({
+      selectedProviderId: resolveSelectedOnboardingProviderId(),
+      sessionId: onboardingFlow?.sessionId ?? null,
+      currentQuestionPath: normalizeArray(onboardingConversation?.summary?.learnedQuestionPath),
+      learningStatus: normalizeString(onboardingConversation?.summary?.learningStatus, "partial"),
+    });
+  }
+
   function createOnboardingConversationState() {
     const answers = {};
     const conversationOptions = buildOnboardingConversationOptions();
@@ -5987,6 +6150,7 @@ export function createCockpitApp({
 
   function normalizeOnboardingConversationPayload(payload) {
     const conversation = normalizeObject(payload?.onboardingConversation);
+    const providerRuntime = normalizeObject(payload?.providerRuntime);
     const transcript = normalizeArray(conversation.transcript)
       .filter((entry) => entry && typeof entry === "object")
       .map((entry, index) => ({
@@ -5994,6 +6158,9 @@ export function createCockpitApp({
         speaker: entry.speaker === "user" ? "user" : "ai",
         text: typeof entry.text === "string" ? entry.text : "",
         time: typeof entry.time === "string" ? entry.time : "",
+        providerId: typeof entry.providerId === "string" ? entry.providerId : null,
+        providerLabel: typeof entry.providerLabel === "string" ? entry.providerLabel : null,
+        runtimeLabel: typeof entry.runtimeLabel === "string" ? entry.runtimeLabel : null,
       }));
     const summary = normalizeObject(conversation.summary);
     const currentQuestion = normalizeObject(conversation.currentQuestion);
@@ -6006,7 +6173,7 @@ export function createCockpitApp({
         ?? "",
     });
 
-    return refreshOnboardingConversationPresentation({
+    const normalizedConversation = refreshOnboardingConversationPresentation({
       mode: "backend",
       sessionId: conversation.sessionId ?? onboardingFlow?.sessionId ?? null,
       transcript,
@@ -6041,11 +6208,21 @@ export function createCockpitApp({
       isComplete: conversation.isComplete === true,
       completionReason: typeof conversation.completionReason === "string" ? conversation.completionReason : "",
       answers,
+      providerRuntime,
       draftAnswer: "",
       pendingAdvance: false,
       pendingAnswer: "",
       advanceTimer: null,
     }, conversationOptions);
+    onboardingFlow = {
+      ...(onboardingFlow ?? {}),
+      sessionId: normalizedConversation.sessionId ?? onboardingFlow?.sessionId ?? null,
+      selectedProviderId: providerRuntime.selectedProviderId ?? onboardingFlow?.selectedProviderId ?? resolveSelectedOnboardingProviderId(),
+      providerRuntime: Object.keys(providerRuntime).length > 0
+        ? providerRuntime
+        : resolveOnboardingProviderRuntime(),
+    };
+    return normalizedConversation;
   }
 
   async function syncOnboardingConversationFromBackend(sessionId) {
@@ -7888,6 +8065,7 @@ export function createCockpitApp({
             <div class="onboarding-route-message-row ai">
               <div class="onboarding-route-bot-icon">♙</div>
               <div class="onboarding-route-bubble ai">
+                ${entry.providerLabel ? `<span class="onboarding-route-provider-label">${escapeHtml(entry.providerLabel)}</span>` : ""}
                 ${escapeHtml(entry.text)}
                 ${entry.time ? `<span class="onboarding-route-time">${escapeHtml(entry.time)}</span>` : ""}
               </div>
@@ -7905,6 +8083,7 @@ export function createCockpitApp({
         ? "עוד רגע מופיעה השאלה הבאה. אפשר להמשיך מיד כשהתגובה תעלה."
         : currentPrompt.body;
     }
+    renderOnboardingProviderRuntime();
     renderAdaptiveOnboardingContract();
     if (elements.onboardingAnswerInput) {
       elements.onboardingAnswerInput.hidden = isComplete || isAwaitingAiReply;
@@ -7945,6 +8124,40 @@ export function createCockpitApp({
       renderUnderstandingSummaryStage();
     }
     focusOnboardingAnswerInput();
+  }
+
+  function renderOnboardingProviderRuntime() {
+    const providerRuntime = resolveOnboardingProviderRuntime();
+    const selectedProvider = resolveOnboardingAgentProvider(providerRuntime.selectedProviderId);
+
+    if (elements.onboardingProviderRuntimePill) {
+      elements.onboardingProviderRuntimePill.textContent = selectedProvider.companyLabel;
+    }
+    if (elements.onboardingProviderRuntimeLabel) {
+      elements.onboardingProviderRuntimeLabel.textContent = providerRuntime.selectedRuntimeLabel ?? selectedProvider.runtimeLabel;
+    }
+    if (elements.onboardingProviderRuleLine) {
+      elements.onboardingProviderRuleLine.textContent = providerRuntime.enforcementLine
+        ?? "אותם כללי Nexus נשארים פעילים גם כשמחליפים provider.";
+    }
+    if (elements.onboardingProviderSummaryLine) {
+      elements.onboardingProviderSummaryLine.textContent = providerRuntime.summaryLine
+        ?? `${selectedProvider.companyLabel} פעיל עכשיו למסלול ה־onboarding.`;
+    }
+    if (elements.onboardingProviderCanonicalRule) {
+      elements.onboardingProviderCanonicalRule.textContent = `rules: ${providerRuntime.canonicalRuleLayer ?? "nexus-onboarding-rules-v1"} · mode: ${providerRuntime.runtimeMode ?? "provider-backed"}`;
+    }
+    if (elements.onboardingProviderSelect) {
+      const availableProviders = normalizeArray(providerRuntime.availableProviders);
+      if (availableProviders.length > 0 && !elements.onboardingProviderSelect.dataset.optionsBound) {
+        elements.onboardingProviderSelect.innerHTML = availableProviders
+          .map((provider) => `<option value="${escapeHtml(provider.providerId)}">${escapeHtml(provider.companyLabel)}</option>`)
+          .join("");
+        elements.onboardingProviderSelect.dataset.optionsBound = "true";
+      }
+      elements.onboardingProviderSelect.value = selectedProvider.providerId;
+      elements.onboardingProviderSelect.disabled = onboardingConversation?.pendingAdvance === true;
+    }
   }
 
   async function advanceOnboardingConversation() {
@@ -8315,6 +8528,7 @@ export function createCockpitApp({
         initialInput: {
           projectName,
           visionText,
+          providerChoice: resolveSelectedOnboardingProviderId(),
           learningContext: isQaModeEnabled()
             ? {
                 learningDecisionImpact: ensureQaProjectPreviewState().learningDecisionImpact ?? null,
@@ -8332,6 +8546,11 @@ export function createCockpitApp({
       projectName,
       visionText,
       supportingLink: elements.createProjectLinkInput?.value?.trim() ?? "",
+      selectedProviderId: session.onboardingSession?.providerRuntime?.selectedProviderId ?? resolveSelectedOnboardingProviderId(),
+      providerRuntime: session.onboardingSession?.providerRuntime ?? createOnboardingProviderRuntime({
+        selectedProviderId: resolveSelectedOnboardingProviderId(),
+        sessionId: session.onboardingSession?.sessionId ?? null,
+      }),
     };
     try {
       await syncOnboardingIntakeToSession({
@@ -9390,12 +9609,22 @@ async function runSnapshotWorkerTickFromUi() {
       }
     });
 
-    doc.addEventListener("change", (event) => {
+    doc.addEventListener("change", async (event) => {
       const helpSearchInput = event.target?.closest?.("#help-search-input");
       if (helpSearchInput) {
         currentHelpSearchQuery = normalizeString(helpSearchInput.value);
         currentHelpSupportCopyMessage = "";
         renderHelpSupportScreenView();
+        return;
+      }
+
+      const onboardingProviderSelect = event.target?.closest?.("#onboarding-provider-select");
+      if (onboardingProviderSelect && doc?.body?.dataset?.appScreen === "onboarding") {
+        try {
+          await updateOnboardingProviderSelection(onboardingProviderSelect.value);
+        } catch (error) {
+          elements.onboardingScreenStatus.textContent = "לא הצלחתי להחליף provider כרגע. נסה שוב בעוד רגע.";
+        }
         return;
       }
 

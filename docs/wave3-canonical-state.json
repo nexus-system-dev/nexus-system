@@ -336,18 +336,29 @@
           {
             "taskId": "W4-INTAKE-004",
             "title": "Implement provider-backed canonical onboarding agent runtime",
-            "status": "selected-not-started",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-002",
               "W4-INTAKE-003",
               "W4-LEARN-002",
               "W4-GEN-001"
+            ],
+            "closedAt": "2026-05-21",
+            "closureEvidence": [
+              "web/shared/onboarding-provider-runtime.js",
+              "src/core/onboarding-service.js",
+              "web/app.js",
+              "web/nexus-ui/adapters/onboarding-adapter.js",
+              "web/nexus-ui/screens/SmartOnboardingScreen.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/onboarding-adapter.test.js",
+              "test/smart-onboarding-screen-render.test.js"
             ]
           },
           {
             "taskId": "W4-INTAKE-005",
             "title": "Inject smart onboarding agent truth into canonical downstream system surfaces",
-            "status": "prepared-not-started",
+            "status": "selected-not-started",
             "dependsOn": [
               "W4-INTAKE-003",
               "W4-INTAKE-004",
@@ -426,8 +437,8 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "W4-INTAKE-004",
-      "title": "Implement provider-backed canonical onboarding agent runtime",
+      "taskId": "W4-INTAKE-005",
+      "title": "Inject smart onboarding agent truth into canonical downstream system surfaces",
       "source": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
       "status": "selected-not-started"
     },
@@ -525,6 +536,22 @@
           "test/onboarding-service-conversation.test.js",
           "test/onboarding-adapter.test.js",
           "test/canonical-learning-system-contract.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-INTAKE-004",
+        "title": "Implement provider-backed canonical onboarding agent runtime",
+        "status": "trueGreen",
+        "closedAt": "2026-05-21",
+        "closureEvidence": [
+          "web/shared/onboarding-provider-runtime.js",
+          "src/core/onboarding-service.js",
+          "web/app.js",
+          "web/nexus-ui/adapters/onboarding-adapter.js",
+          "web/nexus-ui/screens/SmartOnboardingScreen.js",
+          "test/onboarding-service-conversation.test.js",
+          "test/onboarding-adapter.test.js",
+          "test/smart-onboarding-screen-render.test.js"
         ]
       },
       {

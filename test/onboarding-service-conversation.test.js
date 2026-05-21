@@ -304,3 +304,50 @@ test("uploaded project files can resolve project type before explicit class clar
   assert.equal(updatedSession.projectIntake.uploadedFiles.length, 2);
   assert.equal(updatedSession.requiredActions.includes("חדד איזה סוג פרויקט אתה בונה"), false);
 });
+
+test("provider-backed onboarding keeps Nexus rules stable across provider selection", () => {
+  const service = new OnboardingService();
+  const session = service.createSession({
+    userId: "user-provider-runtime",
+    projectDraftId: "provider-runtime-project",
+    initialInput: {
+      projectName: "Provider Runtime Project",
+      goal: "Build a landing page for clinic leads",
+      providerChoice: "anthropic",
+      learningContext: {
+        learningDecisionImpact: {
+          impactId: "impact-provider",
+          strategy: "repair-before-expand",
+          drivingSignals: ["failure-signals:3", "trend:stalled"],
+        },
+      },
+    },
+  });
+
+  const initialState = service.getConversationState(session.sessionId);
+  assert.equal(initialState.providerRuntime.selectedProviderId, "anthropic");
+  assert.equal(initialState.onboardingConversation.providerRuntime.selectedProviderId, "anthropic");
+  assert.equal(initialState.onboardingConversation.transcript[0].providerLabel, "Anthropic");
+
+  const switched = service.handleCommand({
+    sessionId: session.sessionId,
+    actionType: "select-provider",
+    payload: { providerId: "openai" },
+  });
+
+  assert.equal(switched.updatedSession.initialInput.providerChoice, "openai");
+  const switchedState = service.getConversationState(session.sessionId);
+  assert.equal(switchedState.providerRuntime.selectedProviderId, "openai");
+  assert.match(switchedState.onboardingConversation.transcript.at(-1)?.text ?? "", /OpenAI|אותם כללי intake/u);
+  assert.match(switchedState.providerRuntime.enforcementLine ?? "", /class gates/i);
+
+  const afterGeneric = service.submitConversationTurn({
+    sessionId: session.sessionId,
+    answer: "for a business",
+  });
+
+  assert.equal(afterGeneric.providerRuntime.selectedProviderId, "openai");
+  assert.equal(afterGeneric.onboardingConversation.currentQuestion?.id, "audience-clarification");
+  assert.equal(afterGeneric.onboardingConversation.summary.clarificationMode, "generic-audience");
+  assert.equal(afterGeneric.onboardingConversation.transcript.at(-1)?.providerLabel, "OpenAI");
+});

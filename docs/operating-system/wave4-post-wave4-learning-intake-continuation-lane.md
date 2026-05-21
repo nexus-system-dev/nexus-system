@@ -461,7 +461,7 @@ Closure truth on `2026-05-21`:
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
-- status: `selected-not-started`
+- status: `trueGreen`
 - depends_on:
   - `W4-INTAKE-002`
   - `W4-INTAKE-003`
@@ -504,12 +504,27 @@ Closure truth on `2026-05-21`:
     - weak or generic answers still trigger bounded clarification rather than open-ended chat
   - verify restore truth by revisiting the same onboarding session and proving provider choice and canonical rule enforcement do not silently reset
   - docs, cards, contracts, provider selector UI, or hidden runtime state alone can never close this task
+- implementation truth written on `2026-05-21`:
+  - the onboarding service now exposes a shared provider runtime layer with canonical Nexus rule enforcement above provider choice
+  - the live onboarding route now shows provider selection, provider runtime identity, and the canonical rule layer on the visible surface
+  - switching providers updates the live runtime while preserving the same adaptive intake logic, learning-guided clarification pressure, readiness gates, and bounded handoff rules
+  - provider metadata now stays attached to the backend conversation state, live transcript, and adapter view model instead of remaining hidden wiring
+- closure truth written on `2026-05-21`:
+  - the live QA onboarding route visibly lets the user switch between OpenAI and Anthropic while staying inside one canonical Nexus onboarding rule layer
+  - after switching to Anthropic, a weak or generic answer like `לעסק` still triggers bounded clarification instead of generic open-ended chat
+  - the provider-backed clarification state survives reload on the same QA route without silently resetting provider choice or dropping canonical rule enforcement
+  - final visible proof now covers:
+    - provider choice on the live onboarding route
+    - visibly different provider runtime identity
+    - stable canonical rule enforcement across provider choice
+    - bounded clarification under provider-backed runtime
+    - continuity-safe reload on the same provider-backed clarification path
 
 ### W4-INTAKE-005 — Inject smart onboarding agent truth into canonical downstream system surfaces
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
-- status: `prepared-not-started`
+- status: `selected-not-started`
 - depends_on:
   - `W4-INTAKE-003`
   - `W4-INTAKE-004`

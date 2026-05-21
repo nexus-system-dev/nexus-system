@@ -6,6 +6,11 @@ import {
   resolveCanonicalOnboardingAnswers,
   resolveLearningGuidedOnboardingDecision,
 } from "../../web/shared/learning-guided-onboarding.js";
+import {
+  createOnboardingProviderRuntime,
+  decorateProviderBackedAiEntry,
+  resolveOnboardingAgentProvider,
+} from "../../web/shared/onboarding-provider-runtime.js";
 
 function toSlug(value, fallback = "project-draft") {
   return String(value ?? "")
@@ -43,6 +48,7 @@ function parseInitialInput(initialInput) {
           : "",
     attachments: Array.isArray(payload.attachments) ? payload.attachments : [],
     links: Array.isArray(payload.links) ? payload.links : [],
+    providerChoice: normalizeString(payload.providerChoice ?? payload.selectedProviderId, "openai").toLowerCase(),
     learningContext: payload.learningContext && typeof payload.learningContext === "object"
       ? payload.learningContext
       : null,
@@ -77,6 +83,14 @@ function normalizeExternalLinks(externalLinks = []) {
 
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function normalizeArray(value) {
+  return Array.isArray(value) ? value.filter(Boolean) : [];
+}
+
+function normalizeString(value, fallback = "") {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
 function extractProjectName(visionText = "") {
@@ -890,6 +904,19 @@ function buildConversationSummary(session) {
   };
 }
 
+function resolveProviderRuntime(session) {
+  const conversation = normalizeObject(session?.conversation);
+  const summary = normalizeObject(buildConversationSummary(session));
+  return createOnboardingProviderRuntime({
+    selectedProviderId: session?.providerRuntime?.selectedProviderId
+      ?? session?.initialInput?.providerChoice
+      ?? "openai",
+    sessionId: session?.sessionId ?? null,
+    currentQuestionPath: summary.learnedQuestionPath ?? [],
+    learningStatus: summary.learningStatus ?? "partial",
+  });
+}
+
 function buildConversationStateEnvelope(session) {
   const conversation = session?.conversation ?? null;
   if (!conversation) {
@@ -915,6 +942,7 @@ function buildConversationStateEnvelope(session) {
   );
 
   return {
+    providerRuntime: resolveProviderRuntime(session),
     onboardingConversation: {
       sessionId: session.sessionId,
       transcript: conversation.transcript,
@@ -925,22 +953,24 @@ function buildConversationStateEnvelope(session) {
       isComplete,
       completionReason: isComplete ? buildCompletionReason(session) : null,
       answers: conversation.answers,
+      providerRuntime: resolveProviderRuntime(session),
     },
   };
 }
 
 function createConversationState(session) {
   const openingPrompt = buildAgentPrompt(session, "target-audience");
+  const providerRuntime = resolveProviderRuntime(session);
   return {
     answers: {},
     transcript: openingPrompt
       ? [
-          {
+          decorateProviderBackedAiEntry({
             id: "ai-1",
             speaker: "ai",
             text: openingPrompt,
             time: formatConversationTime(),
-          },
+          }, providerRuntime),
         ]
       : [],
   };
@@ -1010,6 +1040,10 @@ export class OnboardingService {
       connectedSources: {
         repo: null,
       },
+      providerRuntime: createOnboardingProviderRuntime({
+        selectedProviderId: parsedInput.providerChoice ?? "openai",
+        sessionId: null,
+      }),
       conversation: null,
       projectDraft: createProjectDraftSnapshot({
         userId,
@@ -1099,6 +1133,12 @@ export class OnboardingService {
           requiredKeys: [],
         },
         handler: this.createOnboardingStepAdvancementHandler.bind(this),
+      },
+      "select-provider": {
+        actionSchema: {
+          requiredKeys: ["providerId"],
+        },
+        handler: this.createProviderSelectionHandler.bind(this),
       },
     };
   }
@@ -1204,6 +1244,39 @@ export class OnboardingService {
     };
   }
 
+  createProviderSelectionHandler({ session, payload, now }) {
+    const selectedProvider = resolveOnboardingAgentProvider(payload.providerId);
+    const existingConversation = normalizeObject(session.conversation);
+    const currentQuestionId = resolveNextConversationQuestionId(session, existingConversation.answers ?? {});
+    const providerRuntime = createOnboardingProviderRuntime({
+      selectedProviderId: selectedProvider.providerId,
+      sessionId: session.sessionId,
+    });
+    const updatedTranscript = [
+      ...normalizeArray(existingConversation.transcript),
+      decorateProviderBackedAiEntry({
+        id: `ai-provider-${Date.now()}`,
+        speaker: "ai",
+        text: `עובר עכשיו ל־${selectedProvider.companyLabel} אבל שומר על אותם כללי intake של Nexus${currentQuestionId ? ` וממשיך מאותה שאלה: ${buildAgentPrompt(session, currentQuestionId)}` : "."}`,
+        time: formatConversationTime(),
+      }, providerRuntime),
+    ];
+
+    return {
+      ...session,
+      updatedAt: now,
+      initialInput: {
+        ...session.initialInput,
+        providerChoice: selectedProvider.providerId,
+      },
+      providerRuntime,
+      conversation: {
+        ...existingConversation,
+        transcript: updatedTranscript,
+      },
+    };
+  }
+
   createOnboardingStepAdvancementHandler({ session, now }) {
     const projectIntake = session.projectIntake ?? buildProjectIntake({
       visionText: session.projectDraft.goal,
@@ -1266,15 +1339,16 @@ export class OnboardingService {
 
     const nextQuestionAfterAnswer = resolveNextConversationQuestionId({ ...session, conversation: nextConversation }, nextAnswers);
     const nextPrompt = buildAgentPrompt({ ...session, conversation: nextConversation }, nextQuestionAfterAnswer);
+    const providerRuntime = resolveProviderRuntime(session);
     if (nextPrompt) {
       nextConversation.transcript = [
         ...nextConversation.transcript,
-        {
+        decorateProviderBackedAiEntry({
           id: `ai-${nextConversation.transcript.length + 1}`,
           speaker: "ai",
           text: nextPrompt,
           time: formatConversationTime(),
-        },
+        }, providerRuntime),
       ];
     }
 

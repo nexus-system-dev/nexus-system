@@ -57,6 +57,14 @@ function resolveProgressLabel({ onboardingConversation = null } = {}) {
   return `שאלה ${currentIndex + 1} במסלול אדפטיבי · עד ${Math.max(totalQuestions, currentIndex + 1)} צעדים כרגע`;
 }
 
+function resolveProviderRuntime({ onboardingConversation = null, onboardingFlow = null } = {}) {
+  return normalizeObject(
+    onboardingConversation?.providerRuntime
+      ?? onboardingFlow?.providerRuntime
+      ?? null,
+  );
+}
+
 export function buildSmartOnboardingViewModel({
   currentProject = null,
   onboardingFlow = null,
@@ -74,6 +82,7 @@ export function buildSmartOnboardingViewModel({
         artifactExpectation: currentProject?.artifactExpectation ?? currentProject?.onboardingStateHandoff?.artifactExpectation ?? null,
       }).adaptiveOnboardingAgentContract,
   );
+  const providerRuntime = resolveProviderRuntime({ onboardingConversation, onboardingFlow });
 
   return {
     title: "רוצה להבין את הפרויקט שלך",
@@ -84,6 +93,16 @@ export function buildSmartOnboardingViewModel({
     questionBody: resolveQuestionBody({ onboardingConversation }),
     answerDraft: onboardingConversation?.draftAnswer ?? "",
     isUnderstandingMode: onboardingConversation?.isComplete === true,
+    providerRuntime: {
+      selectedProviderId: providerRuntime.selectedProviderId ?? "openai",
+      selectedProviderLabel: providerRuntime.selectedProviderLabel ?? "OpenAI",
+      selectedRuntimeLabel: providerRuntime.selectedRuntimeLabel ?? "Provider-backed onboarding runtime",
+      canonicalRuleLayer: providerRuntime.canonicalRuleLayer ?? "nexus-onboarding-rules-v1",
+      summaryLine: providerRuntime.summaryLine ?? "בחירת provider עדיין לא פתחה runtime חי.",
+      enforcementLine: providerRuntime.enforcementLine ?? "Nexus עדיין שומרת על כללי intake אחידים מעל כל provider.",
+      availableProviders: Array.isArray(providerRuntime.availableProviders) ? providerRuntime.availableProviders : [],
+      runtimeMode: providerRuntime.runtimeMode ?? "local",
+    },
     summary: {
       understood: Array.isArray(summary.understoodItems) ? summary.understoodItems : [],
       missing: Array.isArray(summary.missingItems) ? summary.missingItems : [],

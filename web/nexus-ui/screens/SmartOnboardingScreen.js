@@ -90,6 +90,7 @@ export function renderSmartOnboardingScreen(viewModel) {
               <div class="nexus-onboarding-chat-card__meta">
                 <div class="nexus-onboarding-chat-card__progress-row">
                   <span id="onboarding-progress-pill" class="nexus-onboarding-chat-card__pill">${escapeHtml(viewModel.progressLabel)}</span>
+                  <span id="onboarding-provider-runtime-pill" class="nexus-onboarding-chat-card__pill">${escapeHtml(viewModel.providerRuntime.selectedProviderLabel)}</span>
                   <div class="nexus-onboarding-chat-card__nav">
                     ${renderNexusButton({
                       label: "חזור",
@@ -108,6 +109,18 @@ export function renderSmartOnboardingScreen(viewModel) {
                 <div class="nexus-onboarding-chat-card__question">
                   <h2 id="onboarding-current-question-title">${escapeHtml(viewModel.questionTitle)}</h2>
                   <p id="onboarding-current-question-body">${escapeHtml(viewModel.questionBody)}</p>
+                </div>
+                <div class="nexus-onboarding-chat-card__provider">
+                  <label class="mini-label" for="onboarding-provider-select">שוחח עם</label>
+                  <select id="onboarding-provider-select" class="nexus-select">
+                    ${viewModel.providerRuntime.availableProviders.map((provider) => `
+                      <option value="${escapeHtml(provider.providerId)}"${provider.providerId === viewModel.providerRuntime.selectedProviderId ? " selected" : ""}>
+                        ${escapeHtml(provider.companyLabel)}
+                      </option>
+                    `).join("")}
+                  </select>
+                  <p id="onboarding-provider-runtime-label">${escapeHtml(viewModel.providerRuntime.selectedRuntimeLabel)}</p>
+                  <p id="onboarding-provider-rule-line">${escapeHtml(viewModel.providerRuntime.enforcementLine)}</p>
                 </div>
               </div>
 
@@ -248,6 +261,15 @@ export function renderSmartOnboardingScreen(viewModel) {
               </div>
             `,
           })}
+          ${renderNexusCard({
+            padding: "md",
+            className: "nexus-onboarding-summary-card",
+            content: `
+              <h3>Provider-backed runtime</h3>
+              <p id="onboarding-provider-summary-line">${escapeHtml(viewModel.providerRuntime.summaryLine)}</p>
+              <p id="onboarding-provider-canonical-rule">${escapeHtml(`rules: ${viewModel.providerRuntime.canonicalRuleLayer} · mode: ${viewModel.providerRuntime.runtimeMode}`)}</p>
+            `,
+          })}
         </aside>
       </section>
     </section>
@@ -275,6 +297,12 @@ export function bindSmartOnboardingScreenElements(doc, elements) {
     onboardingStageTitle: "#onboarding-stage-title",
     onboardingStageDescription: "#onboarding-stage-description",
     onboardingProgressPill: "#onboarding-progress-pill",
+    onboardingProviderRuntimePill: "#onboarding-provider-runtime-pill",
+    onboardingProviderSelect: "#onboarding-provider-select",
+    onboardingProviderRuntimeLabel: "#onboarding-provider-runtime-label",
+    onboardingProviderRuleLine: "#onboarding-provider-rule-line",
+    onboardingProviderSummaryLine: "#onboarding-provider-summary-line",
+    onboardingProviderCanonicalRule: "#onboarding-provider-canonical-rule",
     onboardingBackButton: "#onboarding-back-button",
     onboardingForwardButton: "#onboarding-forward-button",
     onboardingNotesList: "#onboarding-notes-list",

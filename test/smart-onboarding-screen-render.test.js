@@ -32,6 +32,19 @@ test("smart onboarding screen renders adaptive intake contract card", () => {
         "no advancing into generation without canonical intake handoff truth",
       ],
     },
+    providerRuntime: {
+      selectedProviderId: "anthropic",
+      selectedProviderLabel: "Anthropic",
+      selectedRuntimeLabel: "Anthropic onboarding runtime",
+      canonicalRuleLayer: "nexus-onboarding-rules-v1",
+      summaryLine: "Anthropic פעיל עכשיו, אבל עדיין כפוף לכללי ה־intake הקנוניים של Nexus.",
+      enforcementLine: "בחירת provider לא מבטלת class gates, clarification pressure, readiness gates או bounded handoff.",
+      runtimeMode: "provider-backed",
+      availableProviders: [
+        { providerId: "openai", companyLabel: "OpenAI" },
+        { providerId: "anthropic", companyLabel: "Anthropic" },
+      ],
+    },
   });
 
   assert.match(html, /Adaptive intake contract/);
@@ -39,4 +52,7 @@ test("smart onboarding screen renders adaptive intake contract card", () => {
   assert.match(html, /target-audience -&gt; core-problem -&gt; successful-solution -&gt; active-question/);
   assert.match(html, /weak \/ generic answer detection · partial/);
   assert.match(html, /canonical intake handoff truth/);
+  assert.match(html, /שוחח עם/);
+  assert.match(html, /Anthropic onboarding runtime/);
+  assert.match(html, /rules: nexus-onboarding-rules-v1 · mode: provider-backed/);
 });
