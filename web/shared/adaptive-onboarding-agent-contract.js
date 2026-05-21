@@ -93,7 +93,14 @@ function resolveQuestionPath({
   projectType,
   currentQuestionId = null,
   isComplete = false,
+  summary = null,
 } = {}) {
+  const normalizedSummary = normalizeObject(summary);
+  const learnedPath = normalizeArray(normalizedSummary.learnedQuestionPath);
+  if (learnedPath.length > 0) {
+    return [...learnedPath, isComplete ? "understanding-handoff" : "active-question"];
+  }
+
   const path = ["target-audience"];
   const requiresClassClarification = currentQuestionId === "project-class" || projectType === "unknown";
   const requiresSolution = projectType !== "landing-page";
@@ -139,11 +146,14 @@ export function createAdaptiveOnboardingAgentContract({
     projectType,
     currentQuestionId: currentQuestion.id,
     isComplete: conversation.isComplete === true || decision.isComplete === true,
+    summary,
   });
   const handoffReady = normalizeString(handoff.handoffStatus, "needs-clarification");
   const readinessLevel = normalizeString(decision.readinessLevel, handoffReady === "ready" ? "ready" : "blocked");
   const canExplainBranching = Boolean(currentQuestion.id || summary.projectType || expectation.projectType);
   const hasClarificationSignals = normalizeArray(summary.missingItems).length > 0 || normalizeArray(decision.clarificationPrompts).length > 0;
+  const learningGuidedSelection = normalizeString(summary.learningStatus) === "live";
+  const weakAnswerDetectionLive = learningGuidedSelection && normalizeString(summary.learningReason);
 
   const behaviors = [
     createBehavior({
@@ -156,11 +166,30 @@ export function createAdaptiveOnboardingAgentContract({
       nextRequirement: "Later live proofs must show different classes receiving different visible questioning paths on the same onboarding surface.",
     }),
     createBehavior({
+      behaviorId: "learning-guided-question-selection",
+      label: "learning-guided question selection",
+      status: learningGuidedSelection ? "live" : "partial",
+      currentEffect: learningGuidedSelection
+        ? normalizeString(
+            summary.learningReason,
+            "Stored learning signals now influence which onboarding question appears next and when Nexus blocks premature progression.",
+          )
+        : "The onboarding flow is adaptive, but the active state does not yet prove that stored learning signals are choosing the next question.",
+      nextRequirement: "Later live proofs must show stored learning signals changing the visible question path on the same onboarding route.",
+    }),
+    createBehavior({
       behaviorId: "weak-answer-detection",
       label: "weak / generic answer detection",
-      status: "partial",
-      currentEffect: "Nexus already catches ambiguity and missing understanding, but weak-answer quality scoring is not yet a fully closed live behavior.",
-      nextRequirement: "Later implementation must classify weak or generic answers explicitly and trigger stronger clarification visibly.",
+      status: weakAnswerDetectionLive ? "live" : "partial",
+      currentEffect: weakAnswerDetectionLive
+        ? normalizeString(
+            summary.learningReason,
+            "Weak or generic answers now trigger a sharper clarification loop before the handoff can advance.",
+          )
+        : "Nexus already catches ambiguity and missing understanding, but weak-answer quality scoring is not yet a fully closed live behavior.",
+      nextRequirement: weakAnswerDetectionLive
+        ? "Later live proofs must keep blocking weak answers without silently resetting to generic progression."
+        : "Later implementation must classify weak or generic answers explicitly and trigger stronger clarification visibly.",
     }),
     createBehavior({
       behaviorId: "clarity-refinement",

@@ -28,6 +28,16 @@ test("canonical learning system contract separates learning layers and decision 
     canonicalBacklogRegeneration: {
       regenerationId: "regen-1",
     },
+    adaptiveOnboardingAgentContract: {
+      behaviors: [
+        {
+          behaviorId: "learning-guided-question-selection",
+          status: "live",
+          currentEffect: "Stored learning signals now influence which onboarding question appears next.",
+          nextRequirement: "Keep the visible learning-guided intake path live.",
+        },
+      ],
+    },
     classAwareGenerationContract: {
       surfaceMutationModel: "section-sequence",
       generationIntent: {
@@ -60,6 +70,7 @@ test("canonical learning system contract separates learning layers and decision 
   assert.equal(canonicalLearningSystemContract.memoryLayers[2].title, "System learning");
   assert.equal(canonicalLearningSystemContract.learningInputs.length, 13);
   assert.equal(canonicalLearningSystemContract.decisionImpacts.length, 8);
+  assert.equal(canonicalLearningSystemContract.decisionImpacts.find((impact) => impact.impactId === "onboarding-refinement")?.status, "live");
   assert.equal(canonicalLearningSystemContract.summary.liveInputs >= 3, true);
   assert.equal(canonicalLearningSystemContract.summary.crossProjectPatterns, 1);
   assert.match(canonicalLearningSystemContract.explicitProhibitions[0], /hidden ai intuition/i);

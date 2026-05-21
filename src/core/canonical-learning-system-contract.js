@@ -102,6 +102,7 @@ export function createCanonicalLearningSystemContract({
   approvalStatus = null,
   adaptiveExecutionDecision = null,
   canonicalBacklogRegeneration = null,
+  adaptiveOnboardingAgentContract = null,
   classAwareGenerationContract = null,
   classAwareRuntimeResolver = null,
   classAwarePackagingPreviewContract = null,
@@ -117,6 +118,7 @@ export function createCanonicalLearningSystemContract({
   const approval = normalizeObject(approvalStatus);
   const adaptiveDecision = normalizeObject(adaptiveExecutionDecision);
   const backlogRegeneration = normalizeObject(canonicalBacklogRegeneration);
+  const onboardingContract = normalizeObject(adaptiveOnboardingAgentContract);
   const generationContract = normalizeObject(classAwareGenerationContract);
   const runtimeResolver = normalizeObject(classAwareRuntimeResolver);
   const packagingContract = normalizeObject(classAwarePackagingPreviewContract);
@@ -130,6 +132,9 @@ export function createCanonicalLearningSystemContract({
   const patternCount = normalizeArray(crossProjectPatterns.patterns).length;
   const recommendationHintCount = normalizeArray(crossProjectPatterns.recommendationHints).length;
   const feedbackItemsCount = normalizeArray(feedbackState.feedbackItems).length;
+  const onboardingBehaviors = normalizeArray(onboardingContract.behaviors);
+  const learningGuidedOnboardingBehavior = onboardingBehaviors.find((behavior) => behavior?.behaviorId === "learning-guided-question-selection");
+  const weakAnswerBehavior = onboardingBehaviors.find((behavior) => behavior?.behaviorId === "weak-answer-detection");
 
   const memoryLayers = [
     createMemoryLayer({
@@ -300,9 +305,17 @@ export function createCanonicalLearningSystemContract({
     createDecisionImpact({
       impactId: "onboarding-refinement",
       label: "onboarding refinement",
-      status: "next",
-      currentEffect: "Current onboarding flow exists, but later adaptive intake must become learning-connected instead of fixed-path only.",
-      nextRequirement: "Adaptive intake must reuse learned weak-answer patterns and class-specific sufficiency rules.",
+      status: learningGuidedOnboardingBehavior?.status ?? weakAnswerBehavior?.status ?? "next",
+      currentEffect: normalizeString(
+        learningGuidedOnboardingBehavior?.currentEffect,
+        weakAnswerBehavior?.currentEffect
+          ?? "Current onboarding flow exists, but later adaptive intake must become learning-connected instead of fixed-path only.",
+      ),
+      nextRequirement: normalizeString(
+        learningGuidedOnboardingBehavior?.nextRequirement,
+        weakAnswerBehavior?.nextRequirement
+          ?? "Adaptive intake must reuse learned weak-answer patterns and class-specific sufficiency rules.",
+      ),
     }),
     createDecisionImpact({
       impactId: "runtime-decisions",

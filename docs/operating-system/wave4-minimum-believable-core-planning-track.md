@@ -1057,20 +1057,28 @@ Prepared tasks:
 - `W4-LEARN-002 — Implement deep adaptive learning decision impact` — `trueGreen`
 - `W4-GEN-001 — Connect learning signals to generation decisions` — `trueGreen`
 - `W4-INTAKE-002 — Replace fixed 3-question onboarding with adaptive intake flow` — `trueGreen`
-- `W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection` — `selected-not-started`
+- `W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection` — `blocked`
 - `W4-INTAKE-004 — Implement provider-backed canonical onboarding agent runtime` — `prepared-not-started`
 - `W4-INTAKE-005 — Inject smart onboarding agent truth into canonical downstream system surfaces` — `prepared-not-started`
+- `W4-AGENT-001 — Enforce minimum real product-conversation depth before understanding closure` — `prepared-not-started`
+- `W4-AGENT-002 — Add floating cross-Nexus product-conversation agent presence` — `prepared-not-started`
+- `W4-AGENT-003 — Implement post-onboarding clarification and correction loop` — `prepared-not-started`
+- `W4-AGENT-004 — Bring competitor and comparable-product intelligence into the live agent dialogue` — `prepared-not-started`
 - `W4-GEN-002 — Implement feedback-driven product mutation loop` — `prepared-not-started`
 
 Reality-audit reopeners required after repository inspection:
 - `W4-LEARN-002` is now closed truthfully as the first real decision-impact implementation layer
 - `W4-GEN-001` is now closed truthfully as the first generation-facing learning integration layer
 - `W4-INTAKE-002` is now closed truthfully after live QA proof covered direct onboarding entry, landing-page early-stop, fresh ambiguous clarification rerun, and non-blocked refresh/revisit behavior
-- `W4-INTAKE-003` is required after `W4-INTAKE-002` because repository reality still does not prove that prior learning signals choose the next onboarding question or clarification path
+- `W4-INTAKE-003` is now implemented enough to prove live learning-guided question selection, generic-answer clarification, landing-page solution gating, and stronger Understanding handoff, but it remains blocked because the same QA onboarding route still resets on revisit / reload instead of restoring the learned intake path
 - canonical coverage is still insufficient for the clarified smart-onboarding direction because repository reality and current tasks still do not explicitly cover:
   - provider-backed onboarding agent runtime with user provider choice
   - canonical Nexus rule enforcement across provider choice
   - mandatory structured downstream injection of learned intake into the correct Nexus system surfaces
+  - minimum real conversation depth before product understanding can close
+  - floating project-aware agent presence across Nexus surfaces
+  - explicit post-onboarding clarification / correction loop
+  - competitor and comparable-product intelligence inside the live agent dialogue
 
 Preparation rule:
 - these tasks may be written back immediately after `W4-MBN-020` closes

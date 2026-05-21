@@ -5295,6 +5295,7 @@ export function buildProjectContext(
     approvalStatus,
     adaptiveExecutionDecision,
     canonicalBacklogRegeneration,
+    adaptiveOnboardingAgentContract,
     classAwareGenerationContract,
     classAwareRuntimeResolver,
     classAwarePackagingPreviewContract,

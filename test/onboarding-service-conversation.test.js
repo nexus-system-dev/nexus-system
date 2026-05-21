@@ -185,6 +185,90 @@ test("onboarding inserts a class-disambiguation question when the class is ambig
   assert.equal(completed.onboardingConversation.summary.projectType, "landing-page");
 });
 
+test("learning-guided intake blocks generic audience answers and asks a sharper follow-up", () => {
+  const service = new OnboardingService();
+  const session = service.createSession({
+    userId: "user-learning-generic",
+    projectDraftId: "business-system",
+    initialInput: {
+      projectName: "Business System",
+      goal: "I want a system for a business",
+      learningContext: {
+        learningDecisionImpact: {
+          impactId: "impact-1",
+          strategy: "repair-before-expand",
+          drivingSignals: ["failure-signals:3", "trend:stalled"],
+        },
+        generationIntent: {
+          learningAware: true,
+          learnedSignals: ["pattern:Generic audiences drift quickly"],
+        },
+      },
+    },
+  });
+
+  const afterAudience = service.submitConversationTurn({
+    sessionId: session.sessionId,
+    answer: "for a business",
+  });
+
+  assert.equal(afterAudience.onboardingConversation.currentQuestion?.id, "audience-clarification");
+  assert.match(afterAudience.onboardingConversation.currentQuestion?.title ?? "", /עדיין כללית מדי|too generic/u);
+  assert.match(afterAudience.onboardingConversation.currentQuestion?.reason ?? "", /generation גנרי|clarify/u);
+  assert.equal(afterAudience.onboardingConversation.summary.learningStatus, "live");
+  assert.equal(afterAudience.onboardingConversation.summary.clarificationMode, "generic-audience");
+
+  const afterClarification = service.submitConversationTurn({
+    sessionId: session.sessionId,
+    answer: "Clinic owners who need to return leads quickly without a sales team",
+  });
+
+  assert.equal(afterClarification.onboardingConversation.currentQuestion?.id, "project-class");
+  assert.match(afterClarification.onboardingConversation.summary.understoodItems[0], /Clinic owners/);
+});
+
+test("learning-guided landing-page intake asks for solution before closure when stored signals require it", () => {
+  const service = new OnboardingService();
+  const session = service.createSession({
+    userId: "user-learning-landing",
+    projectDraftId: "landing-learned",
+    initialInput: {
+      projectName: "Landing Learned",
+      goal: "Build a landing page for clinic leads",
+      learningContext: {
+        learningDecisionImpact: {
+          impactId: "impact-landing",
+          strategy: "repair-before-expand",
+          drivingSignals: ["failure-signals:3", "approval:approved"],
+        },
+      },
+    },
+  });
+
+  service.submitConversationTurn({
+    sessionId: session.sessionId,
+    answer: "Clinic owners",
+  });
+  const afterProblem = service.submitConversationTurn({
+    sessionId: session.sessionId,
+    answer: "The current page does not explain the offer clearly enough to convert",
+  });
+
+  assert.equal(afterProblem.onboardingConversation.currentQuestion?.id, "successful-solution");
+  assert.match(afterProblem.onboardingConversation.currentQuestion?.reason ?? "", /כשלונות|learning|אי אפשר לעצור/u);
+  assert.equal(afterProblem.onboardingConversation.totalQuestions >= 3, true);
+
+  const completed = service.submitConversationTurn({
+    sessionId: session.sessionId,
+    answer: "A single-offer landing page with a sharp promise, trust proof, and one CTA",
+  });
+
+  assert.equal(completed.onboardingConversation.isComplete, true);
+  assert.equal(completed.onboardingConversation.summary.learningStatus, "live");
+  assert.match(completed.onboardingConversation.summary.handoffStrengthLine ?? "", /CTA|handoff/u);
+  assert.match(completed.onboardingConversation.completionReason ?? "", /הלמידה כבר החזיקה|held/i);
+});
+
 test("uploaded project files can resolve project type before explicit class clarification", () => {
   const service = new OnboardingService();
   const session = service.createSession({

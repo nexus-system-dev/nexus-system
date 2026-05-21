@@ -300,13 +300,34 @@
           {
             "taskId": "W4-INTAKE-003",
             "title": "Connect learning signals to adaptive onboarding question selection",
-            "status": "selected-not-started",
+            "status": "blocked",
             "dependsOn": [
               "W4-INTAKE-002",
               "W4-LEARN-002",
               "W4-GEN-001",
               "docs/operating-system/wave3-onboarding-intelligence-planning-track.md"
-            ]
+            ],
+            "implementationEvidence": [
+              "web/shared/learning-guided-onboarding.js",
+              "src/core/onboarding-service.js",
+              "web/app.js",
+              "web/nexus-ui/adapters/understanding-adapter.js",
+              "web/shared/adaptive-onboarding-agent-contract.js",
+              "src/core/canonical-learning-system-contract.js",
+              "src/core/context-builder.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/onboarding-adapter.test.js",
+              "test/canonical-learning-system-contract.test.js"
+            ],
+            "blockedAt": "2026-05-21",
+            "blocker": {
+              "type": "restore-truth-gap",
+              "surface": "QA onboarding route",
+              "code": "learning-guided-onboarding-restore-reset",
+              "message": "Live QA verification now proves learning-guided question selection, generic-answer clarification, and stronger Understanding/Generation handoff, but revisiting the same onboarding route still resets to the opening question instead of restoring the learned clarification path.",
+              "impact": "W4-INTAKE-003 cannot become trueGreen until the learned intake path survives restore/revisit on the same project without silently resetting to a generic opening path.",
+              "resumeRule": "Repair client-side persistence/restore for the learning-guided onboarding conversation and rerun live verification until the same project reopens on the learned clarification path."
+            }
           },
           {
             "taskId": "W4-INTAKE-004",
@@ -327,6 +348,48 @@
               "W4-INTAKE-003",
               "W4-INTAKE-004",
               "W4-GEN-001"
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-001",
+            "title": "Enforce minimum real product-conversation depth before understanding closure",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-INTAKE-003",
+              "W4-INTAKE-004",
+              "W4-INTAKE-005"
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-002",
+            "title": "Add floating cross-Nexus product-conversation agent presence",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-INTAKE-004",
+              "W4-INTAKE-005",
+              "W4-AGENT-001"
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-003",
+            "title": "Implement post-onboarding clarification and correction loop",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-INTAKE-005",
+              "W4-AGENT-001",
+              "W4-AGENT-002"
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-004",
+            "title": "Bring competitor and comparable-product intelligence into the live agent dialogue",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-INTAKE-004",
+              "W4-INTAKE-005",
+              "W4-AGENT-001",
+              "W4-AGENT-002",
+              "W4-AGENT-003"
             ]
           },
           {
@@ -362,7 +425,7 @@
       "taskId": "W4-INTAKE-003",
       "title": "Connect learning signals to adaptive onboarding question selection",
       "source": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
-      "status": "selected-not-started"
+      "status": "blocked"
     },
     "completedCanonicalExecutionTasks": [
       {

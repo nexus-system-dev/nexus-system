@@ -1,5 +1,11 @@
 import { defineProjectDraftSchema } from "./project-draft-schema.js";
 import { resolveCanonicalProductClass } from "../../web/shared/product-class-model.js";
+import {
+  createLearningGuidedOnboardingContext,
+  hasLearningGuidedSufficientUnderstanding,
+  resolveCanonicalOnboardingAnswers,
+  resolveLearningGuidedOnboardingDecision,
+} from "../../web/shared/learning-guided-onboarding.js";
 
 function toSlug(value, fallback = "project-draft") {
   return String(value ?? "")
@@ -21,6 +27,7 @@ function parseInitialInput(initialInput) {
       goal: initialInput.trim(),
       attachments: [],
       links: [],
+      learningContext: null,
     };
   }
 
@@ -36,6 +43,9 @@ function parseInitialInput(initialInput) {
           : "",
     attachments: Array.isArray(payload.attachments) ? payload.attachments : [],
     links: Array.isArray(payload.links) ? payload.links : [],
+    learningContext: payload.learningContext && typeof payload.learningContext === "object"
+      ? payload.learningContext
+      : null,
   };
 }
 
@@ -63,6 +73,10 @@ function normalizeExternalLinks(externalLinks = []) {
   return externalLinks
     .filter((value) => typeof value === "string" && value.trim())
     .map((value) => value.trim());
+}
+
+function normalizeObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
 
 function extractProjectName(visionText = "") {
@@ -236,10 +250,20 @@ const onboardingAgentQuestionDefinitions = {
     title: "לפני שממשיכים, מה הדבר המרכזי שאתה בונה כאן?",
     placeholder: "לדוגמה: דף נחיתה שיווקי / כלי פנימי לצוות / מוצר SaaS קטן",
   },
+  "audience-clarification": {
+    id: "audience-clarification",
+    title: "התשובה עדיין כללית מדי. מי המשתמש המדויק ומה סוג העסק או הצוות שהוא מייצג?",
+    placeholder: "לדוגמה: בעלי קליניקות פרטיות שמנסים להחזיר לידים מהר בלי אנשי מכירות",
+  },
   "core-problem": {
     id: "core-problem",
     title: "מה הבעיה המרכזית שהם מתמודדים איתה?",
     placeholder: "לדוגמה: קשה להם לנהל לקוחות ולעקוב אחרי מכירות",
+  },
+  "problem-clarification": {
+    id: "problem-clarification",
+    title: "זה עדיין כללי מדי. מה נשבר בפועל אצלם ובאיזה רגע ביום העבודה?",
+    placeholder: "לדוגמה: לידים נכנסים אבל אף אחד לא חוזר אליהם בזמן ולכן הם נעלמים בין שיחות ו-WhatsApp",
   },
   "successful-solution": {
     id: "successful-solution",
@@ -248,6 +272,17 @@ const onboardingAgentQuestionDefinitions = {
   },
 };
 
+function resolveSessionLearningContext(session) {
+  const intake = normalizeObject(session?.projectIntake);
+  const initialLearningContext = normalizeObject(session?.learningContext ?? session?.initialInput?.learningContext);
+  return createLearningGuidedOnboardingContext({
+    learningDecisionImpact: initialLearningContext.learningDecisionImpact ?? null,
+    generationIntent: initialLearningContext.generationIntent ?? null,
+    projectTypeHint: intake.projectType ?? "",
+    visionText: intake.visionText ?? session?.projectDraft?.goal ?? session?.initialInput?.goal ?? "",
+  });
+}
+
 function resolveQuestionPresentation(session, questionId) {
   const question = getOnboardingQuestionDefinition(questionId);
   if (!question) {
@@ -255,6 +290,8 @@ function resolveQuestionPresentation(session, questionId) {
   }
 
   const projectType = resolveConversationProjectType(session);
+  const answers = session?.conversation?.answers ?? {};
+  const { audience, problem } = resolveCanonicalOnboardingAnswers(answers);
 
   if (questionId === "target-audience") {
     if (projectType === "landing-page") {
@@ -287,6 +324,37 @@ function resolveQuestionPresentation(session, questionId) {
         placeholder: "לדוגמה: מאמנים עצמאיים שמנהלים לקוחות וחידושי מנוי",
       };
     }
+  }
+
+  if (questionId === "audience-clarification") {
+    if (projectType === "landing-page") {
+      return {
+        title: "התשובה עדיין כללית מדי. איזה סוג עסק בדיוק צריך את הדף, מי מקבל את ההחלטה, ומה גורם לו להשאיר ליד?",
+        placeholder: "לדוגמה: בעלי קליניקות פרטיות שמקבלים לידים אבל לא מצליחים להפוך אותם לשיחת ייעוץ",
+      };
+    }
+    if (projectType === "internal-tool") {
+      return {
+        title: "התשובה עדיין כללית מדי. איזה צוות בדיוק עובד עם הכלי, מי הבעלים של התור, ומה קורה במשמרת רגילה?",
+        placeholder: "לדוגמה: צוות שירות של 12 נציגים שמחלק פניות בין נציגים ומשמרות",
+      };
+    }
+    if (projectType === "commerce-ops") {
+      return {
+        title: "התשובה עדיין כללית מדי. איזה צוות מסחר בדיוק עובד כאן, מי מחזיק הזמנות או מלאי, ומה הפעולה היומית הקריטית?",
+        placeholder: "לדוגמה: צוות מסחר שמנהל קטלוג, הזמנות ומלאי עבור חנות אונליין עם 4 עורכים ו-2 אנשי תפעול",
+      };
+    }
+    if (projectType === "mobile-app") {
+      return {
+        title: "התשובה עדיין כללית מדי. מי המשתמש המדויק באפליקציה, ובאיזה רגע ביום הוא חייב לפתוח אותה?",
+        placeholder: "לדוגמה: הורים עובדים שפותחים את האפליקציה כל בוקר כדי להבין מה השתנה עבור הילד",
+      };
+    }
+    return {
+      title: "התשובה עדיין כללית מדי. איזה סוג עסק או צוות בדיוק משתמש במוצר, מי המשתמש המרכזי, ומה הוא מנסה להשיג ביום רגיל?",
+      placeholder: "לדוגמה: בעלי קליניקות קטנות שמנהלים לידים וחוזרים ידנית לכל פנייה",
+    };
   }
 
   if (questionId === "project-class") {
@@ -329,11 +397,36 @@ function resolveQuestionPresentation(session, questionId) {
     }
   }
 
+  if (questionId === "problem-clarification") {
+    if (projectType === "landing-page" && audience) {
+      return {
+        title: `זה עדיין כללי מדי. מה בדיוק קורה אצל ${audience} שגורם לדף הנוכחי לא להמיר?`,
+        placeholder: "לדוגמה: הם רואים כמה הצעות יחד, לא מבינים מהר את ההבטחה, ונוטשים לפני השארת פרטים",
+      };
+    }
+    if (projectType === "internal-tool" && audience) {
+      return {
+        title: `זה עדיין כללי מדי. מה בדיוק נשבר אצל ${audience} בתוך התור או המשמרת היומית?`,
+        placeholder: "לדוגמה: פניות חוזרות לאותו לקוח כי אין בעלות ברורה והנציג הבא לא יודע מה קרה קודם",
+      };
+    }
+    if (projectType === "commerce-ops" && audience) {
+      return {
+        title: `זה עדיין כללי מדי. מה בדיוק נשבר אצל ${audience} בין הזמנות, קטלוג ומלאי?`,
+        placeholder: "לדוגמה: מבצעי קטלוג לא מתעדכנים בזמן, הזמנות יוצאות עם מלאי שגוי, ואף אחד לא רואה מה דחוף עכשיו",
+      };
+    }
+    return {
+      title: `זה עדיין כללי מדי. מה בדיוק נשבר אצל ${audience || "המשתמש"} ובאיזה רגע זה פוגע בו?`,
+      placeholder: "לדוגמה: הליד מגיע, אבל אין בעלות על הטיפול ולכן הוא נופל בין משימות ותזכורות",
+    };
+  }
+
   if (questionId === "successful-solution") {
     if (projectType === "landing-page") {
       return {
         title: question.title,
-        placeholder: "לדוגמה: דף ברור עם הבטחה חדה, הוכחת אמון ופעולה אחת שקל לבחור",
+        placeholder: "לדוגמה: דף ברור עם הבטחה חדה, הוכחת אמון, ו־CTA אחד שקל להבין וללחוץ עליו",
       };
     }
     if (projectType === "mobile-app") {
@@ -474,69 +567,21 @@ function hasSufficientUnderstanding({ projectType, audience, problem, solution }
 }
 
 function buildAdaptiveQuestionPlan(session, answers = {}) {
-  const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
-  const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
-  const solution = typeof answers["successful-solution"] === "string" ? answers["successful-solution"].trim() : "";
   const classification = resolveConversationClassification(session, answers);
-
-  const plan = ["target-audience"];
-
-  if (audience && classification.isAmbiguous && !answers["project-class"]) {
-    plan.push("project-class");
-  }
-
-  if (audience) {
-    plan.push("core-problem");
-  }
-
-  if (!hasSufficientUnderstanding({
-    projectType: classification.projectType,
-    audience,
-    problem,
-    solution,
-  })) {
-    const shouldAskSolution = audience && problem && requiresSolutionQuestion(classification.projectType);
-    if (shouldAskSolution) {
-      plan.push("successful-solution");
-    }
-  }
-
-  return [...new Set(plan)];
+  return resolveLearningGuidedOnboardingDecision({
+    answers,
+    classification,
+    learningContext: resolveSessionLearningContext(session),
+  }).questionPlan;
 }
 
 function resolveNextConversationQuestionId(session, answers = {}) {
-  const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
-  const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
-  const solution = typeof answers["successful-solution"] === "string" ? answers["successful-solution"].trim() : "";
-  const projectClassAnswer = typeof answers["project-class"] === "string" ? answers["project-class"].trim() : "";
   const classification = resolveConversationClassification(session, answers);
-
-  if (!audience) {
-    return "target-audience";
-  }
-
-  if (!projectClassAnswer && classification.isAmbiguous) {
-    return "project-class";
-  }
-
-  if (!problem) {
-    return "core-problem";
-  }
-
-  if (hasSufficientUnderstanding({
-    projectType: classification.projectType,
-    audience,
-    problem,
-    solution,
-  })) {
-    return null;
-  }
-
-  if (!solution) {
-    return "successful-solution";
-  }
-
-  return null;
+  return resolveLearningGuidedOnboardingDecision({
+    answers,
+    classification,
+    learningContext: resolveSessionLearningContext(session),
+  }).nextQuestionId;
 }
 
 function buildAgentPrompt(session, questionId) {
@@ -546,21 +591,26 @@ function buildAgentPrompt(session, questionId) {
   }
 
   const answers = session?.conversation?.answers ?? {};
-  if (questionId === "project-class" && typeof answers["target-audience"] === "string" && answers["target-audience"].trim()) {
-    return `כדי לא להוביל את ${answers["target-audience"].trim()} למסלול הלא נכון, מה הדבר המרכזי שאתה בונה כאן: דף נחיתה שיווקי, כלי פנימי לצוות, או מוצר SaaS קטן?`;
+  const { audience, problem } = resolveCanonicalOnboardingAnswers(answers);
+  if (questionId === "project-class" && audience) {
+    return `כדי לא להוביל את ${audience} למסלול הלא נכון, מה הדבר המרכזי שאתה בונה כאן: דף נחיתה שיווקי, כלי פנימי לצוות, או מוצר SaaS קטן?`;
   }
-  if (questionId === "core-problem" && typeof answers["target-audience"] === "string" && answers["target-audience"].trim()) {
-    return `מעולה. אם המערכת נבנית עבור ${answers["target-audience"].trim()}, מה הבעיה המרכזית שהם מתמודדים איתה?`;
+  if (questionId === "audience-clarification") {
+    return questionPresentation.title;
+  }
+  if (questionId === "core-problem" && audience) {
+    return `מעולה. אם המערכת נבנית עבור ${audience}, מה הבעיה המרכזית שהם מתמודדים איתה?`;
+  }
+  if (questionId === "problem-clarification") {
+    return questionPresentation.title;
   }
 
   if (
     questionId === "successful-solution"
-    && typeof answers["target-audience"] === "string"
-    && answers["target-audience"].trim()
-    && typeof answers["core-problem"] === "string"
-    && answers["core-problem"].trim()
+    && audience
+    && problem
   ) {
-    return `יש כבר תמונה טובה: הקהל הוא ${answers["target-audience"].trim()} והכאב המרכזי הוא ${answers["core-problem"].trim()}. איך נראה פתרון מוצלח מבחינתם?`;
+    return `יש כבר תמונה טובה: הקהל הוא ${audience} והכאב המרכזי הוא ${problem}. איך נראה פתרון מוצלח מבחינתם?`;
   }
 
   return questionPresentation.title;
@@ -568,17 +618,30 @@ function buildAgentPrompt(session, questionId) {
 
 function buildQuestionReason(session, questionId) {
   const answers = session?.conversation?.answers ?? {};
-  const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
-  const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
+  const { audience, problem } = resolveCanonicalOnboardingAnswers(answers);
+  const classification = resolveConversationClassification(session, answers);
+  const learningDecision = resolveLearningGuidedOnboardingDecision({
+    answers,
+    classification,
+    learningContext: resolveSessionLearningContext(session),
+  });
 
   if (questionId === "project-class") {
     return "יש כאן כמה אותות אפשריים, ואני צריך לנעול את סוג הפרויקט כדי לא לערבב בין דף שיווקי, כלי פנימי ומוצר SaaS.";
   }
+  if (questionId === "audience-clarification") {
+    return learningDecision.learningReason;
+  }
   if (questionId === "core-problem" && audience) {
     return `כבר ברור לי מי המשתמש המרכזי. עכשיו אני צריך להבין מה הכאב שחוזר אצל ${audience} כדי לכוון את ה-onboarding נכון.`;
   }
+  if (questionId === "problem-clarification") {
+    return learningDecision.learningReason;
+  }
   if (questionId === "successful-solution" && audience && problem) {
-    return `יש לי כבר קהל יעד וכאב מרכזי. נשאר לחדד איך נראה פתרון שעובד בפועל עבור ${audience}.`;
+    return learningDecision.requiresLandingSolution
+      ? `${learningDecision.learningReason} נשאר לחדד גם איך נראה פתרון שעובד בפועל עבור ${audience}.`
+      : `יש לי כבר קהל יעד וכאב מרכזי. נשאר לחדד איך נראה פתרון שעובד בפועל עבור ${audience}.`;
   }
 
   return "השאלה הזו סוגרת את הפער הבא שחסר כדי להבין נכון את הפרויקט.";
@@ -586,17 +649,26 @@ function buildQuestionReason(session, questionId) {
 
 function buildCompletionReason(session) {
   const answers = session?.conversation?.answers ?? {};
-  const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
-  const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
-  const solution = typeof answers["successful-solution"] === "string" ? answers["successful-solution"].trim() : "";
+  const { audience, problem, solution } = resolveCanonicalOnboardingAnswers(answers);
   const classification = resolveConversationClassification(session, answers);
+  const learningDecision = resolveLearningGuidedOnboardingDecision({
+    answers,
+    classification,
+    learningContext: resolveSessionLearningContext(session),
+  });
+
+  if (classification.projectType === "landing-page" && audience && problem && solution) {
+    return "יש כבר מספיק הבנה כדי לסכם דף נחיתה: הלמידה כבר החזיקה את ה־onboarding עד שננעל גם הכיוון להבטחה, לאמון ול־CTA לפני סיכום ההבנה.";
+  }
 
   if (classification.projectType === "landing-page" && audience && problem) {
     return "יש כבר מספיק הבנה כדי לסכם דף נחיתה: ברור מי הקהל ומה צריך לתקן במסר או בהמרה, ולכן לא נדרש עוד סבב שאלות לפני סיכום ההבנה.";
   }
 
   if (audience && problem && solution) {
-    return "יש כבר קהל יעד, כאב מרכזי ותמונת פתרון. זה מספיק כדי לעצור את השיחה ולעבור לסיכום ההבנה.";
+    return learningDecision.learningStatus === "live"
+      ? "יש כבר קהל יעד, כאב מרכזי ותמונת פתרון, והלמידה מאשרת שהשיחה חדה מספיק כדי לעבור לסיכום ההבנה."
+      : "יש כבר קהל יעד, כאב מרכזי ותמונת פתרון. זה מספיק כדי לעצור את השיחה ולעבור לסיכום ההבנה.";
   }
 
   return "יש מספיק הבנה ראשונית כדי לעצור כאן ולעבור לסיכום ההבנה.";
@@ -768,12 +840,15 @@ function buildMissingItemsForProjectType({ projectType, audience, problem, solut
 
 function buildConversationSummary(session) {
   const answers = session?.conversation?.answers ?? {};
-  const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
-  const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
-  const solution = typeof answers["successful-solution"] === "string" ? answers["successful-solution"].trim() : "";
+  const { audience, problem, solution } = resolveCanonicalOnboardingAnswers(answers);
   const projectType = resolveConversationProjectType(session);
   const projectTypeLabel = resolveProjectTypeLabel(projectType);
-  const effectiveSolution = projectType === "landing-page" && audience && problem && !solution
+  const learningDecision = resolveLearningGuidedOnboardingDecision({
+    answers,
+    classification: resolveConversationClassification(session, answers),
+    learningContext: resolveSessionLearningContext(session),
+  });
+  const effectiveSolution = projectType === "landing-page" && audience && problem && !solution && learningDecision.requiresLandingSolution !== true
     ? "__landing-sufficient__"
     : solution;
 
@@ -802,6 +877,16 @@ function buildConversationSummary(session) {
     missingItems,
     projectType,
     projectTypeLabel,
+    learningStatus: learningDecision.learningStatus,
+    learningStrategy: learningDecision.learningStrategy,
+    learningStrategyLabel: learningDecision.learningStrategyLabel,
+    learningReason: learningDecision.learningReason,
+    learningSignals: learningDecision.learningSignals,
+    learnedQuestionPath: learningDecision.questionPlan,
+    learnedQuestionPathLabel: learningDecision.questionPlan.join(" -> "),
+    readinessLine: learningDecision.readinessLine,
+    handoffStrengthLine: learningDecision.handoffStrengthLine,
+    clarificationMode: learningDecision.clarificationMode,
   };
 }
 
@@ -918,6 +1003,7 @@ export class OnboardingService {
       createdAt: now,
       updatedAt: now,
       initialInput: parsedInput,
+      learningContext: normalizeObject(parsedInput.learningContext),
       projectIntake: null,
       requiredActions: [],
       approvals: [],

@@ -398,7 +398,7 @@ Closure truth on `2026-05-21`:
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
-- status: `selected-not-started`
+- status: `blocked`
 - depends_on:
   - `W4-INTAKE-002`
   - `W4-LEARN-002`
@@ -441,6 +441,14 @@ Closure truth on `2026-05-21`:
     - the final intake handoff into generation is visibly stronger
   - verify restore truth by revisiting the same project and proving the learned intake path does not silently reset
   - docs, contracts, summaries, or hidden state alone can never close this task
+- implementation truth written on `2026-05-21`:
+  - shared learning-guided onboarding logic now drives both the backend onboarding service and the live QA onboarding route
+  - generic answers such as `לעסק` now visibly trigger sharper clarification instead of progression
+  - landing-page onboarding now visibly holds on `successful-solution` when stored learning says `repair-before-expand`
+  - Understanding now visibly receives a stronger learning-aware generation handoff from onboarding
+- active blocker on `2026-05-21`:
+  - the same QA onboarding route still resets to the opening question on revisit / reload instead of restoring the learned clarification path for the same project
+  - this task cannot become `trueGreen` until restore truth survives on the same learned intake path
 
 ### W4-INTAKE-004 — Implement provider-backed canonical onboarding agent runtime
 
@@ -533,6 +541,172 @@ Closure truth on `2026-05-21`:
   - verify that `Understanding`, `Generation`, `next-task`, `proof`, and `continuation` no longer behave like generic downstream consumers after onboarding completes
   - verify restore truth by revisiting the same project and proving the injected downstream truth stays attached to the same project identity
   - docs, contracts, cards, summaries, or hidden state alone can never close this task
+
+### W4-AGENT-001 — Enforce minimum real product-conversation depth before understanding closure
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-INTAKE-003`
+  - `W4-INTAKE-004`
+  - `W4-INTAKE-005`
+- mission:
+  - prevent Nexus from accepting shallow product understanding by enforcing a real conversational depth threshold before the system can truthfully close product understanding and move forward
+- pass/fail truth:
+  - pass if the live agent continues when the product is still vague, thin, underspecified, or strategically weak, and visibly blocks premature understanding closure until enough signal exists for smart build direction
+  - fail if the system only:
+    - asks more than 3 questions
+    - uses a larger branching tree
+    - relies on longer copy
+    - closes understanding without real back-and-forth clarification
+- continuity rules:
+  - the agent must preserve already-understood truth while continuing to clarify missing or weak parts instead of resetting the whole conversation
+  - depth enforcement must survive refresh, restore, revisit, and project resume without collapsing into shallow acceptance
+- generation integration rules:
+  - Generation may not receive a `ready` handoff while the minimum conversation depth gate is still open
+  - when the gate closes, Generation must receive stronger structured intent because of the deeper conversation
+- explicit visible product change required:
+  - the live product must visibly show that weak or underspecified conversations remain open
+  - the agent must visibly keep clarifying instead of accepting an early shallow understanding
+- explicit prohibitions:
+  - no docs-only closure
+  - no question-count-only closure
+  - no provider-runtime-only closure
+  - no copy-only closure
+  - no hidden scoring threshold without visible behavior change
+- live verification requirement:
+  - verify on `http://127.0.0.1:4011/?qa=1` that:
+    - a shallow answer sequence cannot truthfully close product understanding
+    - the agent visibly continues the conversation when product understanding is weak
+    - a stronger answer sequence can truthfully close once real product signal exists
+  - verify restore truth by revisiting the same project and proving the open depth gate or closed depth gate remains stable
+
+### W4-AGENT-002 — Add floating cross-Nexus product-conversation agent presence
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-INTAKE-004`
+  - `W4-INTAKE-005`
+  - `W4-AGENT-001`
+- mission:
+  - make the same project-aware product-conversation agent available across relevant Nexus surfaces instead of trapping it only inside onboarding
+- pass/fail truth:
+  - pass if the same project-grounded agent can be invoked from multiple relevant Nexus surfaces and stays anchored to canonical project truth
+  - fail if the system only adds:
+    - one floating button
+    - one generic chat panel
+    - one modal without grounded project understanding
+- continuity rules:
+  - the floating agent must preserve project identity, current understanding state, and prior clarifications across route changes, restore, revisit, and project resume
+- generation integration rules:
+  - when the floating agent clarifies product truth outside onboarding, that clarification must be able to flow back into the same canonical product understanding chain
+- explicit visible product change required:
+  - the user can visibly invoke the same project-aware agent from multiple relevant Nexus surfaces such as Understanding, workspace-facing execution areas, or continuation-facing surfaces
+  - the agent must visibly answer from the active project’s truth rather than from generic chat context
+- explicit prohibitions:
+  - no launcher-only closure
+  - no generic assistant panel
+  - no free-form chat detached from project truth
+  - no hidden runtime reuse without visible cross-surface invocation
+- live verification requirement:
+  - verify on `http://127.0.0.1:4011/?qa=1` that:
+    - the same project-aware agent can be opened from multiple relevant Nexus surfaces
+    - it remains grounded in the correct project truth
+    - the user can ask for explanation or clarification after onboarding without reopening a separate generic flow
+  - verify restore truth by changing routes and proving the same project conversation survives
+
+### W4-AGENT-003 — Implement post-onboarding clarification and correction loop
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-INTAKE-005`
+  - `W4-AGENT-001`
+  - `W4-AGENT-002`
+- mission:
+  - let the user explicitly correct or refine what Nexus understood after onboarding, while reopening only the right product understanding area and propagating that correction to the correct downstream system surfaces
+- pass/fail truth:
+  - pass if the user can visibly say Nexus misunderstood something, the agent can reopen the right understanding area, and the corrected truth measurably changes downstream behavior
+  - fail if the system only offers:
+    - edit-summary controls
+    - free text notes
+    - hidden state mutation
+    - corrections that do not change downstream Nexus behavior
+- continuity rules:
+  - correction history must survive restore, revisit, and project resume and remain attributable to the same project understanding chain
+- generation integration rules:
+  - corrected truth must update the downstream Generation-facing understanding instead of leaving stale intent active
+- downstream injection rules:
+  - corrected truth must flow into the correct relevant surfaces, including:
+    - `understanding`
+    - `generation`
+    - `context builder`
+    - `next-task / execution direction`
+    - `proof expectations`
+    - `continuation state`
+    - `learning feedback loops`
+- explicit visible product change required:
+  - the user can visibly reopen and correct a misunderstood part of the product after onboarding
+  - downstream Nexus behavior must visibly change because of that correction
+- explicit prohibitions:
+  - no notes-only closure
+  - no summary-edit-only closure
+  - no hidden propagation without visible downstream effect
+- live verification requirement:
+  - verify on `http://127.0.0.1:4011/?qa=1` that:
+    - the user can explicitly say Nexus misunderstood a product detail
+    - the agent reopens the correct product understanding area
+    - corrected truth changes downstream behavior in the right surfaces
+  - verify restore truth by revisiting the same project and proving the correction remains attached to the same project identity
+
+### W4-AGENT-004 — Bring competitor and comparable-product intelligence into the live agent dialogue
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-INTAKE-004`
+  - `W4-INTAKE-005`
+  - `W4-AGENT-001`
+  - `W4-AGENT-002`
+  - `W4-AGENT-003`
+- mission:
+  - let the live product-conversation agent inspect relevant competitor and comparable-product patterns, then bring back bounded product suggestions into the dialogue that help the user think more sharply about their own product
+- pass/fail truth:
+  - pass if the live agent can surface relevant competitor/product observations tied to the user’s product class and product direction, and can suggest additions, omissions, or reconsiderations inside the live dialogue
+  - fail if the system only shows:
+    - static competitor cards
+    - raw links
+    - generic research summaries
+    - disconnected notes outside the live dialogue
+- continuity rules:
+  - competitor/product observations must stay attributable to the same project and the same active product-conversation thread
+  - this intelligence may not silently overwrite canonical product truth without user acceptance
+- generation integration rules:
+  - accepted competitor-inspired changes must be able to influence downstream product direction through the canonical understanding chain
+- external intelligence integration rules:
+  - competitor intelligence must remain bounded, product-relevant, and class-relevant
+  - the agent may not degrade into generic open-ended market-research chat
+  - imported observations must enter through the canonical product-conversation flow and remain explainable
+- explicit visible product change required:
+  - the live agent can visibly tell the user that similar products often include or avoid a certain pattern and suggest whether that pattern should be considered here
+  - those observations must be tied to comparable products, not generic advice
+- explicit prohibitions:
+  - no research-note-only closure
+  - no competitor-card-only closure
+  - no raw browsing dump
+  - no generic “best practices” output detached from comparable products
+- live verification requirement:
+  - verify on `http://127.0.0.1:4011/?qa=1` that:
+    - the live agent can bring comparable-product observations into the dialogue
+    - those observations are tied to the user’s product class and product direction
+    - the agent can suggest additions, omissions, or reconsiderations based on comparable products
+    - the conversation remains bounded and product-directed instead of degrading into generic research chat
+  - verify restore truth by revisiting the same project and proving accepted competitor-driven clarifications remain attached to the project’s canonical understanding chain
 
 ### W4-GEN-002 — Implement feedback-driven product mutation loop
 

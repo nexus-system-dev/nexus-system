@@ -47,6 +47,7 @@ test("onboarding adapter exposes adaptive intake progress and contract truth", (
   assert.equal(viewModel.adaptiveOnboardingAgentContract.currentProjectTypeLabel, "כלי פנימי");
   assert.match(viewModel.adaptiveOnboardingAgentContract.currentQuestionPathLabel, /successful-solution/);
   assert.equal(viewModel.adaptiveOnboardingAgentContract.handoffStatus, "ready");
-  assert.equal(viewModel.adaptiveOnboardingAgentContract.behaviors[1].status, "partial");
+  const weakAnswerBehavior = viewModel.adaptiveOnboardingAgentContract.behaviors.find((behavior) => behavior.behaviorId === "weak-answer-detection");
+  assert.equal(weakAnswerBehavior?.status, "partial");
   assert.match(viewModel.adaptiveOnboardingAgentContract.explicitProhibitions[1], /open-ended chat drift/i);
 });

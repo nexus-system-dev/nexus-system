@@ -1,3 +1,5 @@
+import { resolveCanonicalOnboardingAnswers } from "../../shared/learning-guided-onboarding.js";
+
 function truncateText(value, maxLength = 64) {
   const text = String(value ?? "").trim();
   if (!text) {
@@ -36,7 +38,13 @@ function detectProjectTypeFromText(value = "") {
 }
 
 function resolveAnswers(onboardingConversation = null) {
-  return normalizeObject(onboardingConversation?.answers);
+  const answers = normalizeObject(onboardingConversation?.answers);
+  const canonicalAnswers = resolveCanonicalOnboardingAnswers(answers);
+  return {
+    ...answers,
+    "target-audience": canonicalAnswers.audience,
+    "core-problem": canonicalAnswers.problem,
+  };
 }
 
 function resolveSummary(onboardingConversation = null) {
@@ -230,9 +238,10 @@ export function buildOnboardingGenerationIntentPreview({
   }
 
   const projectType = artifactExpectation.projectType ?? "unknown";
+  const summary = resolveSummary(onboardingConversation);
   return {
     intentId: `generation-intent:${projectType}:${(artifactExpectation.title ?? "artifact").toLowerCase().replace(/\s+/g, "-")}`,
-    source: "onboarding-artifact-expectation",
+    source: summary.learningStatus === "live" ? "learning-guided-onboarding" : "onboarding-artifact-expectation",
     status: "ready",
     projectType,
     projectTypeLabel: artifactExpectation.projectTypeLabel ?? "Project",
@@ -259,6 +268,13 @@ export function buildOnboardingGenerationIntentPreview({
           : "review",
     },
     weakClass: ["landing-page", "mobile-app"].includes(projectType),
+    learningAware: summary.learningStatus === "live",
+    learningStrategy: summary.learningStrategy ?? null,
+    learningStrategyLabel: summary.learningStrategyLabel ?? null,
+    learningReason: summary.learningReason ?? null,
+    learnedSignals: normalizeArray(summary.learningSignals),
+    learnedProofRequirement: summary.handoffStrengthLine ?? null,
+    learnedFocusAreas: normalizeArray(artifactExpectation.proofFocus).slice(0, 3),
   };
 }
 
@@ -368,7 +384,13 @@ export function buildUnderstandingSummaryViewModel({
     onboardingFlow,
     onboardingConversation,
   });
-  const generationIntent = resolveGenerationIntent({ currentProject });
+  const generationIntent = resolveGenerationIntent({ currentProject }).intentId
+    ? resolveGenerationIntent({ currentProject })
+    : buildOnboardingGenerationIntentPreview({
+        currentProject,
+        onboardingFlow,
+        onboardingConversation,
+      });
   const artifactExpectationLine = derivedArtifactExpectation.title
     ? `מה אנחנו מכוונים לבנות עכשיו: ${derivedArtifactExpectation.title}. ${derivedArtifactExpectation.summary ?? ""}`.trim()
     : "";
