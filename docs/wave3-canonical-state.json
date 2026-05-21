@@ -335,7 +335,7 @@
           },
           {
             "taskId": "W4-INTAKE-004",
-            "title": "Implement provider-backed canonical onboarding agent runtime",
+            "title": "Implement shell-level provider-backed canonical onboarding agent runtime",
             "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-002",
@@ -344,6 +344,13 @@
               "W4-GEN-001"
             ],
             "closedAt": "2026-05-21",
+            "closureScope": "shell-level-provider-runtime-only",
+            "realityAuditAt": "2026-05-21",
+            "realityAuditNotes": [
+              "The onboarding runtime now exposes visible provider selection, provider identity, canonical Nexus rule enforcement, and continuity-safe provider-backed QA restore.",
+              "Repository reality still does not show real external OpenAI or Anthropic onboarding API call paths, provider auth, streaming, retry/backoff, rate-limit handling, failover, or token/cost accounting.",
+              "W4-INTAKE-004 may stay trueGreen only as shell-level provider runtime closure; real external provider integration requires a separate task."
+            ],
             "closureEvidence": [
               "web/shared/onboarding-provider-runtime.js",
               "src/core/onboarding-service.js",
@@ -363,6 +370,19 @@
               "W4-INTAKE-003",
               "W4-INTAKE-004",
               "W4-GEN-001"
+            ]
+          },
+          {
+            "taskId": "W4-INTAKE-006",
+            "title": "Connect onboarding agent to real external model provider APIs",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-INTAKE-004",
+              "W4-INTAKE-005"
+            ],
+            "realExternalDependencyBlockers": [
+              "OPENAI_API_KEY",
+              "ANTHROPIC_API_KEY"
             ]
           },
           {
@@ -540,9 +560,10 @@
       },
       {
         "taskId": "W4-INTAKE-004",
-        "title": "Implement provider-backed canonical onboarding agent runtime",
+        "title": "Implement shell-level provider-backed canonical onboarding agent runtime",
         "status": "trueGreen",
         "closedAt": "2026-05-21",
+        "closureScope": "shell-level-provider-runtime-only",
         "closureEvidence": [
           "web/shared/onboarding-provider-runtime.js",
           "src/core/onboarding-service.js",

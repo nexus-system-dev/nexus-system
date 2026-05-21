@@ -4616,6 +4616,14 @@ export function createCockpitApp({
   function openOnboardingPreviewScreen() {
     qaPreviewRouteKey = "onboarding";
     const storedFlowState = readStoredFlowState();
+    const storedOnboardingFlow = normalizeObject(storedFlowState?.onboardingFlow);
+    const storedOnboardingConversation = normalizeObject(storedFlowState?.onboardingConversation);
+    const shouldDiscardStaleQaLocalConversation = (
+      isQaModeEnabled()
+      && (storedFlowState?.screen === "onboarding" || storedFlowState?.screen === "understanding")
+      && storedOnboardingConversation.mode === "local"
+      && !normalizeString(storedOnboardingFlow.sessionId, null)
+    );
     const shouldSeedFreshPreviewConversation = (
       storedFlowState?.screen === "create"
       && !onboardingFlow?.sessionId
@@ -4623,7 +4631,10 @@ export function createCockpitApp({
       && !currentProject?.id
     );
     ensureOnboardingScreenView({ force: true });
-    if (storedFlowState?.onboardingConversation && typeof storedFlowState.onboardingConversation === "object") {
+    if (shouldDiscardStaleQaLocalConversation) {
+      onboardingFlow = null;
+      onboardingConversation = null;
+    } else if (storedFlowState?.onboardingConversation && typeof storedFlowState.onboardingConversation === "object") {
       onboardingConversation = storedFlowState.onboardingConversation.currentQuestion || storedFlowState.onboardingConversation.summary
         ? refreshOnboardingConversationPresentation(storedFlowState.onboardingConversation, buildOnboardingConversationOptions({
           visionTextOverride: storedFlowState?.onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
@@ -4644,6 +4655,9 @@ export function createCockpitApp({
     persistFlowState("onboarding");
     scrollViewportToTop();
     if (isQaModeEnabled()) {
+      if (shouldDiscardStaleQaLocalConversation && elements.onboardingScreenStatus) {
+        elements.onboardingScreenStatus.textContent = "זיהיתי qaState ישן של onboarding מקומי. פותח עכשיו session אמיתי של provider-backed onboarding כדי לא ליפול ל־shell לוקאלי.";
+      }
       void ensureQaProviderBackedOnboardingSession({
         selectedProviderId: storedFlowState?.onboardingFlow?.selectedProviderId ?? resolveSelectedOnboardingProviderId(),
       }).catch((error) => {
@@ -4655,6 +4669,14 @@ export function createCockpitApp({
   }
 
   function openUnderstandingPreviewScreen() {
+    if (!canTruthfullyAdvanceOnboardingToUnderstanding()) {
+      if (elements.onboardingScreenStatus) {
+        elements.onboardingScreenStatus.hidden = false;
+        elements.onboardingScreenStatus.textContent = "עדיין אי אפשר לעבור לסיכום ההבנה. ה־onboarding חייב להישאר בשיחה חיה עד שה־readiness וה־handoff יהיו באמת מוכנים.";
+      }
+      openOnboardingPreviewScreen();
+      return;
+    }
     qaPreviewRouteKey = "understanding";
     ensureCompletedOnboardingPreviewState();
     renderUnderstandingSummaryScreenView();
@@ -5803,6 +5825,20 @@ export function createCockpitApp({
     });
   }
 
+  function shouldDiscardStaleQaLocalOnboardingState(flowState = null) {
+    if (!isQaModeEnabled()) {
+      return false;
+    }
+    const normalizedFlowState = normalizeObject(flowState);
+    const normalizedConversation = normalizeObject(normalizedFlowState.onboardingConversation);
+    const normalizedFlow = normalizeObject(normalizedFlowState.onboardingFlow);
+    return (
+      (normalizedFlowState.screen === "onboarding" || normalizedFlowState.screen === "understanding")
+      && normalizedConversation.mode === "local"
+      && !normalizeString(normalizedFlow.sessionId, null)
+    );
+  }
+
   function scrollViewportToTop() {
     try {
       globalThis.scrollTo?.({ top: 0, left: 0, behavior: "auto" });
@@ -5912,6 +5948,36 @@ export function createCockpitApp({
     renderOnboardingConversation();
     persistFlowState("onboarding");
     return onboardingFlow.sessionId;
+  }
+
+  function canTruthfullyAdvanceOnboardingToUnderstanding() {
+    if (onboardingConversation?.mode === "repeated-loop-clarification") {
+      return onboardingConversation?.isComplete === true;
+    }
+
+    const viewModel = buildSmartOnboardingViewModel({
+      currentProject,
+      onboardingFlow,
+      onboardingConversation,
+    });
+    const adaptiveContract = normalizeObject(viewModel.adaptiveOnboardingAgentContract);
+    const providerRuntime = normalizeObject(viewModel.providerRuntime);
+    const hasProviderBackedSession = (
+      providerRuntime.runtimeMode === "provider-backed"
+      && Boolean(onboardingFlow?.sessionId || onboardingConversation?.sessionId)
+    );
+    const readinessReady = adaptiveContract.readinessLevel === "ready";
+    const handoffReady = adaptiveContract.handoffStatus === "ready";
+
+    if (isQaModeEnabled()) {
+      return onboardingConversation?.isComplete === true && hasProviderBackedSession && readinessReady && handoffReady;
+    }
+
+    if (onboardingFlow?.sessionId) {
+      return onboardingConversation?.isComplete === true && readinessReady && handoffReady;
+    }
+
+    return onboardingConversation?.isComplete === true;
   }
 
   async function updateOnboardingProviderSelection(providerId = "openai") {
@@ -6922,6 +6988,21 @@ export function createCockpitApp({
       renderOnboardingNotes();
       renderOnboardingConversation();
     } else {
+      if (isQaModeEnabled() && (!onboardingFlow?.sessionId || onboardingConversation?.mode === "local")) {
+        onboardingConversation = null;
+        renderOnboardingNotes();
+        renderOnboardingConversation();
+        if (elements.onboardingScreenStatus) {
+          elements.onboardingScreenStatus.textContent = "מחזיר את מסך ה־QA ל־provider-backed onboarding session כדי לא לפתוח מחדש shell לוקאלי ישן.";
+        }
+        void ensureQaProviderBackedOnboardingSession({
+          selectedProviderId: onboardingFlow?.selectedProviderId ?? resolveSelectedOnboardingProviderId(),
+        }).catch((error) => {
+          if (elements.onboardingScreenStatus) {
+            elements.onboardingScreenStatus.textContent = `לא הצלחנו לשחזר provider-backed onboarding session. ${formatOnboardingRetryStatus(error)}`;
+          }
+        });
+      } else {
       const hasRestorableLocalConversation = (
         onboardingConversation
         && typeof onboardingConversation === "object"
@@ -6958,6 +7039,7 @@ export function createCockpitApp({
         onboardingConversation = createOnboardingConversationState();
         renderOnboardingNotes();
         renderOnboardingConversation();
+      }
       }
     }
     renderShellChrome("onboarding", activeWorkspace);
@@ -7250,6 +7332,7 @@ export function createCockpitApp({
         event.preventDefault?.();
         await finishFirstProjectOnboarding();
       };
+      elements.understandingContinueButton.disabled = !canTruthfullyAdvanceOnboardingToUnderstanding();
     }
     if (elements.understandingCorrectButton) {
       elements.understandingCorrectButton.onclick = async (event) => {
@@ -8033,7 +8116,8 @@ export function createCockpitApp({
     onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
     const currentQuestion = onboardingConversation.currentQuestion ?? null;
     const hasActiveQuestion = Boolean(currentQuestion?.id);
-    const isComplete = onboardingConversation.isComplete === true || hasActiveQuestion !== true;
+    const canAdvanceToUnderstanding = canTruthfullyAdvanceOnboardingToUnderstanding();
+    const isComplete = onboardingConversation.isComplete === true && canAdvanceToUnderstanding;
     const currentPrompt = buildOnboardingCurrentPrompt();
     const isAwaitingAiReply = onboardingConversation.pendingAdvance === true;
     const totalQuestions = Math.max(
@@ -8122,6 +8206,9 @@ export function createCockpitApp({
     }
     if (isComplete) {
       renderUnderstandingSummaryStage();
+    } else if (!hasActiveQuestion && elements.onboardingScreenStatus) {
+      elements.onboardingScreenStatus.hidden = false;
+      elements.onboardingScreenStatus.textContent = "ה־onboarding עדיין לא מוכן לסיכום. Nexus חייבת לחזור לשיחה חיה או להחזיק את ה־readiness gate פתוח עד שיש מספיק הבנה.";
     }
     focusOnboardingAnswerInput();
   }
@@ -8745,11 +8832,22 @@ export function createCockpitApp({
   async function correctOnboardingUnderstanding() {
     if (elements.onboardingScreenStatus) {
       elements.onboardingScreenStatus.hidden = false;
-      elements.onboardingScreenStatus.textContent = "מחזיר את השיחה לעריכה כדי לדייק את ההבנה לפני שממשיכים.";
+      elements.onboardingScreenStatus.textContent = "מחזיר את אותה שיחה חיה כדי לדייק את ההבנה לפני שממשיכים.";
     }
 
     try {
-      await restartOnboardingConversationFromBackend();
+      if (isQaModeEnabled() && !onboardingFlow?.sessionId) {
+        await ensureQaProviderBackedOnboardingSession({
+          selectedProviderId: onboardingFlow?.selectedProviderId ?? resolveSelectedOnboardingProviderId(),
+        });
+      } else if (onboardingFlow?.sessionId) {
+        await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
+      } else {
+        onboardingConversation = refreshOnboardingConversationPresentation(
+          onboardingConversation,
+          buildOnboardingConversationOptions(),
+        );
+      }
     } catch {
       onboardingConversation = createOnboardingConversationState();
     }
@@ -9247,11 +9345,18 @@ async function runSnapshotWorkerTickFromUi() {
     }
 
     if (storedFlowState?.onboardingConversation && typeof storedFlowState.onboardingConversation === "object") {
-      onboardingConversation = storedFlowState.onboardingConversation.currentQuestion || storedFlowState.onboardingConversation.summary
-        ? refreshOnboardingConversationPresentation(storedFlowState.onboardingConversation, buildOnboardingConversationOptions({
-          visionTextOverride: storedFlowState?.onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
-        }))
-        : createOnboardingConversationState();
+      if (shouldDiscardStaleQaLocalOnboardingState(storedFlowState)) {
+        onboardingFlow = normalizeString(storedFlowState?.onboardingFlow?.sessionId, null)
+          ? storedFlowState.onboardingFlow
+          : null;
+        onboardingConversation = null;
+      } else {
+        onboardingConversation = storedFlowState.onboardingConversation.currentQuestion || storedFlowState.onboardingConversation.summary
+          ? refreshOnboardingConversationPresentation(storedFlowState.onboardingConversation, buildOnboardingConversationOptions({
+            visionTextOverride: storedFlowState?.onboardingFlow?.visionText?.trim?.() ?? currentProject?.goal ?? "",
+          }))
+          : createOnboardingConversationState();
+      }
     }
 
     if (
@@ -9798,10 +9903,12 @@ async function runSnapshotWorkerTickFromUi() {
     const onboardingForwardButton = event.target?.closest?.("#onboarding-forward-button");
     if (onboardingForwardButton && doc?.body?.dataset?.appScreen === "onboarding") {
       event.preventDefault?.();
-      const isComplete = onboardingConversation?.isComplete === true || !onboardingConversation?.currentQuestion?.id;
-      if (isComplete) {
+      if (canTruthfullyAdvanceOnboardingToUnderstanding()) {
         openUnderstandingPreviewScreen();
       } else {
+        if (!onboardingConversation?.currentQuestion?.id && elements.onboardingScreenStatus) {
+          elements.onboardingScreenStatus.textContent = "עדיין אי אפשר לעבור לסיכום ההבנה. Nexus עדיין חסומה על readiness / handoff וצריכה להחזיר אותך לשיחה חיה במקום לסגור מוקדם מדי.";
+        }
         await advanceOnboardingConversation();
       }
       return;

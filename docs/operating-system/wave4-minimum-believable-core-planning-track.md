@@ -1058,8 +1058,9 @@ Prepared tasks:
 - `W4-GEN-001 — Connect learning signals to generation decisions` — `trueGreen`
 - `W4-INTAKE-002 — Replace fixed 3-question onboarding with adaptive intake flow` — `trueGreen`
 - `W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection` — `trueGreen`
-- `W4-INTAKE-004 — Implement provider-backed canonical onboarding agent runtime` — `trueGreen`
+- `W4-INTAKE-004 — Implement shell-level provider-backed canonical onboarding agent runtime` — `trueGreen`
 - `W4-INTAKE-005 — Inject smart onboarding agent truth into canonical downstream system surfaces` — `selected-not-started`
+- `W4-INTAKE-006 — Connect onboarding agent to real external model provider APIs` — `prepared-not-started`
 - `W4-AGENT-001 — Enforce minimum real product-conversation depth before understanding closure` — `prepared-not-started`
 - `W4-AGENT-002 — Add floating cross-Nexus product-conversation agent presence` — `prepared-not-started`
 - `W4-AGENT-003 — Implement post-onboarding clarification and correction loop` — `prepared-not-started`
@@ -1071,7 +1072,8 @@ Reality-audit reopeners required after repository inspection:
 - `W4-GEN-001` is now closed truthfully as the first generation-facing learning integration layer
 - `W4-INTAKE-002` is now closed truthfully after live QA proof covered direct onboarding entry, landing-page early-stop, fresh ambiguous clarification rerun, and non-blocked refresh/revisit behavior
 - `W4-INTAKE-003` is now closed truthfully after live QA proof covered learning-guided question selection, generic-answer clarification, landing-page solution gating, stronger Understanding handoff, and continuity-safe restore on the same learned intake path
-- `W4-INTAKE-004` is now closed truthfully after live QA proof covered provider selection, visible provider-backed runtime identity, bounded clarification under Anthropic after a weak answer, and continuity-safe reload on the same provider-backed clarification path
+- `W4-INTAKE-004` is now closed truthfully only as shell-level provider runtime closure after live QA proof covered provider selection, visible provider-backed runtime identity, stale local QA restore rejection, bounded clarification under weak input, premature Understanding bounce-back into the live conversation, and continuity-safe reload on the same provider-backed clarification path
+- real external provider integration is still missing from repository reality, so `W4-INTAKE-006` is now required before Nexus can claim real external OpenAI or Anthropic onboarding runtime truth
 - canonical coverage is still insufficient for the clarified smart-onboarding direction because repository reality and current tasks still do not explicitly cover:
   - provider-backed onboarding agent runtime with user provider choice
   - canonical Nexus rule enforcement across provider choice

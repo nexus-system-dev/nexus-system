@@ -457,7 +457,7 @@ Closure truth on `2026-05-21`:
     - stronger Understanding / Generation handoff
     - restore truth on the same learned intake path
 
-### W4-INTAKE-004 — Implement provider-backed canonical onboarding agent runtime
+### W4-INTAKE-004 — Implement shell-level provider-backed canonical onboarding agent runtime
 
 - lane: `post-wave4-learning-and-intake-continuation`
 - mode: `implementation`
@@ -468,13 +468,14 @@ Closure truth on `2026-05-21`:
   - `W4-LEARN-002`
   - `W4-GEN-001`
 - mission:
-  - turn the adaptive onboarding system into a real provider-backed agent runtime that lets the user choose a model company while keeping one canonical Nexus rule layer above provider choice
+  - turn the adaptive onboarding system into a visible provider-runtime shell that lets the user choose a model company while keeping one canonical Nexus rule layer above provider choice
 - pass/fail truth:
-  - pass if the live onboarding route runs through a real provider-backed agent runtime, the user can choose a provider/company, and the same Nexus intake rules still govern behavior across provider choice
+  - pass if the live onboarding route runs through a visible provider-runtime shell, the user can choose a provider/company, stale local QA restore can no longer bypass that shell, and the same Nexus intake rules still govern behavior across provider choice
   - fail if the system remains only:
     - local branching logic
     - model-call wiring without user-facing provider runtime truth
     - provider selector UI without real agent-led intake behavior
+    - QA restore paths that can still reopen stale `mode: local` onboarding truth
 - continuity rules:
   - provider choice, active intake state, and approved intake truth must survive restore, revisit, rerun, and project resume without silently switching providers or dropping rule enforcement
 - generation integration rules:
@@ -488,7 +489,7 @@ Closure truth on `2026-05-21`:
   - provider choice must not remove class gates, readiness gates, clarification pressure, or bounded handoff rules
 - explicit visible product change required:
   - the user can choose which provider/company to talk to on the live onboarding route
-  - the live conversation visibly runs as a real onboarding agent rather than a fixed local script
+  - the live conversation visibly runs through one provider-backed Nexus runtime shell rather than a fixed local script
   - the same onboarding constraints remain visible across at least two provider choices
 - explicit prohibitions:
   - no docs-only closure
@@ -496,6 +497,7 @@ Closure truth on `2026-05-21`:
   - no hidden provider wiring without visible runtime behavior
   - no provider-specific rule drift
   - no free-form general chat mode that escapes Nexus intake constraints
+  - no stale `qaState` restore that silently reopens local shell onboarding
 - live verification requirement:
   - verify on `http://127.0.0.1:4011/?qa=1` that:
     - the user can select a provider/company on the live onboarding route
@@ -519,6 +521,63 @@ Closure truth on `2026-05-21`:
     - stable canonical rule enforcement across provider choice
     - bounded clarification under provider-backed runtime
     - continuity-safe reload on the same provider-backed clarification path
+- reality-audit correction written on `2026-05-21`:
+  - `W4-INTAKE-004` may remain `trueGreen` only as shell-level provider runtime closure
+  - repository reality still does not show real external OpenAI or Anthropic onboarding API call paths
+  - repository reality still does not show onboarding provider auth, streaming, retry/backoff, rate-limit handling, failover, or token/cost accounting
+  - real external provider integration therefore must not be claimed from `W4-INTAKE-004`
+  - the live QA onboarding route now discards stale local `qaState` onboarding restore, seeds or rehydrates a provider-backed session instead, blocks false understanding completion while readiness stays blocked, and routes premature Understanding attempts back into the live conversation
+
+### W4-INTAKE-006 — Connect onboarding agent to real external model provider APIs
+
+- lane: `post-wave4-learning-and-intake-continuation`
+- mode: `implementation`
+- status: `prepared-not-started`
+- depends_on:
+  - `W4-INTAKE-004`
+  - `W4-INTAKE-005`
+- mission:
+  - connect the onboarding agent shell to real external model provider APIs so Nexus can truthfully claim real provider-backed onboarding conversation instead of provider-labeled local behavior
+- pass/fail truth:
+  - pass only if Nexus can demonstrate at least one real external onboarding provider call path while still enforcing the canonical Nexus intake rules above provider choice
+  - fail if the system still has only:
+    - provider selector UI
+    - provider identity metadata
+    - local simulated provider runtime behavior
+    - mocked tests without real provider request behavior
+    - visible runtime labels without external model responses
+- continuity rules:
+  - real provider session identity, active provider choice, and canonical intake state must survive restore, revisit, reload, and project resume without silently downgrading to local shell behavior
+- provider integration rules:
+  - must include real OpenAI and/or Anthropic request wiring for onboarding
+  - must include server-side auth / API key handling
+  - must include provider error handling, retry/backoff, and rate-limit behavior
+  - must include streaming or explicit non-streaming response behavior that the live route can prove visibly
+  - must include token or cost accounting that can be attached to onboarding runtime truth
+  - must preserve one canonical Nexus rule layer above provider choice
+- explicit visible product change required:
+  - the live onboarding route must visibly show real provider response behavior instead of local scripted provider shells
+  - provider failure states must surface as real provider failures, not silent local fallbacks
+  - the user must still experience one coherent onboarding agent rather than raw provider chat
+- explicit prohibitions:
+  - no docs-only closure
+  - no contracts-only closure
+  - no cards-only closure
+  - no provider selector UI-only closure
+  - no runtime metadata-only closure
+  - no mocked provider responses
+  - no hidden API path without visible product proof
+- live verification requirement:
+  - verify on `http://127.0.0.1:4011/?qa=1` that:
+    - the onboarding route makes at least one real external provider-backed conversation call
+    - provider auth and API key handling are genuinely active
+    - real provider responses visibly drive the onboarding conversation
+    - canonical Nexus intake rules still constrain the conversation above provider choice
+    - refresh / revisit keeps the same real provider session family instead of downgrading to local shell behavior
+  - docs, contracts, cards, metadata, hidden wiring, or local shell behavior alone can never close this task
+- external dependency blockers recorded on `2026-05-21`:
+  - `OPENAI_API_KEY`
+  - `ANTHROPIC_API_KEY`
 
 ### W4-INTAKE-005 — Inject smart onboarding agent truth into canonical downstream system surfaces
 
