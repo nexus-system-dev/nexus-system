@@ -65,6 +65,35 @@ function labelAgent(value) {
   return labels[agent] ?? agent;
 }
 
+function summarizeGrowthMeasurementForSurface(value) {
+  const measurement = normalizeObject(value);
+  return {
+    taskId: normalizeString(measurement.taskId, "GROW-MEASURE-001"),
+    status: normalizeString(measurement.status, "measurement-not-available-yet"),
+    recordCount: Number.isFinite(measurement.recordCount) ? measurement.recordCount : normalizeArray(measurement.records).length,
+    acceptedCount: Number.isFinite(measurement.acceptedCount)
+      ? measurement.acceptedCount
+      : normalizeArray(measurement.records).filter((record) => record?.status === "accepted").length,
+    measurementAvailability: normalizeString(
+      measurement.measurementAvailability,
+      measurement.externalActionGate?.measurementAvailability ?? "measurement-not-available-yet",
+    ),
+    noSuccessInference: measurement.noSuccessInference ?? measurement.externalActionGate?.noSuccessInference ?? true,
+    confidenceLevel: normalizeString(measurement.confidenceLevel, measurement.learningSummary?.confidenceLevel ?? "low"),
+    conclusionLanguage: normalizeString(measurement.conclusionLanguage, measurement.learningSummary?.conclusionLanguage ?? "initial-signal"),
+    hypothesis: normalizeString(measurement.hypothesis, measurement.learningSummary?.hypothesis ?? "נדרשת מדידה ממקור ברור לפני מסקנה."),
+    result: normalizeString(measurement.result, measurement.learningSummary?.result ?? "measurement not available yet"),
+    insight: normalizeString(measurement.insight, measurement.learningSummary?.insight ?? "אין להסיק הצלחה בלי מקור מדידה."),
+    sourceTypes: normalizeArray(measurement.sourceTypes)
+      .concat(normalizeArray(measurement.records).map((record) => normalizeString(record?.sourceType)))
+      .filter(Boolean),
+    shareDemoVisibility: normalizeString(measurement.shareDemoVisibility, "internal-only"),
+    nextGrowthActionOwner: normalizeString(measurement.nextGrowthActionOwner, measurement.handoffs?.nextGrowthActionOwner ?? "growth-agent"),
+    productChangeOwner: normalizeString(measurement.productChangeOwner, measurement.handoffs?.productChangeOwner ?? "mutation-change-agent"),
+    productChangeAllowedHere: measurement.productChangeAllowedHere === true || measurement.handoffs?.productChangeAllowedHere === true,
+  };
+}
+
 function summarizeGrowthAgentForSurface(value) {
   const agent = normalizeObject(value);
   const readiness = normalizeObject(agent.readiness);
@@ -163,6 +192,7 @@ function summarizeGrowthAgentForSurface(value) {
         }))
         .filter((item) => item.label),
     },
+    growthMeasurementTruth: summarizeGrowthMeasurementForSurface(agent.growthMeasurementTruth),
   };
 }
 
@@ -275,6 +305,12 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       ?? safeProject.context?.growthAgent
       ?? state.growthAgent,
   );
+  const growthMeasurement = summarizeGrowthMeasurementForSurface(
+    safeProject.growthMeasurementTruth
+      ?? safeProject.context?.growthMeasurementTruth
+      ?? state.growthMeasurementTruth
+      ?? growthAgent.growthMeasurementTruth,
+  );
   const strategy = normalizeObject(growthWorkspace.strategy);
   const continuation = normalizeObject(
     safeProject.postReleaseContinuationLoop
@@ -367,6 +403,7 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
         opportunityLabel: labelOpportunity(growthAgent.opportunityType),
         requiresAgentLabel: labelAgent(growthAgent.requiresAgent),
       },
+      measurement: growthMeasurement,
     },
   };
 }

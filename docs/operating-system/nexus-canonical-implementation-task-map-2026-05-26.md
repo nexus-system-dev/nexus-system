@@ -4966,7 +4966,7 @@ Write-back:
   - Hebrew/RTL is not supported
 
 #### `GROW-MEASURE-001 — Growth measurement and result truth`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -5038,6 +5038,32 @@ Write-back:
   - measurement changes the product directly
   - small data produces large product or growth claims
   - sensitive data is exposed in shared/demo surfaces without approval
+- closure_update_2026-06-11:
+  - implemented:
+    - `src/core/growth-measurement-truth.js` defines the measurement envelope, record schema, manual/provider/internal source boundaries, fake metric rejection, confidence language, source-preserving summary, and Growth/Mutation handoffs
+    - Growth Agent now carries `GROW-MEASURE-001` truth without claiming outcomes when measurement is unavailable
+    - Project Service now stores `growthMeasurementTruth` across context/state/top-level project truth and exposes `recordGrowthMeasurement`
+    - server route `POST /api/projects/:projectId/growth-measurement` records measurement through project authorization
+    - Growth surface now renders a visible measurement truth panel with status, availability, confidence, source types, and hypothesis/result/insight separation
+  - verification:
+    - `node --check src/core/growth-measurement-truth.js`
+    - `node --check src/core/growth-agent.js`
+    - `node --check src/core/project-service.js`
+    - `node --check src/server.js`
+    - `node --check web/nexus-ui/adapters/growth-surface-adapter.js`
+    - `node --check web/nexus-ui/screens/GrowthSurfaceScreen.js`
+    - `node --check scripts/verify-grow-measure-001-live-proof.mjs`
+    - `node --test test/growth-measurement-truth.test.js test/growth-measurement-project-service.test.js test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-surface-canonical-structure-contract.test.js`
+    - `PORT=4022 node scripts/verify-grow-measure-001-live-proof.mjs`
+  - evidence:
+    - live proof project `grow-measure-leads-1781206813137`
+    - unavailable provider record was rejected and produced `measurement-not-available-yet` without success inference
+    - internal event and manual user report were stored with distinct source types
+    - Growth screen rendered `data-growth-measurement-task="GROW-MEASURE-001"` with `has-initial-signal`, `low` confidence, and no proof/success claim
+    - screenshot: `/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-measure-SUrTQT/growth-measurement.png`
+  - boundary:
+    - closes measurement truth, internal/manual/provider result intake, and visible measurement framing
+    - does not execute SEO, SEM, email, landing experiments, public publishing, provider connection, budget spend, or product mutation from measurement
 
 #### `EXP-006 — Growth surfaced after product, not before it`
 - status: `new-proposed`

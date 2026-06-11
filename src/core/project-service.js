@@ -93,6 +93,7 @@ import {
   revokeShareDemoAgentEnvelope,
 } from "./share-demo-agent.js";
 import { buildGrowthAgentEnvelope } from "./growth-agent.js";
+import { buildGrowthMeasurementTruth } from "./growth-measurement-truth.js";
 import {
   buildApprovedProductDirectionPatch,
   buildBuildApprovalFlow,
@@ -1180,6 +1181,7 @@ export class ProjectService {
       runtimeLearningDecisionHints: normalizedState.runtimeLearningDecisionHints ?? null,
       shareDemoAgent: normalizedState.shareDemoAgent ?? null,
       growthAgent: normalizedState.growthAgent ?? null,
+      growthMeasurementTruth: normalizedState.growthMeasurementTruth ?? null,
       cycle: null,
       runtimeResults: [],
       taskResults: [],
@@ -2269,13 +2271,55 @@ export class ProjectService {
       userInput,
     });
     project.growthAgent = growthAgent;
+    const growthMeasurementTruth = growthAgent.growthMeasurementTruth ?? buildGrowthMeasurementTruth({
+      project,
+      growthAgent,
+      records: project.growthMeasurementTruth?.records ?? project.context?.growthMeasurementTruth?.records ?? project.state?.growthMeasurementTruth?.records ?? [],
+    });
+    project.growthMeasurementTruth = growthMeasurementTruth;
     project.context = {
       ...(project.context ?? {}),
       growthAgent,
+      growthMeasurementTruth,
     };
     project.state = {
       ...(project.state ?? {}),
       growthAgent,
+      growthMeasurementTruth,
+    };
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  recordGrowthMeasurement({ projectId, record = {}, externalAction = null, shareApproved = false } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const existingTruth = project.growthMeasurementTruth
+      ?? project.context?.growthMeasurementTruth
+      ?? project.state?.growthMeasurementTruth
+      ?? null;
+    const existingRecords = existingTruth?.records ?? [];
+    const growthAgent = project.growthAgent
+      ?? project.context?.growthAgent
+      ?? project.state?.growthAgent
+      ?? null;
+    const growthMeasurementTruth = buildGrowthMeasurementTruth({
+      project,
+      growthAgent,
+      records: [...existingRecords, record],
+      externalAction,
+      shareApproved,
+    });
+    project.growthMeasurementTruth = growthMeasurementTruth;
+    project.context = {
+      ...(project.context ?? {}),
+      growthMeasurementTruth,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      growthMeasurementTruth,
     };
     this.persistProjectRecord(project);
     return this.serializeProject(project);
@@ -4884,6 +4928,11 @@ export class ProjectService {
       ?? project.context?.growthAgent
       ?? project.state?.growthAgent
       ?? null;
+    const preservedGrowthMeasurementTruth =
+      project.growthMeasurementTruth
+      ?? project.context?.growthMeasurementTruth
+      ?? project.state?.growthMeasurementTruth
+      ?? null;
     const preservedProviderGatewayBoundary =
       project.providerGatewayBoundary
       ?? project.context?.providerGatewayBoundary
@@ -4960,6 +5009,8 @@ export class ProjectService {
       disasterRecoveryChecklist,
       businessContinuityState,
       repeatedLoopContinuation: preservedRepeatedLoopContinuation,
+      growthAgent: preservedGrowthAgent,
+      growthMeasurementTruth: preservedGrowthMeasurementTruth,
       providerGatewayBoundary: preservedProviderGatewayBoundary,
       providerReleaseRegistry: preservedProviderReleaseRegistry,
       creativeProviderAssets: preservedCreativeProviderAssets,
@@ -5058,6 +5109,7 @@ export class ProjectService {
     project.runtimeLearningDecisionHints = runtimeLearningDecisionHints;
     project.shareDemoAgent = preservedShareDemoAgent;
     project.growthAgent = preservedGrowthAgent;
+    project.growthMeasurementTruth = preservedGrowthMeasurementTruth;
     project.context = {
       ...project.context,
       runtimeSkeletonTruth,
@@ -5076,6 +5128,7 @@ export class ProjectService {
       historyContinuityAgent: preservedHistoryContinuityAgent,
       shareDemoAgent: preservedShareDemoAgent,
       growthAgent: preservedGrowthAgent,
+      growthMeasurementTruth: preservedGrowthMeasurementTruth,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -5099,6 +5152,7 @@ export class ProjectService {
       historyContinuityAgent: preservedHistoryContinuityAgent,
       shareDemoAgent: preservedShareDemoAgent,
       growthAgent: preservedGrowthAgent,
+      growthMeasurementTruth: preservedGrowthMeasurementTruth,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -7073,6 +7127,10 @@ export class ProjectService {
       growthAgent: project.context?.growthAgent
         ?? project.growthAgent
         ?? project.state?.growthAgent
+        ?? null,
+      growthMeasurementTruth: project.context?.growthMeasurementTruth
+        ?? project.growthMeasurementTruth
+        ?? project.state?.growthMeasurementTruth
         ?? null,
       companionConversation: project.context?.companionConversation
         ?? project.companionConversation

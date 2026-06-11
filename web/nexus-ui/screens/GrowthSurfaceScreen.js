@@ -117,6 +117,48 @@ function renderGrowthPluginLayer(pluginLayer = {}) {
   `;
 }
 
+function renderGrowthMeasurement(measurement = {}) {
+  const sourceTypes = measurement.sourceTypes ?? [];
+  return `
+    <section
+      class="nexus-growth-surface__panel"
+      data-growth-measurement-task="${escapeHtml(measurement.taskId ?? "GROW-MEASURE-001")}"
+      data-growth-measurement-status="${escapeHtml(measurement.status ?? "measurement-not-available-yet")}"
+      data-growth-measurement-availability="${escapeHtml(measurement.measurementAvailability ?? "measurement-not-available-yet")}"
+      data-growth-measurement-confidence="${escapeHtml(measurement.confidenceLevel ?? "low")}"
+      data-growth-measurement-no-success-inference="${escapeHtml(measurement.noSuccessInference === false ? "false" : "true")}"
+      data-growth-region="growth-measurement-truth"
+    >
+      <span class="nexus-growth-surface__tag">מדידת אמת</span>
+      <h2>${escapeHtml(measurement.status === "has-initial-signal" ? "יש סימן מדידה ראשוני" : "המדידה עדיין לא זמינה")}</h2>
+      <p>${escapeHtml(measurement.result ?? "measurement not available yet")}</p>
+      <div class="nexus-growth-surface__signal-grid">
+        <article>
+          <span>מקורות</span>
+          <strong>${escapeHtml(sourceTypes.length ? sourceTypes.join(", ") : "אין מקור מדידה")}</strong>
+        </article>
+        <article>
+          <span>ביטחון</span>
+          <strong>${escapeHtml(measurement.confidenceLevel ?? "low")}</strong>
+        </article>
+        <article>
+          <span>שפה מותרת</span>
+          <strong>${escapeHtml(measurement.conclusionLanguage ?? "initial-signal")}</strong>
+        </article>
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>הפרדה</strong>
+        ${renderList([
+          `השערה: ${measurement.hypothesis ?? "לא הוגדרה"}`,
+          `תוצאה: ${measurement.result ?? "לא זמינה"}`,
+          `תובנה: ${measurement.insight ?? "אין להסיק הצלחה"}`,
+        ], "אין מדידה להצגה.")}
+      </div>
+      <p class="nexus-growth-surface__empty">מדידה לא משנה את המוצר לבד. שינוי מוצר עובר לסוכן שינוי.</p>
+    </section>
+  `;
+}
+
 export function renderGrowthSurfaceScreen(viewModel = {}) {
   const contract = viewModel.contract ?? {};
   const growth = viewModel.growth ?? {};
@@ -202,6 +244,8 @@ export function renderGrowthSurfaceScreen(viewModel = {}) {
           </section>
 
           ${renderGrowthPluginLayer(pluginLayer)}
+
+          ${renderGrowthMeasurement(growth.measurement ?? {})}
 
           <section class="nexus-growth-surface__panel" data-growth-region="growth-metric-baseline">
             <span class="nexus-growth-surface__tag">Baseline</span>

@@ -1,4 +1,5 @@
 import { buildGrowthPluginLayer, summarizeGrowthPluginLayer } from "./growth-plugin-layer.js";
+import { buildGrowthMeasurementTruth, summarizeGrowthMeasurementTruth } from "./growth-measurement-truth.js";
 
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
@@ -85,6 +86,20 @@ function resolveArtifactTitle(project) {
 function buildBaseEnvelope({ project, userInput }) {
   const input = normalizeString(userInput);
   const growthPluginLayer = buildGrowthPluginLayer({ project, userInput });
+  const existingMeasurementRecords = normalizeArray(
+    project?.growthMeasurementTruth?.records
+      ?? project?.context?.growthMeasurementTruth?.records
+      ?? project?.state?.growthMeasurementTruth?.records,
+  );
+  const growthMeasurementTruth = buildGrowthMeasurementTruth({
+    project,
+    records: existingMeasurementRecords,
+    externalAction: {
+      actionType: growthPluginLayer.primaryPlugin?.pluginId ?? "draft-only",
+      draftOnly: growthPluginLayer.primaryPlugin?.draftOnly !== false,
+      successMetric: growthPluginLayer.primaryPlugin?.smallSuccessMetric ?? "",
+    },
+  });
   return {
     taskId: "GROW-AGT-001",
     agentId: "growth-agent",
@@ -121,6 +136,7 @@ function buildBaseEnvelope({ project, userInput }) {
       forbiddenWithoutApproval: ["publish", "schedule", "reply", "delete", "direct-message", "spend"],
     },
     growthPluginLayer,
+    growthMeasurementTruth,
     userMessage: "",
     status: "needs-product-first",
     visibleBoundary: {
@@ -339,5 +355,6 @@ export function summarizeGrowthAgentForSurface(envelope = {}) {
     doNotPromise: normalizeArray(safeEnvelope.doNotPromise),
     campaignExecution: normalizeObject(safeEnvelope.campaignExecution),
     growthPluginLayer: summarizeGrowthPluginLayer(safeEnvelope.growthPluginLayer),
+    growthMeasurementTruth: summarizeGrowthMeasurementTruth(safeEnvelope.growthMeasurementTruth),
   };
 }

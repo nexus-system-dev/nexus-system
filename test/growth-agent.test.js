@@ -125,3 +125,16 @@ test("GROW-AGT-001 keeps email draft requests aligned with GROW-PLUG-001", () =>
   assert.equal(email.growthPluginLayer.primaryPlugin.registryTaskId, "GROW-PLUG-002");
   assert.doesNotMatch(email.userMessage, /דמו|קישור ציבורי/);
 });
+
+test("GROW-MEASURE-001 is carried by the Growth Agent without fake results", () => {
+  const envelope = buildGrowthAgentEnvelope({
+    project: leadProject,
+    userInput: "תגדיר מדידה לדף נחיתה",
+  });
+
+  assert.equal(envelope.growthMeasurementTruth.taskId, "GROW-MEASURE-001");
+  assert.equal(envelope.growthMeasurementTruth.status, "measurement-not-available-yet");
+  assert.equal(envelope.growthMeasurementTruth.externalActionGate.measurementAvailability, "measurement-not-available-yet");
+  assert.equal(envelope.growthMeasurementTruth.learningSummary.confidenceLevel, "low");
+  assert.match(envelope.growthMeasurementTruth.learningSummary.insight, /אין להסיק הצלחה/);
+});

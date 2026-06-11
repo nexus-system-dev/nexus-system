@@ -125,6 +125,20 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
             ],
           },
         },
+        growthMeasurementTruth: {
+          taskId: "GROW-MEASURE-001",
+          status: "has-initial-signal",
+          recordCount: 2,
+          acceptedCount: 2,
+          sourceTypes: ["internal-event", "manual"],
+          measurementAvailability: "available",
+          noSuccessInference: false,
+          confidenceLevel: "low",
+          conclusionLanguage: "initial-signal",
+          hypothesis: "בודק יבין את הערך.",
+          result: "2 נקודות מדידה זמינות.",
+          insight: "זה סימן ראשוני בלבד, לא הוכחה.",
+        },
       },
     },
   });
@@ -142,6 +156,10 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
   assert.match(html, /data-growth-plugin-registry-task="GROW-PLUG-002"/);
   assert.match(html, /data-growth-plugin-registry-mode="simple-intents-not-marketplace"/);
   assert.match(html, /data-growth-plugin-registry-count="6"/);
+  assert.match(html, /data-growth-measurement-task="GROW-MEASURE-001"/);
+  assert.match(html, /data-growth-measurement-status="has-initial-signal"/);
+  assert.match(html, /data-growth-measurement-confidence="low"/);
+  assert.match(html, /סימן ראשוני בלבד/);
   assert.match(html, /data-growth-plugin-primary="audience-understanding-test"/);
   assert.match(html, /data-growth-plugin-provider-required="false"/);
   assert.match(html, /בדיקת הבנת קהל/);

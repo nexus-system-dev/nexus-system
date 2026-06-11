@@ -545,7 +545,7 @@ function resolveProjectRouteAction(method, pathname) {
   }
 
   if (normalizedMethod === "POST") {
-    if (suffix === "proposal-edits" || suffix === "presence" || suffix === "review-threads" || suffix === "privacy-rights-requests" || suffix === "build-mutations" || suffix === "skeleton-choice/select" || suffix === "history-continuity/restore-decision" || suffix === "growth-agent") {
+    if (suffix === "proposal-edits" || suffix === "presence" || suffix === "review-threads" || suffix === "privacy-rights-requests" || suffix === "build-mutations" || suffix === "skeleton-choice/select" || suffix === "history-continuity/restore-decision" || suffix === "growth-agent" || suffix === "growth-measurement") {
       return "edit";
     }
 
@@ -1479,6 +1479,21 @@ export function createServer(projectService, runtimeStatus = {}) {
         ? projectService.runGrowthAgent({
             projectId,
             userInput: body.userInput ?? body.requestText ?? "",
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/growth-measurement")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.recordGrowthMeasurement === "function"
+        ? projectService.recordGrowthMeasurement({
+            projectId,
+            record: body.record ?? body.measurementRecord ?? body,
+            externalAction: body.externalAction ?? null,
+            shareApproved: body.shareApproved === true,
           })
         : null;
       sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
