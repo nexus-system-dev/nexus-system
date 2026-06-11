@@ -32,9 +32,13 @@ export function createApplicationServerBootstrap({
   createServer,
   serviceFactory,
 } = {}) {
-  loadEnvFile();
+  const rootDir = runtimeConfig.rootDir ?? path.resolve(path.dirname(new URL(import.meta.url).pathname), "../..");
+  loadEnvFile(path.resolve(rootDir, ".env"));
 
-  const config = resolveConfig(runtimeConfig);
+  const config = resolveConfig({
+    ...runtimeConfig,
+    rootDir,
+  });
   fs.mkdirSync(config.dataDir, { recursive: true });
   const platformObservabilityTransport = createPlatformObservabilityTransport();
   const rateLimitStore = createInMemoryRateLimitStore();

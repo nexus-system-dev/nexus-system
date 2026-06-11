@@ -4,14 +4,10 @@ import { renderNexusQaNav } from "../components/NexusQaNav.js";
 import { renderNexusStepper } from "../components/NexusStepper.js";
 import { renderProofArtifactSurface } from "../components/ProofArtifactSurface.js";
 import { renderWorkspaceLayout } from "../layouts/WorkspaceLayout.js";
+import { escapeVisibleShellCopy, sanitizeVisibleShellCopy } from "../copy/visible-shell-language.js";
 
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+  return escapeVisibleShellCopy(value);
 }
 
 function renderCriterion(item) {
@@ -62,14 +58,28 @@ function renderReleaseCheck(item) {
   `;
 }
 
+function sanitizeProductCopy(value, fallback = "") {
+  return sanitizeVisibleShellCopy(value ?? fallback)
+    .replaceAll("Release evidence and handoff", "מה צריך לפני שיתוף")
+    .replaceAll("release evidence", "הוכחת מוכנות")
+    .replaceAll("Release target", "יעד שיתוף")
+    .replaceAll("release target", "יעד שיתוף")
+    .replaceAll("handoff", "המשך")
+    .replaceAll("Handoff", "המשך")
+    .replaceAll("Next action:", "הצעד הבא:")
+    .replaceAll("Open blocker", "מה עדיין פתוח")
+    .replaceAll("Handoff step", "צעד המשך")
+    .replaceAll("web-build", "אריזה")
+    .replaceAll("web-deployment", "שיתוף")
+    .replaceAll("live-browser-preview", "תצוגה חיה");
+}
+
 export function renderProofResultScreen(viewModel) {
   const sidebar = {
     currentRoute: "/loop",
     primary: [
       { title: "יצירה", href: "/create", target: "create", icon: "＋" },
-      { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
-      { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
-      { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
+      { title: "בנייה", href: "/loop", target: "loop", icon: "▦" },
     ],
     support: [
       { title: "בית", href: "/home", icon: "⌂" },
@@ -89,9 +99,8 @@ export function renderProofResultScreen(viewModel) {
 
   const steps = renderNexusStepper([
     { label: "יצירה", status: "complete", glyph: "✓" },
-    { label: "הכרת הפרויקט", status: "complete", glyph: "✓" },
-    { label: "הבנה", status: "complete", glyph: "✓" },
-    { label: "פעולה", status: "active" },
+    { label: "בנייה", status: "complete", glyph: "✓" },
+    { label: "בדיקה", status: "active" },
   ]);
 
   const content = `
@@ -161,7 +170,7 @@ export function renderProofResultScreen(viewModel) {
             className: "nexus-proof-screen__artifacts-card",
             padding: "lg",
             content: `
-              <h2>מה כבר נבנה בפנים</h2>
+              <h2>מה כבר מוכן בתוצר</h2>
               <div class="nexus-proof-artifact-list">
                 ${viewModel.artifacts.map(renderArtifact).join("")}
               </div>
@@ -174,51 +183,39 @@ export function renderProofResultScreen(viewModel) {
             content: `
               <div class="nexus-proof-screen__artifact-head">
                 <div>
-                  <span class="nexus-proof-screen__artifact-label">Release evidence and handoff</span>
-                  <h2>${escapeHtml(viewModel.releaseEvidenceHandoff.handoffStatusLabel)}</h2>
-                  <p>${escapeHtml(viewModel.releaseEvidenceHandoff.narrative)}</p>
+                  <span class="nexus-proof-screen__artifact-label">מה צריך לפני שיתוף</span>
+                  <h2>${escapeHtml(sanitizeProductCopy(viewModel.releaseEvidenceHandoff.handoffStatusLabel))}</h2>
+                  <p>${escapeHtml(sanitizeProductCopy(viewModel.releaseEvidenceHandoff.narrative))}</p>
                 </div>
-                <span class="nexus-proof-screen__artifact-status">${escapeHtml(viewModel.releaseEvidenceHandoff.releaseTarget)}</span>
+                <span class="nexus-proof-screen__artifact-status">${escapeHtml(sanitizeProductCopy(viewModel.releaseEvidenceHandoff.releaseTarget))}</span>
               </div>
               <div class="nexus-proof-artifact-list">
-                ${viewModel.releaseEvidenceHandoff.evidenceItems.map(renderReleaseEvidenceItem).join("")}
+                ${viewModel.releaseEvidenceHandoff.evidenceItems.map((item) => renderReleaseEvidenceItem({
+                  label: sanitizeProductCopy(item.label),
+                  value: sanitizeProductCopy(item.value),
+                })).join("")}
               </div>
               <div class="nexus-proof-screen__preview-body">
                 <div class="nexus-proof-screen__preview-frame">
-                  <strong>${escapeHtml(viewModel.releaseEvidenceHandoff.explainableReleasePath)}</strong>
-                  <span>${escapeHtml(viewModel.releaseEvidenceHandoff.persistenceRule)}</span>
+                  <strong>${escapeHtml(sanitizeProductCopy(viewModel.releaseEvidenceHandoff.builtSurfaceTitle))}</strong>
+                  <span>${escapeHtml(sanitizeProductCopy(viewModel.releaseEvidenceHandoff.persistenceRule))}</span>
                 </div>
-                <p class="nexus-proof-screen__preview-why">${escapeHtml(`Next action: ${viewModel.releaseEvidenceHandoff.nextAction}`)}</p>
-              </div>
-              <div class="nexus-proof-criteria-list">
-                ${viewModel.releaseEvidenceHandoff.visibleChecks.map(renderReleaseCheck).join("")}
-              </div>
-              <div class="nexus-proof-screen__preview-body">
-                <div class="nexus-proof-screen__preview-frame">
-                  <strong>${escapeHtml(viewModel.releaseEvidenceHandoff.builtSurfaceTitle)}</strong>
-                  <span>${escapeHtml(viewModel.releaseEvidenceHandoff.wrappedArtifactType)}</span>
-                </div>
-              </div>
-              <div class="nexus-proof-screen__preview-body">
-                <div class="nexus-proof-screen__preview-frame">
-                  <strong>${escapeHtml(viewModel.releaseEvidenceHandoff.packagePath)}</strong>
-                  <span>${escapeHtml(viewModel.releaseEvidenceHandoff.previewPath)}</span>
-                </div>
+                <p class="nexus-proof-screen__preview-why">${escapeHtml(sanitizeProductCopy(`הצעד הבא: ${viewModel.releaseEvidenceHandoff.nextAction}`))}</p>
               </div>
               <div class="nexus-proof-artifact-list">
                 ${viewModel.releaseEvidenceHandoff.handoffSteps.map((item) => `
                   <article class="nexus-proof-artifact">
                     <div class="nexus-proof-artifact__meta">
-                      <span class="nexus-proof-artifact__type">Handoff step</span>
-                      <strong>${escapeHtml(item)}</strong>
+                      <span class="nexus-proof-artifact__type">צעד המשך</span>
+                      <strong>${escapeHtml(sanitizeProductCopy(item))}</strong>
                     </div>
                   </article>
                 `).join("")}
                 ${viewModel.releaseEvidenceHandoff.blockers.map((item) => `
                   <article class="nexus-proof-artifact">
                     <div class="nexus-proof-artifact__meta">
-                      <span class="nexus-proof-artifact__type">Open blocker</span>
-                      <strong>${escapeHtml(item)}</strong>
+                      <span class="nexus-proof-artifact__type">מה עדיין פתוח</span>
+                      <strong>${escapeHtml(sanitizeProductCopy(item))}</strong>
                     </div>
                   </article>
                 `).join("")}

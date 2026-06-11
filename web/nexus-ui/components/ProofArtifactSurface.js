@@ -1,14 +1,11 @@
+import { escapeVisibleShellCopy, sanitizeVisibleShellCopy } from "../copy/visible-shell-language.js";
+
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+  return escapeVisibleShellCopy(value);
 }
 
 function normalizeVisibleCopy(value) {
-  return String(value ?? "")
+  return sanitizeVisibleShellCopy(value)
     .replaceAll("ב-Proof", "בתצוגה שנפתח")
     .replaceAll("ה־Proof", "התצוגה הבאה")
     .replaceAll("Proof", "התצוגה")

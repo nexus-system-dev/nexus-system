@@ -14,6 +14,14 @@ test("onboarding completion evaluator marks intake ready when required inputs ex
     },
     onboardingSession: {
       sessionId: "session-1",
+      conversation: {
+        answers: {
+          "target-audience": "יוצרים שמוכרים קורסים",
+          "core-problem": "הם לא מבינים מה דחוף אחרי כניסה למוצר ולכן מפספסים follow-up",
+          "successful-solution": "לוח אחד עם חידושים, תזכורות והפעולה הבאה",
+          "build-direction": "המסך הראשון חייב להראות מיד מה דחוף, מה התחדש, ומה הפעולה הראשונה לבצע",
+        },
+      },
       requiredActions: [],
     },
   });
@@ -66,6 +74,7 @@ test("onboarding completion evaluator keeps supporting material as continuation 
         answers: {
           "target-audience": "Busy parents",
           "core-problem": "They do not understand what to book first",
+          "build-direction": "The page must make the first booking step, the trust proof, and the main CTA obvious immediately",
         },
       },
       requiredActions: [],
@@ -79,4 +88,32 @@ test("onboarding completion evaluator keeps supporting material as continuation 
   assert.equal(onboardingCompletionDecision.nextAction, "build-project-state-with-supporting-material-gate");
   assert.equal(onboardingCompletionDecision.continuationGate?.gateType, "supporting-material");
   assert.equal(onboardingCompletionDecision.missingInputs.includes("supporting-material"), true);
+});
+
+test("onboarding completion evaluator blocks shallow understanding even when intake fields exist", () => {
+  const { onboardingCompletionDecision } = createOnboardingCompletionEvaluator({
+    projectIntake: {
+      projectName: "Clinic Launch",
+      visionText: "Landing page for a new clinic service",
+      projectType: "landing-page",
+      uploadedFiles: [{ name: "brief.md" }],
+      externalLinks: [],
+    },
+    onboardingSession: {
+      sessionId: "session-4",
+      conversation: {
+        answers: {
+          "target-audience": "Busy parents",
+          "core-problem": "They do not understand what to book first",
+        },
+      },
+      requiredActions: [],
+    },
+  });
+
+  assert.equal(onboardingCompletionDecision.isComplete, false);
+  assert.equal(onboardingCompletionDecision.requiresClarification, true);
+  assert.equal(onboardingCompletionDecision.readinessLevel, "blocked");
+  assert.equal(onboardingCompletionDecision.summary.minimumDepthReached, false);
+  assert.match(onboardingCompletionDecision.primaryBlockingReason ?? "", /מה חייב להיות ברור מיד|must be clear/i);
 });

@@ -1,4 +1,9 @@
 import { resolveCanonicalOnboardingAnswers } from "../../shared/learning-guided-onboarding.js";
+import {
+  resolveHumanArtifactExpectationLine,
+  resolveHumanLearningDirectionLine,
+  resolveHumanUnderstandingSubtitle,
+} from "../../shared/live-conversation-tone-contract.js";
 
 function truncateText(value, maxLength = 64) {
   const text = String(value ?? "").trim();
@@ -15,6 +20,44 @@ function normalizeObject(value) {
 
 function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function isSelfAudienceReference(value = "") {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) {
+    return false;
+  }
+  return /^(?:אני|אני בעצמי|אני המשתמש(?:ת)?|המשתמש(?:ת)?(?:\s+המרכזי)?\s*(?:זה|הוא|היא)\s*אני)$/iu.test(normalized);
+}
+
+function isAmbiguousClientReference(value = "") {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) {
+    return false;
+  }
+  return /(?:^|\s)לקוח(?:ות)?\s+שלי(?:$|\s)/iu.test(normalized);
+}
+
+function resolveAudienceDisplayValue(value = "") {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) {
+    return "";
+  }
+  if (isSelfAudienceReference(normalized)) {
+    return "אתה בעצמך";
+  }
+  return normalized;
+}
+
+function resolveAudienceForPhrase(value = "", fallback = "המשתמש") {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) {
+    return `עבור ${fallback}`;
+  }
+  if (isSelfAudienceReference(normalized)) {
+    return "עבורך";
+  }
+  return `עבור ${resolveAudienceDisplayValue(normalized)}`;
 }
 
 function detectProjectTypeFromText(value = "") {
@@ -37,6 +80,27 @@ function detectProjectTypeFromText(value = "") {
   return "unknown";
 }
 
+function normalizeProjectType(value = "") {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (!normalized) return "";
+  if (["internal-tool", "internal tool", "internal web app", "internal app", "admin panel", "backoffice", "back office"].includes(normalized)) {
+    return "internal-tool";
+  }
+  if (["commerce-ops", "commerce ops", "commerce-storefront", "storefront", "ecommerce", "e-commerce"].includes(normalized)) {
+    return "commerce-ops";
+  }
+  if (["landing-page", "landing page", "marketing site", "website"].includes(normalized)) {
+    return "landing-page";
+  }
+  if (["mobile-app", "mobile app", "native app"].includes(normalized)) {
+    return "mobile-app";
+  }
+  if (["saas", "web app", "crm", "crm / follow-up", "follow-up", "platform"].includes(normalized)) {
+    return "saas";
+  }
+  return normalized;
+}
+
 function resolveAnswers(onboardingConversation = null) {
   const answers = normalizeObject(onboardingConversation?.answers);
   const canonicalAnswers = resolveCanonicalOnboardingAnswers(answers);
@@ -51,20 +115,11 @@ function resolveSummary(onboardingConversation = null) {
   return normalizeObject(onboardingConversation?.summary);
 }
 
-function resolveProjectType(summary = {}, onboardingFlow = null) {
-  return typeof summary.projectType === "string" && summary.projectType.trim()
-    ? summary.projectType.trim()
-    : detectProjectTypeFromText(onboardingFlow?.visionText ?? "");
-}
-
-function resolveProjectTypeLabel(summary = {}, onboardingFlow = null) {
-  const projectType = resolveProjectType(summary, onboardingFlow);
-  return typeof summary.projectTypeLabel === "string" && summary.projectTypeLabel.trim()
-    ? summary.projectTypeLabel.trim()
-    : projectType === "landing-page"
-      ? "דף נחיתה / שיווק"
-      : projectType === "commerce-ops"
-        ? "מערכת מסחר ותפעול"
+function resolveProjectTypeLabelFromType(projectType = "unknown") {
+  return projectType === "landing-page"
+    ? "דף נחיתה / שיווק"
+    : projectType === "commerce-ops"
+      ? "מערכת מסחר ותפעול"
       : projectType === "internal-tool"
         ? "כלי פנימי"
         : projectType === "saas"
@@ -72,6 +127,39 @@ function resolveProjectTypeLabel(summary = {}, onboardingFlow = null) {
           : projectType === "mobile-app"
             ? "אפליקציה"
             : "הפרויקט";
+}
+
+function resolveProjectType(summary = {}, onboardingFlow = null, onboardingConversation = null, currentProject = null) {
+  if (typeof summary.projectType === "string" && summary.projectType.trim()) {
+    return normalizeProjectType(summary.projectType);
+  }
+
+  const artifactExpectation = resolveArtifactExpectation({ currentProject });
+  if (typeof artifactExpectation.projectType === "string" && artifactExpectation.projectType.trim()) {
+    return normalizeProjectType(artifactExpectation.projectType);
+  }
+
+  const answers = resolveAnswers(onboardingConversation);
+  const successfulSolutionType = detectProjectTypeFromText(answers["successful-solution"] ?? "");
+  if (successfulSolutionType === "landing-page") {
+    return "landing-page";
+  }
+
+  return detectProjectTypeFromText(onboardingFlow?.visionText ?? "");
+}
+
+function resolveProjectTypeLabel(summary = {}, onboardingFlow = null, onboardingConversation = null, currentProject = null) {
+  if (typeof summary.projectTypeLabel === "string" && summary.projectTypeLabel.trim()) {
+    return summary.projectTypeLabel.trim();
+  }
+
+  const artifactExpectation = resolveArtifactExpectation({ currentProject });
+  if (artifactExpectation.projectType) {
+    return artifactExpectation.projectTypeLabel ?? resolveProjectTypeLabelFromType(artifactExpectation.projectType);
+  }
+
+  const projectType = resolveProjectType(summary, onboardingFlow, onboardingConversation, currentProject);
+  return resolveProjectTypeLabelFromType(projectType);
 }
 
 function buildExpectationId(projectType, title) {
@@ -96,17 +184,23 @@ function resolveGenerationIntent({ currentProject = null } = {}) {
   );
 }
 
-function deriveConversationArtifactExpectation({ onboardingConversation = null, onboardingFlow = null } = {}) {
+function deriveConversationArtifactExpectation({
+  currentProject = null,
+  onboardingConversation = null,
+  onboardingFlow = null,
+} = {}) {
   const answers = resolveAnswers(onboardingConversation);
   const summary = resolveSummary(onboardingConversation);
-  const projectType = resolveProjectType(summary, onboardingFlow);
+  const projectType = resolveProjectType(summary, onboardingFlow, onboardingConversation, currentProject);
   const projectName = String(onboardingFlow?.projectName ?? "").trim();
   const audience = String(answers["target-audience"] ?? "").trim();
+  const audienceDisplay = resolveAudienceDisplayValue(audience) || "המשתמש";
+  const audienceForPhrase = resolveAudienceForPhrase(audience);
   const problem = String(answers["core-problem"] ?? "").trim();
   const solution = String(answers["successful-solution"] ?? "").trim();
 
   if (projectType === "landing-page") {
-    const title = projectName ? `${projectName} landing page` : "Landing page";
+    const title = projectName ? `${projectName} דף נחיתה` : "דף נחיתה";
     return {
       expectationId: buildExpectationId("landing-page", title),
       projectType: "landing-page",
@@ -119,8 +213,8 @@ function deriveConversationArtifactExpectation({ onboardingConversation = null, 
         "הוכחת אמון שתומכת בהחלטה",
         "CTA מרכזי אחד שקל להבין",
       ],
-      understandingLine: `אם הסיכום נכון, Nexus צריך לבנות עכשיו ${projectName ? `${projectName} landing page` : "Landing page"} שמדבר אל ${audience || "הקהל"} ומטפל ישירות ב-${problem || "הכאב המרכזי"}.`,
-      continuityLine: `בתצוגה שנפתח נרצה לראות ${title} עם הבטחה ברורה, אמון ופעולה מיידית עבור ${audience || "הקהל"}.`,
+      understandingLine: `אם הסיכום נכון, הצעד הבא הוא לבנות עכשיו ${title} שמדבר אל ${audienceDisplay} ומטפל ישירות ב-${problem || "הכאב המרכזי"}.`,
+      continuityLine: `בתצוגה שנפתח נרצה לראות ${title} עם הבטחה ברורה, אמון ופעולה מיידית ${audienceForPhrase}.`,
     };
   }
   if (projectType === "internal-tool") {
@@ -137,12 +231,12 @@ function deriveConversationArtifactExpectation({ onboardingConversation = null, 
         "בעלות ברורה על כל פריט",
         "פעולה הבאה שניתנת לביצוע מיד",
       ],
-      understandingLine: `אם הסיכום נכון, Nexus צריך לבנות עכשיו ${title} עבור ${audience || "הצוות"} כך שהאחראי, רמת השירות והפעולה הבאה יהיו ברורים מיד.`,
+      understandingLine: `אם הסיכום נכון, הצעד הבא הוא לבנות עכשיו ${title} ${resolveAudienceForPhrase(audience, "הצוות")} כך שהאחראי, רמת השירות והפעולה הבאה יהיו ברורים מיד.`,
       continuityLine: `בתצוגה שנפתח נרצה לראות ${title} עם תור עבודה חי, בעלות גלויה ופעולה הבאה שכל נציג מבין מיד.`,
     };
   }
   if (projectType === "commerce-ops") {
-    const title = projectName ? `${projectName} commerce workspace` : "Commerce workspace";
+    const title = projectName ? `${projectName} מרחב מסחר` : "מרחב מסחר";
     return {
       expectationId: buildExpectationId("commerce-ops", title),
       projectType: "commerce-ops",
@@ -155,12 +249,12 @@ function deriveConversationArtifactExpectation({ onboardingConversation = null, 
         "מצב קטלוג ומלאי שאפשר לפעול ממנו מיד",
         "פעולת תפעול אחת ברורה שמקדמת את המסחר עכשיו",
       ],
-      understandingLine: `אם הסיכום נכון, Nexus צריך לבנות עכשיו ${title} עבור ${audience || "צוות המסחר"} כך שהזמנות, קטלוג והפעולה הבאה יהיו ברורים מיד סביב ${problem || "צוואר הבקבוק התפעולי"}.`,
+      understandingLine: `אם הסיכום נכון, הצעד הבא הוא לבנות עכשיו ${title} ${resolveAudienceForPhrase(audience, "צוות המסחר")} כך שהזמנות, קטלוג והפעולה הבאה יהיו ברורים מיד סביב ${problem || "צוואר הבקבוק התפעולי"}.`,
       continuityLine: `בתצוגה שנפתח נרצה לראות ${title} עם תור הזמנות פעיל, מצב קטלוג גלוי ופעולה תפעולית אחת שכל נציג יודע לבצע מיד.`,
     };
   }
   if (projectType === "saas") {
-    const title = projectName ? `${projectName} product workspace` : "Product workspace";
+    const title = projectName ? `${projectName} מרחב מוצר ראשון` : "מרחב מוצר ראשון";
     return {
       expectationId: buildExpectationId("saas", title),
       projectType: "saas",
@@ -173,12 +267,12 @@ function deriveConversationArtifactExpectation({ onboardingConversation = null, 
         "פעולה ראשונה שאפשר להבין מיד",
         "משטח מוצרי שמטפל בכאב המרכזי",
       ],
-      understandingLine: `אם הסיכום נכון, Nexus צריך לבנות עכשיו ${projectName ? `${projectName} product workspace` : "Product workspace"} עבור ${audience || "המשתמש"} כך שהפעולה הבאה סביב ${problem || "הכאב המרכזי"} תהיה ברורה.`,
-      continuityLine: `בתצוגה שנפתח נרצה לראות ${title} שממחיש פעולה ראשונה, מצב עבודה ברור ותועלת ישירה עבור ${audience || "המשתמש"}.`,
+      understandingLine: `אם הסיכום נכון, הצעד הבא הוא לבנות עכשיו ${title} ${audienceForPhrase} כך שהפעולה הבאה סביב ${problem || "הכאב המרכזי"} תהיה ברורה.`,
+      continuityLine: `בתצוגה שנפתח נרצה לראות ${title} שממחיש פעולה ראשונה, מצב עבודה ברור ותועלת ישירה ${audienceForPhrase}.`,
     };
   }
   if (projectType === "mobile-app") {
-    const title = projectName ? `${projectName} mobile flow` : "Mobile flow";
+    const title = projectName ? `${projectName} זרימת מובייל ראשונה` : "זרימת מובייל ראשונה";
     return {
       expectationId: buildExpectationId("mobile-app", title),
       projectType: "mobile-app",
@@ -191,8 +285,8 @@ function deriveConversationArtifactExpectation({ onboardingConversation = null, 
         "פעולה ראשונה שאפשר להבין בלי הדרכה",
         "זרימה ניידת שמטפלת ישירות בכאב המרכזי",
       ],
-      understandingLine: `אם הסיכום נכון, Nexus צריך לבנות עכשיו ${title} עבור ${audience || "המשתמש"} כך שהמסך הראשון והפעולה הראשונה יהיו ברורים מיד סביב ${problem || "הכאב המרכזי"}.`,
-      continuityLine: `בתצוגה שנפתח נרצה לראות ${title} עם מסך ראשון ברור, פעולה ראשונה מובנת וזרימה ניידת שמשרתת את ${audience || "המשתמש"}.`,
+      understandingLine: `אם הסיכום נכון, הצעד הבא הוא לבנות עכשיו ${title} ${audienceForPhrase} כך שהמסך הראשון והפעולה הראשונה יהיו ברורים מיד סביב ${problem || "הכאב המרכזי"}.`,
+      continuityLine: `בתצוגה שנפתח נרצה לראות ${title} עם מסך ראשון ברור, פעולה ראשונה מובנת וזרימה ניידת שמשרתת ${audienceForPhrase}.`,
     };
   }
 
@@ -218,9 +312,26 @@ export function buildOnboardingArtifactExpectationPreview({
   onboardingConversation = null,
 } = {}) {
   const artifactExpectation = resolveArtifactExpectation({ currentProject });
-  return artifactExpectation.title
-    ? artifactExpectation
-    : deriveConversationArtifactExpectation({ onboardingConversation, onboardingFlow });
+  const derivedArtifactExpectation = deriveConversationArtifactExpectation({
+    currentProject,
+    onboardingConversation,
+    onboardingFlow,
+  });
+  const summary = resolveSummary(onboardingConversation);
+  const summaryProjectType = typeof summary.projectType === "string" ? summary.projectType.trim() : "";
+  const artifactProjectType = typeof artifactExpectation.projectType === "string"
+    ? artifactExpectation.projectType.trim()
+    : "";
+  if (
+    derivedArtifactExpectation.title
+    && (
+      !artifactExpectation.title
+      || (summaryProjectType && artifactProjectType && summaryProjectType !== artifactProjectType)
+    )
+  ) {
+    return derivedArtifactExpectation;
+  }
+  return artifactExpectation;
 }
 
 export function buildOnboardingGenerationIntentPreview({
@@ -281,22 +392,31 @@ export function buildOnboardingGenerationIntentPreview({
 function resolveAudienceCard(answers = {}, summary = {}) {
   const audience = String(answers["target-audience"] ?? "").trim();
   const refined = Array.isArray(summary.understoodItems)
-    ? summary.understoodItems.find((item) => typeof item === "string" && item.includes("קהל"))
+    ? summary.understoodItems.find((item) => typeof item === "string" && (item.includes("קהל") || item.includes("המשתמש המרכזי")))
     : "";
+  const selfAudience = isSelfAudienceReference(audience);
+  const ambiguousClientAudience = isAmbiguousClientReference(audience);
+  const displayAudience = resolveAudienceDisplayValue(audience);
 
   return {
     label: "קהל יעד",
     icon: "👥",
-    title: audience || "קהל היעד עדיין לא הושלם",
-    body: refined || (audience
+    title: ambiguousClientAudience
+      ? "המשתמש עדיין לא הוגדר מספיק טוב"
+      : displayAudience || "קהל היעד עדיין לא הושלם",
+    body: refined || (selfAudience
+      ? "כרגע ברור שאתה גם מי שמגדיר את המוצר וגם מי שאמור להשתמש בו בפועל, ולכן שאר ההחלטות צריכות להיבדק מנקודת המבט שלך."
+      : ambiguousClientAudience
+        ? "עדיין צריך לדייק אם מדובר בך, בצוות של הלקוח, או בלקוח הקצה עצמו לפני שאפשר לבנות על זה."
+      : audience
       ? "זה המשתמש המרכזי שעבורו בונים את החוויה הראשונה של הפרויקט."
       : "צריך לחדד מי המשתמש המרכזי של המוצר כדי שנוכל להחליט מה חשוב לבנות קודם."),
   };
 }
 
-function resolveProblemCard(answers = {}, summary = {}) {
+function resolveProblemCard(answers = {}, summary = {}, onboardingConversation = null, currentProject = null) {
   const problem = String(answers["core-problem"] ?? "").trim();
-  const projectType = resolveProjectType(summary);
+  const projectType = resolveProjectType(summary, null, onboardingConversation, currentProject);
   const refined = Array.isArray(summary.missingItems)
     ? summary.missingItems.find((item) => typeof item === "string" && (item.includes("בעיה") || item.includes("כאב") || item.includes("צוואר בקבוק")))
     : "";
@@ -317,9 +437,9 @@ function resolveProblemCard(answers = {}, summary = {}) {
   };
 }
 
-function resolveSolutionCard(answers = {}, summary = {}) {
+function resolveSolutionCard(answers = {}, summary = {}, onboardingConversation = null, currentProject = null) {
   const solution = String(answers["successful-solution"] ?? "").trim();
-  const projectType = resolveProjectType(summary);
+  const projectType = resolveProjectType(summary, null, onboardingConversation, currentProject);
   const label = projectType === "landing-page"
     ? "הכיוון לדף"
     : projectType === "commerce-ops"
@@ -365,8 +485,8 @@ function resolveGoalCard({ currentProject = null, onboardingFlow = null, answers
     icon: "🎯",
     title: truncateText(goalSource, 52) || "להוציא את הפרויקט לפעולה",
     body: goalSource
-      ? "אם זה באמת הכיוון, Nexus יכול עכשיו להפוך את ההבנה הזו למשימה הראשונה שתוביל לתוצר ממשי."
-      : "אחרי אישור הסיכום נתקדם למשימה הראשונה שנגזרת ישירות מההבנה הזו.",
+      ? "אם זה באמת הכיוון, אפשר עכשיו להפוך את ההבנה הזו לצעד הראשון שמוליד תוצר ממשי."
+      : "אחרי שנאשר שזה יושב נכון, נתקדם ישר לצעד הראשון שנגזר מזה.",
   };
 }
 
@@ -378,29 +498,45 @@ export function buildUnderstandingSummaryViewModel({
   const answers = resolveAnswers(onboardingConversation);
   const summary = resolveSummary(onboardingConversation);
   const projectName = currentProject?.name ?? onboardingFlow?.projectName ?? "";
-  const projectTypeLabel = resolveProjectTypeLabel(summary, onboardingFlow);
+  const projectTypeLabel = resolveProjectTypeLabel(summary, onboardingFlow, onboardingConversation, currentProject);
   const derivedArtifactExpectation = buildOnboardingArtifactExpectationPreview({
     currentProject,
     onboardingFlow,
     onboardingConversation,
   });
-  const generationIntent = resolveGenerationIntent({ currentProject }).intentId
-    ? resolveGenerationIntent({ currentProject })
-    : buildOnboardingGenerationIntentPreview({
-        currentProject,
-        onboardingFlow,
-        onboardingConversation,
-      });
+  const resolvedGenerationIntent = resolveGenerationIntent({ currentProject });
+  const derivedGenerationIntent = buildOnboardingGenerationIntentPreview({
+    currentProject,
+    onboardingFlow,
+    onboardingConversation,
+  });
+  const generationIntent = resolvedGenerationIntent.intentId
+    && !(
+      typeof summary.projectType === "string"
+      && summary.projectType.trim()
+      && typeof resolvedGenerationIntent.projectType === "string"
+      && resolvedGenerationIntent.projectType.trim()
+      && summary.projectType.trim() !== resolvedGenerationIntent.projectType.trim()
+    )
+    ? resolvedGenerationIntent
+    : derivedGenerationIntent;
   const artifactExpectationLine = derivedArtifactExpectation.title
-    ? `מה אנחנו מכוונים לבנות עכשיו: ${derivedArtifactExpectation.title}. ${derivedArtifactExpectation.summary ?? ""}`.trim()
+    ? resolveHumanArtifactExpectationLine({
+        title: derivedArtifactExpectation.title,
+        summary: derivedArtifactExpectation.summary ?? "",
+      })
     : "";
   const generationLearningCard = generationIntent.intentId
     ? {
-        badge: generationIntent.learningAware ? "כיוון generation חי" : "כיוון generation",
+        badge: generationIntent.learningAware ? "הכיוון שכבר מתחיל להיסגר" : "הכיוון שאני מחזיק עכשיו",
         title: generationIntent.artifactTitle ?? "התוצר הבא",
         body: generationIntent.learningAware
-          ? `${generationIntent.learningStrategyLabel ?? "הלמידה כבר משנה את כיוון היצירה"}. ${generationIntent.learningReason ?? ""}`.trim()
-          : generationIntent.generationGoal ?? generationIntent.framingLine ?? "השלב הבא כבר מחובר לתוצר שאליו Nexus מכוונת.",
+          ? resolveHumanLearningDirectionLine({
+              strategyLabel: generationIntent.learningStrategyLabel ?? "",
+              reason: generationIntent.learningReason ?? "",
+              fallback: "יש לי כאן כיוון יותר חד למה צריך להיסגר קודם.",
+            })
+          : generationIntent.generationGoal ?? generationIntent.framingLine ?? "השלב הבא כבר מחובר ישירות למה שהבנו כאן.",
         proofLine: generationIntent.learnedProofRequirement
           ?? generationIntent.generationGoal
           ?? generationIntent.framingLine
@@ -411,19 +547,19 @@ export function buildUnderstandingSummaryViewModel({
 
   return {
     projectName,
-    title: "זה מה שהבנתי",
-    subtitle: `ניתחתי את השיחה שלנו והפקתי את ארבעת המרכיבים המרכזיים של ${projectTypeLabel}.`,
-    detail: artifactExpectationLine || "אם זה מדויק נמשיך ללופ. אם לא, נחזור לחדד את ההבנה לפני שמתקדמים.",
+    title: "בוא נוודא שאני איתך על אותו הדבר",
+    subtitle: resolveHumanUnderstandingSubtitle(projectTypeLabel),
+    detail: artifactExpectationLine || "אם זה יושב נכון, נתקדם מכאן ישר לצעד הבא. אם לא, נדייק כאן לפני שבונים הלאה.",
     whyItMatters: derivedArtifactExpectation.understandingLine
-      || "ההבנה הזו היא הבסיס לכל החלטה שנקבל בהמשך. אם הסיכום נכון, המשימה הבאה תהיה חדה וישימה. אם לא, נתקן עכשיו לפני שבונים משהו לא מדויק.",
+      || "ההבנה הזו קובעת איך ייראה הצעד הבא. אם זה מדויק, ננוע קדימה בביטחון. אם לא, עדיף לתקן כאן ולא אחרי שבנינו משהו עקום.",
     confidenceLabel: onboardingConversation?.isComplete
-      ? "רמת ביטחון גבוהה על בסיס שיחת ה־onboarding"
-      : "רמת ביטחון ראשונית עד להשלמת ההבנה",
+      ? "יש לי כבר תמונה די יציבה של מה צריך להיבנות עכשיו"
+      : "יש לי כיוון טוב, אבל אני עדיין משאיר מקום לדיוק אחרון",
     generationLearningCard,
     cards: [
       resolveAudienceCard(answers, summary),
-      resolveProblemCard(answers, summary),
-      resolveSolutionCard(answers, summary),
+      resolveProblemCard(answers, summary, onboardingConversation, currentProject),
+      resolveSolutionCard(answers, summary, onboardingConversation, currentProject),
       resolveGoalCard({ currentProject, onboardingFlow, answers }),
     ],
   };

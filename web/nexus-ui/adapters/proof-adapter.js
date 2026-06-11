@@ -421,7 +421,7 @@ function resolveSuccessCriteria(project, artifact) {
       },
       {
         title: "יש רצף להמשך העבודה",
-        body: "התוצר נשאר פתיח, ניתן לפתיחה ולהמשך review בלי לאבד את ההקשר של הלקוח הבא.",
+        body: "התוצר נשאר פתוח להמשך, ואפשר לחזור אליו בלי לאבד את ההקשר של הלקוח הבא.",
         passed: true,
       },
       {
@@ -447,7 +447,7 @@ function resolveSuccessCriteria(project, artifact) {
             title: "הלמידה כבר שינתה את כיוון היצירה",
             body: sanitizeProductFacingCopy(
               generationIntent.learnedProofRequirement,
-              generationIntent.learningReason || "ה־generation הבא כבר נשען על כשלונות, approvals, ודפוסים קודמים במקום לחזור למסלול גנרי.",
+              generationIntent.learningReason || "הצעד הבא כבר נשען על כשלונות, אישורים ודפוסים קודמים במקום לחזור למסלול גנרי.",
             ),
             passed: true,
           }]
@@ -495,10 +495,10 @@ function resolveSuccessCriteria(project, artifact) {
     },
     ...(generationIntent.learningAware
       ? [{
-          title: "הלמידה כבר חידדה את ה־generation הבא",
+          title: "הלמידה כבר חידדה את הצעד הבא",
           body: sanitizeProductFacingCopy(
             generationIntent.learnedProofRequirement,
-            generationIntent.learningReason || "ה־generation הבא כבר מושפע מהלמידה של הסבב האחרון.",
+            generationIntent.learningReason || "הצעד הבא כבר נשען על מה שלמדנו בסבב האחרון, במקום לחזור שוב למסלול כללי.",
           ),
           passed: true,
         }]
@@ -549,11 +549,11 @@ function resolveArtifacts(project, artifact) {
       ...(generationIntent.learningAware
         ? normalizeArray(generationIntent.learnedFocusAreas).slice(0, 2).map((focus) => ({
             name: focus,
-            type: "כיוון generation שנלמד מהסבב האחרון",
-            meta: generationIntent.learningStrategyLabel ?? "Learning-aware generation",
+            type: "כיוון שנלמד מהסבב האחרון",
+            meta: generationIntent.learningStrategyLabel ?? "הכיוון שנאסף מהלמידה האחרונה",
             description: sanitizeProductFacingCopy(
               generationIntent.learnedProofRequirement,
-              generationIntent.learningReason || "זה הפוקוס החדש שהלמידה הכניסה ליצירה הבאה.",
+              generationIntent.learningReason || "זה הפוקוס החדש שהלמידה הכניסה לצעד הבא.",
             ),
           }))
         : []),
@@ -763,8 +763,8 @@ export function buildProofResultViewModel({ project = null, qaMode = false } = {
   return {
     title: "זה מה שנבנה עד עכשיו",
     subtitle: qaMode
-      ? "זה מצב QA זמני למסך proof גם בלי runtime מלא."
-      : "כאן רואים את התוצר שנבנה עבורך, ולמה הוא כבר מוכן לצעד הבא.",
+      ? "זה מסך בדיקה זמני, אבל התוצר שמופיע כאן הוא עדיין אותו תוצר שנבחן הלאה."
+      : "כאן כבר רואים את מה שנבנה, ולמה אפשר להמשיך ממנו בביטחון.",
     showQaNav: qaMode,
     projectName: safeProject.name ?? "QA mode",
     badge: qaMode ? "QA preview override" : "תצוגת התוצר",
@@ -784,7 +784,7 @@ export function buildProofResultViewModel({ project = null, qaMode = false } = {
         ? sanitizeProductFacingCopy(artifactExpectation.continuityLine)
         : artifact.artifactType === "generated-surface"
         ? "כבר רואים כאן תוצר מוחשי שאפשר לבדוק ולהמשיך ממנו, במקום שכבת מערכת פנימית."
-        : "נבנה עבורך משטח מוצרי שאפשר לבדוק, לפתוח, ולהמשיך ממנו לאישור בלי לאבד את התוצר.",
+        : "נבנה כאן משטח מוצרי שאפשר לבדוק, לפתוח, ולהמשיך ממנו בלי לאבד את הכיוון שסגרנו.",
     successCriteria: resolveSuccessCriteria(safeProject, artifact),
     artifacts: resolveArtifacts(safeProject, artifact),
     stats: resolveProofStats(safeProject),

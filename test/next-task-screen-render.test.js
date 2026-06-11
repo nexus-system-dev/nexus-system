@@ -91,9 +91,9 @@ test("next task screen renders post-release continuation card", () => {
     secondaryAction: { label: "הצג פירוט", target: "timeline" },
   });
 
-  assert.match(html, /Post-release continuation/);
-  assert.match(html, /Learning decision impact/);
-  assert.match(html, /Growth boundary/);
+  assert.match(html, /המשך אחרי שחרור/);
+  assert.match(html, /השפעת הלמידה על ההמשך/);
+  assert.match(html, /גבולות הצעות הצמיחה/);
   assert.match(html, /סבב ההמשך כבר פתוח/);
   assert.match(html, /repair-before-expand/);
   assert.match(html, /הצעות ההמשך נשארות bounded/);

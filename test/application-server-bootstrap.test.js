@@ -6,6 +6,35 @@ import path from "node:path";
 
 import { createApplicationServerBootstrap } from "../src/core/application-server-bootstrap.js";
 
+test("application server bootstrap loads project env from rootDir even when cwd is elsewhere", () => {
+  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-runtime-"));
+  const otherDir = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-other-cwd-"));
+  fs.writeFileSync(path.join(rootDir, ".env"), "OPENAI_API_KEY=bootstrap-test-openai-key\n", "utf8");
+
+  const previousOpenAiKey = process.env.OPENAI_API_KEY;
+  const previousCwd = process.cwd();
+  delete process.env.OPENAI_API_KEY;
+
+  try {
+    process.chdir(otherDir);
+    createApplicationServerBootstrap({
+      runtimeConfig: {
+        rootDir,
+      },
+      createServer: () => ({ kind: "http-server" }),
+    });
+
+    assert.equal(process.env.OPENAI_API_KEY, "bootstrap-test-openai-key");
+  } finally {
+    process.chdir(previousCwd);
+    if (previousOpenAiKey === undefined) {
+      delete process.env.OPENAI_API_KEY;
+    } else {
+      process.env.OPENAI_API_KEY = previousOpenAiKey;
+    }
+  }
+});
+
 test("application server bootstrap returns canonical runtime without seeded demo projects by default", () => {
   const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-runtime-"));
   const dataDir = path.join(rootDir, "data");

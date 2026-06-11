@@ -1,3 +1,5 @@
+import { escapeVisibleShellCopy } from "../copy/visible-shell-language.js";
+
 const SIZE_CLASS_MAP = {
   sm: "nexus-ui-button--sm",
   md: "",
@@ -34,6 +36,6 @@ export function renderNexusButton({
       class="${getNexusButtonClassName({ variant, size, className })}"
       ${disabled ? "disabled" : ""}
       ${extraAttrs}
-    >${label ?? ""}</button>
+    >${escapeVisibleShellCopy(label ?? "")}</button>
   `;
 }

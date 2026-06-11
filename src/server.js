@@ -20,6 +20,38 @@ import { createWorkspaceIsolationGuard } from "./core/workspace-isolation-guard.
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.resolve(__dirname, "../web");
+const projectRootDir = path.resolve(__dirname, "..");
+
+function loadLocalEnvironmentFile(filePath = path.join(projectRootDir, ".env")) {
+  if (!fs.existsSync(filePath)) {
+    return;
+  }
+
+  const content = fs.readFileSync(filePath, "utf8");
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#") || !line.includes("=")) {
+      continue;
+    }
+
+    const separatorIndex = line.indexOf("=");
+    const key = line.slice(0, separatorIndex).trim();
+    let value = line.slice(separatorIndex + 1).trim();
+    if (!key || process.env[key] != null) {
+      continue;
+    }
+
+    if (
+      (value.startsWith("\"") && value.endsWith("\""))
+      || (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    process.env[key] = value;
+  }
+}
+
+loadLocalEnvironmentFile();
 
 function sendJson(response, statusCode, payload, headers = {}) {
   response.writeHead(statusCode, {
@@ -108,17 +140,129 @@ function resolveIpAddress(request) {
   return request.socket?.remoteAddress ?? request.connection?.remoteAddress ?? "127.0.0.1";
 }
 
-function resolveRequestUserId(request) {
+function resolveRequestUserId(request, url = null) {
   const headerValue = request.headers?.["x-user-id"];
-  return typeof headerValue === "string" && headerValue.trim().length > 0 ? headerValue.trim() : null;
+  if (typeof headerValue === "string" && headerValue.trim().length > 0) {
+    return headerValue.trim();
+  }
+
+  if (url?.pathname?.endsWith?.("/live-events")) {
+    const liveEventUserId = url.searchParams?.get?.("userId");
+    return typeof liveEventUserId === "string" && liveEventUserId.trim().length > 0
+      ? liveEventUserId.trim()
+      : null;
+  }
+
+  return null;
+}
+
+function parseCookieHeader(cookieHeader) {
+  if (typeof cookieHeader !== "string" || !cookieHeader.trim()) {
+    return {};
+  }
+
+  return Object.fromEntries(cookieHeader
+    .split(";")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const separatorIndex = entry.indexOf("=");
+      if (separatorIndex === -1) {
+        return [entry, ""];
+      }
+      return [
+        decodeURIComponent(entry.slice(0, separatorIndex).trim()),
+        decodeURIComponent(entry.slice(separatorIndex + 1).trim()),
+      ];
+    }));
+}
+
+function resolveRequestSessionToken(request) {
+  const authorization = request.headers?.authorization ?? request.headers?.Authorization;
+  if (typeof authorization === "string" && authorization.trim()) {
+    const match = authorization.trim().match(/^Bearer\s+(.+)$/i);
+    if (match?.[1]?.trim()) {
+      return match[1].trim();
+    }
+  }
+
+  const directHeader = request.headers?.["x-session-token"]
+    ?? request.headers?.["X-Session-Token"]
+    ?? request.headers?.["x-nexus-session-token"]
+    ?? request.headers?.["X-Nexus-Session-Token"];
+  if (typeof directHeader === "string" && directHeader.trim()) {
+    return directHeader.trim();
+  }
+
+  const cookies = parseCookieHeader(request.headers?.cookie ?? request.headers?.Cookie);
+  return typeof cookies.nexus_access_token === "string" && cookies.nexus_access_token.trim()
+    ? cookies.nexus_access_token.trim()
+    : null;
+}
+
+function resolveVerifiedRequestIdentity(projectService, request) {
+  const token = resolveRequestSessionToken(request);
+  if (!token) {
+    return {
+      verified: false,
+      reason: "session-token-missing",
+      userId: null,
+      sessionId: null,
+      authPayload: null,
+      legacyUserId: resolveRequestUserId(request),
+    };
+  }
+
+  const result = typeof projectService?.verifySessionToken === "function"
+    ? projectService.verifySessionToken(token)
+    : null;
+  if (!result?.verified || !result.userId) {
+    return {
+      verified: false,
+      reason: result?.reason ?? "session-token-invalid",
+      userId: null,
+      sessionId: result?.sessionId ?? null,
+      authPayload: result?.authPayload ?? null,
+      legacyUserId: resolveRequestUserId(request),
+    };
+  }
+
+  return {
+    verified: true,
+    reason: result.reason ?? "verified-session-token",
+    userId: result.userId,
+    sessionId: result.sessionId ?? null,
+    authPayload: result.authPayload ?? null,
+    legacyUserId: resolveRequestUserId(request),
+  };
+}
+
+function buildAuthCookieHeaders(authPayload) {
+  const accessToken = authPayload?.tokenBundle?.accessToken;
+  const expiresAt = authPayload?.tokenBundle?.expiresAt;
+  if (typeof accessToken !== "string" || !accessToken.trim()) {
+    return {};
+  }
+
+  const parts = [
+    `nexus_access_token=${encodeURIComponent(accessToken.trim())}`,
+    "Path=/",
+    "SameSite=Lax",
+    "HttpOnly",
+  ];
+  if (expiresAt && !Number.isNaN(Date.parse(expiresAt))) {
+    parts.push(`Expires=${new Date(expiresAt).toUTCString()}`);
+  }
+  return { "Set-Cookie": parts.join("; ") };
+}
+
+function buildClearAuthCookieHeaders() {
+  return {
+    "Set-Cookie": "nexus_access_token=; Path=/; SameSite=Lax; HttpOnly; Max-Age=0",
+  };
 }
 
 function resolveRequestActorType(request, project = null, userId = null) {
-  const headerValue = request.headers?.["x-actor-type"];
-  if (typeof headerValue === "string" && headerValue.trim().length > 0) {
-    return headerValue.trim().toLowerCase();
-  }
-
   if (!userId) {
     return "viewer";
   }
@@ -129,7 +273,28 @@ function resolveRequestActorType(request, project = null, userId = null) {
     ?? project?.userId
     ?? null;
 
-  return ownerUserId && ownerUserId === userId ? "owner" : "viewer";
+  if (ownerUserId && ownerUserId === userId) {
+    return "owner";
+  }
+
+  const membershipRecords = [
+    project?.state?.membershipRecord,
+    project?.context?.membershipRecord,
+    ...(Array.isArray(project?.state?.workspaceModel?.members) ? project.state.workspaceModel.members : []),
+    ...(Array.isArray(project?.context?.workspaceModel?.members) ? project.context.workspaceModel.members : []),
+  ].filter(Boolean);
+  const membershipRecord = membershipRecords.find((record) => (
+    record?.userId === userId
+    || record?.memberUserId === userId
+    || record?.actorId === userId
+  ));
+  const membershipRole = typeof membershipRecord?.role === "string" && membershipRecord.role.trim()
+    ? membershipRecord.role.trim().toLowerCase()
+    : Array.isArray(membershipRecord?.roles) && membershipRecord.roles[0]
+      ? String(membershipRecord.roles[0]).trim().toLowerCase()
+      : null;
+
+  return membershipRole || "viewer";
 }
 
 function resolveRequestWorkspaceHeader(request, fallback = null) {
@@ -335,8 +500,8 @@ function resolveRouteDefinition(method, pathname) {
   };
 }
 
-function getProjectLiveState(projectService, projectId) {
-  const project = projectService.getProject(projectId);
+function getProjectLiveState(projectService, projectId, { userId = null } = {}) {
+  const project = projectService.getProject(projectId, { userId });
   if (!project) {
     return null;
   }
@@ -380,7 +545,7 @@ function resolveProjectRouteAction(method, pathname) {
   }
 
   if (normalizedMethod === "POST") {
-    if (suffix === "proposal-edits" || suffix === "presence" || suffix === "review-threads" || suffix === "privacy-rights-requests") {
+    if (suffix === "proposal-edits" || suffix === "presence" || suffix === "review-threads" || suffix === "privacy-rights-requests" || suffix === "build-mutations" || suffix === "skeleton-choice/select" || suffix === "history-continuity/restore-decision" || suffix === "growth-agent") {
       return "edit";
     }
 
@@ -388,7 +553,7 @@ function resolveProjectRouteAction(method, pathname) {
       return "run";
     }
 
-    if (suffix === "partial-acceptance" || suffix === "approvals/approve" || suffix === "approvals/reject" || suffix === "approvals/revoke") {
+    if (suffix === "partial-acceptance" || suffix === "approvals/approve" || suffix === "approvals/reject" || suffix === "approvals/revoke" || suffix === "build-approval/decide") {
       return "approve";
     }
 
@@ -446,8 +611,24 @@ function buildProjectAccessEnforcement({
   allowScopedReviewBypass = false,
   allowViewAuthorizationBypass = false,
 } = {}) {
+  if (!project) {
+    return {
+      httpStatus: 404,
+      payload: {
+        error: "Project not found",
+        reason: "project-not-found",
+      },
+    };
+  }
+
   if (!project?.state?.roleCapabilityMatrix || !project?.state?.tenantIsolationSchema) {
-    return null;
+    return {
+      httpStatus: 403,
+      payload: {
+        error: "Security boundary unavailable",
+        reason: "security-boundary-missing",
+      },
+    };
   }
 
   if (!userId) {
@@ -632,7 +813,8 @@ export function createServer(projectService, runtimeStatus = {}) {
     const requestStartedAt = Date.now();
     const requestTimestamp = Date.now();
     const workspaceId = resolveWorkspaceId(url.pathname);
-    const resolvedUserId = resolveRequestUserId(request);
+    const verifiedRequestIdentity = resolveVerifiedRequestIdentity(projectService, request);
+    const resolvedUserId = verifiedRequestIdentity.userId;
     const baseRequestContext = {
       requestId,
       pathName: url.pathname,
@@ -640,6 +822,9 @@ export function createServer(projectService, runtimeStatus = {}) {
       ipAddress: resolveIpAddress(request),
       timestamp: requestTimestamp,
       userId: resolvedUserId,
+      sessionId: verifiedRequestIdentity.sessionId,
+      authStatus: verifiedRequestIdentity.verified ? "verified" : "unverified",
+      legacyUserId: verifiedRequestIdentity.legacyUserId,
     };
     const { rateLimitDecision } = createRateLimitingAndAbuseProtection({
       requestContext: baseRequestContext,
@@ -871,7 +1056,7 @@ export function createServer(projectService, runtimeStatus = {}) {
         userInput: body.userInput,
         credentials: body.credentials,
       });
-      sendJson(response, 201, result);
+      sendJson(response, 201, result, buildAuthCookieHeaders(result?.authPayload));
       return;
     }
 
@@ -881,7 +1066,7 @@ export function createServer(projectService, runtimeStatus = {}) {
         userInput: body.userInput,
         credentials: body.credentials,
       });
-      sendJson(response, result ? 200 : 404, result ?? { error: "User not found" });
+      sendJson(response, result ? 200 : 404, result ?? { error: "User not found" }, buildAuthCookieHeaders(result?.authPayload));
       return;
     }
 
@@ -890,51 +1075,44 @@ export function createServer(projectService, runtimeStatus = {}) {
       const result = projectService.logoutUser({
         userInput: body.userInput,
       });
-      sendJson(response, result ? 200 : 404, result ?? { error: "User not found" });
+      sendJson(response, result ? 200 : 404, result ?? { error: "User not found" }, buildClearAuthCookieHeaders());
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/team-invitations/accept") {
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.acceptProjectInvitation === "function"
+        ? projectService.acceptProjectInvitation(body.projectId, {
+            actorUserId: resolvedUserId ?? body.userId ?? null,
+            email: body.email ?? null,
+            invitationId: body.invitationId ?? null,
+          })
+        : null;
+      sendJson(response, result?.httpStatus ?? 404, result ?? { error: "Invitation not found" });
       return;
     }
 
     if (request.method === "GET" && url.pathname === "/api/settings-profile") {
-      const userId = resolveRequestUserId(request);
+      const userId = resolvedUserId;
       if (!userId) {
         sendJson(response, 401, { error: "Authentication required" });
         return;
       }
 
-      const authPayload = projectService.getUserAuthPayload(userId);
-      if (!authPayload) {
+      const settingsSurface = typeof projectService.buildAccountSettingsSurface === "function"
+        ? projectService.buildAccountSettingsSurface(userId)
+        : null;
+      if (!settingsSurface) {
         sendJson(response, 404, { error: "User not found" });
         return;
       }
 
-      sendJson(response, 200, {
-        settingsProfileSurface: {
-          settingsProfileSurfaceId: `settings-profile:${authPayload.userIdentity?.userId ?? userId}`,
-          status: "ready",
-          routeKey: "settings",
-          actorProfile: {
-            userId: authPayload.userIdentity?.userId ?? userId,
-            displayName: authPayload.userIdentity?.displayName ?? null,
-            email: authPayload.userIdentity?.email ?? null,
-            role: authPayload.membershipRecord?.roleAssignment?.role ?? authPayload.membershipRecord?.role ?? "owner",
-          },
-          workspaceSettings: authPayload.workspaceSettings ?? {},
-          notificationPreferences: authPayload.notificationPreferences ?? {},
-          securitySettings: {
-            mfaDecision: authPayload.ownerMfaDecision?.decision ?? "unknown",
-            trustLevel: authPayload.userIdentity?.userId ? "known-user" : "anonymous",
-          },
-          summary: {
-            canEditProfile: true,
-            hasSettingsRoute: true,
-          },
-        },
-      });
+      sendJson(response, 200, settingsSurface);
       return;
     }
 
     if (request.method === "PUT" && url.pathname === "/api/settings-profile") {
-      const userId = resolveRequestUserId(request);
+      const userId = resolvedUserId;
       if (!userId) {
         sendJson(response, 401, { error: "Authentication required" });
         return;
@@ -960,42 +1138,58 @@ export function createServer(projectService, runtimeStatus = {}) {
         });
       }
 
-      const authPayload = projectService.getUserAuthPayload(userId);
-      if (!authPayload) {
+      const settingsSurface = typeof projectService.buildAccountSettingsSurface === "function"
+        ? projectService.buildAccountSettingsSurface(userId)
+        : null;
+      if (!settingsSurface) {
         sendJson(response, 404, { error: "User not found" });
         return;
       }
 
-      sendJson(response, 200, {
-        settingsProfileSurface: {
-          settingsProfileSurfaceId: `settings-profile:${authPayload.userIdentity?.userId ?? userId}`,
-          status: "ready",
-          routeKey: "settings",
-          actorProfile: {
-            userId: authPayload.userIdentity?.userId ?? userId,
-            displayName: authPayload.userIdentity?.displayName ?? null,
-            email: authPayload.userIdentity?.email ?? null,
-            role: authPayload.membershipRecord?.roleAssignment?.role ?? authPayload.membershipRecord?.role ?? "owner",
-          },
-          workspaceSettings: authPayload.workspaceSettings ?? {},
-          notificationPreferences: authPayload.notificationPreferences ?? {},
-          securitySettings: {
-            mfaDecision: authPayload.ownerMfaDecision?.decision ?? "unknown",
-            trustLevel: authPayload.userIdentity?.userId ? "known-user" : "anonymous",
-          },
-          summary: {
-            canEditProfile: true,
-            hasSettingsRoute: true,
-          },
-        },
+      sendJson(response, 200, settingsSurface);
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/account/actions") {
+      const userId = resolvedUserId;
+      if (!userId) {
+        sendJson(response, 401, { error: "Authentication required" });
+        return;
+      }
+
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.applyAccountAction === "function"
+        ? projectService.applyAccountAction({
+            userId,
+            actorUserId: userId,
+            actionType: body.actionType,
+            payload: body.payload,
+          })
+        : null;
+      if (!result) {
+        sendJson(response, 404, { error: "User not found" });
+        return;
+      }
+      const statusCode = result.status === "blocked" ? 409 : 200;
+      sendJson(response, statusCode, {
+        status: result.status,
+        accountEvent: result.accountEvent,
+        settingsProfileSurface: result.settingsProfileSurface,
       });
       return;
     }
 
     if (request.method === "POST" && url.pathname === "/api/project-drafts") {
+      if (!resolvedUserId) {
+        sendJson(response, 401, { error: "Authentication required", reason: "authentication-required" });
+        return;
+      }
       const body = await parseBody(request).catch(() => ({}));
       const result = projectService.createProjectDraft({
-        userInput: body.userInput,
+        userInput: {
+          ...(body.userInput && typeof body.userInput === "object" ? body.userInput : {}),
+          userId: resolvedUserId,
+        },
         projectCreationInput: body.projectCreationInput,
       });
       sendJson(response, result ? 201 : 404, result ?? { error: "User not found" });
@@ -1005,7 +1199,7 @@ export function createServer(projectService, runtimeStatus = {}) {
     if (request.method === "POST" && url.pathname === "/api/onboarding/sessions") {
       const body = await parseBody(request).catch(() => ({}));
       const session = projectService.createOnboardingSession({
-        userId: body.userId,
+        userId: resolvedUserId ?? body.userId,
         projectDraftId: body.projectDraftId,
         initialInput: body.initialInput,
       });
@@ -1087,11 +1281,93 @@ export function createServer(projectService, runtimeStatus = {}) {
     if (request.method === "POST" && url.pathname.startsWith("/api/onboarding/sessions/") && url.pathname.endsWith("/conversation-turn")) {
       const sessionId = segments[4];
       const body = await parseBody(request).catch(() => ({}));
-      const conversation = projectService.submitOnboardingConversationTurn({
+      const conversation = await projectService.submitOnboardingConversationTurn({
         sessionId,
         answer: body.answer,
+        qaFaultMode: body.qaFaultMode,
+        clientMessageId: body.clientMessageId,
       });
       sendJson(response, conversation ? 200 : 404, conversation ?? { error: "Session not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/onboarding/sessions/") && url.pathname.endsWith("/conversation-prime")) {
+      const sessionId = segments[4];
+      const body = await parseBody(request).catch(() => ({}));
+      const conversation = await projectService.primeOnboardingDiscoveryAgentResponse({
+        sessionId,
+        qaFaultMode: body.qaFaultMode,
+      });
+      sendJson(response, conversation ? 200 : 404, conversation ?? { error: "Session not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/onboarding/sessions/") && url.pathname.endsWith("/product-skeleton")) {
+      const sessionId = segments[4];
+      const body = await parseBody(request).catch(() => ({}));
+      const skeleton = typeof projectService.generateOnboardingProductSkeleton === "function"
+        ? await projectService.generateOnboardingProductSkeleton({
+          sessionId,
+          qaFaultMode: body.qaFaultMode,
+        })
+        : null;
+      sendJson(response, skeleton ? 200 : 404, skeleton ?? { error: "Session not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/onboarding/sessions/") && url.pathname.endsWith("/visual-product-skeleton")) {
+      const sessionId = segments[4];
+      const body = await parseBody(request).catch(() => ({}));
+      const visualSkeleton = typeof projectService.generateOnboardingVisualProductSkeleton === "function"
+        ? await projectService.generateOnboardingVisualProductSkeleton({
+          sessionId,
+          qaFaultMode: body.qaFaultMode,
+        })
+        : null;
+      sendJson(response, visualSkeleton ? 200 : 404, visualSkeleton ?? { error: "Session not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/onboarding/sessions/") && url.pathname.endsWith("/conversation-turn-stream")) {
+      const sessionId = segments[4];
+      const body = await parseBody(request).catch(() => ({}));
+      response.writeHead(200, {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+      });
+      response.flushHeaders?.();
+
+      const heartbeat = setInterval(() => {
+        writeSseEvent(response, "heartbeat", { sessionId, ok: true });
+      }, 15000);
+
+      try {
+        const conversation = await projectService.streamOnboardingConversationTurn({
+          sessionId,
+          answer: body.answer,
+          qaFaultMode: body.qaFaultMode,
+          clientMessageId: body.clientMessageId,
+          onEvent: async ({ event, data }) => {
+            writeSseEvent(response, event, data);
+          },
+        });
+
+        if (!conversation) {
+          writeSseEvent(response, "error", {
+            message: "Session not found",
+            retryable: false,
+          });
+        }
+      } catch (error) {
+        writeSseEvent(response, "error", {
+          message: error?.message ?? "stream_failed",
+          retryable: false,
+        });
+      } finally {
+        clearInterval(heartbeat);
+        response.end();
+      }
       return;
     }
 
@@ -1099,6 +1375,22 @@ export function createServer(projectService, runtimeStatus = {}) {
       const sessionId = segments[4];
       const conversation = projectService.restartOnboardingConversation(sessionId);
       sendJson(response, conversation ? 200 : 404, conversation ?? { error: "Session not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/onboarding/sessions/") && url.pathname.endsWith("/correction")) {
+      const sessionId = segments[4];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.applyOnboardingCompanionCorrection === "function"
+        ? await projectService.applyOnboardingCompanionCorrection({
+          sessionId,
+          message: body.message,
+          currentSurface: body.currentSurface,
+          projectId: body.projectId ?? null,
+          qaFaultMode: body.qaFaultMode,
+        })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Session not found" });
       return;
     }
 
@@ -1138,6 +1430,157 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/build-mutations")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = projectService.applyBuildMutation({
+        projectId,
+        requestText: body.requestText,
+        operationId: body.operationId,
+        payload: body.payload,
+        requestedBy: body.requestedBy ?? "build-agent",
+      });
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/skeleton-choice/select")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.selectSkeletonChoice === "function"
+        ? projectService.selectSkeletonChoice({
+            projectId,
+            candidateId: body.candidateId,
+            selectedBy: body.selectedBy ?? "user",
+            approveDirectionSwitch: body.approveDirectionSwitch === true,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/history-continuity/restore-decision")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.requestHistoryRestoreDecision === "function"
+        ? projectService.requestHistoryRestoreDecision({
+            projectId,
+            checkpointId: body.checkpointId,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/growth-agent")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.runGrowthAgent === "function"
+        ? projectService.runGrowthAgent({
+            projectId,
+            userInput: body.userInput ?? body.requestText ?? "",
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/history-continuity/restore-execution")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.executeHistoryRestore === "function"
+        ? projectService.executeHistoryRestore({
+            projectId,
+            checkpointId: body.checkpointId,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/share-demo/prepare")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.prepareShareDemo === "function"
+        ? projectService.prepareShareDemo({
+            projectId,
+            input: body,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/share-demo/approve")) {
+      const projectId = segments[3];
+      const result = typeof projectService.approveShareDemo === "function"
+        ? projectService.approveShareDemo({ projectId })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/share-demo/revoke")) {
+      const projectId = segments[3];
+      const result = typeof projectService.revokeShareDemo === "function"
+        ? projectService.revokeShareDemo({ projectId })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/build-approval/decide")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.decideBuildApproval === "function"
+        ? projectService.decideBuildApproval({
+            projectId,
+            action: body.action,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/team/invitations")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.inviteProjectMember === "function"
+        ? projectService.inviteProjectMember(projectId, {
+            actorUserId: resolvedUserId,
+            invitationRequest: body.invitationRequest ?? body,
+          })
+        : null;
+      sendJson(response, result?.httpStatus ?? 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/team/remove-member")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.removeProjectMember === "function"
+        ? projectService.removeProjectMember(projectId, {
+            actorUserId: resolvedUserId,
+            memberUserId: body.memberUserId ?? null,
+          })
+        : null;
+      sendJson(response, result?.httpStatus ?? 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/team/transfer-ownership")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.transferProjectOwnership === "function"
+        ? projectService.transferProjectOwnership(projectId, {
+            actorUserId: resolvedUserId,
+            nextOwnerUserId: body.nextOwnerUserId ?? null,
+          })
+        : null;
+      sendJson(response, result?.httpStatus ?? 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (
       request.method === "POST"
       && url.pathname.startsWith("/api/workspaces/")
@@ -1145,7 +1588,7 @@ export function createServer(projectService, runtimeStatus = {}) {
     ) {
       const workspaceId = segments[3];
       const actionType = segments[5];
-      if (!resolveRequestUserId(request)) {
+      if (!resolvedUserId) {
         sendJson(response, 401, { error: "Authentication required" });
         return;
       }
@@ -1156,7 +1599,7 @@ export function createServer(projectService, runtimeStatus = {}) {
             workspaceId,
             actionType,
             billingInput: body,
-            userId: resolveRequestUserId(request),
+            userId: resolvedUserId,
           })
         : null;
 
@@ -1288,6 +1731,22 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/companion-turn")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.submitProjectCompanionTurn === "function"
+        ? await projectService.submitProjectCompanionTurn({
+            projectId,
+            sessionId: body.sessionId,
+            message: body.message,
+            currentSurface: body.currentSurface,
+            qaFaultMode: body.qaFaultMode,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/review-threads")) {
       const projectId = segments[3];
       const body = await parseBody(request).catch(() => ({}));
@@ -1315,31 +1774,47 @@ export function createServer(projectService, runtimeStatus = {}) {
     }
 
     if (request.method === "GET" && url.pathname === "/api/projects") {
-      sendJson(response, 200, { projects: projectService.listProjects() });
+      sendJson(response, 200, { projects: projectService.listProjects({ userId: resolvedUserId }) });
       return;
     }
 
     if (request.method === "GET" && url.pathname.startsWith("/api/projects/")) {
       const [, , , projectId, suffix] = url.pathname.split("/");
+      if (!resolvedUserId) {
+        sendJson(response, 401, { error: "Authentication required", reason: "authentication-required" });
+        return;
+      }
+
+      const scopedProject = projectService.getProject(projectId, { userId: resolvedUserId });
+      if (!scopedProject) {
+        sendJson(response, 404, { error: "Project not found" });
+        return;
+      }
 
       if (!suffix) {
-        const project = projectService.getProject(projectId);
-        sendJson(response, project ? 200 : 404, project ?? { error: "Project not found" });
+        sendJson(response, 200, scopedProject);
         return;
       }
 
       if (suffix === "events") {
-        const project = projectService.getProject(projectId);
         sendJson(
           response,
-          project ? 200 : 404,
-          project ? { events: projectService.getProjectEvents(projectId) } : { error: "Project not found" },
+          200,
+          { events: projectService.getProjectEvents(projectId) },
         );
         return;
       }
 
+      if (suffix === "team") {
+        const result = typeof projectService.getProjectTeamBoundary === "function"
+          ? projectService.getProjectTeamBoundary(projectId, { userId: resolvedUserId })
+          : null;
+        sendJson(response, result ? 200 : 404, result ?? { error: "Project team not found" });
+        return;
+      }
+
       if (suffix === "live-state") {
-        const liveState = getProjectLiveState(projectService, projectId);
+        const liveState = getProjectLiveState(projectService, projectId, { userId: resolvedUserId });
         sendJson(
           response,
           liveState ? 200 : 404,
@@ -1349,7 +1824,7 @@ export function createServer(projectService, runtimeStatus = {}) {
       }
 
       if (suffix === "live-events") {
-        const liveState = getProjectLiveState(projectService, projectId);
+        const liveState = getProjectLiveState(projectService, projectId, { userId: resolvedUserId });
         if (!liveState) {
           sendJson(response, 404, { error: "Project not found" });
           return;
@@ -1365,7 +1840,7 @@ export function createServer(projectService, runtimeStatus = {}) {
         writeSseEvent(response, "live-state", liveState);
 
         const heartbeatInterval = setInterval(() => {
-          const nextLiveState = getProjectLiveState(projectService, projectId);
+          const nextLiveState = getProjectLiveState(projectService, projectId, { userId: resolvedUserId });
           if (!nextLiveState) {
             return;
           }
@@ -1476,57 +1951,51 @@ export function createServer(projectService, runtimeStatus = {}) {
       }
 
       if (suffix === "scan") {
-        const project = projectService.getProject(projectId);
-        sendJson(response, project ? 200 : 404, project ? { scan: project.scan } : { error: "Project not found" });
+        sendJson(response, 200, { scan: scopedProject.scan });
         return;
       }
 
       if (suffix === "analysis") {
-        const project = projectService.getProject(projectId);
         sendJson(
           response,
-          project ? 200 : 404,
-          project ? { analysis: project.analysis } : { error: "Project not found" },
+          200,
+          { analysis: scopedProject.analysis },
         );
         return;
       }
 
       if (suffix === "external") {
-        const project = projectService.getProject(projectId);
         sendJson(
           response,
-          project ? 200 : 404,
-          project ? { externalSnapshot: project.externalSnapshot } : { error: "Project not found" },
+          200,
+          { externalSnapshot: scopedProject.externalSnapshot },
         );
         return;
       }
 
       if (suffix === "git") {
-        const project = projectService.getProject(projectId);
         sendJson(
           response,
-          project ? 200 : 404,
-          project ? { gitSnapshot: project.gitSnapshot, gitSource: project.gitSource } : { error: "Project not found" },
+          200,
+          { gitSnapshot: scopedProject.gitSnapshot, gitSource: scopedProject.gitSource },
         );
         return;
       }
 
       if (suffix === "runtime") {
-        const project = projectService.getProject(projectId);
         sendJson(
           response,
-          project ? 200 : 404,
-          project ? { runtimeSnapshot: project.runtimeSnapshot, runtimeSource: project.runtimeSource } : { error: "Project not found" },
+          200,
+          { runtimeSnapshot: scopedProject.runtimeSnapshot, runtimeSource: scopedProject.runtimeSource },
         );
         return;
       }
 
       if (suffix === "notion") {
-        const project = projectService.getProject(projectId);
         sendJson(
           response,
-          project ? 200 : 404,
-          project ? { notionSnapshot: project.notionSnapshot, notionSource: project.notionSource } : { error: "Project not found" },
+          200,
+          { notionSnapshot: scopedProject.notionSnapshot, notionSource: scopedProject.notionSource },
         );
         return;
       }
@@ -1654,6 +2123,40 @@ export function createServer(projectService, runtimeStatus = {}) {
     if (request.method === "GET" && url.pathname.endsWith("/accounts")) {
       const [, , , projectId] = url.pathname.split("/");
       const result = projectService.listExternalAccounts(projectId);
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.endsWith("/provider-gateway/evaluate")) {
+      const [, , , projectId] = url.pathname.split("/");
+      const body = await parseBody(request).catch(() => ({}));
+      const result = projectService.evaluateProviderGateway(projectId, {
+        requestText: body.requestText,
+        providerType: body.providerType,
+        capability: body.capability,
+        approval: body.approval,
+        actor: {
+          actorId: resolvedUserId,
+          role: resolveRequestActorType(request, routedProject, resolvedUserId),
+        },
+      });
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname.endsWith("/provider-gateway/creative-assets")) {
+      const [, , , projectId] = url.pathname.split("/");
+      const body = await parseBody(request).catch(() => ({}));
+      const result = projectService.normalizeCreativeProviderAsset(projectId, {
+        providerType: body.providerType,
+        assetType: body.assetType,
+        prompt: body.prompt,
+        sourceAssetId: body.sourceAssetId,
+        packageId: body.packageId,
+        approvalState: body.approvalState,
+        usageBoundary: body.usageBoundary,
+        licenseBoundary: body.licenseBoundary,
+      });
       sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
       return;
     }
@@ -1793,6 +2296,7 @@ export function createServer(projectService, runtimeStatus = {}) {
         runtimeSource: body.runtimeSource,
         notionSource: body.notionSource,
         source: body.source,
+        userId: resolvedUserId,
       });
 
       sendJson(response, 201, projectService.runCycle(body.id));

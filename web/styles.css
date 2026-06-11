@@ -1,5 +1,203 @@
 @import url("/nexus-ui/styles/index.css");
 
+#project-companion-host[hidden] {
+  display: none;
+}
+
+.project-companion-dock {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 80;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, white 82%);
+  border-radius: 999px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--panel) 78%, white 22%), color-mix(in srgb, var(--accent) 10%, white 90%));
+  box-shadow: 0 20px 44px rgba(21, 26, 38, 0.16);
+  cursor: pointer;
+}
+
+.project-companion-dock.is-open {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.project-companion-dock__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, white 40%));
+  color: white;
+  font-weight: 700;
+}
+
+.project-companion-dock__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  color: var(--text);
+  text-align: right;
+}
+
+.project-companion-dock__copy span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.project-companion-panel {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 85;
+  width: min(400px, calc(100vw - 32px));
+  max-height: min(72vh, 760px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, white 86%);
+  border-radius: 28px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 92%, white 8%), white);
+  box-shadow: 0 30px 70px rgba(20, 24, 35, 0.22);
+}
+
+.project-companion-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.project-companion-panel__header h3 {
+  margin: 4px 0 0;
+  font-size: 1.15rem;
+}
+
+.project-companion-panel__eyebrow {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.project-companion-panel__close {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.project-companion-panel__truth {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.project-companion-panel__truth section {
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--panel) 76%, white 24%);
+}
+
+.project-companion-panel__truth strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.86rem;
+}
+
+.project-companion-panel__truth p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.project-companion-panel__thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  min-height: 120px;
+  max-height: 32vh;
+  padding-inline-end: 4px;
+}
+
+.project-companion-message {
+  max-width: 92%;
+  padding: 12px 14px;
+  border-radius: 18px;
+  line-height: 1.55;
+}
+
+.project-companion-message p {
+  margin: 0;
+}
+
+.project-companion-message--ai {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--panel) 78%, white 22%);
+}
+
+.project-companion-message--user {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--accent) 12%, white 88%);
+}
+
+.project-companion-panel__composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.project-companion-panel__composer textarea {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, white 82%);
+  border-radius: 18px;
+  padding: 12px 14px;
+  font: inherit;
+  background: white;
+  color: var(--text);
+}
+
+.project-companion-panel__composer button {
+  align-self: flex-start;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.project-companion-panel__composer button[disabled],
+.project-companion-panel__composer textarea[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .project-companion-dock,
+  .project-companion-panel {
+    left: 12px;
+    bottom: 12px;
+  }
+
+  .project-companion-panel {
+    width: calc(100vw - 24px);
+    max-height: 78vh;
+  }
+}
+
 :root {
   --bg: #f5f1e8;
   --panel: #fffaf0;
@@ -4011,6 +4209,16 @@ body[data-app-screen="create"] .shell > .hero,
 :root[data-app-screen="timeline"] .shell > .nexus-flow-stepper,
 :root[data-app-screen="timeline"] .shell > .qa-route-switcher,
 :root[data-app-screen="timeline"] .shell > .hero,
+:root[data-app-screen="release"] .nexus-app-shell > .nexus-sidebar,
+:root[data-app-screen="release"] .nexus-shell-content > .nexus-topbar,
+:root[data-app-screen="release"] .shell > .nexus-flow-stepper,
+:root[data-app-screen="release"] .shell > .qa-route-switcher,
+:root[data-app-screen="release"] .shell > .hero,
+:root[data-app-screen="growth"] .nexus-app-shell > .nexus-sidebar,
+:root[data-app-screen="growth"] .nexus-shell-content > .nexus-topbar,
+:root[data-app-screen="growth"] .shell > .nexus-flow-stepper,
+:root[data-app-screen="growth"] .shell > .qa-route-switcher,
+:root[data-app-screen="growth"] .shell > .hero,
 :root[data-app-screen="execution"] .nexus-app-shell > .nexus-sidebar,
 :root[data-app-screen="execution"] .nexus-shell-content > .nexus-topbar,
 :root[data-app-screen="execution"] .shell > .nexus-flow-stepper,
@@ -4051,6 +4259,16 @@ body[data-app-screen="timeline"] .nexus-shell-content > .nexus-topbar,
 body[data-app-screen="timeline"] .shell > .nexus-flow-stepper,
 body[data-app-screen="timeline"] .shell > .qa-route-switcher,
 body[data-app-screen="timeline"] .shell > .hero,
+body[data-app-screen="release"] .nexus-app-shell > .nexus-sidebar,
+body[data-app-screen="release"] .nexus-shell-content > .nexus-topbar,
+body[data-app-screen="release"] .shell > .nexus-flow-stepper,
+body[data-app-screen="release"] .shell > .qa-route-switcher,
+body[data-app-screen="release"] .shell > .hero,
+body[data-app-screen="growth"] .nexus-app-shell > .nexus-sidebar,
+body[data-app-screen="growth"] .nexus-shell-content > .nexus-topbar,
+body[data-app-screen="growth"] .shell > .nexus-flow-stepper,
+body[data-app-screen="growth"] .shell > .qa-route-switcher,
+body[data-app-screen="growth"] .shell > .hero,
 body[data-app-screen="execution"] .nexus-app-shell > .nexus-sidebar,
 body[data-app-screen="execution"] .nexus-shell-content > .nexus-topbar,
 body[data-app-screen="execution"] .shell > .nexus-flow-stepper,
@@ -4080,6 +4298,8 @@ body[data-app-screen="qa"] .shell > .hero {
 :root[data-app-screen="state-update"] .nexus-app-shell,
 :root[data-app-screen="next-task"] .nexus-app-shell,
 :root[data-app-screen="timeline"] .nexus-app-shell,
+:root[data-app-screen="release"] .nexus-app-shell,
+:root[data-app-screen="growth"] .nexus-app-shell,
 :root[data-app-screen="qa"] .nexus-app-shell,
 body[data-app-screen="create"] .nexus-app-shell,
 body[data-app-screen="loop"] .nexus-app-shell,
@@ -4089,6 +4309,8 @@ body[data-app-screen="confirmation"] .nexus-app-shell,
 body[data-app-screen="state-update"] .nexus-app-shell,
 body[data-app-screen="next-task"] .nexus-app-shell,
 body[data-app-screen="timeline"] .nexus-app-shell,
+body[data-app-screen="release"] .nexus-app-shell,
+body[data-app-screen="growth"] .nexus-app-shell,
 body[data-app-screen="qa"] .nexus-app-shell,
 body[data-app-screen="understanding"] .nexus-app-shell {
   display: block;
@@ -4126,6 +4348,14 @@ body[data-app-screen="understanding"] .nexus-app-shell {
 :root[data-app-screen="timeline"] .shell,
 :root[data-app-screen="timeline"] .main-grid,
 :root[data-app-screen="timeline"] #screen-timeline,
+:root[data-app-screen="release"] .nexus-shell-content,
+:root[data-app-screen="release"] .shell,
+:root[data-app-screen="release"] .main-grid,
+:root[data-app-screen="release"] #screen-release,
+:root[data-app-screen="growth"] .nexus-shell-content,
+:root[data-app-screen="growth"] .shell,
+:root[data-app-screen="growth"] .main-grid,
+:root[data-app-screen="growth"] #screen-growth,
 :root[data-app-screen="qa"] .nexus-shell-content,
 :root[data-app-screen="qa"] .shell,
 :root[data-app-screen="qa"] .main-grid,
@@ -4166,6 +4396,14 @@ body[data-app-screen="timeline"] .nexus-shell-content,
 body[data-app-screen="timeline"] .shell,
 body[data-app-screen="timeline"] .main-grid,
 body[data-app-screen="timeline"] #screen-timeline,
+body[data-app-screen="release"] .nexus-shell-content,
+body[data-app-screen="release"] .shell,
+body[data-app-screen="release"] .main-grid,
+body[data-app-screen="release"] #screen-release,
+body[data-app-screen="growth"] .nexus-shell-content,
+body[data-app-screen="growth"] .shell,
+body[data-app-screen="growth"] .main-grid,
+body[data-app-screen="growth"] #screen-growth,
 body[data-app-screen="qa"] .nexus-shell-content,
 body[data-app-screen="qa"] .shell,
 body[data-app-screen="qa"] .main-grid,

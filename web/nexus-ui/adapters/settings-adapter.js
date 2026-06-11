@@ -6,11 +6,16 @@ function normalizeString(value, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
+function normalizeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function buildTabItems(activePanel) {
   return [
     { key: "profile", label: "פרופיל", icon: "◌", active: activePanel === "profile" },
     { key: "notifications", label: "התראות", icon: "◔", active: activePanel === "notifications" },
     { key: "security", label: "אבטחה", icon: "⛨", active: activePanel === "security" },
+    { key: "account", label: "חשבון", icon: "⌁", active: activePanel === "account" },
     { key: "appearance", label: "מראה", icon: "◈", active: activePanel === "appearance" },
   ];
 }
@@ -27,6 +32,13 @@ export function buildSettingsViewModel({
   const workspaceSettings = normalizeObject(surface.workspaceSettings);
   const notificationPreferences = normalizeObject(surface.notificationPreferences);
   const securitySettings = normalizeObject(surface.securitySettings);
+  const accountBoundary = normalizeObject(surface.accountBoundary);
+  const linkedTruth = normalizeObject(accountBoundary.linkedTruth);
+  const privacyTruth = normalizeObject(linkedTruth.privacy);
+  const billingTruth = normalizeObject(linkedTruth.billing);
+  const teamTruth = normalizeObject(linkedTruth.team);
+  const providerTruth = normalizeObject(linkedTruth.providerIdentity);
+  const externalIdentityTruth = normalizeObject(linkedTruth.externalIdentity);
   const actorName = normalizeString(actorProfile.displayName, "Local operator");
   const actorEmail = normalizeString(actorProfile.email, "local-operator@nexus.local");
 
@@ -52,6 +64,26 @@ export function buildSettingsViewModel({
     security: {
       mfaDecision: normalizeString(securitySettings.mfaDecision, "unknown"),
       trustLevel: normalizeString(securitySettings.trustLevel, "known-user"),
+    },
+    account: {
+      status: normalizeString(accountBoundary.status, "ready"),
+      sessionStatus: normalizeString(accountBoundary.activeSession?.status, "unknown"),
+      authMethod: normalizeString(accountBoundary.accountSecurity?.authMethod, "password"),
+      verificationStatus: normalizeString(accountBoundary.userIdentity?.verificationStatus, "unknown"),
+      deletionStatus: normalizeString(surface.accountBoundary?.accountDeletionRequest?.status, ""),
+      canChangePassword: normalizeArray(accountBoundary.accountSecurity?.availableActions).includes("change-password"),
+      boundaries: [
+        `פרטיות: ${normalizeString(privacyTruth.status, "מקושר למשימת פרטיות")}`,
+        `צוות: ${normalizeString(teamTruth.role, "בעלים")} · ${normalizeString(teamTruth.status, "פעיל")}`,
+        `בילינג: ${normalizeString(billingTruth.status, "לא פעיל עכשיו")}`,
+        `ספקים: ${normalizeString(providerTruth.status, "דורש אישור נפרד")}`,
+        `כניסה ארגונית: ${normalizeString(externalIdentityTruth.status, "לא נסגר כאן")}`,
+      ],
+      activityItems: normalizeArray(accountBoundary.accountActivityHistory).slice(-6).reverse().map((entry) => ({
+        title: normalizeString(entry.summary, "פעולת חשבון"),
+        status: normalizeString(entry.status, "completed"),
+        occurredAt: normalizeString(entry.occurredAt, ""),
+      })),
     },
   };
 }

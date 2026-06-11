@@ -90,7 +90,7 @@ export function createProjectRoleCapabilityMatrix({
 } = {}) {
   const normalizedProjectPermissionSchema = normalizeProjectPermissionSchema(projectPermissionSchema);
   const baseCapabilities = buildCapabilitiesByRole(normalizedProjectPermissionSchema);
-  const orderedRoles = ["owner", "member", "operator", "reviewer", "viewer"];
+  const orderedRoles = ["owner", "admin", "editor", "member", "operator", "reviewer", "viewer", "guest"];
   const roleEntries = orderedRoles.map((role) => buildRoleEntry(baseCapabilities, role));
 
   return {

@@ -4,14 +4,10 @@ import { renderNexusQaNav } from "../components/NexusQaNav.js";
 import { renderNexusStepper } from "../components/NexusStepper.js";
 import { renderProofArtifactSurface } from "../components/ProofArtifactSurface.js";
 import { renderWorkspaceLayout } from "../layouts/WorkspaceLayout.js";
+import { escapeVisibleShellCopy } from "../copy/visible-shell-language.js";
 
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+  return escapeVisibleShellCopy(value);
 }
 
 function renderUpdateCard(item) {
@@ -32,9 +28,8 @@ export function renderStateUpdateScreen(viewModel) {
     currentRoute: "/loop",
     primary: [
       { title: "יצירה", href: "/create", target: "create", icon: "＋" },
-      { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
-      { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
-      { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
+      { title: "בנייה", href: "/loop", target: "loop", icon: "▦" },
+      { title: "היסטוריה", href: "/timeline", target: "timeline", icon: "◷" },
     ],
     support: [
       { title: "בית", href: "/home", icon: "⌂" },

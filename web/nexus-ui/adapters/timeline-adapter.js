@@ -1,4 +1,5 @@
 import { buildArtifactTruthViewModel } from "./shared-proof-artifact.js";
+import { createHistorySurfaceCanonicalStructureContract } from "../contracts/history-surface-canonical-structure-contract.js";
 
 function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
@@ -172,6 +173,78 @@ function buildStats(project, entries) {
   ];
 }
 
+function buildHistorySurfaceModel(project, entries, artifactTruth, stats) {
+  const projectName = escapeText(project.name, "פרויקט Nexus");
+  const goal = escapeText(project.goal, "מוצר שנבנה בתוך Nexus");
+  const latestEntry = entries[0] ?? {};
+  const artifactTitle = escapeText(artifactTruth.title, "התוצר האחרון");
+  const currentStatus = escapeText(project.status, "working");
+  const roadmap = normalizeArray(project.cycle?.roadmap);
+  const snapshots = normalizeArray(project.snapshots ?? project.snapshotHistory ?? project.state?.snapshots);
+  const meaningfulEntries = entries.slice(0, 6).map((entry) => ({
+    id: escapeText(entry.id, "history-entry"),
+    title: escapeText(entry.title, "שינוי משמעותי נשמר"),
+    body: escapeText(entry.description, "Nexus שמרה את השינוי כחלק מזיכרון המוצר."),
+    label: escapeText(entry.kind, "שינוי"),
+    time: escapeText(entry.timestamp, "לאחרונה"),
+    tone: escapeText(entry.tone, "primary"),
+  }));
+
+  const fallbackCheckpoint = {
+    id: "current-product-state",
+    title: "נקודת החזרה הנוכחית",
+    body: `${projectName} נשמר עם ההקשר האחרון וניתן לחזור ממנו לבנייה.`,
+    state: currentStatus,
+  };
+
+  const checkpointCandidates = snapshots.length
+    ? snapshots.slice(0, 3).map((snapshot, index) => ({
+        id: escapeText(snapshot.id ?? snapshot.snapshotId, `snapshot-${index + 1}`),
+        title: escapeText(snapshot.title ?? snapshot.name, `נקודת חזרה ${index + 1}`),
+        body: escapeText(snapshot.description ?? snapshot.summary, "נשמרה נקודת מצב שאפשר לחזור אליה בהמשך."),
+        state: escapeText(snapshot.status ?? snapshot.state, "saved"),
+      }))
+    : [fallbackCheckpoint];
+
+  const roadmapSnapshots = roadmap.slice(0, 3).map((task, index) => ({
+    id: escapeText(task.id ?? task.taskId, `version-${index + 1}`),
+    title: escapeText(task.title ?? task.summary, `גרסת עבודה ${index + 1}`),
+    body: escapeText(task.description ?? task.status, "חלק מהתקדמות המוצר שנשמרה ברצף."),
+  }));
+
+  return {
+    currentState: {
+      projectName,
+      title: "מה נשמר מהדרך עד עכשיו",
+      body: `${artifactTitle} נשמר יחד עם ההקשר של ${goal}.`,
+      statusLabel: currentStatus === "released" ? "שוחרר" : "נשמר לעבודה",
+      lastMeaningfulChange: escapeText(latestEntry.title, "הבנת המוצר והשלד הראשון נשמרו"),
+    },
+    changeLog: meaningfulEntries,
+    restoreCheckpoints: checkpointCandidates,
+    continuityThread: [
+      `ההקשר של ${projectName} ממשיך מהשיחה והבנייה לאותו workspace.`,
+      "השינויים המשמעותיים נשמרים כזיכרון מוצר, לא כרשימת אירועים טכנית.",
+      "אפשר לחזור לבנייה בלי לאבד את ההחלטות האחרונות.",
+    ],
+    versionSnapshots: roadmapSnapshots.length
+      ? roadmapSnapshots
+      : [
+          {
+            id: "first-saved-version",
+            title: "גרסת המוצר הנוכחית",
+            body: "הגרסה הנוכחית נשמרה כנקודת המשך עד שייכנסו גרסאות נוספות.",
+          },
+        ],
+    returnToBuild: {
+      label: "חזור לבנייה",
+      body: "חזרה לסביבת הבנייה ממשיכה מאותו הקשר שמופיע כאן.",
+      target: "loop",
+    },
+    stats,
+  };
+}
+
 function resolveCrossSurfaceContinuityContract(project = null) {
   const safeProject = normalizeObject(project);
   return normalizeObject(
@@ -210,22 +283,146 @@ function resolveLearningDecisionImpact(project = null) {
   );
 }
 
+function resolveHistoryContinuityAgent(project = null) {
+  const safeProject = normalizeObject(project);
+  return normalizeObject(
+    safeProject.historyContinuityAgent
+      ?? safeProject.context?.historyContinuityAgent
+      ?? safeProject.state?.historyContinuityAgent,
+  );
+}
+
+function mapHistoryAgentChangeLog(agent = {}, fallbackEntries = []) {
+  const productHistory = normalizeArray(agent.productHistory);
+  const source = productHistory.length ? productHistory : fallbackEntries;
+  return source.slice(0, 6).map((entry, index) => {
+    const summary = normalizeObject(entry.changeSummary);
+    const label = entry.eventType === "pending-approval"
+      ? "ממתין לאישור"
+      : entry.requiresCheckpoint
+        ? "שינוי משמעותי"
+        : "שינוי מוצר";
+    return {
+      id: escapeText(entry.eventId ?? entry.id, `history-agent-entry-${index + 1}`),
+      title: escapeText(summary.after ?? entry.title, "שינוי מוצר נשמר"),
+      body: escapeText(entry.userReply ?? summary.unchanged ?? entry.description, "Nexus שמרה את השינוי כחלק מזיכרון המוצר."),
+      label,
+      time: escapeText(entry.createdAt ?? entry.timestamp, "לאחרונה"),
+      tone: entry.eventType === "failed-change" ? "warning" : entry.eventType === "pending-approval" ? "primary" : "success",
+    };
+  });
+}
+
+function mapHistoryAgentCheckpoints(agent = {}, fallbackCheckpoints = []) {
+  const checkpoints = normalizeArray(agent.checkpoints);
+  const source = checkpoints.length ? checkpoints : fallbackCheckpoints;
+  return source.slice(0, 4).map((checkpoint, index) => ({
+    id: escapeText(checkpoint.checkpointId ?? checkpoint.id, `checkpoint-${index + 1}`),
+    title: escapeText(checkpoint.title, "נקודת חזרה"),
+    body: escapeText(checkpoint.body, "אפשר לבדוק חזרה לנקודה הזו לפני שינוי אמת מוצר."),
+    state: escapeText(checkpoint.restoreAvailability, "safe"),
+    restoreImpact: normalizeObject(checkpoint.restoreImpact),
+    productDomainModel: escapeText(checkpoint.productSnapshot?.productDomainSkeleton?.models?.[0]?.name, ""),
+  }));
+}
+
+function mapHistoryAgentVersionSnapshots(agent = {}, fallbackSnapshots = []) {
+  const checkpoints = normalizeArray(agent.checkpoints);
+  const productHistory = normalizeArray(agent.productHistory);
+  if (!checkpoints.length && !productHistory.length) {
+    return fallbackSnapshots;
+  }
+
+  const checkpointVersions = checkpoints.slice(0, 4).map((checkpoint, index) => {
+    const snapshot = normalizeObject(checkpoint.productSnapshot);
+    const runtime = normalizeObject(snapshot.runtimeSkeletonTruth);
+    const domain = normalizeObject(snapshot.productDomainSkeleton);
+    const domainModel = escapeText(domain.models?.[0]?.name, escapeText(domain.domainModel?.name, "אמת מוצר"));
+    const impact = normalizeObject(checkpoint.restoreImpact);
+    const willRestore = normalizeArray(impact.willRestore);
+    const willRemove = normalizeArray(impact.willRemove);
+    return {
+      id: escapeText(checkpoint.checkpointId, `history-version-${index + 1}`),
+      taskId: "EXP-003",
+      title: escapeText(runtime.title, escapeText(checkpoint.title, `גרסה ${index + 1}`)),
+      body: escapeText(snapshot.goal, escapeText(checkpoint.body, "גרסת מוצר שמורה עם נקודת חזרה גלויה.")),
+      status: checkpoint.restoreAvailability === "possible-with-impact" ? "דורשת בדיקת השפעה" : "שמורה לחזרה",
+      restoreCheckpointId: escapeText(checkpoint.checkpointId, ""),
+      rollbackBoundary: escapeText(impact.releaseImpact, "אין השפעת שחרור בשלב הזה."),
+      productDomainModel: domainModel,
+      willRestore,
+      willRemove,
+    };
+  });
+
+  const historyVersions = productHistory
+    .filter((entry) => entry.requiresCheckpoint !== true)
+    .slice(0, Math.max(0, 4 - checkpointVersions.length))
+    .map((entry, index) => ({
+      id: escapeText(entry.eventId ?? entry.id, `history-change-version-${index + 1}`),
+      taskId: "EXP-003",
+      title: escapeText(entry.changeSummary?.after, "שינוי קטן נשמר"),
+      body: escapeText(entry.userReply, "השינוי נשמר כחלק מגרסת העבודה הנוכחית."),
+      status: "שינוי שמור",
+      restoreCheckpointId: "",
+      rollbackBoundary: "אין השפעת שחרור בשלב הזה.",
+      productDomainModel: "",
+      willRestore: normalizeArray(entry.restoreImpact?.willRestore),
+      willRemove: normalizeArray(entry.restoreImpact?.willRemove),
+    }));
+
+  return [...checkpointVersions, ...historyVersions].length
+    ? [...checkpointVersions, ...historyVersions]
+    : fallbackSnapshots;
+}
+
 export function buildTimelineViewModel({ project = null, qaMode = false } = {}) {
   const safeProject = normalizeObject(project);
   const artifactTruth = buildArtifactTruthViewModel(safeProject);
   const entries = resolveTimelineEntries(safeProject);
+  const stats = buildStats(safeProject, entries);
+  const contract = createHistorySurfaceCanonicalStructureContract();
+  const history = buildHistorySurfaceModel(safeProject, entries, artifactTruth, stats);
+  const historyContinuityAgent = resolveHistoryContinuityAgent(safeProject);
+  if (historyContinuityAgent.taskId === "HIST-AGT-001") {
+    history.changeLog = mapHistoryAgentChangeLog(historyContinuityAgent, history.changeLog);
+    history.restoreCheckpoints = mapHistoryAgentCheckpoints(historyContinuityAgent, history.restoreCheckpoints);
+    history.continuityThread = [
+      escapeText(historyContinuityAgent.currentSummary, "נשמר רצף עבודה שאפשר להמשיך ממנו."),
+      "שיחה, מוצר ושינוי מופרדים כדי שהמשתמש יבין מה קרה בלי לראות פרטים פנימיים.",
+      escapeText(historyContinuityAgent.continuityAction?.summary, "המשך העבודה חוזר לאותו פרויקט ולאותו הקשר."),
+    ];
+    history.currentState.lastMeaningfulChange = escapeText(history.changeLog[0]?.title, history.currentState.lastMeaningfulChange);
+    history.versionSnapshots = mapHistoryAgentVersionSnapshots(historyContinuityAgent, history.versionSnapshots);
+    history.returnToBuild = {
+      ...history.returnToBuild,
+      label: escapeText(historyContinuityAgent.continuityAction?.label, history.returnToBuild.label),
+      target: escapeText(historyContinuityAgent.continuityAction?.target, history.returnToBuild.target),
+    };
+  }
   const crossSurfaceContinuityContract = resolveCrossSurfaceContinuityContract(safeProject);
   const wave4LiveVerificationMatrix = resolveWave4LiveVerificationMatrix(safeProject);
   const canonicalLearningSystemContract = resolveCanonicalLearningSystemContract(safeProject);
   const learningDecisionImpact = resolveLearningDecisionImpact(safeProject);
 
   return {
-    title: "איך התוצר התקדם עד כאן",
-    subtitle: qaMode
-      ? "זה מצב QA זמני למסך timeline גם בלי history מלא מה־runtime."
-      : "רצף ההתקדמות של הפרויקט, עם התוצר האחרון והאירועים שהביאו אותנו עד לכאן.",
-    projectName: safeProject.name ?? "QA mode",
-    badge: qaMode ? "QA preview override" : "ציר עבודה",
+    title: "מה נשמר מהדרך עד עכשיו",
+    subtitle: "היסטוריה שמחזירה אותך להקשר, לשינויים ולנקודת החזרה הבטוחה.",
+    projectName: safeProject.name ?? "Nexus",
+    badge: qaMode ? "תצוגת בדיקה" : "זיכרון מוצר",
+    contract,
+    historyContinuityAgent: {
+      taskId: escapeText(historyContinuityAgent.taskId, ""),
+      agentId: escapeText(historyContinuityAgent.agentId, ""),
+      status: escapeText(historyContinuityAgent.status, ""),
+      responseSource: escapeText(historyContinuityAgent.responseSource, ""),
+      currentSummary: escapeText(historyContinuityAgent.currentSummary, ""),
+      conversationHistoryCount: escapeText(historyContinuityAgent.conversationHistoryCount, "0"),
+      buildMutationHistoryCount: escapeText(historyContinuityAgent.buildMutationHistoryCount, "0"),
+      restoreDecision: normalizeObject(historyContinuityAgent.restoreDecision),
+      latestEvent: normalizeObject(historyContinuityAgent.latestEvent),
+    },
+    history,
     artifactTruth,
     entries,
     crossSurfaceContinuity: {
@@ -351,7 +548,7 @@ export function buildTimelineViewModel({ project = null, qaMode = false } = {}) 
         "learning-driven decisions must survive revisit and route restore",
       ),
     },
-    stats: buildStats(safeProject, entries),
+    stats,
     primaryAction: {
       label: "חזור לצעד הנוכחי",
       target: "loop",

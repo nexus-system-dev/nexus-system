@@ -136,6 +136,20 @@ The contract always carries these truth requirements:
 - `visible-product-structure-must-appear`
 - `skeleton-must-survive-restore`
 
+## Runtime Skeleton Escalation
+
+The automatic skeleton contract defines the class-aware starting structure.
+
+It is not sufficient by itself to prove that the first Build output is a real interactive runtime skeleton.
+
+That stronger bar is governed by:
+- `RUNTIME-SKEL-001 — Interactive product runtime skeleton standard`
+- `docs/operating-system/runtime-skeleton-interactive-standard-2026-06-04.md`
+
+The escalation rule is:
+- `SLICE-005` proves the first product-type runtime-looking surface can appear
+- `RUNTIME-SKEL-001` must prove that the surface behaves like a simulated product with interaction and state
+
 ## Truthful Boundary Of This Task
 
 `W4-MBN-003` is `trueGreen` if:
@@ -153,3 +167,4 @@ Those remain for later tasks, especially:
 - `W4-MBN-004`
 - `W4-MBN-005`
 - `W4-MBN-007`
+- `RUNTIME-SKEL-001`

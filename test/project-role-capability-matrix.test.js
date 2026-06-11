@@ -50,12 +50,14 @@ test("createProjectRoleCapabilityMatrix expands project permission schema into c
   });
 
   assert.equal(roleCapabilityMatrix.permissionSchemaId, "project-permissions:workspace-alpha:mobile-app");
-  assert.equal(roleCapabilityMatrix.roles.length, 5);
+  assert.equal(roleCapabilityMatrix.roles.length, 8);
   assert.equal(roleCapabilityMatrix.roles[0].role, "owner");
-  assert.equal(roleCapabilityMatrix.roles[1].role, "member");
+  assert.equal(roleCapabilityMatrix.roles[1].role, "admin");
   assert.equal(roleCapabilityMatrix.roles[1].capabilities.edit, false);
-  assert.equal(roleCapabilityMatrix.roles[2].capabilities.deploy, true);
-  assert.equal(roleCapabilityMatrix.roles[3].capabilities.approve, true);
+  assert.equal(roleCapabilityMatrix.roles[4].role, "operator");
+  assert.equal(roleCapabilityMatrix.roles[4].capabilities.deploy, true);
+  assert.equal(roleCapabilityMatrix.roles[5].role, "reviewer");
+  assert.equal(roleCapabilityMatrix.roles[5].capabilities.approve, true);
   assert.equal(roleCapabilityMatrix.summary.privilegedRoles, 2);
   assert.equal(roleCapabilityMatrix.summary.approvalRoles, 2);
 });
@@ -65,9 +67,9 @@ test("createProjectRoleCapabilityMatrix falls back safely without explicit permi
 
   assert.equal(roleCapabilityMatrix.permissionSchemaId, null);
   assert.equal(roleCapabilityMatrix.projectType, "generic");
-  assert.equal(roleCapabilityMatrix.roles.length, 5);
-  assert.equal(roleCapabilityMatrix.roles[4].role, "viewer");
-  assert.equal(roleCapabilityMatrix.roles[4].capabilities.view, false);
+  assert.equal(roleCapabilityMatrix.roles.length, 8);
+  assert.equal(roleCapabilityMatrix.roles[6].role, "viewer");
+  assert.equal(roleCapabilityMatrix.roles[6].capabilities.view, false);
   assert.equal(roleCapabilityMatrix.summary.privilegedRoles, 0);
 });
 
@@ -103,6 +105,6 @@ test("createProjectRoleCapabilityMatrix normalizes malformed identifiers and rol
   assert.equal(roleCapabilityMatrix.permissionSchemaId, null);
   assert.equal(roleCapabilityMatrix.projectType, "mobile-app");
   assert.equal(roleCapabilityMatrix.roles[0].role, "owner");
-  assert.equal(roleCapabilityMatrix.roles[4].role, "viewer");
-  assert.equal(roleCapabilityMatrix.roles[4].capabilities.view, true);
+  assert.equal(roleCapabilityMatrix.roles[6].role, "viewer");
+  assert.equal(roleCapabilityMatrix.roles[6].capabilities.view, true);
 });

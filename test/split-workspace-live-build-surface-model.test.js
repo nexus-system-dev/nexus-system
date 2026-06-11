@@ -23,7 +23,12 @@ test("split workspace model makes build region dominant for mobile app", () => {
   });
 
   assert.equal(model.workspaceFamily, "mobile-simulator-workspace");
+  assert.equal(model.surfaceContractId, "SURF-001");
+  assert.equal(model.workspaceLaw, "persistent-agent-rail-plus-live-build-canvas");
   assert.equal(model.dominantRegion, "build-region");
+  assert.equal(model.regions.agentRail.regionId, "agent-conversation-rail");
+  assert.equal(model.regions.buildCanvas.regionId, "live-artifact-build-canvas");
+  assert.equal(model.regions.buildCanvas.detachedPreviewAllowed, false);
   assert.equal(model.regions.build.previewFrameFamily, "mobile-simulator");
   assert.equal(model.regions.build.requiredSurfaceElements.includes("first-screen"), true);
 });
@@ -49,5 +54,9 @@ test("split workspace model preserves runtime and continuation anchors for inter
 
   assert.equal(model.regions.runtime.continuationAnchor, "internal-tool-continuation-anchor");
   assert.equal(model.regions.runtime.releasePathFamily, "private-workspace-release");
+  assert.equal(model.regions.agentRail.persistence, "from-first-skeleton-through-release");
+  assert.equal(model.regions.build.canonicalAliasFor, "live-artifact-build-canvas");
+  assert.equal(model.truthRequirements.includes("agent-conversation-rail-must-persist"), true);
+  assert.equal(model.truthRequirements.includes("live-build-canvas-must-stay-in-same-workspace"), true);
   assert.equal(model.truthRequirements.includes("build-region-must-be-primary"), true);
 });

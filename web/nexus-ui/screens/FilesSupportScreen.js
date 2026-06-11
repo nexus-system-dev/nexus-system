@@ -32,7 +32,6 @@ export function renderFilesSupportScreen(viewModel) {
     currentRoute: "/files",
     primary: [
       { title: "יצירה", href: "/create", target: "create", icon: "＋" },
-      { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
       { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
       { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
     ],

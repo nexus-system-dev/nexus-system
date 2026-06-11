@@ -5,14 +5,10 @@ import { renderNexusStepper } from "../components/NexusStepper.js";
 import { renderNexusTaskCard } from "../components/NexusTaskCard.js";
 import { renderProofArtifactSurface } from "../components/ProofArtifactSurface.js";
 import { renderWorkspaceLayout } from "../layouts/WorkspaceLayout.js";
+import { escapeVisibleShellCopy } from "../copy/visible-shell-language.js";
 
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+  return escapeVisibleShellCopy(value);
 }
 
 export function renderNextTaskScreen(viewModel) {
@@ -20,9 +16,8 @@ export function renderNextTaskScreen(viewModel) {
     currentRoute: "/loop",
     primary: [
       { title: "יצירה", href: "/create", target: "create", icon: "＋" },
-      { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
-      { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
-      { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
+      { title: "בנייה", href: "/loop", target: "loop", icon: "▦" },
+      { title: "היסטוריה", href: "/timeline", target: "timeline", icon: "◷" },
     ],
     support: [
       { title: "בית", href: "/home", icon: "⌂" },
@@ -122,14 +117,14 @@ export function renderNextTaskScreen(viewModel) {
             content: `
               <div class="nexus-next-task-screen__artifact-header">
                 <div>
-                  <span class="nexus-next-task-screen__artifact-label">Learning decision impact</span>
+                  <span class="nexus-next-task-screen__artifact-label">השפעת הלמידה על ההמשך</span>
                   <h2>${escapeHtml(viewModel.learningDecisionImpact.statusLabel)}</h2>
                   <p>${escapeHtml(viewModel.learningDecisionImpact.continuityRule)}</p>
                 </div>
               </div>
               <div class="nexus-next-task-screen__details-grid">
                 <div>
-                  <h2>Runtime / package</h2>
+                  <h2>הרצה ואריזה</h2>
                   <p>${escapeHtml(viewModel.learningDecisionImpact.runtimeDecision.label)}</p>
                   <ul class="nexus-next-task-screen__list">
                     <li>${escapeHtml(viewModel.learningDecisionImpact.strategy)}</li>
@@ -137,7 +132,7 @@ export function renderNextTaskScreen(viewModel) {
                   </ul>
                 </div>
                 <div>
-                  <h2>Release / continuation</h2>
+                  <h2>שחרור והמשך</h2>
                   <p>${escapeHtml(viewModel.learningDecisionImpact.releaseDecision.label)}</p>
                   <ul class="nexus-next-task-screen__list">
                     <li>${escapeHtml(viewModel.learningDecisionImpact.releaseDecision.currentEffect)}</li>
@@ -154,7 +149,7 @@ export function renderNextTaskScreen(viewModel) {
             content: `
               <div class="nexus-next-task-screen__artifact-header">
                 <div>
-                  <span class="nexus-next-task-screen__artifact-label">Growth boundary</span>
+                  <span class="nexus-next-task-screen__artifact-label">גבולות הצעות הצמיחה</span>
                   <h2>${escapeHtml(viewModel.growthOpportunityBoundary.statusLabel)}</h2>
                   <p>${escapeHtml(viewModel.growthOpportunityBoundary.visibleBoundaryRule)}</p>
                 </div>
@@ -167,7 +162,7 @@ export function renderNextTaskScreen(viewModel) {
                   </ul>
                 </div>
                 <div>
-                  <h2>מה נשאר מחוץ ל־Wave 4</h2>
+                  <h2>מה נשאר מחוץ לשלב הנוכחי</h2>
                   <ul class="nexus-next-task-screen__list">
                     ${viewModel.growthOpportunityBoundary.disallowedMoves.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
                     ${viewModel.growthOpportunityBoundary.deferredOpportunityFamilies.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
@@ -185,7 +180,7 @@ export function renderNextTaskScreen(viewModel) {
             content: `
               <div class="nexus-next-task-screen__artifact-header">
                 <div>
-                  <span class="nexus-next-task-screen__artifact-label">Post-release continuation</span>
+                  <span class="nexus-next-task-screen__artifact-label">המשך אחרי שחרור</span>
                   <h2>${escapeHtml(viewModel.postReleaseContinuation.statusLabel)}</h2>
                   <p>${escapeHtml(viewModel.postReleaseContinuation.visibleContinuationRule)}</p>
                 </div>

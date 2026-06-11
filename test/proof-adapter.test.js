@@ -186,5 +186,5 @@ test("proof adapter exposes learning-aware generation shifts on weak-class proof
   });
 
   assert.equal(viewModel.successCriteria.some((item) => item.title === "הלמידה כבר שינתה את כיוון היצירה"), true);
-  assert.equal(viewModel.artifacts.some((item) => item.type === "כיוון generation שנלמד מהסבב האחרון"), true);
+  assert.equal(viewModel.artifacts.some((item) => item.type === "כיוון שנלמד מהסבב האחרון"), true);
 });

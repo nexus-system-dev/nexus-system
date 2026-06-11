@@ -1,0 +1,298 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2600" height="1700" viewBox="0 0 2600 1700" role="img" aria-labelledby="title desc">
+  <title id="title">Nexus Wide Implementation Flow</title>
+  <desc id="desc">Canonical implementation flow from current system to release-ready Nexus.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f7fb; }
+      .lane { fill: #ffffff; stroke: #cfd7e6; stroke-width: 2; }
+      .lane-head { fill: #dfe7f5; stroke: #bcc8e0; stroke-width: 2; }
+      .section-label { font: 700 34px "Arial", "Helvetica", sans-serif; fill: #1f2a44; }
+      .top-label { font: 700 22px "Arial", "Helvetica", sans-serif; fill: #48607c; }
+      .box { fill: #edf2ff; stroke: #8092c8; stroke-width: 3; rx: 18; ry: 18; }
+      .box-green { fill: #e5f7eb; stroke: #5ca171; stroke-width: 3; rx: 18; ry: 18; }
+      .box-yellow { fill: #fff3d9; stroke: #d3a53b; stroke-width: 3; rx: 18; ry: 18; }
+      .box-red { fill: #fff0f0; stroke: #d44c4c; stroke-width: 3; stroke-dasharray: 12 10; rx: 18; ry: 18; }
+      .box-gray { fill: #f3f5f8; stroke: #9ba8bb; stroke-width: 3; rx: 18; ry: 18; }
+      .text { font: 700 26px "Arial", "Helvetica", sans-serif; fill: #24324b; }
+      .small { font: 500 20px "Arial", "Helvetica", sans-serif; fill: #50607a; }
+      .tiny { font: 500 18px "Arial", "Helvetica", sans-serif; fill: #6a778f; }
+      .diamond { fill: #ffe9a8; stroke: #cc9d2f; stroke-width: 3; }
+      .end { fill: #f5d9f0; stroke: #bb5fa2; stroke-width: 3; }
+      .arrow { stroke: #4c5d80; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .muted-arrow { stroke: #8a97ab; stroke-width: 3; fill: none; marker-end: url(#arrow); stroke-dasharray: 10 8; }
+      .tag { fill: #ffffff; stroke: #cfd7e6; stroke-width: 1.5; rx: 8; ry: 8; }
+      .tag-text { font: 600 16px "Arial", "Helvetica", sans-serif; fill: #5a6b84; }
+    </style>
+    <marker id="arrow" markerWidth="16" markerHeight="16" refX="13" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,12 L14,6 z" fill="#4c5d80"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="2600" height="1700"/>
+  <text x="1300" y="52" text-anchor="middle" class="section-label">Flow קנוני למימוש Nexus החדשה</text>
+  <text x="1300" y="88" text-anchor="middle" class="top-label">מה נשמר, מה יורד, מה נבנה חדש, מה חוסם את מה, עד Nexus מוכנה ליציאה</text>
+
+  <text x="720" y="122" text-anchor="middle" class="top-label">Hidden / Internal Engine</text>
+  <text x="1950" y="122" text-anchor="middle" class="top-label">Visible Product / Release Path</text>
+
+  <!-- Lanes -->
+  <rect class="lane" x="20" y="140" width="400" height="1520"/>
+  <rect class="lane" x="440" y="140" width="400" height="1520"/>
+  <rect class="lane" x="860" y="140" width="400" height="1520"/>
+  <rect class="lane" x="1280" y="140" width="400" height="1520"/>
+  <rect class="lane" x="1700" y="140" width="420" height="1520"/>
+  <rect class="lane" x="2140" y="140" width="440" height="1520"/>
+
+  <rect class="lane-head" x="20" y="140" width="400" height="90"/>
+  <rect class="lane-head" x="440" y="140" width="400" height="90"/>
+  <rect class="lane-head" x="860" y="140" width="400" height="90"/>
+  <rect class="lane-head" x="1280" y="140" width="400" height="90"/>
+  <rect class="lane-head" x="1700" y="140" width="420" height="90"/>
+  <rect class="lane-head" x="2140" y="140" width="440" height="90"/>
+
+  <text x="220" y="195" text-anchor="middle" class="section-label">תכנון קנוני</text>
+  <text x="640" y="195" text-anchor="middle" class="section-label">שימור מנועים</text>
+  <text x="1060" y="195" text-anchor="middle" class="section-label">הסרה מהפרונט</text>
+  <text x="1480" y="195" text-anchor="middle" class="section-label">Shell חדש</text>
+  <text x="1910" y="195" text-anchor="middle" class="section-label">Slice + הרחבה</text>
+  <text x="2360" y="195" text-anchor="middle" class="section-label">Gates + יציאה</text>
+
+  <!-- Lane 1 -->
+  <rect class="box-green" x="70" y="280" width="300" height="90"/>
+  <text x="220" y="334" text-anchor="middle" class="text">חזון + חוקים</text>
+  <text x="220" y="360" text-anchor="middle" class="tiny">canonical product system</text>
+
+  <rect class="box" x="70" y="430" width="300" height="118"/>
+  <text x="220" y="485" text-anchor="middle" class="text">Product Graph</text>
+  <text x="220" y="515" text-anchor="middle" class="small">mutation · truth · time</text>
+  <text x="220" y="540" text-anchor="middle" class="tiny">§34 · §41 · §44</text>
+
+  <rect class="box" x="70" y="610" width="300" height="118"/>
+  <text x="220" y="665" text-anchor="middle" class="text">Runtime / Security</text>
+  <text x="220" y="695" text-anchor="middle" class="small">execution · isolation · secrets</text>
+  <text x="220" y="720" text-anchor="middle" class="tiny">§21 · §46-50</text>
+
+  <rect class="box" x="70" y="790" width="300" height="118"/>
+  <text x="220" y="845" text-anchor="middle" class="text">Memory / Release / Growth</text>
+  <text x="220" y="875" text-anchor="middle" class="small">retrieval · release · evolution</text>
+  <text x="220" y="900" text-anchor="middle" class="tiny">§33 · §10 · §11</text>
+
+  <rect class="box-yellow" x="70" y="970" width="300" height="118"/>
+  <text x="220" y="1025" text-anchor="middle" class="text">Bridge tasks added</text>
+  <text x="220" y="1055" text-anchor="middle" class="small">surface pass · shell bridge · slice</text>
+  <text x="220" y="1080" text-anchor="middle" class="tiny">§56 missing canonical task</text>
+
+  <!-- Lane 2 -->
+  <rect class="box" x="490" y="270" width="300" height="104"/>
+  <text x="640" y="322" text-anchor="middle" class="text">Project service</text>
+  <text x="640" y="350" text-anchor="middle" class="tiny">src/core/project-service.js</text>
+
+  <rect class="box" x="490" y="420" width="300" height="104"/>
+  <text x="640" y="472" text-anchor="middle" class="text">Snapshots + continuity</text>
+  <text x="640" y="500" text-anchor="middle" class="tiny">snapshot / rollback / restore</text>
+
+  <rect class="box" x="490" y="570" width="300" height="104"/>
+  <text x="640" y="622" text-anchor="middle" class="text">Onboarding engine</text>
+  <text x="640" y="650" text-anchor="middle" class="tiny">src/core/onboarding-service.js</text>
+
+  <rect class="box" x="490" y="720" width="300" height="104"/>
+  <text x="640" y="772" text-anchor="middle" class="text">Artifact / proof engine</text>
+  <text x="640" y="800" text-anchor="middle" class="tiny">canonical-proof-artifact.js</text>
+
+  <rect class="box" x="490" y="870" width="300" height="104"/>
+  <text x="640" y="922" text-anchor="middle" class="text">Class-aware generation</text>
+  <text x="640" y="950" text-anchor="middle" class="tiny">W4-MBN-007 · W4-GEN-001..003</text>
+
+  <rect class="box" x="490" y="1020" width="300" height="104"/>
+  <text x="640" y="1072" text-anchor="middle" class="text">Runtime / build contracts</text>
+  <text x="640" y="1100" text-anchor="middle" class="tiny">W4-MBN-002 · 011 · 012 · 013</text>
+
+  <!-- Lane 3 -->
+  <rect class="box-gray" x="910" y="270" width="300" height="90"/>
+  <text x="1060" y="324" text-anchor="middle" class="text">Onboarding screen</text>
+  <text x="1060" y="350" text-anchor="middle" class="tiny">remove from visible shell</text>
+
+  <rect class="box-gray" x="910" y="400" width="300" height="90"/>
+  <text x="1060" y="454" text-anchor="middle" class="text">Understanding screen</text>
+  <text x="1060" y="480" text-anchor="middle" class="tiny">hide as engine, not route</text>
+
+  <rect class="box-gray" x="910" y="530" width="300" height="90"/>
+  <text x="1060" y="584" text-anchor="middle" class="text">Loop + Proof screens</text>
+  <text x="1060" y="610" text-anchor="middle" class="tiny">no orchestration-first UX</text>
+
+  <rect class="box-gray" x="910" y="660" width="300" height="90"/>
+  <text x="1060" y="714" text-anchor="middle" class="text">Timeline technical framing</text>
+  <text x="1060" y="740" text-anchor="middle" class="tiny">history stays, jargon goes</text>
+
+  <rect class="box-gray" x="910" y="790" width="300" height="90"/>
+  <text x="1060" y="844" text-anchor="middle" class="text">Orchestration language</text>
+  <text x="1060" y="870" text-anchor="middle" class="tiny">engine stays hidden</text>
+
+  <rect class="box-red" x="910" y="930" width="300" height="130"/>
+  <text x="1060" y="985" text-anchor="middle" class="text">missing canonical task</text>
+  <text x="1060" y="1015" text-anchor="middle" class="small">Legacy Frontend</text>
+  <text x="1060" y="1045" text-anchor="middle" class="small">Decomposition Map</text>
+
+  <!-- Lane 4 -->
+  <rect class="box-red" x="1330" y="250" width="300" height="130"/>
+  <text x="1480" y="305" text-anchor="middle" class="text">missing canonical task</text>
+  <text x="1480" y="335" text-anchor="middle" class="small">Canonical Surface Pass</text>
+  <text x="1480" y="365" text-anchor="middle" class="tiny">structural truth before full rewrite</text>
+
+  <rect class="box" x="1330" y="430" width="300" height="90"/>
+  <text x="1480" y="484" text-anchor="middle" class="text">Home</text>
+  <text x="1480" y="510" text-anchor="middle" class="tiny">entry + continuation</text>
+
+  <rect class="box" x="1330" y="560" width="300" height="90"/>
+  <text x="1480" y="614" text-anchor="middle" class="text">Build</text>
+  <text x="1480" y="640" text-anchor="middle" class="tiny">conversation + live product</text>
+
+  <rect class="box" x="1330" y="690" width="300" height="90"/>
+  <text x="1480" y="744" text-anchor="middle" class="text">Release</text>
+  <text x="1480" y="770" text-anchor="middle" class="tiny">readiness + release path</text>
+
+  <rect class="box" x="1330" y="820" width="300" height="90"/>
+  <text x="1480" y="874" text-anchor="middle" class="text">Growth / History / Share</text>
+  <text x="1480" y="900" text-anchor="middle" class="tiny">after core build path stabilizes</text>
+
+  <rect class="box" x="1330" y="950" width="300" height="90"/>
+  <text x="1480" y="1004" text-anchor="middle" class="text">Studio</text>
+  <text x="1480" y="1030" text-anchor="middle" class="tiny">local depth, not separate product</text>
+
+  <rect class="box-red" x="1330" y="1090" width="300" height="130"/>
+  <text x="1480" y="1145" text-anchor="middle" class="text">missing canonical task</text>
+  <text x="1480" y="1175" text-anchor="middle" class="small">Shell-to-Engine</text>
+  <text x="1480" y="1205" text-anchor="middle" class="small">Integration Contract</text>
+
+  <!-- Lane 5 -->
+  <rect class="box-red" x="1760" y="250" width="300" height="130"/>
+  <text x="1910" y="305" text-anchor="middle" class="text">missing canonical task</text>
+  <text x="1910" y="335" text-anchor="middle" class="small">First Vertical Slice</text>
+  <text x="1910" y="365" text-anchor="middle" class="small">Execution Lane</text>
+
+  <rect class="box-green" x="1760" y="430" width="300" height="96"/>
+  <text x="1910" y="482" text-anchor="middle" class="text">User enters + writes idea</text>
+  <text x="1910" y="510" text-anchor="middle" class="tiny">Home → Build</text>
+
+  <rect class="box" x="1760" y="590" width="300" height="96"/>
+  <text x="1910" y="642" text-anchor="middle" class="text">Ask only if needed</text>
+  <text x="1910" y="670" text-anchor="middle" class="tiny">truth threshold gate</text>
+
+  <rect class="box-green" x="1760" y="750" width="300" height="96"/>
+  <text x="1910" y="802" text-anchor="middle" class="text">First skeleton appears</text>
+  <text x="1910" y="830" text-anchor="middle" class="tiny">W4-MBN-003 · 004</text>
+
+  <rect class="box" x="1760" y="910" width="300" height="96"/>
+  <text x="1910" y="962" text-anchor="middle" class="text">Conversation mutation</text>
+  <text x="1910" y="990" text-anchor="middle" class="tiny">artifact updates from intent</text>
+
+  <rect class="box-green" x="1760" y="1070" width="300" height="96"/>
+  <text x="1910" y="1122" text-anchor="middle" class="text">Refresh preserves continuity</text>
+  <text x="1910" y="1150" text-anchor="middle" class="tiny">restore without drift</text>
+
+  <rect class="box-yellow" x="1760" y="1230" width="300" height="210"/>
+  <text x="1910" y="1286" text-anchor="middle" class="text">Expansion order</text>
+  <text x="1910" y="1322" text-anchor="middle" class="small">1. selection / direct edit</text>
+  <text x="1910" y="1352" text-anchor="middle" class="small">2. versioning / rollback</text>
+  <text x="1910" y="1382" text-anchor="middle" class="small">3. release / share / history</text>
+  <text x="1910" y="1412" text-anchor="middle" class="small">4. growth / studio / offline</text>
+  <text x="1910" y="1442" text-anchor="middle" class="small">5. org/team → marketplace later</text>
+
+  <!-- Lane 6 -->
+  <polygon class="diamond" points="2360,460 2475,555 2360,650 2245,555"/>
+  <text x="2360" y="548" text-anchor="middle" class="text">יש מספיק truth?</text>
+  <text x="2360" y="578" text-anchor="middle" class="tiny">build threshold</text>
+
+  <polygon class="diamond" points="2360,760 2475,855 2360,950 2245,855"/>
+  <text x="2360" y="848" text-anchor="middle" class="text">Mutation בטוחה?</text>
+  <text x="2360" y="878" text-anchor="middle" class="tiny">blast radius / graph</text>
+
+  <polygon class="diamond" points="2360,1060 2475,1155 2360,1250 2245,1155"/>
+  <text x="2360" y="1148" text-anchor="middle" class="text">צריך אישור?</text>
+  <text x="2360" y="1178" text-anchor="middle" class="tiny">high impact / external</text>
+
+  <polygon class="diamond" points="2360,1320 2475,1415 2360,1510 2245,1415"/>
+  <text x="2360" y="1408" text-anchor="middle" class="text">Artifact verified?</text>
+  <text x="2360" y="1438" text-anchor="middle" class="tiny">checked → verified</text>
+
+  <rect class="box" x="2195" y="1545" width="165" height="72"/>
+  <text x="2277" y="1590" text-anchor="middle" class="small">Web release path</text>
+  <rect class="box" x="2375" y="1545" width="165" height="72"/>
+  <text x="2457" y="1590" text-anchor="middle" class="small">Studio path</text>
+
+  <ellipse class="end" cx="2360" cy="1640" rx="140" ry="44"/>
+  <text x="2360" y="1648" text-anchor="middle" class="text">Nexus מוכנה ליציאה</text>
+
+  <!-- tags -->
+  <rect class="tag" x="118" y="1000" width="205" height="28"/><text x="220" y="1019" text-anchor="middle" class="tag-text">new proposed bridge tasks</text>
+  <rect class="tag" x="565" y="887" width="150" height="28"/><text x="640" y="906" text-anchor="middle" class="tag-text">existing task chain</text>
+  <rect class="tag" x="968" y="952" width="185" height="28"/><text x="1060" y="971" text-anchor="middle" class="tag-text">old visible UX removal</text>
+
+  <!-- arrows main -->
+  <path class="arrow" d="M220 370 L220 430"/>
+  <path class="arrow" d="M220 548 L220 610"/>
+  <path class="arrow" d="M220 728 L220 790"/>
+  <path class="arrow" d="M220 908 L220 970"/>
+
+  <path class="arrow" d="M370 325 L490 322"/>
+  <path class="arrow" d="M640 374 L640 420"/>
+  <path class="arrow" d="M640 524 L640 570"/>
+  <path class="arrow" d="M640 674 L640 720"/>
+  <path class="arrow" d="M640 824 L640 870"/>
+  <path class="arrow" d="M640 974 L640 1020"/>
+
+  <path class="arrow" d="M790 1072 L910 995"/>
+  <path class="arrow" d="M1060 360 L1060 400"/>
+  <path class="arrow" d="M1060 490 L1060 530"/>
+  <path class="arrow" d="M1060 620 L1060 660"/>
+  <path class="arrow" d="M1060 750 L1060 790"/>
+  <path class="arrow" d="M1060 880 L1060 930"/>
+
+  <path class="arrow" d="M1210 995 L1330 315"/>
+  <path class="arrow" d="M1480 380 L1480 430"/>
+  <path class="arrow" d="M1480 520 L1480 560"/>
+  <path class="arrow" d="M1480 650 L1480 690"/>
+  <path class="arrow" d="M1480 780 L1480 820"/>
+  <path class="arrow" d="M1480 910 L1480 950"/>
+  <path class="arrow" d="M1480 1040 L1480 1090"/>
+
+  <path class="arrow" d="M1630 1155 L1760 315"/>
+  <path class="arrow" d="M1910 380 L1910 430"/>
+  <path class="arrow" d="M1910 526 L1910 590"/>
+  <path class="arrow" d="M1910 686 L1910 750"/>
+  <path class="arrow" d="M1910 846 L1910 910"/>
+  <path class="arrow" d="M1910 1006 L1910 1070"/>
+  <path class="arrow" d="M1910 1166 L1910 1230"/>
+
+  <!-- Gate arrows -->
+  <path class="arrow" d="M2060 478 L2245 555"/>
+  <path class="muted-arrow" d="M2245 555 L2120 555 L2120 638 L2060 638"/>
+  <text x="2142" y="622" class="tiny">לא</text>
+  <path class="arrow" d="M2475 555 L2535 555 L2535 798 L2475 855"/>
+  <text x="2505" y="618" class="tiny">כן</text>
+
+  <path class="muted-arrow" d="M2245 855 L2120 855 L2120 638 L2060 638"/>
+  <text x="2142" y="838" class="tiny">לא</text>
+  <path class="arrow" d="M2475 855 L2535 855 L2535 1155 L2475 1155"/>
+  <text x="2505" y="920" class="tiny">כן</text>
+
+  <path class="arrow" d="M2245 1155 L2060 958"/>
+  <text x="2145" y="1085" class="tiny">אישור</text>
+  <path class="muted-arrow" d="M2475 1155 L2535 1155 L2535 1415 L2475 1415"/>
+  <text x="2505" y="1220" class="tiny">לא צריך</text>
+
+  <path class="muted-arrow" d="M2245 1415 L2120 1415 L2120 1335 L2060 1335"/>
+  <text x="2142" y="1398" class="tiny">לא</text>
+  <path class="arrow" d="M2360 1510 L2360 1545"/>
+  <text x="2392" y="1495" class="tiny">כן</text>
+
+  <path class="arrow" d="M2277 1617 L2277 1640"/>
+  <path class="arrow" d="M2457 1617 L2457 1640"/>
+  <path class="muted-arrow" d="M2050 1335 L2195 1335 L2195 1581"/>
+  <text x="2160" y="1368" class="tiny">release path</text>
+
+  <!-- Additional mapping notes -->
+  <text x="70" y="1535" class="small">משימות קיימות שמופיעות בדיאגרמה:</text>
+  <text x="70" y="1570" class="tiny">W4-MBN-001..022 · W4-LEARN-001..002 · W4-INTAKE-001..010 · W4-GEN-001..003 · W4-FIX-001..007 · W4-UPGRADE-001..003</text>
+  <text x="70" y="1604" class="tiny">מה שחסר ונוסף: Canonical Surface Pass · Legacy Frontend Decomposition Map · Shell-to-Engine Integration Contract · First Vertical Slice Execution Lane</text>
+</svg>

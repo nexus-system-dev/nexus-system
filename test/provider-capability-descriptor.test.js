@@ -25,3 +25,21 @@ test("provider capability descriptor falls back to generic empty capabilities", 
   assert.deepEqual(providerCapabilities.capabilities, []);
   assert.equal(providerCapabilities.supportsDeploy, false);
 });
+
+test("provider capability descriptor marks side-effect and creative operations", () => {
+  const { providerCapabilities } = createProviderCapabilityDescriptor({
+    providerSession: {
+      providerType: "creative",
+      capabilities: ["concept", "draft", "generate", "brand-safe"],
+      authenticationModes: ["oauth"],
+      operationTypes: ["validate", "generate", "export", "revoke"],
+      scopes: ["write"],
+    },
+  });
+
+  assert.equal(providerCapabilities.supportsCreativeGeneration, true);
+  assert.equal(providerCapabilities.capabilityMetadata.find((entry) => entry.operationType === "generate")?.requiresApproval, true);
+  assert.equal(providerCapabilities.capabilityMetadata.find((entry) => entry.operationType === "generate")?.modes.generate, true);
+  assert.equal(providerCapabilities.capabilityMetadata.find((entry) => entry.operationType === "export")?.modes.export, true);
+  assert.equal(providerCapabilities.approvalRequiredOperations.includes("generate"), true);
+});

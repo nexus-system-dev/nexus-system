@@ -1,153 +1,116 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { buildTimelineViewModel } from "../web/nexus-ui/adapters/timeline-adapter.js";
 import { renderTimelineHistoryScreen } from "../web/nexus-ui/screens/TimelineHistoryScreen.js";
 
-test("timeline screen renders cross-surface continuity card", () => {
-  const html = renderTimelineHistoryScreen({
-    badge: "QA preview override",
-    title: "איך התוצר התקדם עד כאן",
-    subtitle: "רצף ההתקדמות של הפרויקט נשאר מחובר.",
-    projectName: "Landing QA",
-    artifactTruth: {
-      title: "Landing page",
-      subtitle: "דף נחיתה חי",
-      artifact: {
+test("timeline route renders the canonical product history workspace", () => {
+  const html = renderTimelineHistoryScreen(buildTimelineViewModel({
+    project: {
+      name: "Landing QA",
+      goal: "דף נחיתה לרכישת משתמשים",
+      status: "working",
+      proofArtifact: {
+        artifactId: "artifact-1",
         title: "Landing page",
+        status: "ready",
         previewKind: "landing-page",
-        shell: { kind: "browser-window" },
+        previewPayload: {
+          title: "Landing page",
+          subtitle: "תצוגת מוצר פעילה",
+        },
       },
-      openAction: { label: "פתח את התוצר", target: "artifact", supported: true },
-    },
-    artifactAction: { label: "פתח את התוצר", target: "artifact", supported: true },
-    crossSurfaceContinuity: {
-      statusLabel: "הרצף בין המסכים נשאר מחובר",
-      visibleContinuityRule: "build, proof, release, deployment feedback, timeline, and continuation must read like one connected product loop inside Nexus",
-      explainablePath: "execution:build -> proof:artifact -> proof:release-evidence -> execution:deployment-feedback -> next-task:continuation -> timeline:timeline",
-      continuityChecks: [
-        "same-project-identity-across-surfaces",
-        "route-restore-survives-refresh",
-      ],
-      continuitySteps: [
-        { title: "Build / execution", routeKey: "execution", visibleAnchor: "surface-evolving", continuityRule: "build survives restore" },
-        { title: "Proof / artifact", routeKey: "proof", visibleAnchor: "Landing page", continuityRule: "artifact survives proof revisit" },
-      ],
-      restoreRule: "cross-surface continuity must survive refresh, route restore, revisit, and transition back into execution",
-    },
-    wave4LiveVerificationMatrix: {
-      statusLabel: "ל־Wave 4 יש מטריצת אימות חיה אחת",
-      matrixRule: "every major Wave 4 capability must declare one visible route, one visible anchor, pass/fail truth, and restore/continuity checks before later live reruns can close the wave truthfully",
-      strongerPreviewRule: "use the stronger preview path when available",
-      restoreRule: "the live verification matrix must include refresh, route restore, revisit, and transition checks wherever the capability changes user-facing product truth",
-      summary: {
-        totalLanes: "10",
-        executionRoutes: "4",
-        proofRoutes: "2",
-        restoreChecks: "20",
-      },
-      verificationLanes: [
+      events: [
         {
-          laneId: "product-understanding-and-class-resolution",
-          title: "Product understanding and class resolution",
-          routeKey: "understanding",
-          visibleAnchor: "landing-page · bootstrap",
-          passCriteria: ["pass if class and stage are visible before execution"],
-          restoreChecks: ["class identity survives route restore"],
+          type: "task.completed",
+          timestamp: "10:42",
+          payload: {
+            task: {
+              summary: "המסך הראשון עודכן",
+            },
+          },
         },
       ],
-    },
-    canonicalLearningSystemContract: {
-      statusLabel: "מערכת הלמידה מוגדרת עכשיו כחוזה קנוני אחד",
-      contractRule: "Nexus must separate project memory, user preference memory, and system learning, and only call it learning where stored signals change later decisions truthfully.",
-      summary: {
-        memoryLayers: "3",
-        liveInputs: "5",
-        partialInputs: "6",
-        liveImpacts: "1",
-        partialImpacts: "2",
-        crossProjectPatterns: "2",
-      },
-      memoryLayers: [
-        {
-          title: "Project memory",
-          status: "live",
-          scope: "Stores project-specific outcomes.",
-          storedInputs: ["execution history"],
-          decisionImpact: ["next-task framing"],
-          continuityRule: "Project memory stays attached to the same project identity.",
+      historyContinuityAgent: {
+        taskId: "HIST-AGT-001",
+        agentId: "history-continuity-agent",
+        responseSource: "agent-envelope",
+        status: "pending-approval",
+        currentSummary: "נוסף שדה מקור ליד ויש שינוי כיוון שממתין לאישור.",
+        productHistory: [
+          {
+            eventId: "history-continuity-1",
+            eventType: "pending-approval",
+            requiresCheckpoint: true,
+            changeSummary: {
+              after: "שינוי כיוון להזמנות ממתין לאישור.",
+              unchanged: "השיחה והפרויקט נשארים מחוברים.",
+            },
+            userReply: "שמרתי נקודת חזרה לפני שינוי משמעותי.",
+            createdAt: "עכשיו",
+          },
+        ],
+        checkpoints: [
+          {
+            checkpointId: "hist-checkpoint-1",
+            title: "נקודת חזרה לפני שינוי משמעותי",
+            body: "אפשר לבדוק מה יחזור לפני שחזור.",
+            restoreAvailability: "possible-with-impact",
+            restoreImpact: {
+              willRestore: ["ניהול לידים"],
+              willRemove: ["שינוי להזמנות אם יאושר"],
+              willKeep: ["השיחה"],
+              releaseImpact: "אין השפעת שחרור.",
+            },
+          },
+        ],
+        restoreDecision: {
+          status: "impact-ready",
+          userReply: "עדיין לא בוצע שחזור.",
+          restoreImpact: {
+            willRestore: ["ניהול לידים"],
+            willRemove: ["שינוי להזמנות אם יאושר"],
+            willKeep: ["השיחה"],
+            releaseImpact: "אין השפעת שחרור.",
+          },
         },
-      ],
-      decisionImpacts: [
-        {
-          label: "next-task selection",
-          status: "live",
-          currentEffect: "Adaptive execution uses feedback to steer next work.",
-        },
-      ],
-      continuityRules: [
-        "learning state may not silently reset across restore",
-      ],
-      generationIntegrationRules: [
-        "generation must later consume learned class signals",
-      ],
-      explicitProhibitions: [
-        "no hidden AI intuition without canonical trace",
-      ],
-      visibleProductExpectations: [
-        "smarter generation direction",
-      ],
+      },
     },
-    learningDecisionImpact: {
-      statusLabel: "הלמידה כבר משנה את ההמשך לכיוון repair לפני expansion",
-      strategy: "repair-before-expand",
-      drivingSignals: ["outcome:attention-required", "adaptive:stabilize"],
-      runtimeDecision: {
-        label: "לייצב את runtime/package הנוכחי לפני הרחבה",
-        currentEffect: "Nexus שומרת על runtime קיים עד שהסימנים הבעייתיים יירדו.",
-      },
-      releaseDecision: {
-        label: "להחזיק את קידום ה־release עד שהלמידה תאשר יציבות",
-        currentEffect: "ה־release הבא לא מקודם אוטומטית.",
-      },
-      continuationDecision: {
-        title: "לייצב את Landing page לפני הרחבה נוספת",
-        description: "הסבב הבא משתנה עכשיו בגלל friction שנצבר.",
-        moves: ["לחזק את הוכחת הערך", "לאסוף עוד proof חי"],
-      },
-      nextTaskDecision: {
-        title: "לייצב את Landing page לפני הרחבה נוספת",
-        whyNow: "זה הצעד הנכון עכשיו כי outcome feedback כבר מראה שצריך repair.",
-      },
-      continuityRule: "learning-driven decisions must survive revisit and route restore",
-    },
-    entries: [
-      {
-        id: "event-1",
-        title: "המסך הראשון עודכן",
-        description: "האירוע נשמר בהיסטוריית הפרויקט.",
-        timestamp: "10:42",
-        kind: "משימה",
-        tone: "success",
-        glyph: "✓",
-      },
-    ],
-    stats: [
-      { label: "משימות הושלמו", value: "1" },
-    ],
-    primaryAction: { label: "חזור לצעד הנוכחי", target: "loop" },
-  });
+  }));
 
-  assert.match(html, /Wave 4 live verification matrix/);
-  assert.match(html, /Deep learning decision impact/);
-  assert.match(html, /Canonical learning system/);
-  assert.match(html, /repair-before-expand/);
-  assert.match(html, /Project memory/);
-  assert.match(html, /next-task selection/);
-  assert.match(html, /ל־Wave 4 יש מטריצת אימות חיה אחת/);
-  assert.match(html, /understanding · Product understanding and class resolution/);
-  assert.match(html, /Cross-surface continuity/);
-  assert.match(html, /הרצף בין המסכים נשאר מחובר/);
-  assert.match(html, /execution · Build \/ execution/);
-  assert.match(html, /route-restore-survives-refresh/);
-  assert.match(html, /execution:build -&gt; proof:artifact|execution:build -> proof:artifact/);
+  assert.match(html, /data-history-surface-contract="SURF-006"/);
+  assert.match(html, /data-history-continuity-agent="HIST-AGT-001"/);
+  assert.match(html, /data-history-continuity-agent-task="HIST-AGT-001"/);
+  assert.match(html, /data-history-restore-decision-status="impact-ready"/);
+  assert.match(html, /data-history-workspace-shell="canonical-right-rail"/);
+  assert.match(html, /data-nexus-workspace-rail="canonical-right-rail"/);
+  assert.match(html, /data-nexus-rail-active-route="timeline"/);
+  assert.match(html, /data-history-region="history-current-state-anchor"/);
+  assert.match(html, /data-history-region="history-change-log"/);
+  assert.match(html, /data-history-region="history-restore-checkpoints"/);
+  assert.match(html, /data-history-region="history-continuity-thread"/);
+  assert.match(html, /data-history-region="history-version-snapshots"/);
+  assert.match(html, /data-history-versioning-task="EXP-003"/);
+  assert.match(html, /data-history-version-card="hist-checkpoint-1"/);
+  assert.match(html, /data-history-version-checkpoint-id="hist-checkpoint-1"/);
+  assert.match(html, /data-history-region="history-return-to-build"/);
+  assert.match(html, /מה נשמר כגרסת מוצר שאפשר להבין ולחזור ממנה/);
+  assert.match(html, /מה יחזור: ניהול לידים/);
+  assert.match(html, /מה יוסר: שינוי להזמנות אם יאושר/);
+  assert.match(html, /מה נשמר מהדרך עד עכשיו/);
+  assert.match(html, /שינוי כיוון להזמנות ממתין לאישור/);
+  assert.match(html, /בדוק חזרה לנקודה הזו/);
+  assert.match(html, /עדיין לא בוצע שחזור/);
+  assert.match(html, /חזור לבנייה/);
+  assert.doesNotMatch(html, />history-continuity-agent</);
+  assert.doesNotMatch(html, /MUT-001/);
+  assert.doesNotMatch(html, /Wave 4 live verification matrix/);
+  assert.doesNotMatch(html, /Deep learning decision impact/);
+  assert.doesNotMatch(html, /Canonical learning system/);
+  assert.doesNotMatch(html, /Cross-surface continuity/);
+  assert.doesNotMatch(html, /understanding · Product understanding and class resolution/);
+  assert.doesNotMatch(html, /execution:build -&gt; proof:artifact|execution:build -> proof:artifact/);
+  assert.doesNotMatch(html, /nexus-ui-sidebar/);
+  assert.doesNotMatch(html, /nexus-qa-nav/);
+  assert.doesNotMatch(html, /nexus-stepper/);
 });

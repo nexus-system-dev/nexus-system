@@ -1,0 +1,93 @@
+flowchart LR
+  %% Nexus wide implementation flow (source only; rendered layout may differ from SVG)
+
+  subgraph A["יסוד קנוני"]
+    A1["חזון + חוקים"]
+    A2["Product Graph + Mutation + Runtime"]
+    A3["Security + Memory + Release + Growth + Studio"]
+    A1 --> A2 --> A3
+  end
+
+  subgraph B["שימור מנועים קיימים"]
+    B1["Project Service"]
+    B2["Snapshots / Continuity"]
+    B3["Onboarding Engine"]
+    B4["Artifact / Proof Engine"]
+    B5["Class-aware Generation"]
+    B6["Runtime / Build Contracts"]
+    B1 --> B2 --> B3 --> B4 --> B5 --> B6
+  end
+
+  subgraph C["הסרה מהפרונט הגלוי"]
+    C1["Onboarding Screen"]
+    C2["Understanding Screen"]
+    C3["Loop Screen"]
+    C4["Proof Screen"]
+    C5["Timeline טכני"]
+    C6["Orchestration Language"]
+    C1 --> C2 --> C3 --> C4 --> C5 --> C6
+  end
+
+  subgraph D["Shell חדש"]
+    D0["missing canonical task: Canonical Surface Pass"]
+    D1["Home"]
+    D2["Build"]
+    D3["Release"]
+    D4["Growth"]
+    D5["History"]
+    D6["Share"]
+    D7["Studio"]
+    D8["missing canonical task: Shell-to-Engine Integration Contract"]
+    D0 --> D1 --> D2 --> D3
+    D2 --> D4
+    D2 --> D5
+    D2 --> D6
+    D2 --> D7
+    D3 --> D8
+  end
+
+  subgraph E["Vertical Slice + הרחבה"]
+    E0["missing canonical task: First Vertical Slice Execution Lane"]
+    E1["User enters + writes idea"]
+    G1{"יש מספיק truth?"}
+    E2["Nexus asks only if needed"]
+    E3["First skeleton appears"]
+    G2{"Mutation בטוחה?"}
+    G3{"צריך אישור?"}
+    E4["Artifact updates"]
+    E5["Refresh preserves continuity"]
+    E6["Selection / direct editing"]
+    E7["Versioning / rollback"]
+    E8["Release / Share / History"]
+    E9["Growth / Studio / Offline / Org"]
+    E10["Marketplace later"]
+    E0 --> E1 --> G1
+    G1 -- "לא" --> E2 --> G1
+    G1 -- "כן" --> E3 --> G2
+    G2 -- "לא" --> E2
+    G2 -- "כן" --> G3
+    G3 -- "כן" --> E4
+    G3 -- "לא" --> E4
+    E4 --> E5 --> E6 --> E7 --> E8 --> E9 --> E10
+  end
+
+  subgraph F["Gate עד יציאה"]
+    G4{"Artifact verified?"}
+    G5{"Ready release?"}
+    G6{"צריך Studio?"}
+    F1["Web release path"]
+    F2["Studio path"]
+    F3["Nexus ready ליציאה"]
+    G4 -- "לא" --> E6
+    G4 -- "כן" --> G5
+    G5 -- "לא" --> E8
+    G5 -- "כן" --> G6
+    G6 -- "לא" --> F1 --> F3
+    G6 -- "כן" --> F2 --> F3
+  end
+
+  A3 --> B1
+  B6 --> C1
+  C6 --> D0
+  D8 --> E0
+  E8 --> G4

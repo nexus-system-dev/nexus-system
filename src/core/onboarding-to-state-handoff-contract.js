@@ -69,6 +69,7 @@ export function createOnboardingToStateHandoffContract({
         nextAction: normalizedDecision.nextAction ?? null,
         missingInputs: normalizeArray(normalizedDecision.missingInputs),
         supportingMaterialDeferred: normalizedDecision.supportingMaterialDeferred === true,
+        minimumDepthReached: normalizedDecision.summary?.minimumDepthReached === true,
       },
       summary: {
         canBuildProjectState,
@@ -77,6 +78,7 @@ export function createOnboardingToStateHandoffContract({
         hasRequestedDeliverables: normalizeArray(normalizedIntake.requestedDeliverables).length > 0,
         artifactExpectationTitle: artifactExpectation.title ?? null,
         hasContinuationGate: continuationGate.gateType ? true : false,
+        minimumDepthReached: normalizedDecision.summary?.minimumDepthReached === true,
       },
     },
   };

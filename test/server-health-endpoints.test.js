@@ -91,6 +91,24 @@ function requestJsonWithBody(server, method, pathname, payload, options = {}) {
   });
 }
 
+function authHeader(token) {
+  return { Authorization: `Bearer ${token}` };
+}
+
+function signupToken(service, userId) {
+  const result = service.signupUser({
+    userInput: {
+      userId,
+      email: `${userId}@nexus.local`,
+      displayName: userId,
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+  return result.authPayload.tokenBundle.accessToken;
+}
+
 test("server exposes health and readiness endpoints", async () => {
   const server = createServer(
     {
@@ -365,6 +383,7 @@ test("server blocks unauthenticated project reads", async () => {
     eventLogPath: path.join(directory, "events.ndjson"),
   });
   service.seedDemoProject();
+  const viewerToken = signupToken(service, "viewer-user");
   const server = createServer(service);
 
   const response = await requestJson(server, "/api/projects/giftwallet", {
@@ -381,6 +400,7 @@ test("server blocks unauthenticated project listing", async () => {
     eventLogPath: path.join(directory, "events.ndjson"),
   });
   service.seedDemoProject();
+  const viewerToken = signupToken(service, "viewer-user");
   const server = createServer(service);
 
   const response = await requestJson(server, "/api/projects", {
@@ -397,6 +417,7 @@ test("server blocks project writes when action-level authorization is invalid", 
     eventLogPath: path.join(directory, "events.ndjson"),
   });
   service.seedDemoProject();
+  const viewerToken = signupToken(service, "viewer-user");
   const server = createServer(service);
 
   const response = await requestJsonWithBody(
@@ -410,7 +431,7 @@ test("server blocks project writes when action-level authorization is invalid", 
     },
     {
       headers: {
-        "x-user-id": "viewer-user",
+        ...authHeader(viewerToken),
       },
     },
   );
@@ -420,16 +441,157 @@ test("server blocks project writes when action-level authorization is invalid", 
   assert.equal(response.body.projectAuthorizationDecision.decision, "blocked");
 });
 
+test("server ignores actor-type spoofing for privileged project actions", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-role-spoof-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  const ownerSignup = service.signupUser({
+    userInput: {
+      userId: "secure-owner",
+      email: "secure-owner@nexus.local",
+      displayName: "Secure Owner",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+  const owner = ownerSignup.authPayload.userIdentity.userId;
+  const outsiderSignup = service.signupUser({
+    userInput: {
+      userId: "secure-outsider",
+      email: "secure-outsider@nexus.local",
+      displayName: "Secure Outsider",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+  const outsider = outsiderSignup.authPayload.userIdentity.userId;
+  const outsiderToken = outsiderSignup.authPayload.tokenBundle.accessToken;
+  service.createProject({
+    id: "secure-project",
+    name: "Secure Project",
+    goal: "Protect privileged project actions",
+    userId: owner,
+  });
+  const server = createServer(service);
+
+  const response = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects/secure-project/accounts/rotate",
+    {
+      credentialReference: "credref_secure-primary",
+      rotationRequest: {
+        newValue: "rotated-secret",
+        requestedBy: outsider,
+      },
+    },
+    {
+      headers: {
+        ...authHeader(outsiderToken),
+        "x-actor-type": "owner",
+      },
+    },
+  );
+
+  assert.equal(response.statusCode, 403);
+  assert.equal(response.body.reason, "project-authorization-blocked");
+  assert.equal(response.body.projectAuthorizationDecision.actorType, "viewer");
+  assert.equal(response.body.projectAuthorizationDecision.effectiveRole, "viewer");
+  assert.equal(response.body.projectAuthorizationDecision.isBlocked, true);
+});
+
+test("server enforces security envelope on newly created projects", async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-create-sec-"));
+  const service = new ProjectService({
+    eventLogPath: path.join(directory, "events.ndjson"),
+  });
+  const ownerSignup = service.signupUser({
+    userInput: {
+      userId: "created-owner",
+      email: "created-owner@nexus.local",
+      displayName: "Created Owner",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+  const owner = ownerSignup.authPayload.userIdentity.userId;
+  const ownerToken = ownerSignup.authPayload.tokenBundle.accessToken;
+  const outsiderSignup = service.signupUser({
+    userInput: {
+      userId: "created-outsider",
+      email: "created-outsider@nexus.local",
+      displayName: "Created Outsider",
+    },
+    credentials: {
+      password: "secret123",
+    },
+  });
+  const outsider = outsiderSignup.authPayload.userIdentity.userId;
+  const outsiderToken = outsiderSignup.authPayload.tokenBundle.accessToken;
+  const server = createServer(service);
+
+  const created = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects",
+    {
+      id: "created-secure-project",
+      name: "Created Secure Project",
+      goal: "Create a project with security truth",
+    },
+    {
+      headers: {
+        ...authHeader(ownerToken),
+      },
+    },
+  );
+  assert.equal(created.statusCode, 201);
+  assert.equal(typeof created.body.state.roleCapabilityMatrix?.roleCapabilityMatrixId, "string");
+  assert.equal(typeof created.body.state.tenantIsolationSchema?.tenantIsolationSchemaId, "string");
+
+  const ownerRead = await requestJson(server, "/api/projects/created-secure-project", {
+    headers: {
+      ...authHeader(ownerToken),
+    },
+  });
+  assert.equal(ownerRead.statusCode, 200);
+
+  const outsiderWrite = await requestJsonWithBody(
+    server,
+    "POST",
+    "/api/projects/created-secure-project/proposal-edits",
+    {
+      userEditInput: {
+        acceptedSections: ["proposal"],
+      },
+    },
+    {
+      headers: {
+        ...authHeader(outsiderToken),
+        "x-actor-type": "owner",
+      },
+    },
+  );
+  assert.equal(outsiderWrite.statusCode, 403);
+  assert.equal(outsiderWrite.body.reason, "project-authorization-blocked");
+});
+
 test("server blocks project reads that cross the workspace isolation boundary", async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-project-isolation-"));
   const service = new ProjectService({
     eventLogPath: path.join(directory, "events.ndjson"),
   });
   service.seedDemoProject();
+  const demoToken = signupToken(service, "demo-user");
   const server = createServer(service);
 
   const response = await requestJson(server, "/api/projects/giftwallet", {
     headers: {
+      ...authHeader(demoToken),
       "x-workspace-id": "workspace-other-tenant",
     },
   });
@@ -453,6 +615,7 @@ test("server blocks project creation that crosses the workspace isolation bounda
       password: "secret123",
     },
   });
+  const token = signedUp.authPayload.tokenBundle.accessToken;
   const server = createServer(service);
 
   const response = await requestJsonWithBody(
@@ -466,7 +629,7 @@ test("server blocks project creation that crosses the workspace isolation bounda
     },
     {
       headers: {
-        "x-user-id": signedUp.authPayload.userIdentity.userId,
+        ...authHeader(token),
         "x-workspace-id": "workspace-other-tenant",
       },
     },

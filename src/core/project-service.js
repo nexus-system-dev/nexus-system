@@ -26,6 +26,11 @@ import { createProviderConnectorContract } from "./provider-connector-contract.j
 import { createProviderConnectorAssembler } from "./provider-connector-assembler.js";
 import { createProviderCapabilityDescriptor } from "./provider-capability-descriptor.js";
 import { createProviderOperationContract } from "./provider-operation-contract.js";
+import {
+  buildProviderGatewayBoundary,
+  buildProviderReleaseRegistry,
+  normalizeCreativeProviderOutput,
+} from "./provider-gateway-boundary.js";
 import { createAccountVerificationModule } from "./account-verification-module.js";
 import { createCredentialVaultInterface } from "./credential-vault-interface.js";
 import { createSecretRotationWorkflow } from "./secret-rotation-workflow.js";
@@ -48,12 +53,66 @@ import { createPostProjectCreationRedirectResolver } from "./post-project-creati
 import { createProjectStateBootstrapService } from "./project-state-bootstrap-service.js";
 import { createOnboardingCompletionEvaluator } from "./onboarding-completion-evaluator.js";
 import { createOnboardingToStateHandoffContract } from "./onboarding-to-state-handoff-contract.js";
+import { createAdaptiveOnboardingAgentContract } from "./adaptive-onboarding-agent-contract.js";
 import { buildCanonicalProofArtifact } from "./canonical-proof-artifact.js";
+import { buildRuntimeSkeletonTruthEnvelope } from "./runtime-skeleton-truth.js";
+import {
+  applyBuildMutationTruth,
+  replayBuildMutationIntentsOnSkeleton,
+} from "./build-mutation-truth.js";
+import {
+  buildRuntimeLearningDecisionHints,
+  createSkeletonChoiceLearningEvents,
+  createBuildMutationLearningEvents,
+  createRuntimeCreationLearningEvents,
+  mergeRuntimeLearningEvents,
+} from "./runtime-learning-events.js";
+import { createBuildAgentLearningInstructions } from "./build-agent-learning-instructions.js";
+import { createBuildAgentTurnDecision } from "./build-agent-turn-router.js";
+import { resolveBuildAgentDownstreamAction } from "./build-agent-downstream-action.js";
+import {
+  appendBuildSpeechHistory,
+  enforceBuildSpeechBoundary,
+  resolveFreeTextMutationOperation,
+} from "./build-speech-truth-gate.js";
+import { applyVisualBuildTruth } from "./visual-build-truth.js";
+import {
+  appendMutationChangeHistory,
+  createMutationChangeAgentDecision,
+  finalizeMutationChangeAgentDecision,
+} from "./mutation-change-agent.js";
+import { buildCanonicalMutationFlowShell } from "./canonical-mutation-flow-shell.js";
+import {
+  buildHistoryContinuityAgentEnvelope,
+  createHistoryRestoreDecision,
+  executeHistoryRestoreDecision,
+} from "./history-continuity-agent.js";
+import {
+  approveShareDemoAgentEnvelope,
+  buildShareDemoAgentEnvelope,
+  revokeShareDemoAgentEnvelope,
+} from "./share-demo-agent.js";
+import { buildGrowthAgentEnvelope } from "./growth-agent.js";
+import {
+  buildApprovedProductDirectionPatch,
+  buildBuildApprovalFlow,
+  decideBuildApprovalFlow,
+} from "./build-approval-flow.js";
+import {
+  buildSkeletonChoiceTruthEnvelope,
+  selectSkeletonChoiceCandidate,
+} from "./skeleton-choice-candidates.js";
 import { buildRepeatedLoopContinuation } from "./repeated-loop-continuation.js";
 import { createUploadedIntakeToScannerHandoff } from "./uploaded-intake-to-scanner-handoff.js";
+import { buildComparableProductShellReply } from "./comparable-product-intelligence.js";
 import { createPasswordResetAndEmailVerificationFlow } from "./password-reset-email-verification-flow.js";
 import { defineWorkspaceAndMembershipModel } from "./workspace-membership-model.js";
 import { createProjectAccessControlModule } from "./project-access-control-module.js";
+import { defineProjectPermissionSchema } from "./project-permission-schema.js";
+import { createProjectRoleCapabilityMatrix } from "./project-role-capability-matrix.js";
+import { defineTenantIsolationSchema } from "./tenant-isolation-schema.js";
+import { createActionLevelProjectAuthorizationResolver } from "./action-level-project-authorization-resolver.js";
+import { createWorkspaceIsolationGuard } from "./workspace-isolation-guard.js";
 import { createRoleAssignmentAndInvitationFlow } from "./role-assignment-invitation-flow.js";
 import { createOrganizationWorkspaceSettingsModule } from "./workspace-settings-module.js";
 import { createNotificationPreferenceSettings } from "./notification-preference-settings.js";
@@ -74,6 +133,10 @@ import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
 import { createSnapshotBackupWorkerJob } from "./snapshot-backup-worker-job.js";
 import { createPrivacyRightsExecutionModule } from "./privacy-rights-execution-module.js";
 import {
+  applyFirstReleaseAccountAction,
+  buildFirstReleaseAccountBoundary,
+} from "./first-release-account-boundary.js";
+import {
   buildCanonicalBillingEventInput,
   buildWorkspaceBillingActionId,
   buildWorkspaceBillingIdempotencyEnvelope,
@@ -89,6 +152,499 @@ import { ingestBillingEvent } from "./billing-event-ingestion-service.js";
 import { DevAgentWorker } from "../agents/dev-agent/worker.js";
 import { MarketingAgentWorker } from "../agents/marketing-agent/worker.js";
 import { QaAgentWorker } from "../agents/qa-agent/worker.js";
+
+function normalizeObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function hasObjectKeys(value) {
+  return value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length > 0;
+}
+
+function normalizeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function normalizeString(value, fallback = "") {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function normalizeProjectIdSegment(value, fallback = "project") {
+  return String(value ?? "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || fallback;
+}
+
+function resolveFinishedOnboardingProjectId({
+  projectDraft = {},
+  finishedSession = {},
+} = {}) {
+  const draftId = normalizeProjectIdSegment(
+    projectDraft.id ?? finishedSession.projectDraftId,
+    "project-draft",
+  );
+  if (draftId && draftId !== "project-draft") {
+    return draftId;
+  }
+
+  const sessionId = normalizeProjectIdSegment(finishedSession.sessionId, "");
+  const sessionSuffix = sessionId
+    .replace(/^onboarding-project-draft-/, "")
+    .replace(/^onboarding-/, "");
+
+  return normalizeProjectIdSegment(`project-${sessionSuffix || Date.now()}`, "project");
+}
+
+function resolveProjectOwnerUserId(project = null) {
+  const normalizedProject = normalizeObject(project);
+  return normalizeString(
+    normalizedProject.state?.workspaceModel?.ownerUserId,
+    normalizeString(
+      normalizedProject.context?.workspaceModel?.ownerUserId,
+      normalizeString(
+        normalizedProject.userId,
+        normalizeString(normalizedProject.onboardingSession?.userId, null),
+      ),
+    ),
+  );
+}
+
+function isProjectAccessibleToUser(project = null, userId = null, { allowUnowned = false } = {}) {
+  const normalizedUserId = normalizeString(userId, null);
+  if (!normalizedUserId) {
+    return allowUnowned === true && !resolveProjectOwnerUserId(project);
+  }
+
+  const ownerUserId = resolveProjectOwnerUserId(project);
+  if (ownerUserId === normalizedUserId) {
+    return true;
+  }
+
+  const membershipRecords = [
+    project?.state?.membershipRecord,
+    project?.context?.membershipRecord,
+    ...(Array.isArray(project?.state?.workspaceModel?.members) ? project.state.workspaceModel.members : []),
+    ...(Array.isArray(project?.context?.workspaceModel?.members) ? project.context.workspaceModel.members : []),
+  ].filter(Boolean);
+  const activeMember = membershipRecords.find((record) => (
+    record?.userId === normalizedUserId
+    || record?.memberUserId === normalizedUserId
+    || record?.actorId === normalizedUserId
+  ) && normalizeString(record?.status, "active") !== "removed" && normalizeString(record?.status, "active") !== "disabled");
+  if (activeMember) {
+    return true;
+  }
+
+  if (!ownerUserId) {
+    return allowUnowned === true;
+  }
+
+  return false;
+}
+
+function normalizeTeamRole(role, fallback = "viewer") {
+  const normalizedRole = normalizeString(role, fallback)?.toLowerCase();
+  if (normalizedRole === "member") return "editor";
+  if (["owner", "admin", "editor", "viewer", "guest"].includes(normalizedRole)) {
+    return normalizedRole;
+  }
+  return fallback;
+}
+
+function createProjectTeamMember({
+  workspaceId,
+  userId = null,
+  email = null,
+  displayName = null,
+  role = "viewer",
+  status = "active",
+  isOwner = false,
+} = {}) {
+  const normalizedUserId = normalizeString(userId, null);
+  const normalizedEmail = normalizeString(email, null);
+  const memberKey = normalizedUserId ?? normalizedEmail ?? `member-${Date.now()}`;
+  return {
+    membershipId: `${workspaceId ?? "workspace"}:${memberKey}`,
+    workspaceId: workspaceId ?? null,
+    userId: normalizedUserId,
+    email: normalizedEmail,
+    displayName: normalizeString(displayName, normalizedEmail ?? normalizedUserId ?? "Team member"),
+    role: normalizeTeamRole(role, isOwner ? "owner" : "viewer"),
+    status: normalizeString(status, "active"),
+    isOwner: isOwner === true,
+    joinedAt: new Date().toISOString(),
+  };
+}
+
+function buildProjectTeamBoundary({ project, workspaceModel }) {
+  const normalizedWorkspaceModel = normalizeObject(workspaceModel);
+  const workspaceId = normalizeString(normalizedWorkspaceModel.workspaceId, `workspace-${project?.userId ?? "unknown"}`);
+  const ownerUserId = normalizeString(
+    normalizedWorkspaceModel.ownerUserId,
+    normalizeString(project?.userId, null),
+  );
+  const existingMembers = normalizeArray(normalizedWorkspaceModel.members);
+  const ownerMember = createProjectTeamMember({
+    workspaceId,
+    userId: ownerUserId,
+    displayName: ownerUserId,
+    role: "owner",
+    status: "active",
+    isOwner: true,
+  });
+  const memberMap = new Map();
+  [ownerMember, ...existingMembers].forEach((member) => {
+    const key = normalizeString(member?.userId, normalizeString(member?.email, null));
+    if (!key) return;
+    const normalizedMember = {
+      ...member,
+      workspaceId,
+      role: normalizeTeamRole(member?.role, member?.isOwner ? "owner" : "viewer"),
+      status: normalizeString(member?.status, "active"),
+      isOwner: member?.isOwner === true || member?.userId === ownerUserId,
+    };
+    memberMap.set(key, normalizedMember);
+  });
+  const members = [...memberMap.values()];
+  const roles = [...new Set([
+    "owner",
+    "admin",
+    "editor",
+    "viewer",
+    ...members.map((member) => normalizeTeamRole(member.role, "viewer")),
+  ])];
+  const invitations = normalizeArray(normalizedWorkspaceModel.invitations);
+  const activeMembers = members.filter((member) => !["removed", "disabled"].includes(member.status));
+
+  return {
+    workspaceModel: {
+      ...normalizedWorkspaceModel,
+      workspaceId,
+      ownerUserId,
+      roles,
+      members,
+      invitations,
+      memberCount: activeMembers.length,
+    },
+    teamMembershipBoundary: {
+      teamMembershipBoundaryId: `team-membership:${workspaceId}`,
+      taskId: "EXP-009",
+      status: "ready",
+      workspaceId,
+      ownerUserId,
+      roles,
+      members,
+      invitations,
+      states: {
+        invitation: ["pending", "accepted", "revoked", "expired", "invalid"],
+        membership: ["active", "removed", "disabled"],
+        ownershipTransfer: ["available-for-owner", "blocked-for-non-owner"],
+      },
+      firstReleaseBoundary: {
+        advancedEnterpriseGovernance: false,
+        billingRoles: "owned-by-BILLING-001",
+        externalIdentity: "owned-by-SSO-001",
+      },
+    },
+  };
+}
+
+function resolveProjectCompanionTruth({ project = null, session = null } = {}) {
+  const normalizedProject = normalizeObject(project);
+  const normalizedSession = normalizeObject(session);
+  const conversationState = normalizeObject(normalizedSession.conversation);
+  const summary = Object.keys(normalizedSession).length > 0
+    ? normalizeObject(normalizedSession.summaryOverride ?? null)
+    : {};
+  const envelopeSummary = normalizeObject(
+    normalizeObject(normalizedSession.conversationSummary).onboardingConversation?.summary
+      ?? null,
+  );
+  const conversationSummary = normalizeObject(
+    normalizedSession.conversationSummary
+      ?? normalizedSession.summary
+      ?? null,
+  );
+  const liveSummary = summary.understoodItems
+    ? summary
+    : envelopeSummary.understoodItems
+      ? envelopeSummary
+      : conversationSummary.understoodItems
+        ? conversationSummary
+        : {};
+  const projectSummary = normalizeObject(
+    normalizedProject.onboardingStateHandoff?.summary
+      ?? normalizedProject.context?.onboardingStateHandoff?.summary
+      ?? normalizedProject.overview
+      ?? null,
+  );
+  const artifactExpectation = normalizeObject(
+    normalizedProject.artifactExpectation
+      ?? normalizedProject.context?.artifactExpectation
+      ?? normalizedProject.onboardingStateHandoff?.artifactExpectation
+      ?? normalizedProject.context?.onboardingStateHandoff?.artifactExpectation,
+  );
+  const knowledgeAnswers = normalizeObject(
+    normalizedProject.projectDraft?.state?.knowledge?.onboardingConversationAnswers
+      ?? normalizedProject.state?.knowledge?.onboardingConversationAnswers
+      ?? {},
+  );
+  const understoodItems = normalizeArray(
+    envelopeSummary.understoodItems
+      ?? normalizeObject(normalizedSession.conversationSummary ?? conversationSummary).understoodItems
+      ?? liveSummary.understoodItems
+      ?? [],
+  );
+  const missingItems = normalizeArray(
+    envelopeSummary.missingItems
+      ?? normalizeObject(normalizedSession.conversationSummary ?? conversationSummary).missingItems
+      ?? liveSummary.missingItems
+      ?? [],
+  );
+  const fallbackUnderstood = [
+    normalizeString(normalizedProject.goal, ""),
+    normalizeString(knowledgeAnswers["target-audience"], ""),
+    normalizeString(knowledgeAnswers["core-problem"], ""),
+    normalizeString(knowledgeAnswers["successful-solution"], ""),
+  ].filter(Boolean);
+
+  return {
+    projectName: normalizeString(normalizedProject.name, normalizeString(normalizedSession.projectDraft?.name, "הפרויקט")),
+    projectGoal: normalizeString(normalizedProject.goal, normalizeString(normalizedSession.projectDraft?.goal, "")),
+    projectType: normalizeString(
+      artifactExpectation.projectType,
+      normalizeString(projectSummary.projectType, "unknown"),
+    ),
+    understoodItems: understoodItems.length > 0 ? understoodItems : fallbackUnderstood,
+    missingItems,
+    transcript: normalizeArray(conversationState.transcript),
+  };
+}
+
+function buildProjectCompanionShellReply({
+  userMessage = "",
+  truth = {},
+  learningInstructions = null,
+  buildAgentTurn = null,
+  buildAgentDownstreamResult = null,
+} = {}) {
+  const understoodItems = normalizeArray(truth.understoodItems);
+  const missingItems = normalizeArray(truth.missingItems);
+  const routingHints = normalizeArray(learningInstructions?.routingHints);
+  const turn = normalizeObject(buildAgentTurn);
+  const comparableReply = buildComparableProductShellReply({
+    userMessage,
+    projectType: truth.projectType,
+    projectGoal: truth.projectGoal,
+    understoodItems,
+    missingItems,
+  });
+  const leadingTruth = understoodItems[0] ?? `כרגע די ברור לי שמדובר ב-${normalizeString(truth.projectName, "הפרויקט")}.`;
+  const missingLine = missingItems[0]
+    ? `מה שעוד חסר לי כדי לא להניח הנחה לא נכונה הוא: ${missingItems[0]}.`
+    : "";
+  const askedAboutMissing = /חסר|עוד לא ברור|מה עדיין/i.test(userMessage);
+  const askedAboutUnderstanding = /הבנת|מה אתה מבין|מה כבר ברור/i.test(userMessage);
+  const downstream = normalizeObject(buildAgentDownstreamResult);
+
+  if (downstream.status === "applied") {
+    return `${normalizeString(downstream.visibleSummary, "השינוי נרשם בשלד.")} זה מופיע עכשיו כאמת שינוי, ולכן מותר להציג אותו כתוצאה שבוצעה.`;
+  }
+
+  if (downstream.status === "failed-safely") {
+    return `ניסיתי להעביר את הבקשה למסלול שינוי, אבל היא לא נסגרה כהצלחה. לא שיניתי את השלד. הסיבה: ${normalizeString(downstream.error, "השינוי לא עבר")}.`;
+  }
+
+  if (routingHints.includes("provider-release-boundary")) {
+    return `אני לא אחבר עכשיו ספק אמיתי, לא אפרסם החוצה ולא אפעיל תשלום מתוך השלד הזה. זה צריך אישור וחיבור נפרד. הבקשה מסווגת כרגע למסלול ${turn.ownerLabel ?? "שחרור או שינוי מאושר"}, ולא כהצלחה שבוצעה.`;
+  }
+
+  if (routingHints.includes("prior-failure-requires-retry-or-clarification")) {
+    return "אני רואה שניסיון שינוי קודם לא נסגר כהצלחה, אז אני לא אגיד שזה בוצע. אפשר לנסות שוב בצורה ממוקדת, או שאבקש הבהרה לפני שינוי נוסף.";
+  }
+
+  if (turn.owner === "verification-qa-agent") {
+    return "אני מנתב את זה לבדיקה של השלד. עד שיש תוצאת בדיקה אמיתית, אני לא אגיד שהמסך תקין או שהבעיה נפתרה.";
+  }
+
+  if (turn.intent === "visual-style-change") {
+    return "זה שינוי סגנון משמעותי. לפני שאני מחליף את הכיוון החזותי, צריך אישור: כיוון פרימיום רגוע או כיוון נועז וצבעוני?";
+  }
+
+  if (turn.owner === "visual-build-agent") {
+    return "אני מנתב את זה לשינוי חזותי בשלד. רק אחרי שתהיה תוצאה גלויה בקנבס אגיד שהשינוי בוצע.";
+  }
+
+  if (turn.intent === "product-truth-change") {
+    return "זו כבר החלפת כיוון מוצרית, אז צריך אישור והשפעה לפני שינוי. אני לא משנה מלידים להזמנות בשקט ולא מציג את זה כהצלחה.";
+  }
+
+  if (routingHints.includes("mutation-required-before-success")) {
+    return "אני יכול להפוך את זה לבקשת שינוי, אבל לא אגיד שהמוצר השתנה עד ששינוי אמיתי יירשם ויופיע בשלד. כרגע זה צריך לעבור למסלול שינוי ולא להישאר תשובת צ׳אט בלבד.";
+  }
+
+  if (comparableReply) {
+    return comparableReply;
+  }
+
+  if (askedAboutMissing && missingItems[0]) {
+    return `${missingLine} אם ננעל את זה, התמונה תהיה הרבה יותר אמינה.`;
+  }
+
+  if (askedAboutUnderstanding) {
+    return `ממה שכבר נסגר לי: ${leadingTruth}${missingLine ? ` ${missingLine}` : ""}`;
+  }
+
+  if (missingItems[0]) {
+    return `ממה שכבר נסגר לי: ${leadingTruth} ${missingLine} אז השאלה הכי מועילה עכשיו היא: ${missingItems[0]}`;
+  }
+
+  return `ממה שכבר ברור לי, ${leadingTruth} אם יש נקודה שאתה חושב שלא הבנתי נכון, תגיד לי בדיוק איפה ההבנה שלי נשברת.`;
+}
+
+function remapRecordForApprovedDirection(record = {}, patch = {}) {
+  const safeRecord = normalizeObject(record);
+  const fields = normalizeArray(patch.fields);
+  const singular = normalizeString(patch.primaryObjectSingular, "פריט");
+  const baseName = normalizeString(safeRecord.name, normalizeString(safeRecord.title, singular));
+  return {
+    ...safeRecord,
+    name: baseName.replace(/ליד/g, singular),
+    title: normalizeString(safeRecord.title, baseName).replace(/ליד/g, singular),
+    status: normalizeString(safeRecord.status, "פתוחה"),
+    owner: normalizeString(safeRecord.owner, "לא משויך"),
+    reminder: normalizeString(safeRecord.reminder, "לא נקבע"),
+    nextStep: normalizeString(safeRecord.nextStep, "להגדיר צעד הבא"),
+    ...Object.fromEntries(fields.map((field) => [field, safeRecord[field] ?? "לא סומן"])),
+  };
+}
+
+function applyApprovedProductDirectionToProject(project = {}, approvalFlow = {}) {
+  const patch = buildApprovedProductDirectionPatch({ approvalFlow });
+  if (!patch) {
+    return project;
+  }
+
+  const label = normalizeString(patch.label, "כיוון מוצר חדש");
+  const singular = normalizeString(patch.primaryObjectSingular, "פריט");
+  const plural = normalizeString(patch.primaryObjectPlural, "פריטים");
+  const fields = normalizeArray(patch.fields);
+  const sampleRecords = normalizeArray(patch.sampleRecords);
+  const existingDomain = normalizeObject(project.productDomainSkeleton ?? project.context?.productDomainSkeleton ?? project.state?.productDomainSkeleton);
+  const existingModels = normalizeArray(existingDomain.models);
+  const existingState = normalizeObject(existingDomain.state);
+  const existingRecords = normalizeArray(existingState.records);
+  const nextRecords = sampleRecords.length > 0
+    ? sampleRecords
+    : existingRecords.map((record) => remapRecordForApprovedDirection(record, patch));
+  const fieldObjects = fields.map((field) => ({ name: field, type: "text", required: false }));
+  const nextDomain = {
+    ...existingDomain,
+    domainKind: normalizeString(patch.directionId, "product-direction"),
+    productDirection: label,
+    models: existingModels.length > 0
+      ? existingModels.map((model, index) => index === 0
+        ? {
+            ...model,
+            name: singular,
+            fields: fieldObjects,
+          }
+        : model)
+      : [
+          {
+            name: singular,
+            fields: fieldObjects,
+          },
+        ],
+    state: {
+      ...existingState,
+      selectedRecordId: normalizeString(nextRecords[0]?.id, existingState.selectedRecordId),
+      records: nextRecords,
+    },
+    operations: normalizeArray(existingDomain.operations).length > 0
+      ? existingDomain.operations
+      : [
+          { id: "record.create", label: `הוסף ${singular}` },
+          { id: "record.updateStatus", label: "עדכן סטטוס" },
+        ],
+  };
+  const existingRuntime = normalizeObject(project.runtimeSkeletonTruth ?? project.context?.runtimeSkeletonTruth ?? project.state?.runtimeSkeletonTruth);
+  const nextRuntime = Object.keys(existingRuntime).length
+    ? {
+        ...existingRuntime,
+        title: label,
+        fields,
+        productDirection: label,
+        productDomainSkeleton: nextDomain,
+      }
+    : existingRuntime;
+  const existingSkeleton = normalizeObject(project.productSkeletonAgentOutput ?? project.context?.productSkeletonAgentOutput ?? project.state?.productSkeletonAgentOutput);
+  const nextSkeleton = Object.keys(existingSkeleton).length
+    ? {
+        ...existingSkeleton,
+        productType: normalizeString(patch.productType, existingSkeleton.productType),
+        primaryProblem: `מעקב מסודר אחרי ${plural}, אחריות, תזכורות וצעד הבא.`,
+        firstWorkflow: {
+          ...normalizeObject(existingSkeleton.firstWorkflow),
+          title: `ניהול ${plural}`,
+          steps: [`הוסף ${singular}`, "שייך אחראי", "קבע תזכורת", "עדכן צעד הבא"],
+        },
+        dataObjects: [
+          {
+            name: singular,
+            fields,
+          },
+        ],
+      }
+    : existingSkeleton;
+
+  project.name = label;
+  project.goal = `כלי פנימי עבור ${plural} עם סטטוס, אחראי, תזכורת וצעד הבא.`;
+  project.artifactExpectation = {
+    ...normalizeObject(project.artifactExpectation),
+    projectType: normalizeString(patch.productType, "internal tool"),
+    title: label,
+  };
+  project.productSkeletonAgentOutput = nextSkeleton;
+  project.productDomainSkeleton = nextDomain;
+  project.runtimeSkeletonTruth = nextRuntime;
+  project.context = {
+    ...normalizeObject(project.context),
+    productSkeletonAgentOutput: nextSkeleton,
+    productDomainSkeleton: nextDomain,
+    runtimeSkeletonTruth: nextRuntime,
+  };
+  project.state = {
+    ...normalizeObject(project.state),
+    productSkeletonAgentOutput: nextSkeleton,
+    productDomainSkeleton: nextDomain,
+    runtimeSkeletonTruth: nextRuntime,
+    approvedProductDirection: {
+      taskId: "BUILD-APPROVAL-001",
+      label,
+      directionId: patch.directionId,
+      approvedAt: approvalFlow.decidedAt,
+    },
+  };
+  return project;
+}
+
+function shouldUseBoundedBuildShellReply(buildAgentTurn = {}) {
+  const turn = normalizeObject(buildAgentTurn);
+  if (turn.taskId !== "BLD-AGT-001") {
+    return false;
+  }
+  return Boolean(
+    turn.requiresApproval === true
+      || turn.status === "blocked-or-approval-required"
+      || turn.owner === "verification-qa-agent"
+      || turn.owner === "release-agent"
+      || turn.intent === "product-truth-change"
+      || turn.intent === "provider-connection-request",
+  );
+}
 
 export class ProjectService {
   constructor({
@@ -351,6 +907,59 @@ export class ProjectService {
     return persistedRecord;
   }
 
+  buildAccountSettingsSurface(userId) {
+    const authPayload = this.getUserAuthPayload(userId);
+    if (!authPayload) {
+      return null;
+    }
+
+    const accountBoundary = buildFirstReleaseAccountBoundary({ authPayload });
+    return {
+      settingsProfileSurface: {
+        settingsProfileSurfaceId: `settings-profile:${authPayload.userIdentity?.userId ?? userId}`,
+        status: "ready",
+        routeKey: "settings",
+        actorProfile: {
+          userId: authPayload.userIdentity?.userId ?? userId,
+          displayName: authPayload.userIdentity?.displayName ?? null,
+          email: authPayload.userIdentity?.email ?? null,
+          role: authPayload.membershipRecord?.roleAssignment?.role ?? authPayload.membershipRecord?.role ?? "owner",
+        },
+        workspaceSettings: authPayload.workspaceSettings ?? {},
+        notificationPreferences: authPayload.notificationPreferences ?? {},
+        securitySettings: {
+          mfaDecision: authPayload.ownerMfaDecision?.decision ?? "unknown",
+          trustLevel: authPayload.userIdentity?.userId ? "known-user" : "anonymous",
+        },
+        accountBoundary,
+        summary: {
+          canEditProfile: true,
+          hasSettingsRoute: true,
+        },
+      },
+    };
+  }
+
+  applyAccountAction({ userId = null, actionType = null, payload = null, actorUserId = null } = {}) {
+    const existing = this.getUserAuthPayload(userId);
+    if (!existing) {
+      return null;
+    }
+
+    const result = applyFirstReleaseAccountAction({
+      authPayload: existing,
+      actionType,
+      payload,
+      actorUserId: actorUserId ?? userId,
+    });
+    const persistedAuthPayload = this.persistUserAuthPayload(result.authPayload);
+    return {
+      ...result,
+      authPayload: persistedAuthPayload ?? result.authPayload,
+      settingsProfileSurface: this.buildAccountSettingsSurface(userId)?.settingsProfileSurface ?? null,
+    };
+  }
+
   persistProjectRecord(project) {
     const persistedRecord = this.projectWorkspaceStore.upsert(project);
     if (!persistedRecord) {
@@ -428,35 +1037,127 @@ export class ProjectService {
       return null;
     }
 
+    const ownerUserId = normalizeString(userId, normalizeString(onboardingSession?.userId, null));
+    const authPayload = ownerUserId ? this.getUserAuthPayload(ownerUserId) : null;
+    const baseWorkspaceModel = ownerUserId
+      ? (
+          authPayload?.workspaceModel
+          ?? defineWorkspaceAndMembershipModel({
+            userIdentity: {
+              userId: ownerUserId,
+              displayName: ownerUserId,
+            },
+            workspaceMetadata: {
+              workspaceId: `workspace-${ownerUserId}`,
+              ownerUserId,
+            },
+          }).workspaceModel
+        )
+      : null;
+    const { workspaceModel, teamMembershipBoundary } = baseWorkspaceModel
+      ? buildProjectTeamBoundary({
+          project: { userId: ownerUserId },
+          workspaceModel: baseWorkspaceModel,
+        })
+      : { workspaceModel: null, teamMembershipBoundary: null };
+    const normalizedState = state ?? {
+      businessGoal: goal,
+      product: {
+        hasAuth: false,
+        hasStagingEnvironment: false,
+        hasLandingPage: false,
+        hasPaymentIntegration: false,
+      },
+      analytics: {
+        hasBaselineCampaign: false,
+      },
+      knowledge: {
+        knownGaps: [],
+      },
+      stack: {},
+    };
+    const stateWithOwnership = workspaceModel
+      ? {
+          ...normalizedState,
+          workspaceModel: {
+            ...(normalizedState.workspaceModel ?? {}),
+            ...workspaceModel,
+            ownerUserId,
+          },
+          teamMembershipBoundary,
+        }
+      : normalizedState;
+    const projectType = normalizeString(
+      normalizedState.artifactExpectation?.projectType,
+      normalizeString(normalizedState.projectType, normalizeString(normalizedState.domainClassification?.domain, "generic")),
+    );
+    const { projectPermissionSchema } = defineProjectPermissionSchema({
+      workspaceModel,
+      projectType,
+    });
+    const { roleCapabilityMatrix } = createProjectRoleCapabilityMatrix({
+      projectPermissionSchema,
+    });
+    const { tenantIsolationSchema } = defineTenantIsolationSchema({
+      workspaceModel,
+    });
+    const { projectAuthorizationDecision } = createActionLevelProjectAuthorizationResolver({
+      actorType: "owner",
+      projectAction: "view",
+      roleCapabilityMatrix,
+      policyDecision: normalizedState.policyDecision ?? null,
+    });
+    const { workspaceIsolationDecision } = createWorkspaceIsolationGuard({
+      tenantIsolationSchema,
+      requestContext: {
+        workspaceId: workspaceModel?.workspaceId ?? null,
+        resourceType: "project-state",
+        resourceId: `project-state:${id}`,
+        actionType: "view",
+      },
+    });
+    const securityState = workspaceModel
+      ? {
+          ...stateWithOwnership,
+          projectPermissionSchema,
+          roleCapabilityMatrix,
+          tenantIsolationSchema,
+          projectAuthorizationDecision,
+          workspaceIsolationDecision,
+        }
+      : stateWithOwnership;
+
     const project = {
       id,
-      userId: userId ?? onboardingSession?.userId ?? null,
+      userId: ownerUserId,
       name,
       goal,
       status: "idle",
       path: path ?? `/projects/${id}`,
       stack: stack ?? "Unknown",
-      state: state ?? {
-        businessGoal: goal,
-        product: {
-          hasAuth: false,
-          hasStagingEnvironment: false,
-          hasLandingPage: false,
-          hasPaymentIntegration: false,
-        },
-        analytics: {
-          hasBaselineCampaign: false,
-        },
-        knowledge: {
-          knownGaps: [],
-        },
-        stack: {},
-      },
+      state: securityState,
       agents: agents ?? this.createDefaultAgents(),
       approvals: approvals ?? [],
-      manualContext: null,
+      manualContext: workspaceModel
+        ? {
+            workspaceMetadata: workspaceModel,
+          }
+        : null,
       normalizedSources: null,
-      context: null,
+      context: workspaceModel
+        ? {
+          workspaceModel: {
+            ...workspaceModel,
+            ownerUserId,
+          },
+          teamMembershipBoundary,
+          projectPermissionSchema,
+          roleCapabilityMatrix,
+          tenantIsolationSchema,
+            projectAuthorizationDecision,
+            workspaceIsolationDecision,
+          }
+        : null,
       scan: null,
       analysis: null,
       externalSnapshot: null,
@@ -468,6 +1169,17 @@ export class ProjectService {
       notionSnapshot: null,
       source: source ?? null,
       onboardingSession: onboardingSession ?? null,
+      artifactExpectation: normalizedState.artifactExpectation ?? null,
+      generationIntent: normalizedState.generationIntent ?? null,
+      productSkeletonAgentOutput: normalizedState.productSkeletonAgentOutput ?? null,
+      visualProductSkeletonAgentOutput: normalizedState.visualProductSkeletonAgentOutput ?? null,
+      runtimeSkeletonTruth: normalizedState.runtimeSkeletonTruth ?? null,
+      productDomainSkeleton: normalizedState.productDomainSkeleton ?? null,
+      productOwnedBackendSkeleton: normalizedState.productOwnedBackendSkeleton ?? null,
+      runtimeLearningEvents: normalizedState.runtimeLearningEvents ?? [],
+      runtimeLearningDecisionHints: normalizedState.runtimeLearningDecisionHints ?? null,
+      shareDemoAgent: normalizedState.shareDemoAgent ?? null,
+      growthAgent: normalizedState.growthAgent ?? null,
       cycle: null,
       runtimeResults: [],
       taskResults: [],
@@ -605,11 +1317,430 @@ export class ProjectService {
     return this.onboarding.getConversationState(sessionId);
   }
 
-  submitOnboardingConversationTurn({ sessionId, answer }) {
-    return this.onboarding.submitConversationTurn({
+  async submitOnboardingConversationTurn({ sessionId, answer, qaFaultMode, clientMessageId = null }) {
+    return await this.onboarding.submitConversationTurn({
       sessionId,
       answer,
+      qaFaultMode,
+      clientMessageId,
     });
+  }
+
+  async primeOnboardingDiscoveryAgentResponse({ sessionId, qaFaultMode }) {
+    return await this.onboarding.primeDiscoveryAgentResponse({
+      sessionId,
+      qaFaultMode,
+    });
+  }
+
+  async generateOnboardingProductSkeleton({ sessionId, qaFaultMode = null }) {
+    return await this.onboarding.generateProductSkeletonFromDiscovery({
+      sessionId,
+      qaFaultMode,
+    });
+  }
+
+  async generateOnboardingVisualProductSkeleton({ sessionId, qaFaultMode = null }) {
+    return await this.onboarding.generateVisualProductSkeletonFromProductSkeleton({
+      sessionId,
+      qaFaultMode,
+    });
+  }
+
+  async streamOnboardingConversationTurn({ sessionId, answer, qaFaultMode, clientMessageId = null, onEvent }) {
+    return await this.onboarding.streamConversationTurn({
+      sessionId,
+      answer,
+      qaFaultMode,
+      clientMessageId,
+      onEvent,
+    });
+  }
+
+  async submitProjectCompanionTurn({
+    projectId,
+    sessionId = null,
+    message = "",
+    currentSurface = "workspace",
+    qaFaultMode = null,
+  }) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const normalizedMessage = normalizeString(message, "");
+    if (!normalizedMessage) {
+      return null;
+    }
+
+    let correctionReply = "";
+    let onboardingSession = sessionId ? this.onboarding.getSession(sessionId) : null;
+    let conversationSummary = sessionId
+      ? this.onboarding.getConversationState(sessionId)
+      : null;
+    if (sessionId) {
+      const correctionResult = await this.onboarding.applyPostOnboardingCorrection({
+        sessionId,
+        message: normalizedMessage,
+        currentSurface,
+        qaFaultMode,
+      });
+      if (correctionResult) {
+        correctionReply = normalizeString(correctionResult.correction?.replyText, "");
+        onboardingSession = correctionResult.updatedSession;
+        conversationSummary = correctionResult.conversationState;
+        project.onboardingSession = correctionResult.updatedSession;
+        this.rebuildContext(projectId);
+      }
+    }
+
+    const serializedProject = this.serializeProject(this.projects.get(projectId));
+    const truth = resolveProjectCompanionTruth({
+      project: serializedProject,
+      session: {
+        ...normalizeObject(onboardingSession),
+        conversationSummary,
+      },
+    });
+    const learningInstructions = createBuildAgentLearningInstructions({
+      project: serializedProject,
+      message: normalizedMessage,
+      currentSurface,
+    });
+    const buildAgentTurn = createBuildAgentTurnDecision({
+      project: serializedProject,
+      message: normalizedMessage,
+      learningInstructions,
+    });
+    let downstreamAction = resolveBuildAgentDownstreamAction({
+      buildAgentTurn,
+      message: normalizedMessage,
+    });
+    if (downstreamAction.shouldApply !== true && downstreamAction.status === "routed-only") {
+      // BUILD-SPEECH-TRUTH-001: arbitrary free-text requests must resolve to a real
+      // mutation or to an explicit truthful not-applied state, never fall through
+      // to a confident provider success reply.
+      const freeTextAction = resolveFreeTextMutationOperation({
+        message: normalizedMessage,
+        buildAgentTurn,
+      });
+      if (freeTextAction) {
+        downstreamAction = freeTextAction;
+      }
+    }
+    let mutationChangeDecision = createMutationChangeAgentDecision({
+      project: serializedProject,
+      message: normalizedMessage,
+      buildAgentTurn,
+      downstreamAction,
+      requestedBy: "user",
+    });
+    let buildAgentDownstreamResult = null;
+    if (downstreamAction.shouldApply === true) {
+      if (downstreamAction.actionKind === "visual-build") {
+        const visualResult = this.applyVisualBuildChange({
+          projectId,
+          requestText: normalizedMessage,
+          operationId: downstreamAction.operationId,
+          payload: downstreamAction.payload,
+          requestedBy: downstreamAction.owner ?? "visual-build-agent",
+        });
+        buildAgentDownstreamResult = {
+          taskId: "BLD-AGT-001",
+          owner: downstreamAction.owner ?? "visual-build-agent",
+          status: visualResult?.visualBuildTruth?.status === "applied" ? "applied" : "failed-safely",
+          mutationId: normalizeString(visualResult?.visualBuildTruth?.visualBuildId, ""),
+          operationId: normalizeString(visualResult?.visualBuildTruth?.lastOperationId, downstreamAction.operationId),
+          visibleSummary: downstreamAction.visibleSummary,
+          error: "",
+        };
+      } else {
+        const mutationResult = this.applyBuildMutation({
+          projectId,
+          requestText: normalizedMessage,
+          operationId: downstreamAction.operationId,
+          payload: downstreamAction.payload,
+          requestedBy: downstreamAction.owner ?? "build-agent",
+        });
+        buildAgentDownstreamResult = {
+          taskId: "BLD-AGT-001",
+          owner: downstreamAction.owner ?? "mutation-change-agent",
+          status: mutationResult?.mutation?.ok === true ? "applied" : "failed-safely",
+          mutationId: normalizeString(mutationResult?.mutation?.intent?.mutationId, ""),
+          operationId: normalizeString(mutationResult?.mutation?.intent?.operationId, downstreamAction.operationId),
+          visibleSummary: downstreamAction.visibleSummary,
+          error: normalizeString(mutationResult?.mutation?.error, normalizeString(mutationResult?.project?.buildMutationTruth?.lastError, "")),
+        };
+      }
+      if (
+        buildAgentDownstreamResult.status === "applied"
+        && normalizeString(buildAgentDownstreamResult.mutationId, "")
+      ) {
+        // BUILD-SPEECH-TRUTH-001 invariant: applied success requires a real mutation id
+        // and changed downstream truth before speech may claim a change.
+        buildAgentTurn.status = "applied";
+        buildAgentTurn.mayClaimChanged = true;
+        buildAgentTurn.speechBoundary = "reply-may-describe-applied-change";
+        buildAgentTurn.reason = downstreamAction.visibleSummary;
+      } else if (buildAgentDownstreamResult.status === "applied") {
+        buildAgentDownstreamResult.status = "failed-safely";
+        buildAgentDownstreamResult.error = normalizeString(
+          buildAgentDownstreamResult.error,
+          "missing-mutation-id-for-applied-claim",
+        );
+      }
+    }
+    mutationChangeDecision = finalizeMutationChangeAgentDecision({
+      decision: mutationChangeDecision,
+      downstreamResult: buildAgentDownstreamResult,
+    });
+    const mutableProject = this.projects.get(projectId);
+    if (mutableProject) {
+      const mutationChangeHistory = appendMutationChangeHistory(mutableProject, mutationChangeDecision);
+      const canonicalMutationFlow = buildCanonicalMutationFlowShell({
+        project: mutableProject,
+        mutationChangeDecision,
+        mutationChangeHistory,
+        buildMutationTruth: mutableProject.buildMutationTruth ?? mutableProject.context?.buildMutationTruth ?? mutableProject.state?.buildMutationTruth,
+        buildMutationHistory: mutableProject.buildMutationHistory ?? mutableProject.context?.buildMutationHistory ?? mutableProject.state?.buildMutationHistory,
+      });
+      const buildApprovalFlow = buildBuildApprovalFlow({
+        project: mutableProject,
+        mutationChangeDecision,
+      });
+      const historyContinuityAgent = buildHistoryContinuityAgentEnvelope({
+        project: {
+          ...mutableProject,
+          mutationChangeDecision,
+          mutationChangeHistory,
+          canonicalMutationFlow,
+          buildApprovalFlow,
+        },
+      });
+      mutableProject.buildAgentTurnState = buildAgentTurn;
+      mutableProject.mutationChangeDecision = mutationChangeDecision;
+      mutableProject.mutationChangeHistory = mutationChangeHistory;
+      mutableProject.canonicalMutationFlow = canonicalMutationFlow;
+      mutableProject.buildApprovalFlow = buildApprovalFlow;
+      mutableProject.historyContinuityAgent = historyContinuityAgent;
+      mutableProject.context = {
+        ...normalizeObject(mutableProject.context),
+        buildAgentTurnState: buildAgentTurn,
+        mutationChangeDecision,
+        mutationChangeHistory,
+        canonicalMutationFlow,
+        buildApprovalFlow,
+        historyContinuityAgent,
+      };
+      mutableProject.state = {
+        ...normalizeObject(mutableProject.state),
+        buildAgentTurnState: buildAgentTurn,
+        mutationChangeDecision,
+        mutationChangeHistory,
+        canonicalMutationFlow,
+        buildApprovalFlow,
+        historyContinuityAgent,
+      };
+      this.persistProjectRecord(mutableProject);
+    }
+
+    const providerRuntime = onboardingSession?.providerRuntime ?? {};
+    let providerResult = null;
+    if (
+      !correctionReply
+      && buildAgentDownstreamResult?.status !== "applied"
+      && !shouldUseBoundedBuildShellReply(buildAgentTurn)
+    ) {
+      providerResult = await this.onboarding.providerClient.generateCompanionReply({
+        providerId: normalizeString(providerRuntime.selectedProviderId, "openai"),
+        modelFamilyId: normalizeString(providerRuntime.selectedModelFamilyId, "balanced"),
+        intelligenceLevel: normalizeString(providerRuntime.selectedIntelligenceLevel, "medium"),
+        projectName: truth.projectName,
+        projectGoal: truth.projectGoal,
+        projectType: truth.projectType,
+        currentSurface,
+        understoodItems: truth.understoodItems,
+        missingItems: truth.missingItems,
+        transcript: [
+          ...truth.transcript,
+          {
+            speaker: "user",
+            text: normalizedMessage,
+          },
+        ],
+        userMessage: normalizedMessage,
+        learningInstructions,
+        buildAgentTurn,
+        mutationChangeDecision,
+        qaFaultMode,
+      });
+    }
+
+    const candidateReply = correctionReply
+      || (providerResult?.status === "completed"
+        ? providerResult.reply
+        : buildProjectCompanionShellReply({
+          userMessage: normalizedMessage,
+          truth,
+          learningInstructions,
+          buildAgentTurn,
+          buildAgentDownstreamResult,
+        }));
+    // BUILD-SPEECH-TRUTH-001: provider/agent speech is not truth. Every visible Build
+    // reply is forced through the speech boundary gate so it cannot claim an
+    // un-applied change. Correction replies are backed by correction truth and exempt.
+    const buildSpeechTruth = correctionReply
+      ? null
+      : enforceBuildSpeechBoundary({
+        candidateReply,
+        candidateSource: providerResult?.status === "completed" ? "provider" : "shell",
+        message: normalizedMessage,
+        buildAgentTurn,
+        downstreamAction,
+        downstreamResult: buildAgentDownstreamResult,
+        mutationChangeDecision,
+      });
+    const reply = buildSpeechTruth ? buildSpeechTruth.reply : candidateReply;
+    const projectAfterTurn = this.projects.get(projectId);
+    if (projectAfterTurn && buildSpeechTruth) {
+      const buildSpeechHistory = appendBuildSpeechHistory(projectAfterTurn, buildSpeechTruth);
+      projectAfterTurn.buildSpeechTruth = buildSpeechTruth;
+      projectAfterTurn.buildSpeechHistory = buildSpeechHistory;
+      projectAfterTurn.context = {
+        ...normalizeObject(projectAfterTurn.context),
+        buildSpeechTruth,
+        buildSpeechHistory,
+      };
+      projectAfterTurn.state = {
+        ...normalizeObject(projectAfterTurn.state),
+        buildSpeechTruth,
+        buildSpeechHistory,
+      };
+    }
+    if (projectAfterTurn) {
+      const existingConversation = normalizeObject(
+        projectAfterTurn.companionConversation
+        ?? projectAfterTurn.context?.companionConversation
+        ?? projectAfterTurn.state?.companionConversation,
+      );
+      const transcript = [
+        ...normalizeArray(existingConversation.transcript),
+        {
+          id: `build-user:${Date.now()}`,
+          speaker: "user",
+          text: normalizedMessage,
+          time: "",
+        },
+        {
+          id: `build-ai:${Date.now() + 1}`,
+          speaker: "ai",
+          text: reply,
+          time: "",
+        },
+      ].filter((entry) => normalizeString(entry.text, ""));
+      const companionConversation = {
+        ...existingConversation,
+        projectName: truth.projectName,
+        understoodItems: truth.understoodItems,
+        missingItems: truth.missingItems,
+        pending: false,
+        draftMessage: "",
+        transcript,
+        buildAgentTurn,
+        mutationChangeDecision,
+        buildSpeechTruth,
+        lastBuildAgentReply: reply,
+      };
+      projectAfterTurn.companionConversation = companionConversation;
+      projectAfterTurn.context = {
+        ...normalizeObject(projectAfterTurn.context),
+        companionConversation,
+      };
+      projectAfterTurn.state = {
+        ...normalizeObject(projectAfterTurn.state),
+        companionConversation,
+      };
+      this.persistProjectRecord(projectAfterTurn);
+    }
+
+    const latestSerializedProject = this.serializeProject(this.projects.get(projectId));
+
+    return {
+      projectId,
+      sessionId: normalizeString(sessionId, null),
+      currentSurface,
+      providerExecution: providerResult,
+      reply,
+      learningInstructions,
+      buildAgentTurn,
+      mutationChangeDecision,
+      buildAgentDownstreamResult,
+      buildSpeechTruth,
+      truth: {
+        projectName: truth.projectName,
+        projectGoal: truth.projectGoal,
+        projectType: truth.projectType,
+        understoodItems: truth.understoodItems,
+        missingItems: truth.missingItems,
+      },
+      conversationState: conversationSummary,
+      project: latestSerializedProject,
+    };
+  }
+
+  async applyOnboardingCompanionCorrection({
+    sessionId,
+    message = "",
+    currentSurface = "understanding",
+    projectId = null,
+    qaFaultMode = null,
+  } = {}) {
+    const normalizedMessage = normalizeString(message, "");
+    if (!sessionId || !normalizedMessage) {
+      return null;
+    }
+
+    const correctionResult = await this.onboarding.applyPostOnboardingCorrection({
+      sessionId,
+      message: normalizedMessage,
+      currentSurface,
+      qaFaultMode,
+    });
+    if (!correctionResult) {
+      return null;
+    }
+
+    let serializedProject = null;
+    if (projectId && this.projects.has(projectId)) {
+      const project = this.projects.get(projectId);
+      project.onboardingSession = correctionResult.updatedSession;
+      this.rebuildContext(projectId);
+      serializedProject = this.serializeProject(this.projects.get(projectId));
+    }
+
+    const truth = resolveProjectCompanionTruth({
+      project: serializedProject,
+      session: {
+        ...normalizeObject(correctionResult.updatedSession),
+        conversationSummary: correctionResult.conversationState,
+      },
+    });
+
+    return {
+      sessionId,
+      currentSurface,
+      reply: normalizeString(correctionResult.correction?.replyText, ""),
+      truth: {
+        projectName: truth.projectName,
+        projectGoal: truth.projectGoal,
+        projectType: truth.projectType,
+        understoodItems: truth.understoodItems,
+        missingItems: truth.missingItems,
+      },
+      conversationState: correctionResult.conversationState,
+      project: serializedProject,
+    };
   }
 
   restartOnboardingConversation(sessionId) {
@@ -641,8 +1772,13 @@ export class ProjectService {
       return null;
     }
     const finishedSession = finished.updatedSession;
+    const finishedConversation = normalizeObject(finishedSession.conversation);
+    const finishedAgentDecision = normalizeObject(finishedConversation.lastAgentDecision);
+    const finishedSkeletonReady = normalizeObject(finishedAgentDecision.skeletonReady);
+    const agentApprovedBuildHandoff = finishedAgentDecision.nextMove === "advance-to-skeleton"
+      && finishedSkeletonReady.ready === true;
 
-    if (onboardingStateHandoff.summary?.canBuildProjectState !== true) {
+    if (onboardingStateHandoff.summary?.canBuildProjectState !== true && agentApprovedBuildHandoff !== true) {
       return {
         ...finished,
         blocked: true,
@@ -652,7 +1788,10 @@ export class ProjectService {
       };
     }
 
-    const projectId = projectDraft.id ?? finishedSession.projectDraftId ?? null;
+    const projectId = resolveFinishedOnboardingProjectId({
+      projectDraft,
+      finishedSession,
+    });
     const projectName = projectDraft.name ?? "Project Draft";
     const projectGoal = projectDraft.goal ?? finishedSession.projectIntake?.visionText ?? "";
     const bootstrapped = createProjectStateBootstrapService({
@@ -759,6 +1898,22 @@ export class ProjectService {
         workspaceModel: reboundWorkspaceModel,
       };
     }
+    const productSkeletonAgentOutput = normalizeObject(finishedSession.productSkeletonAgentOutput);
+    const visualProductSkeletonAgentOutput = normalizeObject(finishedSession.visualProductSkeletonAgentOutput);
+    const skeletonHandoffOutputs = {
+      ...(Object.keys(productSkeletonAgentOutput).length > 0 ? { productSkeletonAgentOutput } : {}),
+      ...(Object.keys(visualProductSkeletonAgentOutput).length > 0 ? { visualProductSkeletonAgentOutput } : {}),
+    };
+    project.onboardingStateHandoff = {
+      ...onboardingStateHandoff,
+      ...skeletonHandoffOutputs,
+    };
+    project.context = {
+      ...(project.context ?? {}),
+      onboardingStateHandoff: project.onboardingStateHandoff,
+      ...skeletonHandoffOutputs,
+    };
+    Object.assign(project, skeletonHandoffOutputs);
     project.projectCreationEvent =
       this.projectCreationEvents.get(projectId)
       ?? project.projectCreationEvent
@@ -789,6 +1944,69 @@ export class ProjectService {
 
   getOnboardingSession(sessionId) {
     return this.onboarding.getSession(sessionId);
+  }
+
+  getOnboardingIntakeEnvelope(sessionId) {
+    const onboardingSession = this.onboarding.getSession(sessionId);
+    if (!onboardingSession) {
+      return null;
+    }
+
+    const conversationState = this.onboarding.getConversationState(sessionId);
+    const projectDraft = onboardingSession.projectDraft ?? null;
+    const projectIntake = onboardingSession.projectIntake ?? null;
+    const { onboardingCompletionDecision } = createOnboardingCompletionEvaluator({
+      projectIntake,
+      onboardingSession,
+    });
+    const { onboardingStateHandoff } = createOnboardingToStateHandoffContract({
+      projectDraft,
+      projectIntake,
+      onboardingCompletionDecision,
+      onboardingSession,
+    });
+    const artifactExpectation = onboardingStateHandoff?.artifactExpectation ?? null;
+    const { adaptiveOnboardingAgentContract } = createAdaptiveOnboardingAgentContract({
+      projectIntake,
+      onboardingConversation: conversationState?.onboardingConversation ?? onboardingSession.conversation ?? null,
+      onboardingCompletionDecision,
+      onboardingStateHandoff,
+      artifactExpectation,
+    });
+
+    return {
+      sessionId: onboardingSession.sessionId,
+      userId: onboardingSession.userId ?? null,
+      projectDraftId: onboardingSession.projectDraftId ?? null,
+      projectName: projectDraft?.name ?? projectIntake?.projectName ?? null,
+      canonicalTruthOwner: "project-service",
+      truthSource: "onboarding-session-and-handoff-contract",
+      surfaceMode: "hidden-engine",
+      engineRole: "bounded-intake-before-build",
+      onboardingSession,
+      projectDraft,
+      projectIntake,
+      currentStep: this.onboarding.getCurrentStep(sessionId),
+      conversationState,
+      onboardingCompletionDecision,
+      onboardingStateHandoff,
+      artifactExpectation,
+      adaptiveOnboardingAgentContract,
+      shellAnchors: {
+        canStartBuild: onboardingStateHandoff?.summary?.canBuildProjectState === true,
+        readinessLevel: onboardingCompletionDecision?.readinessLevel ?? null,
+        handoffStatus: onboardingStateHandoff?.handoffStatus ?? null,
+        projectType:
+          onboardingStateHandoff?.projectIntake?.projectType
+          ?? projectIntake?.projectType
+          ?? artifactExpectation?.projectType
+          ?? null,
+        selectedProviderId:
+          conversationState?.providerRuntime?.selectedProviderId
+          ?? onboardingSession?.providerRuntime?.selectedProviderId
+          ?? null,
+      },
+    };
   }
 
   submitProposalEdits({ projectId, userEditInput } = {}) {
@@ -872,6 +2090,277 @@ export class ProjectService {
       rollbackExecutionTriggeredAt: new Date().toISOString(),
     };
 
+    return this.serializeProject(project);
+  }
+
+  executeHistoryRestore({ projectId, checkpointId = "" } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const historyContinuityAgent = executeHistoryRestoreDecision({
+      project,
+      checkpointId,
+    });
+    const restoreSnapshot = normalizeObject(historyContinuityAgent.restoreDecision?.productSnapshot);
+    const restoreExecution = normalizeObject(historyContinuityAgent.restoreExecution);
+
+    if (restoreExecution.executed === true) {
+      project.name = normalizeString(restoreSnapshot.projectName, project.name);
+      project.goal = normalizeString(restoreSnapshot.goal, project.goal);
+      project.artifactExpectation = hasObjectKeys(restoreSnapshot.artifactExpectation) ? restoreSnapshot.artifactExpectation : project.artifactExpectation;
+      project.productSkeletonAgentOutput = hasObjectKeys(restoreSnapshot.productSkeletonAgentOutput) ? restoreSnapshot.productSkeletonAgentOutput : project.productSkeletonAgentOutput;
+      project.runtimeSkeletonTruth = hasObjectKeys(restoreSnapshot.runtimeSkeletonTruth) ? restoreSnapshot.runtimeSkeletonTruth : project.runtimeSkeletonTruth;
+      project.productDomainSkeleton = hasObjectKeys(restoreSnapshot.productDomainSkeleton) ? restoreSnapshot.productDomainSkeleton : project.productDomainSkeleton;
+      project.productOwnedBackendSkeleton = hasObjectKeys(restoreSnapshot.productOwnedBackendSkeleton) ? restoreSnapshot.productOwnedBackendSkeleton : project.productOwnedBackendSkeleton;
+      project.skeletonChoiceTruth = hasObjectKeys(restoreSnapshot.skeletonChoiceTruth) ? restoreSnapshot.skeletonChoiceTruth : project.skeletonChoiceTruth;
+      project.buildApprovalFlow = {
+        ...normalizeObject(project.buildApprovalFlow ?? project.context?.buildApprovalFlow ?? project.state?.buildApprovalFlow),
+        status: "restored",
+        decisionStatus: "restored",
+        currentTruthUnchanged: false,
+      };
+      project.mutationChangeDecision = {
+        ...normalizeObject(project.mutationChangeDecision ?? project.context?.mutationChangeDecision ?? project.state?.mutationChangeDecision),
+        status: "restored",
+        historyRecord: {
+          ...normalizeObject(project.mutationChangeDecision?.historyRecord ?? project.context?.mutationChangeDecision?.historyRecord ?? project.state?.mutationChangeDecision?.historyRecord),
+          after: "שוחזר מצב המוצר מנקודת חזרה מאושרת.",
+          truthStatus: "restored-truth",
+        },
+      };
+      project.canonicalMutationFlow = buildCanonicalMutationFlowShell({
+        project,
+        mutationChangeDecision: project.mutationChangeDecision,
+        mutationChangeHistory: project.mutationChangeHistory ?? project.context?.mutationChangeHistory ?? project.state?.mutationChangeHistory,
+        buildMutationTruth: project.buildMutationTruth ?? project.context?.buildMutationTruth ?? project.state?.buildMutationTruth,
+        buildMutationHistory: project.buildMutationHistory ?? project.context?.buildMutationHistory ?? project.state?.buildMutationHistory,
+      });
+    }
+
+    project.historyContinuityAgent = historyContinuityAgent;
+    project.context = {
+      ...normalizeObject(project.context),
+      artifactExpectation: project.artifactExpectation,
+      productSkeletonAgentOutput: project.productSkeletonAgentOutput,
+      runtimeSkeletonTruth: project.runtimeSkeletonTruth,
+      productDomainSkeleton: project.productDomainSkeleton,
+      productOwnedBackendSkeleton: project.productOwnedBackendSkeleton,
+      skeletonChoiceTruth: project.skeletonChoiceTruth,
+      buildApprovalFlow: project.buildApprovalFlow,
+      mutationChangeDecision: project.mutationChangeDecision,
+      canonicalMutationFlow: project.canonicalMutationFlow,
+      historyContinuityAgent,
+    };
+    project.state = {
+      ...normalizeObject(project.state),
+      artifactExpectation: project.artifactExpectation,
+      productSkeletonAgentOutput: project.productSkeletonAgentOutput,
+      runtimeSkeletonTruth: project.runtimeSkeletonTruth,
+      productDomainSkeleton: project.productDomainSkeleton,
+      productOwnedBackendSkeleton: project.productOwnedBackendSkeleton,
+      skeletonChoiceTruth: project.skeletonChoiceTruth,
+      buildApprovalFlow: project.buildApprovalFlow,
+      mutationChangeDecision: project.mutationChangeDecision,
+      canonicalMutationFlow: project.canonicalMutationFlow,
+      historyContinuityAgent,
+    };
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  requestHistoryRestoreDecision({ projectId, checkpointId = "" } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const historyContinuityAgent = createHistoryRestoreDecision({
+      project,
+      checkpointId,
+    });
+    project.historyContinuityAgent = historyContinuityAgent;
+    project.context = {
+      ...(project.context ?? {}),
+      historyContinuityAgent,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      historyContinuityAgent,
+    };
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  prepareShareDemo({ projectId, input = {} } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const shareDemoAgent = buildShareDemoAgentEnvelope({
+      project,
+      input,
+      previous: project.shareDemoAgent ?? project.context?.shareDemoAgent ?? project.state?.shareDemoAgent ?? null,
+    });
+    project.shareDemoAgent = shareDemoAgent;
+    project.context = {
+      ...(project.context ?? {}),
+      shareDemoAgent,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      shareDemoAgent,
+    };
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  approveShareDemo({ projectId } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const existing = project.shareDemoAgent ?? project.context?.shareDemoAgent ?? project.state?.shareDemoAgent ?? null;
+    const shareDemoAgent = approveShareDemoAgentEnvelope({
+      project,
+      envelope: existing ?? buildShareDemoAgentEnvelope({ project, input: { shareType: "review-demo" } }),
+    });
+    project.shareDemoAgent = shareDemoAgent;
+    project.context = {
+      ...(project.context ?? {}),
+      shareDemoAgent,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      shareDemoAgent,
+    };
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  revokeShareDemo({ projectId } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const existing = project.shareDemoAgent ?? project.context?.shareDemoAgent ?? project.state?.shareDemoAgent ?? null;
+    const shareDemoAgent = revokeShareDemoAgentEnvelope({
+      envelope: existing ?? buildShareDemoAgentEnvelope({ project, input: { shareType: "review-demo" } }),
+    });
+    project.shareDemoAgent = shareDemoAgent;
+    project.context = {
+      ...(project.context ?? {}),
+      shareDemoAgent,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      shareDemoAgent,
+    };
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  runGrowthAgent({ projectId, userInput = "" } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const growthAgent = buildGrowthAgentEnvelope({
+      project,
+      userInput,
+    });
+    project.growthAgent = growthAgent;
+    project.context = {
+      ...(project.context ?? {}),
+      growthAgent,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      growthAgent,
+    };
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  decideBuildApproval({ projectId, action = "" } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const existingFlow = normalizeObject(
+      project.buildApprovalFlow
+        ?? project.context?.buildApprovalFlow
+        ?? project.state?.buildApprovalFlow,
+    );
+    const decidedFlow = decideBuildApprovalFlow({
+      approvalFlow: existingFlow,
+      action,
+    });
+    if (!decidedFlow) {
+      return null;
+    }
+
+    if (decidedFlow.decisionStatus === "approved") {
+      applyApprovedProductDirectionToProject(project, decidedFlow);
+    }
+
+    const previousDecision = normalizeObject(
+      project.mutationChangeDecision
+        ?? project.context?.mutationChangeDecision
+        ?? project.state?.mutationChangeDecision,
+    );
+    const mutationChangeDecision = {
+      ...previousDecision,
+      status: decidedFlow.decisionStatus === "approved" ? "approved-applied" : decidedFlow.decisionStatus,
+      historyRecord: {
+        ...normalizeObject(previousDecision.historyRecord),
+        after: decidedFlow.decisionStatus === "approved"
+          ? normalizeString(decidedFlow.userFacingSummary, "השינוי אושר והוחל.")
+          : "לא בוצע שינוי באישור המשתמש.",
+        approvalStatus: decidedFlow.decisionStatus,
+        truthStatus: decidedFlow.decisionStatus === "approved" ? "new-truth" : "unchanged",
+      },
+      completedAt: decidedFlow.decidedAt,
+    };
+    const mutationChangeHistory = appendMutationChangeHistory(project, mutationChangeDecision);
+    const canonicalMutationFlow = buildCanonicalMutationFlowShell({
+      project,
+      mutationChangeDecision,
+      mutationChangeHistory,
+      buildMutationTruth: project.buildMutationTruth ?? project.context?.buildMutationTruth ?? project.state?.buildMutationTruth,
+      buildMutationHistory: project.buildMutationHistory ?? project.context?.buildMutationHistory ?? project.state?.buildMutationHistory,
+    });
+    const historyContinuityAgent = buildHistoryContinuityAgentEnvelope({
+      project: {
+        ...project,
+        buildApprovalFlow: decidedFlow,
+        mutationChangeDecision,
+        mutationChangeHistory,
+        canonicalMutationFlow,
+      },
+    });
+
+    project.buildApprovalFlow = decidedFlow;
+    project.mutationChangeDecision = mutationChangeDecision;
+    project.mutationChangeHistory = mutationChangeHistory;
+    project.canonicalMutationFlow = canonicalMutationFlow;
+    project.historyContinuityAgent = historyContinuityAgent;
+    project.context = {
+      ...normalizeObject(project.context),
+      buildApprovalFlow: decidedFlow,
+      mutationChangeDecision,
+      mutationChangeHistory,
+      canonicalMutationFlow,
+      historyContinuityAgent,
+    };
+    project.state = {
+      ...normalizeObject(project.state),
+      buildApprovalFlow: decidedFlow,
+      mutationChangeDecision,
+      mutationChangeHistory,
+      canonicalMutationFlow,
+      historyContinuityAgent,
+    };
+    this.persistProjectRecord(project);
     return this.serializeProject(project);
   }
 
@@ -2036,6 +3525,251 @@ export class ProjectService {
     return { authPayload: persistedAuthPayload ?? authPayload };
   }
 
+  rebuildProjectTeamSecurity(project) {
+    if (!project) {
+      return null;
+    }
+
+    const { workspaceModel, teamMembershipBoundary } = buildProjectTeamBoundary({
+      project,
+      workspaceModel: project.state?.workspaceModel ?? project.context?.workspaceModel ?? null,
+    });
+    const projectType = normalizeString(
+      project.state?.artifactExpectation?.projectType,
+      normalizeString(project.state?.projectType, normalizeString(project.state?.domainClassification?.domain, "generic")),
+    );
+    const { projectPermissionSchema } = defineProjectPermissionSchema({
+      workspaceModel,
+      projectType,
+    });
+    const { roleCapabilityMatrix } = createProjectRoleCapabilityMatrix({
+      projectPermissionSchema,
+    });
+    const { tenantIsolationSchema } = defineTenantIsolationSchema({
+      workspaceModel,
+    });
+    const { workspaceIsolationDecision } = createWorkspaceIsolationGuard({
+      tenantIsolationSchema,
+      requestContext: {
+        workspaceId: workspaceModel?.workspaceId ?? null,
+        resourceType: "project-state",
+        resourceId: `project-state:${project.id}`,
+        actionType: "view",
+      },
+    });
+
+    project.userId = workspaceModel.ownerUserId;
+    project.state = {
+      ...(project.state ?? {}),
+      workspaceModel,
+      teamMembershipBoundary,
+      projectPermissionSchema,
+      roleCapabilityMatrix,
+      tenantIsolationSchema,
+      workspaceIsolationDecision,
+    };
+    project.context = {
+      ...(project.context ?? {}),
+      workspaceModel,
+      teamMembershipBoundary,
+      projectPermissionSchema,
+      roleCapabilityMatrix,
+      tenantIsolationSchema,
+      workspaceIsolationDecision,
+    };
+    project.manualContext = {
+      ...(project.manualContext ?? {}),
+      workspaceMetadata: workspaceModel,
+    };
+    return this.persistProjectRecord(project) ?? project;
+  }
+
+  getProjectTeamBoundary(projectId, { userId = null } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project || (userId && !isProjectAccessibleToUser(project, userId))) {
+      return null;
+    }
+    const refreshedProject = this.rebuildProjectTeamSecurity(project);
+    return {
+      projectId,
+      workspaceModel: refreshedProject.state?.workspaceModel ?? null,
+      teamMembershipBoundary: refreshedProject.state?.teamMembershipBoundary ?? null,
+    };
+  }
+
+  inviteProjectMember(projectId, { actorUserId = null, invitationRequest = {} } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project || !isProjectAccessibleToUser(project, actorUserId)) {
+      return null;
+    }
+    const actorRole = actorUserId === resolveProjectOwnerUserId(project)
+      ? "owner"
+      : normalizeTeamRole(
+          normalizeArray(project.state?.workspaceModel?.members)
+            .find((member) => member.userId === actorUserId)?.role,
+          "viewer",
+        );
+    if (!["owner", "admin"].includes(actorRole)) {
+      return {
+        httpStatus: 403,
+        error: "Only owners and admins can invite team members",
+        reason: "team-invite-not-authorized",
+      };
+    }
+
+    const { invitationRecord, roleAssignment } = createRoleAssignmentAndInvitationFlow({
+      workspaceModel: project.state?.workspaceModel ?? project.context?.workspaceModel ?? null,
+      invitationRequest: {
+        ...invitationRequest,
+        role: normalizeTeamRole(invitationRequest?.role, "viewer"),
+        invitedBy: actorUserId,
+      },
+    });
+    const nextWorkspaceModel = {
+      ...(project.state?.workspaceModel ?? project.context?.workspaceModel ?? {}),
+      invitations: [
+        ...normalizeArray(project.state?.workspaceModel?.invitations ?? project.context?.workspaceModel?.invitations),
+        {
+          ...invitationRecord,
+          roleAssignment,
+          deliveryBoundary: "local-record-only-no-email-provider",
+        },
+      ],
+    };
+    project.state = { ...(project.state ?? {}), workspaceModel: nextWorkspaceModel };
+    project.context = { ...(project.context ?? {}), workspaceModel: nextWorkspaceModel };
+    project.manualContext = { ...(project.manualContext ?? {}), workspaceMetadata: nextWorkspaceModel };
+    const refreshedProject = this.rebuildProjectTeamSecurity(project);
+    return {
+      httpStatus: invitationRecord.status === "pending" ? 201 : 400,
+      invitationRecord,
+      roleAssignment,
+      project: this.serializeProject(refreshedProject),
+    };
+  }
+
+  acceptProjectInvitation(projectId, { actorUserId = null, email = null, invitationId = null } = {}) {
+    const project = this.projects.get(projectId);
+    const normalizedEmail = normalizeString(email, null);
+    if (!project || !normalizedEmail || !actorUserId) {
+      return null;
+    }
+    const workspaceModel = project.state?.workspaceModel ?? project.context?.workspaceModel ?? {};
+    const invitations = normalizeArray(workspaceModel.invitations);
+    const invitation = invitations.find((entry) => (
+      (invitationId && entry.invitationId === invitationId)
+      || (!invitationId && entry.email === normalizedEmail && entry.status === "pending")
+    ));
+    if (!invitation || invitation.status !== "pending") {
+      return {
+        httpStatus: 404,
+        error: "Invitation not found",
+        reason: "team-invitation-not-found",
+      };
+    }
+    const nextInvitations = invitations.map((entry) => entry.invitationId === invitation.invitationId
+      ? { ...entry, status: "accepted", acceptedBy: actorUserId, acceptedAt: new Date().toISOString() }
+      : entry);
+    const nextMember = createProjectTeamMember({
+      workspaceId: workspaceModel.workspaceId,
+      userId: actorUserId,
+      email: normalizedEmail,
+      displayName: normalizedEmail,
+      role: invitation.role,
+      status: "active",
+      isOwner: false,
+    });
+    project.state = {
+      ...(project.state ?? {}),
+      workspaceModel: {
+        ...workspaceModel,
+        invitations: nextInvitations,
+        members: [...normalizeArray(workspaceModel.members), nextMember],
+      },
+    };
+    project.context = { ...(project.context ?? {}), workspaceModel: project.state.workspaceModel };
+    project.manualContext = { ...(project.manualContext ?? {}), workspaceMetadata: project.state.workspaceModel };
+    const refreshedProject = this.rebuildProjectTeamSecurity(project);
+    return {
+      httpStatus: 200,
+      membershipRecord: nextMember,
+      project: this.serializeProject(refreshedProject),
+    };
+  }
+
+  removeProjectMember(projectId, { actorUserId = null, memberUserId = null } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project || !isProjectAccessibleToUser(project, actorUserId)) {
+      return null;
+    }
+    if (actorUserId !== resolveProjectOwnerUserId(project)) {
+      return {
+        httpStatus: 403,
+        error: "Only the owner can remove team members",
+        reason: "team-remove-not-authorized",
+      };
+    }
+    const workspaceModel = project.state?.workspaceModel ?? project.context?.workspaceModel ?? {};
+    if (memberUserId === workspaceModel.ownerUserId) {
+      return {
+        httpStatus: 409,
+        error: "Transfer ownership before removing the owner",
+        reason: "owner-removal-blocked",
+      };
+    }
+    project.state = {
+      ...(project.state ?? {}),
+      workspaceModel: {
+        ...workspaceModel,
+        members: normalizeArray(workspaceModel.members).map((member) => member.userId === memberUserId
+          ? { ...member, status: "removed", removedAt: new Date().toISOString(), removedBy: actorUserId }
+          : member),
+      },
+    };
+    project.context = { ...(project.context ?? {}), workspaceModel: project.state.workspaceModel };
+    project.manualContext = { ...(project.manualContext ?? {}), workspaceMetadata: project.state.workspaceModel };
+    const refreshedProject = this.rebuildProjectTeamSecurity(project);
+    return { httpStatus: 200, project: this.serializeProject(refreshedProject) };
+  }
+
+  transferProjectOwnership(projectId, { actorUserId = null, nextOwnerUserId = null } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project || actorUserId !== resolveProjectOwnerUserId(project)) {
+      return {
+        httpStatus: 403,
+        error: "Only the current owner can transfer ownership",
+        reason: "ownership-transfer-not-authorized",
+      };
+    }
+    const workspaceModel = project.state?.workspaceModel ?? project.context?.workspaceModel ?? {};
+    const nextOwner = normalizeArray(workspaceModel.members).find((member) => (
+      member.userId === nextOwnerUserId && !["removed", "disabled"].includes(normalizeString(member.status, "active"))
+    ));
+    if (!nextOwner) {
+      return {
+        httpStatus: 404,
+        error: "Next owner must be an active member",
+        reason: "next-owner-not-active-member",
+      };
+    }
+    project.state = {
+      ...(project.state ?? {}),
+      workspaceModel: {
+        ...workspaceModel,
+        ownerUserId: nextOwnerUserId,
+        members: normalizeArray(workspaceModel.members).map((member) => {
+          if (member.userId === nextOwnerUserId) return { ...member, role: "owner", isOwner: true };
+          if (member.userId === actorUserId) return { ...member, role: "admin", isOwner: false };
+          return { ...member, isOwner: false };
+        }),
+      },
+    };
+    project.context = { ...(project.context ?? {}), workspaceModel: project.state.workspaceModel };
+    project.manualContext = { ...(project.manualContext ?? {}), workspaceMetadata: project.state.workspaceModel };
+    const refreshedProject = this.rebuildProjectTeamSecurity(project);
+    return { httpStatus: 200, project: this.serializeProject(refreshedProject) };
+  }
+
   updateUserProfile({ userInput, profileInput } = {}) {
     const profile = userInput && typeof userInput === "object" ? userInput : {};
     const nextProfile = profileInput && typeof profileInput === "object" ? profileInput : {};
@@ -2045,15 +3779,13 @@ export class ProjectService {
       return null;
     }
 
-    const userIdentity = {
-      ...existing.userIdentity,
-      displayName: typeof nextProfile.displayName === "string" && nextProfile.displayName.trim()
-        ? nextProfile.displayName.trim()
-        : existing.userIdentity?.displayName ?? null,
-      email: typeof nextProfile.email === "string" && nextProfile.email.trim()
-        ? nextProfile.email.trim()
-        : existing.userIdentity?.email ?? null,
-    };
+    const accountAction = applyFirstReleaseAccountAction({
+      authPayload: existing,
+      actionType: "update-profile",
+      payload: nextProfile,
+      actorUserId: existing.userIdentity?.userId ?? profile.userId ?? null,
+    });
+    const userIdentity = accountAction.authPayload.userIdentity;
 
     const membershipRecord = existing.membershipRecord
       ? {
@@ -2067,7 +3799,7 @@ export class ProjectService {
       : existing.membershipRecord;
 
     const authPayload = {
-      ...existing,
+      ...accountAction.authPayload,
       userIdentity,
       membershipRecord,
     };
@@ -2248,17 +3980,391 @@ export class ProjectService {
     return project;
   }
 
-  listProjects() {
-    return [...this.projects.values()].map((project) => this.serializeProject(project));
+  listProjects(options = {}) {
+    const userId = normalizeString(options?.userId, null);
+    const allowUnowned = options?.allowUnowned === true;
+    return [...this.projects.values()]
+      .filter((project) => userId ? isProjectAccessibleToUser(project, userId, { allowUnowned }) : true)
+      .map((project) => this.serializeProject(project));
   }
 
-  getProject(projectId) {
+  getProject(projectId, options = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const userId = normalizeString(options?.userId, null);
+    if (userId && !isProjectAccessibleToUser(project, userId, { allowUnowned: options?.allowUnowned === true })) {
+      return null;
+    }
+
+    return this.serializeProject(project);
+  }
+
+  getProjectTruthEnvelope(projectId) {
+    const project = this.getProject(projectId);
+    if (!project) {
+      return null;
+    }
+
+    return {
+      projectId: project.id,
+      projectName: project.name,
+      canonicalTruthOwner: "project-service",
+      truthSource: "serialized-project-record",
+      projectState: project.state ?? null,
+      productGraph: project.cycle?.executionGraph ?? null,
+      roadmap: project.cycle?.roadmap ?? [],
+      workspaceModel: project.state?.workspaceModel ?? project.context?.workspaceModel ?? null,
+      continuityPlan: project.continuityPlan ?? project.context?.continuityPlan ?? null,
+      snapshotRecord: project.context?.snapshotRecord ?? null,
+      releaseReadinessEvaluation:
+        project.releaseReadinessEvaluation
+        ?? project.state?.releaseReadinessEvaluation
+        ?? project.context?.releaseReadinessEvaluation
+        ?? null,
+      shellAnchors: {
+        proofArtifact: project.proofArtifact ?? null,
+        generatedSurfaceProofSchema: project.generatedSurfaceProofSchema ?? null,
+        dashboardHomeSurface: project.dashboardHomeSurface ?? null,
+        unifiedHomeDashboard: project.unifiedHomeDashboard ?? null,
+      },
+    };
+  }
+
+  getProjectRecoveryEnvelope({ projectId, refresh = false } = {}) {
     const project = this.projects.get(projectId);
     if (!project) {
       return null;
     }
 
-    return this.serializeProject(project);
+    if (refresh) {
+      this.rebuildContext(projectId);
+    }
+
+    const serializedProject = this.serializeProject(project);
+
+    return {
+      projectId,
+      projectName: serializedProject.name,
+      canonicalTruthOwner: "project-service",
+      truthSource: "serialized-project-record",
+      workspaceModel:
+        serializedProject.state?.workspaceModel
+        ?? serializedProject.context?.workspaceModel
+        ?? null,
+      projectStateSnapshot:
+        serializedProject.projectStateSnapshot
+        ?? serializedProject.state?.projectStateSnapshot
+        ?? serializedProject.context?.projectStateSnapshot
+        ?? null,
+      snapshotRecord:
+        serializedProject.snapshotRecord
+        ?? serializedProject.state?.snapshotRecord
+        ?? serializedProject.context?.snapshotRecord
+        ?? null,
+      snapshotSchedule:
+        serializedProject.snapshotSchedule
+        ?? serializedProject.state?.snapshotSchedule
+        ?? serializedProject.context?.snapshotSchedule
+        ?? null,
+      snapshotBackupWorker:
+        serializedProject.snapshotBackupWorker
+        ?? serializedProject.state?.snapshotBackupWorker
+        ?? serializedProject.context?.snapshotBackupWorker
+        ?? null,
+      snapshotJobState:
+        serializedProject.snapshotJobState
+        ?? serializedProject.state?.snapshotJobState
+        ?? serializedProject.context?.snapshotJobState
+        ?? null,
+      snapshotWorkerRuntime:
+        serializedProject.snapshotWorkerRuntime
+        ?? serializedProject.state?.snapshotWorkerRuntime
+        ?? serializedProject.context?.snapshotWorkerRuntime
+        ?? null,
+      snapshotRetentionPolicy:
+        serializedProject.snapshotRetentionPolicy
+        ?? serializedProject.state?.snapshotRetentionPolicy
+        ?? serializedProject.context?.snapshotRetentionPolicy
+        ?? null,
+      snapshotRetentionDecision:
+        serializedProject.snapshotRetentionDecision
+        ?? serializedProject.state?.snapshotRetentionDecision
+        ?? serializedProject.context?.snapshotRetentionDecision
+        ?? null,
+      continuityPlan:
+        serializedProject.continuityPlan
+        ?? serializedProject.state?.continuityPlan
+        ?? serializedProject.context?.continuityPlan
+        ?? null,
+      disasterRecoveryChecklist:
+        serializedProject.disasterRecoveryChecklist
+        ?? serializedProject.state?.disasterRecoveryChecklist
+        ?? serializedProject.context?.disasterRecoveryChecklist
+        ?? null,
+      businessContinuityState:
+        serializedProject.businessContinuityState
+        ?? serializedProject.state?.businessContinuityState
+        ?? serializedProject.context?.businessContinuityState
+        ?? null,
+      rollbackPlan:
+        serializedProject.rollbackPlan
+        ?? serializedProject.state?.rollbackPlan
+        ?? serializedProject.context?.rollbackPlan
+        ?? null,
+      restoreDecision:
+        serializedProject.restoreDecision
+        ?? serializedProject.state?.restoreDecision
+        ?? serializedProject.context?.restoreDecision
+        ?? null,
+      rollbackExecutionResult:
+        serializedProject.rollbackExecutionResult
+        ?? serializedProject.state?.rollbackExecutionResult
+        ?? serializedProject.context?.rollbackExecutionResult
+        ?? null,
+      releaseReadinessEvaluation:
+        serializedProject.releaseReadinessEvaluation
+        ?? serializedProject.state?.releaseReadinessEvaluation
+        ?? serializedProject.context?.releaseReadinessEvaluation
+        ?? null,
+      shellAnchors: {
+        latestSnapshotId:
+          serializedProject.snapshotRecord?.snapshotRecordId
+          ?? serializedProject.state?.snapshotRecord?.snapshotRecordId
+          ?? serializedProject.context?.snapshotRecord?.snapshotRecordId
+          ?? null,
+        recoveryReadinessScore:
+          serializedProject.disasterRecoveryChecklist?.summary?.readinessScore
+          ?? serializedProject.state?.disasterRecoveryChecklist?.summary?.readinessScore
+          ?? serializedProject.context?.disasterRecoveryChecklist?.summary?.readinessScore
+          ?? null,
+        continuityLifecycleState:
+          serializedProject.businessContinuityState?.lifecycleState
+          ?? serializedProject.state?.businessContinuityState?.lifecycleState
+          ?? serializedProject.context?.businessContinuityState?.lifecycleState
+          ?? null,
+        rollbackExecutionStatus:
+          serializedProject.rollbackExecutionResult?.executionStatus
+          ?? serializedProject.state?.rollbackExecutionResult?.executionStatus
+          ?? serializedProject.context?.rollbackExecutionResult?.executionStatus
+          ?? null,
+      },
+    };
+  }
+
+  getProjectArtifactGenerationEnvelope({ projectId, refresh = false } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    if (refresh) {
+      this.rebuildContext(projectId);
+    }
+
+    const serializedProject = this.serializeProject(project);
+    const proofArtifact = buildCanonicalProofArtifact({
+      project,
+      previewScreenViewModel: project.context?.previewScreenViewModel ?? null,
+      generatedSurfaceProofSchema: project.context?.generatedSurfaceProofSchema ?? null,
+      aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
+      proposalApplyDecision: project.context?.proposalApplyDecision ?? null,
+      artifactExpectation: project.context?.artifactExpectation ?? serializedProject.artifactExpectation ?? null,
+    });
+    const artifactExpectation =
+      serializedProject.artifactExpectation
+      ?? serializedProject.context?.artifactExpectation
+      ?? proofArtifact.artifactExpectation
+      ?? null;
+
+    return {
+      projectId,
+      projectName: serializedProject.name,
+      canonicalTruthOwner: "project-service",
+      truthSource: "canonical-proof-artifact-engine",
+      surfaceMode: "hidden-engine",
+      engineRole: "artifact-generation-for-new-shell",
+      artifactExpectation,
+      proofArtifact,
+      previewScreenViewModel:
+        serializedProject.previewScreenViewModel
+        ?? serializedProject.context?.previewScreenViewModel
+        ?? null,
+      generatedSurfaceProofSchema:
+        serializedProject.generatedSurfaceProofSchema
+        ?? serializedProject.context?.generatedSurfaceProofSchema
+        ?? null,
+      aiControlCenterSurface:
+        serializedProject.aiControlCenterSurface
+        ?? serializedProject.context?.aiControlCenterSurface
+        ?? null,
+      proposalApplyDecision:
+        serializedProject.proposalApplyDecision
+        ?? serializedProject.context?.proposalApplyDecision
+        ?? null,
+      generationIntent:
+        serializedProject.generationIntent
+        ?? serializedProject.context?.generationIntent
+        ?? null,
+      classAwareGenerationContract:
+        serializedProject.classAwareGenerationContract
+        ?? serializedProject.context?.classAwareGenerationContract
+        ?? null,
+      releaseReadinessEvaluation:
+        serializedProject.releaseReadinessEvaluation
+        ?? serializedProject.state?.releaseReadinessEvaluation
+        ?? serializedProject.context?.releaseReadinessEvaluation
+        ?? null,
+      shellAnchors: {
+        artifactId: proofArtifact.artifactId ?? null,
+        artifactType: proofArtifact.artifactType ?? null,
+        previewKind: proofArtifact.previewKind ?? null,
+        artifactTitle: proofArtifact.title ?? null,
+        artifactStatus: proofArtifact.status ?? null,
+        canOpenArtifact: proofArtifact.actions?.open?.supported === true,
+        canDownloadArtifact: proofArtifact.actions?.download?.supported === true,
+        routeKey: proofArtifact.actions?.open?.routeKey ?? null,
+        expectationId: artifactExpectation?.expectationId ?? null,
+      },
+    };
+  }
+
+  getProjectContinuityMemoryEnvelope({ projectId, refresh = false } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+
+    if (refresh) {
+      this.rebuildContext(projectId);
+    }
+
+    const serializedProject = this.serializeProject(project);
+    const context = project.context ?? {};
+
+    return {
+      projectId,
+      projectName: serializedProject.name,
+      canonicalTruthOwner: "project-service",
+      truthSource: "context-builder-continuity-memory-refresh",
+      surfaceMode: "hidden-engine",
+      engineRole: "continuity-memory-refresh-for-new-shell",
+      workspaceModel:
+        serializedProject.state?.workspaceModel
+        ?? serializedProject.context?.workspaceModel
+        ?? null,
+      returnTomorrowContinuity:
+        context.returnTomorrowContinuity
+        ?? serializedProject.returnTomorrowContinuity
+        ?? null,
+      reactiveWorkspaceState:
+        context.reactiveWorkspaceState
+        ?? serializedProject.reactiveWorkspaceState
+        ?? null,
+      crossSurfaceContinuityContract:
+        context.crossSurfaceContinuityContract
+        ?? serializedProject.crossSurfaceContinuityContract
+        ?? null,
+      canonicalLearningSystemContract:
+        context.canonicalLearningSystemContract
+        ?? serializedProject.canonicalLearningSystemContract
+        ?? null,
+      learningInsights:
+        context.learningInsights
+        ?? serializedProject.learningInsights
+        ?? null,
+      learningInsightViewModel:
+        context.learningInsightViewModel
+        ?? serializedProject.learningInsightViewModel
+        ?? null,
+      userPreferenceSignals:
+        context.userPreferenceSignals
+        ?? serializedProject.userPreferenceSignals
+        ?? null,
+      crossProjectPatternPanel:
+        context.crossProjectPatternPanel
+        ?? serializedProject.crossProjectPatternPanel
+        ?? null,
+      learningDisclosure:
+        context.learningDisclosure
+        ?? serializedProject.learningDisclosure
+        ?? null,
+      userActivityEvent:
+        context.userActivityEvent
+        ?? serializedProject.userActivityEvent
+        ?? null,
+      userActivityHistory:
+        context.userActivityHistory
+        ?? serializedProject.userActivityHistory
+        ?? null,
+      userSessionMetric:
+        context.userSessionMetric
+        ?? serializedProject.userSessionMetric
+        ?? null,
+      userSessionHistory:
+        context.userSessionHistory
+        ?? serializedProject.userSessionHistory
+        ?? null,
+      returningUserMetric:
+        context.returningUserMetric
+        ?? serializedProject.returningUserMetric
+        ?? null,
+      retentionSummary:
+        context.retentionSummary
+        ?? serializedProject.retentionSummary
+        ?? null,
+      retentionCurveAnalysis:
+        context.retentionCurveAnalysis
+        ?? serializedProject.retentionCurveAnalysis
+        ?? null,
+      companionState:
+        context.companionState
+        ?? serializedProject.companionState
+        ?? null,
+      shellAnchors: {
+        recommendedDestination:
+          context.returnTomorrowContinuity?.recommendedDestination
+          ?? serializedProject.returnTomorrowContinuity?.recommendedDestination
+          ?? "workbench",
+        returnContinuityStatus:
+          context.returnTomorrowContinuity?.status
+          ?? serializedProject.returnTomorrowContinuity?.status
+          ?? null,
+        refreshMode:
+          context.reactiveWorkspaceState?.refreshMode
+          ?? serializedProject.reactiveWorkspaceState?.refreshMode
+          ?? null,
+        crossSurfaceStatus:
+          context.crossSurfaceContinuityContract?.status
+          ?? serializedProject.crossSurfaceContinuityContract?.status
+          ?? null,
+        learningContractStatus:
+          context.canonicalLearningSystemContract?.status
+          ?? serializedProject.canonicalLearningSystemContract?.status
+          ?? null,
+        memoryLayerCount:
+          context.canonicalLearningSystemContract?.memoryLayers?.length
+          ?? serializedProject.canonicalLearningSystemContract?.memoryLayers?.length
+          ?? 0,
+        userActivityCount:
+          context.userActivityHistory?.entries?.length
+          ?? serializedProject.userActivityHistory?.entries?.length
+          ?? 0,
+        userSessionCount:
+          context.userSessionHistory?.entries?.length
+          ?? serializedProject.userSessionHistory?.entries?.length
+          ?? 0,
+        returningUser:
+          context.returningUserMetric?.isReturningUser
+          ?? serializedProject.returningUserMetric?.isReturningUser
+          ?? null,
+        retentionRate:
+          context.retentionSummary?.retentionRate
+          ?? serializedProject.retentionSummary?.retentionRate
+          ?? null,
+      },
+    };
   }
 
   getUserAuthPayload(userId) {
@@ -2268,6 +4374,52 @@ export class ProjectService {
 
     const authPayload = this.users.get(userId.trim());
     return authPayload ? { ...authPayload } : null;
+  }
+
+  verifySessionToken(token) {
+    if (typeof token !== "string" || !token.trim()) {
+      return null;
+    }
+
+    const normalizedToken = token.trim();
+    for (const authPayload of this.users.values()) {
+      const tokenBundle = authPayload?.tokenBundle ?? {};
+      const sessionState = authPayload?.sessionState ?? {};
+      const accessToken = typeof tokenBundle.accessToken === "string" ? tokenBundle.accessToken.trim() : null;
+      if (!accessToken || accessToken !== normalizedToken) {
+        continue;
+      }
+
+      if (sessionState.status !== "active" || sessionState.isRevoked === true) {
+        return {
+          verified: false,
+          reason: "session-not-active",
+          authPayload: { ...authPayload },
+        };
+      }
+
+      if (sessionState.expiresAt && Date.parse(sessionState.expiresAt) <= Date.now()) {
+        return {
+          verified: false,
+          reason: "session-expired",
+          authPayload: { ...authPayload },
+        };
+      }
+
+      return {
+        verified: true,
+        reason: "verified-session-token",
+        userId: authPayload.userIdentity?.userId ?? sessionState.userId ?? null,
+        sessionId: sessionState.sessionId ?? null,
+        authPayload: { ...authPayload },
+      };
+    }
+
+    return {
+      verified: false,
+      reason: "session-token-not-found",
+      authPayload: null,
+    };
   }
 
   listProjectCreationEvents() {
@@ -2647,9 +4799,120 @@ export class ProjectService {
       ?? project.state?.repeatedLoopContinuation
       ?? project.context?.repeatedLoopContinuation
       ?? null;
+    const preservedBuildMutationTruth =
+      project.buildMutationTruth
+      ?? project.context?.buildMutationTruth
+      ?? project.state?.buildMutationTruth
+      ?? null;
+    const preservedBuildMutationHistory =
+      project.buildMutationHistory
+      ?? project.context?.buildMutationHistory
+      ?? project.state?.buildMutationHistory
+      ?? [];
+    const preservedBuildMutationIntents =
+      project.buildMutationIntents
+      ?? project.context?.buildMutationIntents
+      ?? project.state?.buildMutationIntents
+      ?? [];
+    const preservedBuildAgentTurnState =
+      project.buildAgentTurnState
+      ?? project.context?.buildAgentTurnState
+      ?? project.state?.buildAgentTurnState
+      ?? null;
+    const preservedCompanionConversation =
+      project.companionConversation
+      ?? project.context?.companionConversation
+      ?? project.state?.companionConversation
+      ?? null;
+    const preservedVisualBuildTruth =
+      project.visualBuildTruth
+      ?? project.context?.visualBuildTruth
+      ?? project.state?.visualBuildTruth
+      ?? null;
+    const preservedSkeletonChoiceTruth =
+      project.skeletonChoiceTruth
+      ?? project.context?.skeletonChoiceTruth
+      ?? project.state?.skeletonChoiceTruth
+      ?? null;
+    const preservedRuntimeSkeletonTruth =
+      project.runtimeSkeletonTruth
+      ?? project.context?.runtimeSkeletonTruth
+      ?? project.state?.runtimeSkeletonTruth
+      ?? null;
+    const preservedProductDomainSkeleton =
+      project.productDomainSkeleton
+      ?? project.context?.productDomainSkeleton
+      ?? project.state?.productDomainSkeleton
+      ?? null;
+    const preservedProductOwnedBackendSkeleton =
+      project.productOwnedBackendSkeleton
+      ?? project.context?.productOwnedBackendSkeleton
+      ?? project.state?.productOwnedBackendSkeleton
+      ?? null;
+    const preservedBuildApprovalFlow =
+      project.buildApprovalFlow
+      ?? project.context?.buildApprovalFlow
+      ?? project.state?.buildApprovalFlow
+      ?? null;
+    const preservedMutationChangeDecision =
+      project.mutationChangeDecision
+      ?? project.context?.mutationChangeDecision
+      ?? project.state?.mutationChangeDecision
+      ?? null;
+    const preservedMutationChangeHistory =
+      project.mutationChangeHistory
+      ?? project.context?.mutationChangeHistory
+      ?? project.state?.mutationChangeHistory
+      ?? [];
+    const preservedCanonicalMutationFlow =
+      project.canonicalMutationFlow
+      ?? project.context?.canonicalMutationFlow
+      ?? project.state?.canonicalMutationFlow
+      ?? null;
+    const preservedHistoryContinuityAgent =
+      project.historyContinuityAgent
+      ?? project.context?.historyContinuityAgent
+      ?? project.state?.historyContinuityAgent
+      ?? null;
+    const preservedShareDemoAgent =
+      project.shareDemoAgent
+      ?? project.context?.shareDemoAgent
+      ?? project.state?.shareDemoAgent
+      ?? null;
+    const preservedGrowthAgent =
+      project.growthAgent
+      ?? project.context?.growthAgent
+      ?? project.state?.growthAgent
+      ?? null;
+    const preservedProviderGatewayBoundary =
+      project.providerGatewayBoundary
+      ?? project.context?.providerGatewayBoundary
+      ?? project.state?.providerGatewayBoundary
+      ?? null;
+    const preservedProviderReleaseRegistry =
+      project.providerReleaseRegistry
+      ?? project.context?.providerReleaseRegistry
+      ?? project.state?.providerReleaseRegistry
+      ?? null;
+    const preservedCreativeProviderAssets =
+      project.creativeProviderAssets
+      ?? project.context?.creativeProviderAssets
+      ?? project.state?.creativeProviderAssets
+      ?? [];
+    const preservedWorkspaceModel =
+      project.context?.workspaceModel
+      ?? project.state?.workspaceModel
+      ?? project.manualContext?.workspaceMetadata
+      ?? null;
     project.projectCreationEvents = this.listProjectCreationEvents();
     project.projectCreationSummary = this.buildProjectCreationSummary(project.projectCreationEvents);
     project.normalizedSources = normalizeProjectSources(project);
+    if (preservedWorkspaceModel) {
+      project.manualContext = {
+        ...(project.manualContext ?? {}),
+        workspaceMetadata: preservedWorkspaceModel,
+      };
+    }
     project.state = buildObservedProjectState(project);
     const builtContext = buildProjectContext(project, {
       observabilityTransport: this.platformObservabilityTransport,
@@ -2697,10 +4960,153 @@ export class ProjectService {
       disasterRecoveryChecklist,
       businessContinuityState,
       repeatedLoopContinuation: preservedRepeatedLoopContinuation,
+      providerGatewayBoundary: preservedProviderGatewayBoundary,
+      providerReleaseRegistry: preservedProviderReleaseRegistry,
+      creativeProviderAssets: preservedCreativeProviderAssets,
+    };
+    const teamBoundaryEnvelope = buildProjectTeamBoundary({
+      project,
+      workspaceModel: project.context?.workspaceModel ?? preservedWorkspaceModel,
+    });
+    const teamProjectType = normalizeString(
+      project.state?.artifactExpectation?.projectType,
+      normalizeString(project.state?.projectType, normalizeString(project.state?.domainClassification?.domain, "generic")),
+    );
+    const { projectPermissionSchema: teamPermissionSchema } = defineProjectPermissionSchema({
+      workspaceModel: teamBoundaryEnvelope.workspaceModel,
+      projectType: teamProjectType,
+    });
+    const { roleCapabilityMatrix: teamRoleCapabilityMatrix } = createProjectRoleCapabilityMatrix({
+      projectPermissionSchema: teamPermissionSchema,
+    });
+    const { tenantIsolationSchema: teamTenantIsolationSchema } = defineTenantIsolationSchema({
+      workspaceModel: teamBoundaryEnvelope.workspaceModel,
+    });
+    project.userId = teamBoundaryEnvelope.workspaceModel.ownerUserId;
+    project.manualContext = {
+      ...(project.manualContext ?? {}),
+      workspaceMetadata: teamBoundaryEnvelope.workspaceModel,
+    };
+    project.context = {
+      ...project.context,
+      workspaceModel: teamBoundaryEnvelope.workspaceModel,
+      teamMembershipBoundary: teamBoundaryEnvelope.teamMembershipBoundary,
+      projectPermissionSchema: teamPermissionSchema,
+      roleCapabilityMatrix: teamRoleCapabilityMatrix,
+      tenantIsolationSchema: teamTenantIsolationSchema,
+    };
+    const initialRuntimeSkeletonTruth = buildRuntimeSkeletonTruthEnvelope({ project });
+    const replayedRuntimeTruth = replayBuildMutationIntentsOnSkeleton({
+      runtimeSkeletonTruth: initialRuntimeSkeletonTruth,
+      productDomainSkeleton: initialRuntimeSkeletonTruth.productDomainSkeleton ?? null,
+      productOwnedBackendSkeleton: initialRuntimeSkeletonTruth.productOwnedBackendSkeleton ?? null,
+      buildMutationIntents: preservedBuildMutationIntents,
+    });
+    let runtimeSkeletonTruth = replayedRuntimeTruth.runtimeSkeletonTruth;
+    let productDomainSkeleton = replayedRuntimeTruth.productDomainSkeleton ?? runtimeSkeletonTruth.productDomainSkeleton ?? null;
+    let productOwnedBackendSkeleton = replayedRuntimeTruth.productOwnedBackendSkeleton
+      ?? runtimeSkeletonTruth.productOwnedBackendSkeleton
+      ?? null;
+    const restoredHistoryTruth =
+      preservedHistoryContinuityAgent?.status === "restored"
+      || preservedHistoryContinuityAgent?.restoreDecision?.status === "restored"
+      || preservedMutationChangeDecision?.status === "restored"
+      || preservedBuildApprovalFlow?.decisionStatus === "restored";
+    if (restoredHistoryTruth) {
+      runtimeSkeletonTruth = preservedRuntimeSkeletonTruth ?? runtimeSkeletonTruth;
+      productDomainSkeleton = preservedProductDomainSkeleton ?? productDomainSkeleton;
+      productOwnedBackendSkeleton = preservedProductOwnedBackendSkeleton ?? productOwnedBackendSkeleton;
+      project.buildApprovalFlow = preservedBuildApprovalFlow;
+      project.mutationChangeDecision = preservedMutationChangeDecision;
+      project.mutationChangeHistory = preservedMutationChangeHistory;
+      project.canonicalMutationFlow = preservedCanonicalMutationFlow;
+      project.historyContinuityAgent = preservedHistoryContinuityAgent;
+    } else if (preservedBuildApprovalFlow?.decisionStatus === "approved") {
+      project.buildApprovalFlow = preservedBuildApprovalFlow;
+      project.mutationChangeDecision = preservedMutationChangeDecision;
+      project.mutationChangeHistory = preservedMutationChangeHistory;
+      project.canonicalMutationFlow = preservedCanonicalMutationFlow;
+      project.historyContinuityAgent = preservedHistoryContinuityAgent;
+      project.runtimeSkeletonTruth = runtimeSkeletonTruth;
+      project.productDomainSkeleton = productDomainSkeleton;
+      project.productOwnedBackendSkeleton = productOwnedBackendSkeleton;
+      applyApprovedProductDirectionToProject(project, preservedBuildApprovalFlow);
+      runtimeSkeletonTruth = project.runtimeSkeletonTruth ?? runtimeSkeletonTruth;
+      productDomainSkeleton = project.productDomainSkeleton ?? productDomainSkeleton;
+      productOwnedBackendSkeleton = project.productOwnedBackendSkeleton ?? productOwnedBackendSkeleton;
+    }
+    const runtimeLearningEvents = mergeRuntimeLearningEvents(
+      project.runtimeLearningEvents ?? project.context?.runtimeLearningEvents ?? project.state?.runtimeLearningEvents ?? [],
+      createRuntimeCreationLearningEvents({
+        project,
+        runtimeSkeletonTruth,
+        productDomainSkeleton,
+      }),
+    );
+    const skeletonChoiceTruth = buildSkeletonChoiceTruthEnvelope({
+      project,
+      runtimeSkeletonTruth,
+      productDomainSkeleton,
+      previousSkeletonChoiceTruth: preservedSkeletonChoiceTruth,
+    });
+    const runtimeLearningDecisionHints = buildRuntimeLearningDecisionHints(runtimeLearningEvents);
+    project.runtimeSkeletonTruth = runtimeSkeletonTruth;
+    project.productDomainSkeleton = productDomainSkeleton;
+    project.productOwnedBackendSkeleton = productOwnedBackendSkeleton;
+    project.skeletonChoiceTruth = skeletonChoiceTruth;
+    project.runtimeLearningEvents = runtimeLearningEvents;
+    project.runtimeLearningDecisionHints = runtimeLearningDecisionHints;
+    project.shareDemoAgent = preservedShareDemoAgent;
+    project.growthAgent = preservedGrowthAgent;
+    project.context = {
+      ...project.context,
+      runtimeSkeletonTruth,
+      productDomainSkeleton,
+      productOwnedBackendSkeleton,
+      buildMutationTruth: preservedBuildMutationTruth,
+      buildMutationHistory: preservedBuildMutationHistory,
+      buildMutationIntents: preservedBuildMutationIntents,
+      buildAgentTurnState: preservedBuildAgentTurnState,
+      companionConversation: preservedCompanionConversation,
+      visualBuildTruth: preservedVisualBuildTruth,
+      buildApprovalFlow: preservedBuildApprovalFlow,
+      mutationChangeDecision: preservedMutationChangeDecision,
+      mutationChangeHistory: preservedMutationChangeHistory,
+      canonicalMutationFlow: preservedCanonicalMutationFlow,
+      historyContinuityAgent: preservedHistoryContinuityAgent,
+      shareDemoAgent: preservedShareDemoAgent,
+      growthAgent: preservedGrowthAgent,
+      skeletonChoiceTruth,
+      runtimeLearningEvents,
+      runtimeLearningDecisionHints,
     };
     project.state = {
       ...project.state,
       repeatedLoopContinuation: preservedRepeatedLoopContinuation,
+      runtimeSkeletonTruth,
+      productDomainSkeleton,
+      productOwnedBackendSkeleton,
+      buildMutationTruth: preservedBuildMutationTruth,
+      buildMutationHistory: preservedBuildMutationHistory,
+      buildMutationIntents: preservedBuildMutationIntents,
+      buildAgentTurnState: preservedBuildAgentTurnState,
+      companionConversation: preservedCompanionConversation,
+      visualBuildTruth: preservedVisualBuildTruth,
+      buildApprovalFlow: preservedBuildApprovalFlow,
+      mutationChangeDecision: preservedMutationChangeDecision,
+      mutationChangeHistory: preservedMutationChangeHistory,
+      canonicalMutationFlow: preservedCanonicalMutationFlow,
+      historyContinuityAgent: preservedHistoryContinuityAgent,
+      shareDemoAgent: preservedShareDemoAgent,
+      growthAgent: preservedGrowthAgent,
+      skeletonChoiceTruth,
+      runtimeLearningEvents,
+      runtimeLearningDecisionHints,
+      workspaceModel: teamBoundaryEnvelope.workspaceModel,
+      teamMembershipBoundary: teamBoundaryEnvelope.teamMembershipBoundary,
+      projectPermissionSchema: teamPermissionSchema,
+      roleCapabilityMatrix: teamRoleCapabilityMatrix,
+      tenantIsolationSchema: teamTenantIsolationSchema,
       businessGoal: project.goal,
       context: project.context,
       domainProfile: project.context?.domainProfile ?? null,
@@ -3407,6 +5813,9 @@ export class ProjectService {
       externalCapabilityRegistry: project.context?.externalCapabilityRegistry ?? null,
       providerOperations: project.context?.providerOperations ?? [],
       providerConnector: project.context?.providerConnector ?? null,
+      providerGatewayBoundary: project.context?.providerGatewayBoundary ?? null,
+      providerReleaseRegistry: project.context?.providerReleaseRegistry ?? null,
+      creativeProviderAssets: project.context?.creativeProviderAssets ?? [],
       providerDegradationState: project.context?.providerDegradationState ?? null,
       circuitBreakerDecision: project.context?.circuitBreakerDecision ?? null,
       providerRecoveryProbe: project.context?.providerRecoveryProbe ?? null,
@@ -3612,6 +6021,171 @@ export class ProjectService {
     this.applyScanToProject(project, scan, { persistPath: true });
     this.rebuildContext(projectId);
     return scan;
+  }
+
+  selectSkeletonChoice({ projectId, candidateId = "", selectedBy = "user", approveDirectionSwitch = false } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const runtimeSkeletonTruth = project.runtimeSkeletonTruth
+      ?? project.context?.runtimeSkeletonTruth
+      ?? project.state?.runtimeSkeletonTruth
+      ?? buildRuntimeSkeletonTruthEnvelope({ project });
+    const productDomainSkeleton = project.productDomainSkeleton
+      ?? project.context?.productDomainSkeleton
+      ?? project.state?.productDomainSkeleton
+      ?? runtimeSkeletonTruth.productDomainSkeleton
+      ?? null;
+    const currentChoiceTruth = project.skeletonChoiceTruth
+      ?? project.context?.skeletonChoiceTruth
+      ?? project.state?.skeletonChoiceTruth
+      ?? buildSkeletonChoiceTruthEnvelope({
+        project,
+        runtimeSkeletonTruth,
+        productDomainSkeleton,
+      });
+    const selectionResult = selectSkeletonChoiceCandidate({
+      skeletonChoiceTruth: currentChoiceTruth,
+      candidateId,
+      selectedBy,
+      approveDirectionSwitch,
+    });
+    const skeletonChoiceTruth = selectionResult.skeletonChoiceTruth;
+    const runtimeLearningEvents = selectionResult.ok
+      ? mergeRuntimeLearningEvents(
+          project.runtimeLearningEvents ?? project.context?.runtimeLearningEvents ?? project.state?.runtimeLearningEvents ?? [],
+          createSkeletonChoiceLearningEvents({
+            project,
+            skeletonChoiceTruth,
+            selectionRecord: selectionResult.selectionRecord,
+            selectedCandidate: selectionResult.selectedCandidate,
+          }),
+        )
+      : project.runtimeLearningEvents ?? project.context?.runtimeLearningEvents ?? project.state?.runtimeLearningEvents ?? [];
+    const runtimeLearningDecisionHints = buildRuntimeLearningDecisionHints(runtimeLearningEvents);
+
+    project.skeletonChoiceTruth = skeletonChoiceTruth;
+    project.runtimeLearningEvents = runtimeLearningEvents;
+    project.runtimeLearningDecisionHints = runtimeLearningDecisionHints;
+    project.context = {
+      ...(project.context ?? {}),
+      skeletonChoiceTruth,
+      runtimeLearningEvents,
+      runtimeLearningDecisionHints,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      skeletonChoiceTruth,
+      runtimeLearningEvents,
+      runtimeLearningDecisionHints,
+    };
+    this.persistProjectRecord(project);
+    return {
+      ...selectionResult,
+      project: this.serializeProject(project),
+    };
+  }
+
+  applyVisualBuildChange({ projectId, requestText = "", operationId = "", payload = {}, requestedBy = "visual-build-agent" } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const visualBuildTruth = applyVisualBuildTruth({
+      project,
+      requestText,
+      operationId,
+      payload,
+      requestedBy,
+    });
+    project.visualBuildTruth = visualBuildTruth;
+    project.context = {
+      ...(project.context ?? {}),
+      visualBuildTruth,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      visualBuildTruth,
+    };
+    this.persistProjectRecord(project);
+    return {
+      visualBuildTruth,
+      project: this.serializeProject(project),
+    };
+  }
+
+  applyBuildMutation({ projectId, requestText = "", operationId = "", payload = {}, requestedBy = "build-agent" } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const mutationResult = applyBuildMutationTruth({
+      project,
+      requestText,
+      operationId,
+      payload,
+      requestedBy,
+    });
+    const history = [
+      ...(project.buildMutationHistory ?? project.context?.buildMutationHistory ?? project.state?.buildMutationHistory ?? []),
+      mutationResult.historyRecord,
+    ].filter(Boolean);
+    const intents = [
+      ...(project.buildMutationIntents ?? project.context?.buildMutationIntents ?? project.state?.buildMutationIntents ?? []),
+      mutationResult.intent,
+    ].filter(Boolean);
+    const runtimeLearningEvents = mergeRuntimeLearningEvents(
+      project.runtimeLearningEvents ?? project.context?.runtimeLearningEvents ?? project.state?.runtimeLearningEvents ?? [],
+      createBuildMutationLearningEvents({
+        project,
+        mutationResult,
+      }),
+    );
+    const runtimeLearningDecisionHints = buildRuntimeLearningDecisionHints(runtimeLearningEvents);
+
+    project.runtimeSkeletonTruth = mutationResult.runtimeSkeletonTruth;
+    project.productDomainSkeleton = mutationResult.productDomainSkeleton;
+    project.productOwnedBackendSkeleton = mutationResult.productOwnedBackendSkeleton;
+    project.runtimeLearningEvents = runtimeLearningEvents;
+    project.runtimeLearningDecisionHints = runtimeLearningDecisionHints;
+    project.buildMutationTruth = {
+      taskId: "BUILD-MUTATION-TRUTH-001",
+      sliceTaskId: "SLICE-006",
+      status: mutationResult.ok ? "applied" : "failed-safely",
+      lastMutationId: mutationResult.intent.mutationId,
+      lastOperationId: mutationResult.intent.operationId,
+      lastError: mutationResult.error,
+    };
+    project.buildMutationHistory = history;
+    project.buildMutationIntents = intents;
+    project.context = {
+      ...(project.context ?? {}),
+      runtimeSkeletonTruth: project.runtimeSkeletonTruth,
+      productDomainSkeleton: project.productDomainSkeleton,
+      productOwnedBackendSkeleton: project.productOwnedBackendSkeleton,
+      buildMutationTruth: project.buildMutationTruth,
+      buildMutationHistory: history,
+      buildMutationIntents: intents,
+      runtimeLearningEvents,
+      runtimeLearningDecisionHints,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      runtimeSkeletonTruth: project.runtimeSkeletonTruth,
+      productDomainSkeleton: project.productDomainSkeleton,
+      productOwnedBackendSkeleton: project.productOwnedBackendSkeleton,
+      buildMutationTruth: project.buildMutationTruth,
+      buildMutationHistory: history,
+      buildMutationIntents: intents,
+      runtimeLearningEvents,
+      runtimeLearningDecisionHints,
+    };
+    this.persistProjectRecord(project);
+    return {
+      mutation: mutationResult,
+      project: this.serializeProject(project),
+    };
   }
 
   applyScanToProject(project, scan, { persistPath = true } = {}) {
@@ -3842,6 +6416,19 @@ export class ProjectService {
       providerOperations,
     });
     const { verificationResult } = createAccountVerificationModule({ providerSession });
+    const { providerReleaseRegistry } = buildProviderReleaseRegistry();
+    const { providerGatewayBoundary } = buildProviderGatewayBoundary({
+      project,
+      actor: {
+        actorId: metadata.actorId ?? project.userId ?? project.context?.workspaceModel?.ownerUserId ?? null,
+        role: metadata.actorRole ?? "owner",
+      },
+      requestText: metadata.requestText ?? `connect ${normalizedProviderType}`,
+      providerType: normalizedProviderType,
+      capability: "connect",
+      approval: metadata.approval ?? null,
+      linkedAccounts: project.linkedAccounts ?? [],
+    });
 
     const linkedAccountPayload = {
       accountRecord,
@@ -3852,6 +6439,8 @@ export class ProjectService {
       providerCapabilities,
       providerOperations,
       providerConnector,
+      providerGatewayBoundary,
+      providerReleaseRegistry,
       verificationResult,
     };
 
@@ -3859,11 +6448,75 @@ export class ProjectService {
       ...(project.linkedAccounts ?? []).filter((account) => account.accountRecord?.accountId !== accountRecord.accountId),
       linkedAccountPayload,
     ];
+    project.providerGatewayBoundary = providerGatewayBoundary;
+    project.providerReleaseRegistry = providerReleaseRegistry;
     this.rebuildContext(projectId);
 
     return {
       linkedAccountPayload,
       linkedAccounts: project.linkedAccounts,
+    };
+  }
+
+  evaluateProviderGateway(projectId, {
+    requestText = "",
+    providerType = null,
+    capability = null,
+    actor = null,
+    approval = null,
+  } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const { providerGatewayBoundary } = buildProviderGatewayBoundary({
+      project,
+      actor: actor ?? {
+        actorId: project.userId ?? project.context?.workspaceModel?.ownerUserId ?? null,
+        role: "owner",
+      },
+      requestText,
+      providerType,
+      capability,
+      approval,
+      linkedAccounts: project.linkedAccounts ?? [],
+    });
+    const { providerReleaseRegistry } = buildProviderReleaseRegistry();
+    project.providerGatewayBoundary = providerGatewayBoundary;
+    project.providerReleaseRegistry = providerReleaseRegistry;
+    project.context = {
+      ...(project.context ?? {}),
+      providerGatewayBoundary,
+      providerReleaseRegistry,
+    };
+    this.rebuildContext(projectId);
+    return {
+      providerGatewayBoundary,
+      providerReleaseRegistry,
+    };
+  }
+
+  normalizeCreativeProviderAsset(projectId, assetInput = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const { creativeProviderAsset } = normalizeCreativeProviderOutput({
+      productId: projectId,
+      ...assetInput,
+    });
+    project.creativeProviderAssets = [
+      ...(Array.isArray(project.creativeProviderAssets) ? project.creativeProviderAssets : []),
+      creativeProviderAsset,
+    ];
+    project.context = {
+      ...(project.context ?? {}),
+      creativeProviderAssets: project.creativeProviderAssets,
+    };
+    this.rebuildContext(projectId);
+    return {
+      creativeProviderAsset,
+      creativeProviderAssets: project.creativeProviderAssets,
     };
   }
 
@@ -4321,6 +6974,7 @@ export class ProjectService {
 
     return {
       id: project.id,
+      userId: project.userId ?? resolveProjectOwnerUserId(project) ?? null,
       name: project.name,
       goal: project.goal,
       status: project.status,
@@ -4343,6 +6997,102 @@ export class ProjectService {
       aiControlCenterSurface: project.context?.aiControlCenterSurface ?? null,
       generationIntent: project.context?.generationIntent
         ?? project.context?.aiDesignRequest?.generationIntent
+        ?? null,
+      productSkeletonAgentOutput: project.context?.productSkeletonAgentOutput
+        ?? project.productSkeletonAgentOutput
+        ?? project.onboardingStateHandoff?.productSkeletonAgentOutput
+        ?? null,
+      visualProductSkeletonAgentOutput: project.context?.visualProductSkeletonAgentOutput
+        ?? project.visualProductSkeletonAgentOutput
+        ?? project.onboardingStateHandoff?.visualProductSkeletonAgentOutput
+        ?? null,
+      runtimeSkeletonTruth: project.context?.runtimeSkeletonTruth
+        ?? project.runtimeSkeletonTruth
+        ?? project.state?.runtimeSkeletonTruth
+        ?? null,
+      productDomainSkeleton: project.context?.productDomainSkeleton
+        ?? project.productDomainSkeleton
+        ?? project.state?.productDomainSkeleton
+        ?? project.context?.runtimeSkeletonTruth?.productDomainSkeleton
+        ?? project.runtimeSkeletonTruth?.productDomainSkeleton
+        ?? null,
+      productOwnedBackendSkeleton: project.context?.productOwnedBackendSkeleton
+        ?? project.productOwnedBackendSkeleton
+        ?? project.state?.productOwnedBackendSkeleton
+        ?? project.context?.runtimeSkeletonTruth?.productOwnedBackendSkeleton
+        ?? project.runtimeSkeletonTruth?.productOwnedBackendSkeleton
+        ?? null,
+      buildMutationTruth: project.context?.buildMutationTruth
+        ?? project.buildMutationTruth
+        ?? project.state?.buildMutationTruth
+        ?? null,
+      buildMutationHistory: project.context?.buildMutationHistory
+        ?? project.buildMutationHistory
+        ?? project.state?.buildMutationHistory
+        ?? [],
+      buildMutationIntents: project.context?.buildMutationIntents
+        ?? project.buildMutationIntents
+        ?? project.state?.buildMutationIntents
+        ?? [],
+      buildAgentTurnState: project.context?.buildAgentTurnState
+        ?? project.buildAgentTurnState
+        ?? project.state?.buildAgentTurnState
+        ?? null,
+      mutationChangeDecision: project.context?.mutationChangeDecision
+        ?? project.mutationChangeDecision
+        ?? project.state?.mutationChangeDecision
+        ?? null,
+      mutationChangeHistory: project.context?.mutationChangeHistory
+        ?? project.mutationChangeHistory
+        ?? project.state?.mutationChangeHistory
+        ?? [],
+      canonicalMutationFlow: project.context?.canonicalMutationFlow
+        ?? project.canonicalMutationFlow
+        ?? project.state?.canonicalMutationFlow
+        ?? buildCanonicalMutationFlowShell({ project }),
+      buildApprovalFlow: project.context?.buildApprovalFlow
+        ?? project.buildApprovalFlow
+        ?? project.state?.buildApprovalFlow
+        ?? buildBuildApprovalFlow({ project }),
+      buildSpeechTruth: project.context?.buildSpeechTruth
+        ?? project.buildSpeechTruth
+        ?? project.state?.buildSpeechTruth
+        ?? null,
+      buildSpeechHistory: project.context?.buildSpeechHistory
+        ?? project.buildSpeechHistory
+        ?? project.state?.buildSpeechHistory
+        ?? [],
+      historyContinuityAgent: project.context?.historyContinuityAgent
+        ?? project.historyContinuityAgent
+        ?? project.state?.historyContinuityAgent
+        ?? buildHistoryContinuityAgentEnvelope({ project }),
+      shareDemoAgent: project.context?.shareDemoAgent
+        ?? project.shareDemoAgent
+        ?? project.state?.shareDemoAgent
+        ?? null,
+      growthAgent: project.context?.growthAgent
+        ?? project.growthAgent
+        ?? project.state?.growthAgent
+        ?? null,
+      companionConversation: project.context?.companionConversation
+        ?? project.companionConversation
+        ?? project.state?.companionConversation
+        ?? null,
+      visualBuildTruth: project.context?.visualBuildTruth
+        ?? project.visualBuildTruth
+        ?? project.state?.visualBuildTruth
+        ?? null,
+      skeletonChoiceTruth: project.context?.skeletonChoiceTruth
+        ?? project.skeletonChoiceTruth
+        ?? project.state?.skeletonChoiceTruth
+        ?? null,
+      runtimeLearningEvents: project.context?.runtimeLearningEvents
+        ?? project.runtimeLearningEvents
+        ?? project.state?.runtimeLearningEvents
+        ?? [],
+      runtimeLearningDecisionHints: project.context?.runtimeLearningDecisionHints
+        ?? project.runtimeLearningDecisionHints
+        ?? project.state?.runtimeLearningDecisionHints
         ?? null,
       proofArtifact: buildCanonicalProofArtifact({
         project,

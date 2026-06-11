@@ -8,9 +8,26 @@
 }
 
 .nexus-ui-workspace-shell {
+  direction: ltr;
   display: grid;
-  grid-template-columns: 264px 1fr;
+  grid-template-columns: minmax(0, 1fr) 96px;
   min-height: 100vh;
+}
+
+.nexus-ui-workspace-shell > .nexus-workspace-rail {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: stretch;
+  justify-self: center;
+  min-height: calc(100vh - 32px);
+  width: 72px;
+  margin: 16px 12px;
+  border-radius: 36px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9)),
+    var(--nexus-sidebar-background);
+  border: 1px solid rgba(226, 232, 240, 0.78);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
 }
 
 .nexus-ui-sidebar {
@@ -78,6 +95,9 @@
 }
 
 .nexus-ui-main {
+  direction: rtl;
+  grid-column: 1;
+  grid-row: 1;
   display: grid;
   grid-template-rows: 72px 1fr;
   min-width: 0;

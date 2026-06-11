@@ -32,6 +32,71 @@ function renderSettingsToggle({ id, label, description, enabled = false } = {}) 
   `;
 }
 
+function renderAccountPanel(viewModel) {
+  const activityItems = Array.isArray(viewModel.account.activityItems) ? viewModel.account.activityItems : [];
+  return renderNexusCard({
+    className: "nexus-settings-screen__card",
+    content: `
+      <div class="nexus-settings-screen__card-copy">
+        <h3>גבול חשבון</h3>
+        <p>כאן מוצג מה החשבון שלך באמת מחזיק עכשיו ומה עובר למשימות המשך.</p>
+      </div>
+      <div class="nexus-settings-screen__security-grid">
+        <article class="nexus-settings-screen__security-item">
+          <span>מצב חשבון</span>
+          <strong>${escapeHtml(viewModel.account.status)}</strong>
+        </article>
+        <article class="nexus-settings-screen__security-item">
+          <span>מצב הפעלה</span>
+          <strong>${escapeHtml(viewModel.account.sessionStatus)}</strong>
+        </article>
+        <article class="nexus-settings-screen__security-item">
+          <span>אימות אימייל</span>
+          <strong>${escapeHtml(viewModel.account.verificationStatus)}</strong>
+        </article>
+        <article class="nexus-settings-screen__security-item">
+          <span>שיטת כניסה</span>
+          <strong>${escapeHtml(viewModel.account.authMethod)}</strong>
+        </article>
+      </div>
+      <div class="nexus-settings-screen__account-actions">
+        ${renderNexusButton({
+          label: "החלף סיסמה",
+          variant: "secondary",
+          attrs: { id: "settings-change-password-button" },
+          disabled: !viewModel.account.canChangePassword,
+        })}
+        ${renderNexusButton({
+          label: "צא מכל ההפעלות",
+          variant: "secondary",
+          attrs: { id: "settings-logout-all-button" },
+        })}
+        ${renderNexusButton({
+          label: "בקש מחיקת חשבון",
+          variant: "secondary",
+          attrs: { id: "settings-delete-account-button" },
+        })}
+      </div>
+      <div class="nexus-settings-screen__boundary-list">
+        ${(Array.isArray(viewModel.account.boundaries) ? viewModel.account.boundaries : []).map((item) => `
+          <p>${escapeHtml(item)}</p>
+        `).join("")}
+      </div>
+      <div class="nexus-settings-screen__activity-list">
+        <h4>פעילות חשבון</h4>
+        ${activityItems.length > 0
+          ? activityItems.map((item) => `
+            <article>
+              <strong>${escapeHtml(item.title)}</strong>
+              <span>${escapeHtml(item.status)}${item.occurredAt ? ` · ${escapeHtml(item.occurredAt)}` : ""}</span>
+            </article>
+          `).join("")
+          : "<p>עדיין אין פעולות חשבון רגישות.</p>"}
+      </div>
+    `,
+  });
+}
+
 function renderPanel(viewModel) {
   const profileCard = renderNexusCard({
     className: "nexus-settings-screen__card",
@@ -168,6 +233,9 @@ function renderPanel(viewModel) {
       <section class="nexus-settings-screen__panel ${viewModel.activePanel === "security" ? "" : "is-hidden"}" data-settings-panel="security">
         ${securityCard}
       </section>
+      <section class="nexus-settings-screen__panel ${viewModel.activePanel === "account" ? "" : "is-hidden"}" data-settings-panel="account">
+        ${renderAccountPanel(viewModel)}
+      </section>
       <section class="nexus-settings-screen__panel ${viewModel.activePanel === "appearance" ? "" : "is-hidden"}" data-settings-panel="appearance">
         ${renderNexusCard({
           className: "nexus-settings-screen__card",
@@ -198,7 +266,6 @@ export function renderSettingsScreen(viewModel) {
     currentRoute: "/settings",
     primary: [
       { title: "יצירה", href: "/create", target: "create", icon: "＋" },
-      { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
       { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
       { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
     ],
@@ -298,6 +365,9 @@ export function bindSettingsScreenElements(doc, elements) {
   elements.settingsEmailToggleClone = host.querySelector("#settings-email-toggle-clone");
   elements.settingsInAppToggle = host.querySelector("#settings-inapp-toggle");
   elements.settingsInAppToggleClone = host.querySelector("#settings-inapp-toggle-clone");
+  elements.settingsChangePasswordButton = host.querySelector("#settings-change-password-button");
+  elements.settingsLogoutAllButton = host.querySelector("#settings-logout-all-button");
+  elements.settingsDeleteAccountButton = host.querySelector("#settings-delete-account-button");
   elements.settingsSaveButton = host.querySelector("#settings-save-button");
   elements.settingsCancelButton = host.querySelector("#settings-cancel-button");
 }

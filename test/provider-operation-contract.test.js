@@ -24,3 +24,17 @@ test("provider operation contract falls back to empty operations", () => {
 
   assert.deepEqual(providerOperations, []);
 });
+
+test("provider operation contract requires approval for side-effect operations", () => {
+  const { providerOperations } = createProviderOperationContract({
+    providerSession: {
+      providerType: "stripe",
+      operationTypes: ["validate", "draft", "charge", "refund", "revoke"],
+    },
+  });
+
+  assert.equal(providerOperations.find((operation) => operation.operationType === "validate")?.requiresApproval, false);
+  assert.equal(providerOperations.find((operation) => operation.operationType === "charge")?.requiresApproval, true);
+  assert.equal(providerOperations.find((operation) => operation.operationType === "charge")?.externalSideEffect, true);
+  assert.equal(providerOperations.find((operation) => operation.operationType === "refund")?.scopeFamily, "refund");
+});

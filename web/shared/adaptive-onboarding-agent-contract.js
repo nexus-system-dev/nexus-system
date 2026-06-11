@@ -74,19 +74,25 @@ function resolveProjectType({
   const intake = normalizeObject(projectIntake);
   const summary = normalizeObject(onboardingConversation?.summary);
 
-  return normalizeString(
-    expectation.projectType,
-    normalizeString(
+  const summaryProjectType = normalizeString(summary.projectType);
+  if (summaryProjectType) {
+    return summaryProjectType;
+  }
+
+  if (onboardingConversation?.isComplete === true || decision.summary?.projectTypeResolved === true) {
+    return normalizeString(
       handoff.projectIntake?.projectType,
       normalizeString(
         intake.projectType,
         normalizeString(
-          summary.projectType,
-          decision.summary?.projectTypeResolved === true ? "resolved" : "unknown",
+          expectation.projectType,
+          "resolved",
         ),
       ),
-    ),
-  );
+    );
+  }
+
+  return "unknown";
 }
 
 function resolveQuestionPath({
@@ -101,7 +107,7 @@ function resolveQuestionPath({
     return [...learnedPath, isComplete ? "understanding-handoff" : "active-question"];
   }
 
-  const path = ["target-audience"];
+  const path = ["core-idea", "target-audience"];
   const requiresClassClarification = currentQuestionId === "project-class" || projectType === "unknown";
   const requiresSolution = projectType !== "landing-page";
 
@@ -114,6 +120,8 @@ function resolveQuestionPath({
   if (requiresSolution) {
     path.push("successful-solution");
   }
+
+  path.push("build-direction");
 
   path.push(isComplete ? "understanding-handoff" : "active-question");
   return path;
@@ -134,6 +142,8 @@ export function createAdaptiveOnboardingAgentContract({
   const summary = normalizeObject(conversation.summary);
   const currentQuestion = normalizeObject(conversation.currentQuestion);
 
+  const handoffReady = normalizeString(handoff.handoffStatus, "needs-clarification");
+  const readinessLevel = normalizeString(decision.readinessLevel, handoffReady === "ready" ? "ready" : "blocked");
   const projectType = resolveProjectType({
     artifactExpectation: expectation,
     onboardingStateHandoff: handoff,
@@ -142,14 +152,17 @@ export function createAdaptiveOnboardingAgentContract({
     onboardingConversation: conversation,
   });
   const projectTypeLabel = resolveProjectTypeLabel(projectType);
+  const canOpenUnderstandingHandoff = (
+    (conversation.isComplete === true || decision.isComplete === true)
+    && handoffReady === "ready"
+    && (readinessLevel === "ready" || readinessLevel === "ready-with-supporting-material-gap")
+  );
   const currentQuestionPath = resolveQuestionPath({
     projectType,
     currentQuestionId: currentQuestion.id,
-    isComplete: conversation.isComplete === true || decision.isComplete === true,
+    isComplete: canOpenUnderstandingHandoff,
     summary,
   });
-  const handoffReady = normalizeString(handoff.handoffStatus, "needs-clarification");
-  const readinessLevel = normalizeString(decision.readinessLevel, handoffReady === "ready" ? "ready" : "blocked");
   const canExplainBranching = Boolean(currentQuestion.id || summary.projectType || expectation.projectType);
   const hasClarificationSignals = normalizeArray(summary.missingItems).length > 0 || normalizeArray(decision.clarificationPrompts).length > 0;
   const learningGuidedSelection = normalizeString(summary.learningStatus) === "live";

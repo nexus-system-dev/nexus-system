@@ -1,7 +1,5 @@
 export const PRIMARY_LOOP_ROUTES = [
   "create",
-  "onboarding",
-  "understanding",
   "loop",
   "execution",
   "proof",
@@ -25,5 +23,7 @@ export const ADVANCED_ROUTES = [
   "developer",
   "brain",
   "release",
+  "share",
   "growth",
+  "studio",
 ];

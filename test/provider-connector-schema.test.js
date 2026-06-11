@@ -19,3 +19,18 @@ test("provider connector schema falls back to generic", () => {
   assert.equal(providerConnectorSchema.providerType, "generic");
   assert.equal(providerConnectorSchema.authenticationModes.includes("manual"), true);
 });
+
+test("provider connector schema registers creative and payment providers behind PROV-001", () => {
+  const { providerConnectorSchema: creativeSchema } = defineProviderConnectorSchema({
+    providerType: "creative",
+  });
+  const { providerConnectorSchema: stripeSchema } = defineProviderConnectorSchema({
+    providerType: "stripe",
+  });
+
+  assert.equal(creativeSchema.providerType, "creative");
+  assert.equal(creativeSchema.capabilities.includes("generate"), true);
+  assert.equal(creativeSchema.operationTypes.includes("export"), true);
+  assert.equal(stripeSchema.providerType, "stripe");
+  assert.equal(stripeSchema.operationTypes.includes("charge"), true);
+});

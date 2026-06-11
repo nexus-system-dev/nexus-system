@@ -11,8 +11,8 @@ test("adaptive onboarding agent contract exposes live branching, partial weak-an
     onboardingConversation: {
       sessionId: "session-1",
       currentQuestion: {
-        id: "successful-solution",
-        title: "איך נראה פתרון מוצלח מבחינתם?",
+        id: "build-direction",
+        title: "מה חייב להיות ברור מיד במסך הראשון כדי שהפתרון הזה באמת יעבוד?",
       },
       summary: {
         projectType: "internal-tool",
@@ -38,7 +38,7 @@ test("adaptive onboarding agent contract exposes live branching, partial weak-an
 
   assert.equal(adaptiveOnboardingAgentContract.contractFamily, "adaptive-onboarding-agent");
   assert.equal(adaptiveOnboardingAgentContract.currentProjectType, "internal-tool");
-  assert.equal(adaptiveOnboardingAgentContract.currentQuestionPathLabel, "target-audience -> core-problem -> successful-solution -> active-question");
+  assert.equal(adaptiveOnboardingAgentContract.currentQuestionPathLabel, "core-idea -> target-audience -> core-problem -> successful-solution -> build-direction -> active-question");
   assert.equal(adaptiveOnboardingAgentContract.behaviors[0].label, "class-aware branching");
   assert.equal(adaptiveOnboardingAgentContract.behaviors[0].status, "live");
   assert.equal(adaptiveOnboardingAgentContract.behaviors[1].status, "partial");
@@ -68,6 +68,6 @@ test("adaptive onboarding agent contract keeps class-clarification path visible 
 
   assert.equal(adaptiveOnboardingAgentContract.currentProjectType, "unknown");
   assert.match(adaptiveOnboardingAgentContract.currentQuestionPathLabel, /project-class/);
-  assert.equal(adaptiveOnboardingAgentContract.behaviors[2].status, "live");
+  assert.equal(adaptiveOnboardingAgentContract.behaviors[2].status, "partial");
   assert.equal(adaptiveOnboardingAgentContract.summary.partialBehaviors >= 1, true);
 });

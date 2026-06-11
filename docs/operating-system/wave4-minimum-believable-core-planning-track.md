@@ -1059,12 +1059,36 @@ Prepared tasks:
 - `W4-INTAKE-002 — Replace fixed 3-question onboarding with adaptive intake flow` — `trueGreen`
 - `W4-INTAKE-003 — Connect learning signals to adaptive onboarding question selection` — `trueGreen`
 - `W4-INTAKE-004 — Implement shell-level provider-backed canonical onboarding agent runtime` — `trueGreen`
-- `W4-INTAKE-005 — Inject smart onboarding agent truth into canonical downstream system surfaces` — `selected-not-started`
-- `W4-INTAKE-006 — Connect onboarding agent to real external model provider APIs` — `prepared-not-started`
-- `W4-AGENT-001 — Enforce minimum real product-conversation depth before understanding closure` — `prepared-not-started`
-- `W4-AGENT-002 — Add floating cross-Nexus product-conversation agent presence` — `prepared-not-started`
-- `W4-AGENT-003 — Implement post-onboarding clarification and correction loop` — `prepared-not-started`
-- `W4-AGENT-004 — Bring competitor and comparable-product intelligence into the live agent dialogue` — `prepared-not-started`
+- `W4-INTAKE-005 — Inject smart onboarding agent truth into canonical downstream system surfaces` — `trueGreen`
+- `W4-INTAKE-006 — Connect onboarding agent to real external model provider APIs` — `trueGreen`
+- `W4-INTAKE-007 — Stream live provider responses through the onboarding conversation surface` — `trueGreen`
+- `W4-INTAKE-008 — Add retry recovery and provider failover continuity to onboarding runtime` — `trueGreen`
+- `W4-INTAKE-009 — Harden onboarding provider runtime to production-safe operation` — `trueGreen`
+- `W4-INTAKE-010 — Expose user-facing provider, model, and intelligence controls on the onboarding agent` — `trueGreen`
+- `W4-AGENT-001 — Enforce minimum real product-conversation depth before understanding closure` — `trueGreen`
+- `W4-AGENT-001A — Enforce co-founder-style exploratory product reasoning before understanding closure` — `trueGreen`
+- `W4-AGENT-002 — Add floating cross-Nexus product-conversation agent presence` — `trueGreen`
+- `W4-AGENT-003 — Implement post-onboarding clarification and correction loop` — `trueGreen`
+- `W4-AGENT-004 — Bring competitor and comparable-product intelligence into the live agent dialogue` — `trueGreen`
+- `W4-AGENT-004A — Convert external product-conversation patterns into Nexus product-family wrapper packs` — `trueGreen`
+- `W4-AGENT-004B — Derive live conversational tone and pacing rules from external product intelligence` — `trueGreen`
+- `W4-AGENT-005A — Define conversation-first entry foundation contract and route ownership` — `trueGreen`
+- `W4-AGENT-005B — Run Figma-backed primary entry shell structural pass` — `trueGreen`
+- `W4-AGENT-005C — Implement conversation-first front door with hidden project/session/bootstrap` — `trueGreen`
+- `W4-AGENT-005D — Harden durability, idempotency, restore, and stale-state isolation on the new entry path` — `trueGreen`
+- `W4-AGENT-005E — Attach conversation-first origin to Understanding and downstream continuity` — `trueGreen`
+- `W4-GEN-003 — Transition conversation-first entry into entry-to-live-skeleton continuity` — `trueGreen`
+- `W4-FIX-001 — Isolate fresh project identity and kill shared project reuse across new conversations` — `trueGreen`
+- `AUTH-SESSION-PROJECT-ISO-001 — Guest/auth session project isolation bridge` — `trueGreen`
+- `W4-FIX-002 — Flush stale hidden brief, summary, placeholder, and family residue on fresh start and explicit correction` — `prepared-not-started`
+- `W4-FIX-003 — Gate family reasoning behind confidence, grounded evidence, and synthesized referents` — `prepared-not-started`
+- `W4-FIX-004 — Add canonical dual-audience and multi-actor product modeling` — `prepared-not-started`
+- `W4-FIX-005 — Replace full-state URL serialization with short route identity and server-backed restore` — `trueGreen`
+- `W4-FIX-006 — Make the companion truthful, scoped to the canonical brief, and safely interactive` — `prepared-not-started`
+- `W4-FIX-007 — Add convergence guardrails and a fast path from corrected understanding to the first on-class skeleton` — `prepared-not-started`
+- `W4-UPGRADE-001 — Reach the first on-class skeleton within competitor-parity speed on the Sela regression case` — `prepared-not-started`
+- `W4-UPGRADE-002 — Make the first visible skeleton deepen progressively and explain why this shape exists` — `prepared-not-started`
+- `W4-UPGRADE-003 — Beat competitor first-artifact quality inside the same time band` — `prepared-not-started`
 - `W4-GEN-002 — Implement feedback-driven product mutation loop` — `prepared-not-started`
 
 Reality-audit reopeners required after repository inspection:
@@ -1073,14 +1097,77 @@ Reality-audit reopeners required after repository inspection:
 - `W4-INTAKE-002` is now closed truthfully after live QA proof covered direct onboarding entry, landing-page early-stop, fresh ambiguous clarification rerun, and non-blocked refresh/revisit behavior
 - `W4-INTAKE-003` is now closed truthfully after live QA proof covered learning-guided question selection, generic-answer clarification, landing-page solution gating, stronger Understanding handoff, and continuity-safe restore on the same learned intake path
 - `W4-INTAKE-004` is now closed truthfully only as shell-level provider runtime closure after live QA proof covered provider selection, visible provider-backed runtime identity, stale local QA restore rejection, bounded clarification under weak input, premature Understanding bounce-back into the live conversation, and continuity-safe reload on the same provider-backed clarification path
-- real external provider integration is still missing from repository reality, so `W4-INTAKE-006` is now required before Nexus can claim real external OpenAI or Anthropic onboarding runtime truth
+- `W4-INTAKE-005` is now closed truthfully after live QA proof showed the same completed onboarding conversation surviving into one consistent downstream artifact/class truth across Understanding, Loop, Next Task, and Proof
+- `W4-INTAKE-006` is now closed truthfully after live QA proof showed a real OpenAI onboarding provider path, visible `provider-backed-live` runtime truth, visible token accounting, and continuity-safe refresh on a compact QA restore envelope
+- `W4-AGENT-005A` is now closed truthfully after canonical state was corrected to release the conversation-first entry pivot ahead of `W4-GEN-002`, the replacement-first and Figma-threshold rules were locked into one contract, and the required decomposition into design, hidden bootstrap, durability, and downstream continuity tasks was written back explicitly
+- `W4-AGENT-005B` is now closed truthfully after a Figma-backed primary entry shell artifact was created with explicit states for the empty conversation front door, hidden bootstrap, clarification with progressive reveal, and migration-safe fallback before any route demotion
+- founder field-test intake on `2026-05-24` proved that broad conversation-first closure coverage was still too narrow for fresh ambiguous dual-audience ideas because repository reality can still leak shared project identity, stale hidden brief truth, wrong-family confidence, and non-truthful companion framing into a brand-new project
+- therefore `W4-GEN-002` may not execute next, and a dedicated `W4-FIX-001` through `W4-FIX-007` repair chain must run first in canonical order
+- the stronger Sela repair brief also adds a strict `Track A before Track B` rule and a stopwatch-based competitor-parity target, so two additional upgrade tasks must run after the correctness chain and before feedback-driven mutation work
+- the upgraded founder brief further raises the bar from parity to superiority, so Nexus must now prove the first artifact is not only fast enough but visibly better than the competitor baseline inside the same time band
+- founder live field-test on `2026-06-03` with the lead-management internal-tool idea confirms the repair chain ordering:
+  - stale courier-app state leaked into a fresh lead-management run, so `W4-FIX-001` and `W4-FIX-002` remain upstream release blockers
+  - the agent reached enough understanding and a generated on-class skeleton was reachable manually through `/loop`, but the visible create screen stayed disabled in a preparing-skeleton state, so the handoff belongs to `W4-FIX-007`
+  - reload and direct loop restore still relied on a large serialized `nexusState` URL, so route truth remains owned by `W4-FIX-005`
+  - the first skeleton preserved no-WhatsApp-integration / no-automation boundaries but exposed internal or mistranslated trust-breaking copy, so first-artifact quality belongs to `W4-UPGRADE-002` after the correctness and speed gates
+- user project-leakage clarification on `2026-06-04` adds `AUTH-SESSION-PROJECT-ISO-001` between `W4-FIX-001` and `W4-FIX-005`:
+  - `ID-001` already owns the broader first-release login/session/account boundary, but it is too broad and too late for the immediate leakage repair.
+  - `AUTH-SESSION-PROJECT-ISO-001` owns the minimum guest/auth session and project-owner bridge so short-route restore cannot accept stale QA state, URL state, localStorage, or process-global project state as authority.
+  - `W4-FIX-005` must now depend on this bridge before claiming server-backed restore truth.
+- `W4-FIX-001` closed truthfully on `2026-06-04` after focused tests and visible Chrome proof showed a fresh Create route with `qaReset=1` ignores stale courier-project URL/storage truth and renders an empty new-project composer instead of inherited project id, copy, assistant transcript, or snapshot truth.
+- `AUTH-SESSION-PROJECT-ISO-001` closed truthfully on `2026-06-04` after project records gained stable owner/workspace truth, project list and direct restore became user-scoped, unauthenticated project list returns `401`, cross-user restore returns `404`, and live API proof showed a fresh user cannot see or restore existing project state.
+- `W4-FIX-005` closed truthfully on `2026-06-04` after workspace routes began persisting short `projectId` URLs, direct `/loop?projectId=<id>` restore loaded from backend project truth, stale `qaState`/`nexusState`/`qaScreen`/`qaReset` were removed after restore, bootstrap QA preview restore was bypassed for explicit project ids, and live browser proof showed stale `qa-preview-project` state no longer replaced a fresh backend project. Screenshot: `/private/tmp/nexus-w4-fix-005-short-route-live.png`
+- implementation-map remap on `2026-06-03` supersedes this old Wave 4 queue for active task selection:
+  - `VSKEL-001` closed `trueGreen` after the second canonical premium embroidered gifts browser proof
+  - `SLICE-005` closed `trueGreen` on `2026-06-04` with product-type runtime skeleton proof; the active next implementation-map task was `BLD-AGT-001` until the live regression override below
+  - the `W4-FIX-001` through `W4-FIX-007` chain remains prepared repair work, but it is not the active next task while earlier implementation-map release blockers precede it
+- `2026-06-07` professional skeleton quality revalidation adds a newer active-order override:
+  - `PRO-SKEL-002` remains closed only as a structured/live market-calibrated skeleton envelope, not as proof that the first Build output feels like a credible real product
+  - `PRO-SKEL-003` blocked `BLD-AGT-001`, `VBUILD-001`, and `MUT-001` on the user-visible Build path until mobile, landing page, and internal tool skeletons passed the stronger product-realism bar; it did not reopen already-closed backend truth, mutation truth, or learning event contracts
+  - `2026-06-07` closure update: `PRO-SKEL-003` is now `trueGreen` after code, tests, and live project-backed Build screenshots passed for mobile app, landing page, and internal tool skeletons. Evidence: `/private/tmp/nexus-pro-skel-003-1780848998219-report.json`
+  - `2026-06-07` unknown-kind clarification: `PRO-SKEL-003` remains closed for the proven class-specific product-realistic path, but it does not close arbitrary product-pattern discovery. `PRODUCT-KIND-001` now becomes the next active blocker before `BLD-AGT-001`, followed by `LEARNING-PRODUCT-INTELLIGENCE-001`.
+  - `2026-06-07` unknown-kind closure update: `PRODUCT-KIND-001` is now `trueGreen` after product-pattern discovery, runtime skeleton selection, product-domain mapping, project-truth persistence, tests, and live browser proof passed for game, editor, and simulator ideas. Evidence: `/private/tmp/nexus-product-kind-001-1780850270444-report.json`. `LEARNING-PRODUCT-INTELLIGENCE-001` is now the next active blocker before `BLD-AGT-001`.
+  - `2026-06-07` learning product-intelligence closure update: `LEARNING-PRODUCT-INTELLIGENCE-001` is now `trueGreen` after bounded learning decisions influenced a weak future skeleton choice without overwriting project truth, and live browser proof showed an editor-canvas skeleton selected from learned guidance. Evidence: `/private/tmp/nexus-learning-product-intelligence-001-1780851177559-report.json`. `BLD-AGT-001` is now the next active blocker.
+  - `2026-06-07` Build Agent closure update: `BLD-AGT-001` is now `trueGreen` after safe product-domain changes, safe visual changes, product-direction approval boundaries, verification routing boundaries, and release/provider boundaries all produced visible Build rail state, project-truth persistence, and refresh restore. Evidence: `/private/tmp/nexus-bld-agt-001-boundary-1780852361903-report.json`. The next active blocker is now `SKELETON-CHOICE-001`.
+  - `2026-06-07` multi-provider skeleton choice clarification: `SKELETON-CHOICE-001` is now inserted after `BLD-AGT-001` and before `VBUILD-001` as a future release-blocker for provider-backed skeleton alternatives. It requires real provider/adaptor integration, candidate generation over the same Nexus product truth, user selection or approved recommendation, persisted selected direction, and downstream handoff into Build, Visual Build, Mutation, Learning, Restore, History, Release, and Verification. It does not replace the current active `BLD-AGT-001` task.
+  - `2026-06-08` skeleton choice closure update: `SKELETON-CHOICE-001` is now `trueGreen` for provider/adaptor-backed skeleton candidates over Nexus truth. Nexus creates three valid candidate directions from configured internal adaptor paths, records bounded unavailable-provider truth for the external design provider path, rejects detached visual-only candidates, hides provider plumbing from the normal user surface, persists selectedSkeletonCandidateId/selectedDesignProvider/selectedCompositionStyle/selectedProductDirection, restores the selected direction after refresh, and hands selected direction identity into Build Agent, Visual Build, Mutation, Learning, Restore, History, Release, and Verification truth. Evidence: `/private/tmp/nexus-skeleton-choice-001-1780920824537-report.json`. This does not close production external provider execution or full `VBUILD-001`; the next active blocker is `VBUILD-001`.
+  - `2026-06-08` visual build closure update: `VBUILD-001` is now `trueGreen` for safe active visual continuation from a selected skeleton direction. Build rail visual instructions now route through the Visual Build Agent, persist `visualBuildTruth`, render the visible lead-card plus follow-up-today surface from project truth, restore after refresh on a clean `/loop?projectId=<real-project-id>` route, and require approval for significant style changes without faking a visual mutation. Evidence: `/private/tmp/nexus-vbuild-001-1780921640537-report.json`. This does not close deeper artifact/product mutation; the next active blocker is `SLICE-006`.
+  - `2026-06-08` independent live lead-management field test added closure pressure to `SLICE-006`, `ID-001`, `STATE-001`, and `DATA-001`: Nexus understood the lead-management idea and produced a relevant skeleton, but visible actions leaked internal operation names like `record.create`, some active controls did not visibly mutate/filter, refresh did not clearly restore the Build conversation/action transcript, and the visible no-login entry contradicted `/api/projects` authentication requirements. No new duplicate task was added; these are now explicit pass/fail criteria on the owning tasks.
+  - `2026-06-08` conversation mutation closure update: `SLICE-006` is now `trueGreen` for safe artifact mutations from the Build rail and runtime controls. Add-lead requests now route to persisted mutation truth, update the generated product-domain records and visible runtime rows, render product-language summaries instead of internal operation ids, restore the Build transcript and mutation after refresh on a clean `/loop?projectId=<real-project-id>` route, and visibly bound WhatsApp/publish requests without adding mutation history. Evidence: `/private/tmp/nexus-slice-006-1780922831912-report.json`. This does not close the known `/live-events` 401 cleanup debt or broader refresh/return continuity; the next active blocker is `SLICE-007`.
+  - `2026-06-08` refresh/return closure update: `SLICE-007` is now `trueGreen` for first-slice project truth continuity. A clean `/loop?projectId=slice007-proof-1780925110507` route restored the runtime skeleton and persisted add-lead mutation from project truth, refresh preserved the same Build state, `/home?projectId=slice007-proof-1780925110507` preserved project identity, explicit return to Build restored the same skeleton/domain rows, browser back/forward did not fall to Create or QA state, and `/live-events` produced no authenticated-session `401`. Evidence: `/private/tmp/nexus-slice-007-1780925110507-report.json`. Exact replay of every intermediate support-route browser-history entry remains `HIST-AGT-001`; the next active blocker is `SLICE-008`.
+  - `2026-06-08` standalone artifact clarification: Nexus-internal runtime skeletons and generated product-domain skeletons are not enough for user-ready release language. `STANDALONE-ARTIFACT-001` is now inserted before `VER-AGT-001` and all release gates as a release-blocker requiring a standalone product artifact with screens, actions, persistence, backend/domain execution boundary, run/preview target outside Nexus, and verification or a precise blocker. This leaves `PRODUCT-BACKEND-SKEL-001` closed for mock/local domain truth but prevents release from claiming a user-owned product until the standalone artifact exists.
+  - `2026-06-08` product-owned backend skeleton clarification: the user's definition of "skeleton" now requires frontend and backend to be generated together from the first Build output. `PRODUCT-BACKEND-SKEL-001` remains closed only for Nexus-internal mock/local product-domain truth. `PRODUCT-BACKEND-SKEL-002` is now inserted immediately after it and before the runtime/professional skeleton chain, requiring a generated product-owned backend scaffold with models, operations, local/mock persistence, UI bindings, restore identity, and mutation growth alongside the frontend. Prior runtime/professional/Build closures are not deleted, but they may not be interpreted as satisfying this stricter backend-owning skeleton bar.
+  - `2026-06-08` product-owned backend skeleton closure: `PRODUCT-BACKEND-SKEL-002` is now `trueGreen` for a generated product-owned local/mock backend scaffold created with the first runtime skeleton and grown by Build mutations. The implementation adds product-owned artifact root/directories/files, schema models, operation endpoints, local/mock persistence, API-like boundaries, frontend/backend pairing truth, project persistence, mutation replay, DOM evidence, targeted tests, and live browser proof. This still does not close production backend hosting or standalone releasable product output; `STANDALONE-ARTIFACT-001` owns that later release gate.
+  - `2026-06-08` generated product package clarification: product-owned backend scaffolding still does not close a real generated product package with dependencies, install plan, run command, preview target, tests directory, package manager, and dependency failure handling. `PRODUCT-RUNTIME-PACKAGE-001` is now inserted before `STANDALONE-ARTIFACT-001` as the bridge between Nexus internal skeleton truth and standalone artifact truth. It requires generated product dependencies to belong to the generated product package, not to Nexus itself.
+  - `2026-06-08` dependency-quality clarification: `PRODUCT-RUNTIME-PACKAGE-001` is not a design-only or dependency-install task. It may close only when dependencies improve the generated product as a working product across relevant behavior, domain operations, persistence, run/preview, testing, accessibility/performance, interaction quality, and future mutation capacity. Listed or installed-but-unused dependencies do not count.
+  - the added blocker exists because Nexus must identify the product's shape of life before choosing a skeleton for unfamiliar products, instead of mapping unknown ideas to a generic dashboard, SaaS shell, landing page, or app frame
+- live regression override on `2026-06-04` narrows that remap:
+  - `SLICE-005` remains `trueGreen` only for the destination Build runtime skeleton once Loop is open
+  - `W4-FIX-007` was promoted before `BLD-AGT-001` because live verification showed the lead-management idea reached `advance-to-skeleton` / `skeletonReady=true` but stayed on the Create screen with `runtimeTask=null` and visible copy `מכין שלד...`
+  - `2026-06-04` implementation evidence now proves the narrowed handoff regression is fixed: the live lead-management journey moved from `מכין שלד...` at wait second 44 to `/loop` at wait second 45 with `runtimeTask=SLICE-005`, `runtimeClass=internal-tool`, and no manual navigation. Screenshots: `/private/tmp/nexus-w4-fix-007-final-page.png` and `/private/tmp/nexus-w4-fix-007-runtime-skeleton-element.png`
+  - `2026-06-04` visible Chrome field test on `http://127.0.0.1:4011/?qa=1&qaReset=1` reconfirmed the narrowed handoff fix with a real lead-management internal-tool idea: Create moved automatically into `/loop`, rendered an internal-tool runtime skeleton, and the Build rail stayed visible. This live run also found a refresh/restore regression still owned by `W4-FIX-005`: because `qaReset=1` remained in the URL after handoff, refresh replaced the lead-management project with the generic `qa-preview-project` landing-page skeleton. Screenshot: `/private/tmp/nexus-live-visible-leads-refresh-regression.png`
+  - `2026-06-04` canonical order correction after the auth/session project-isolation review: `W4-FIX-007` keeps its partial handoff proof, but full closure must return to `W4-FIX-001`, then `AUTH-SESSION-PROJECT-ISO-001`, then `W4-FIX-005`, before `W4-FIX-007` can close truthfully.
+  - `2026-06-06` repair pass tightened that closure boundary: `finishOnboardingSession` now treats a discovery-agent `advance-to-skeleton` / `skeletonReady=true` decision as valid build-ready project truth, and the browser no longer routes to `/loop` unless `/finish` returns a real backend project id. Focused verification passed, but the live rerun did not complete a stable `/loop` plus refresh restore proof before timeout, so `W4-FIX-007` remains partial.
+  - `W4-FIX-007` is still not `trueGreen` as a full canonical task because its broader convergence-guardrail dependencies remain unresolved: `W4-FIX-003`, `W4-FIX-004`, `W4-FIX-005`, `W4-FIX-006`, and `W4-GEN-003`
+  - `BLD-AGT-001` remains blocked by missing dependency truth until canonical orchestration explicitly accepts the partial live handoff fix or the full `W4-FIX-007` dependency chain closes
+- canonical coverage is still insufficient for end-to-end onboarding runtime hardening because repository reality and current prepared tasks did not yet explicitly release:
+  - visible live response streaming on the onboarding route
+  - same-thread retry recovery and provider failover continuity
+  - production-safe onboarding runtime hardening beyond the first real provider hookup
+  - truthful user-facing control over provider, model, and bounded intelligence/runtime depth
+- `W4-AGENT-001` is now closed truthfully after live QA proof showed shallow product understanding bouncing back into the live onboarding conversation, refresh preserving the same open depth gate, stronger `build-direction` answers opening `Understanding`, and `finish` staying blocked until that minimum depth signal existed
 - canonical coverage is still insufficient for the clarified smart-onboarding direction because repository reality and current tasks still do not explicitly cover:
   - provider-backed onboarding agent runtime with user provider choice
   - canonical Nexus rule enforcement across provider choice
   - mandatory structured downstream injection of learned intake into the correct Nexus system surfaces
   - minimum real conversation depth before product understanding can close
+  - end-to-end onboarding runtime wrapping through streaming, retry/failover continuity, and production-safe runtime hardening
+  - user-facing runtime controls so provider/model/intelligence choice does not remain hidden from the user
+  - bounded co-founder-style exploratory product reasoning before `Understanding` closes on an ambiguous product idea
   - floating project-aware agent presence across Nexus surfaces
   - explicit post-onboarding clarification / correction loop
+  - speaker / perspective correction when the user says `זה אני` / `לקוח שלי`
+  - imported competitor/product-conversation intelligence translated into family wrapper packs and a human tone/pacing contract instead of staying as detached research
   - competitor and comparable-product intelligence inside the live agent dialogue
 
 Preparation rule:
@@ -1133,6 +1220,75 @@ Central orchestration only for:
 - a post-release continuation loop is visible and meaningful
 - route / restore / proof / artifact / timeline continuity remain connected
 - no capability relies on backend truth without visible product truth
+
+## 2026-06-08 — SLICE-008 First-Slice Trust Cleanup Write-Back
+
+- `SLICE-008` is trueGreen only for first user-ready trust cleanup in the current Nexus runtime skeleton slice.
+- Nexus now avoids visible premature readiness language before a generated product package, standalone runnable artifact, verification, and explicit release approval exist.
+- Build shows a bounded release marker (`גבול שחרור`) instead of implying release readiness from the first skeleton.
+- Runtime action feedback is product-language and refresh-preserved; raw operation names and raw field labels are blocked from the visible first-slice proof.
+- This does not close `PRODUCT-RUNTIME-PACKAGE-001`, `STANDALONE-ARTIFACT-001`, `BUILD-RELEASE-GATE-001`, or `REL-AGT-001`.
+- The next canonical execution task returns to `EXP-001`; release/user-ready product claims remain blocked until generated product package and standalone artifact truth exist.
+
+## 2026-06-08 — EXP-001 Direct Build Editing Write-Back
+
+- `EXP-001` is trueGreen only for bounded Build-surface selection and direct editing on the current runtime skeleton.
+- Nexus now exposes a visible direct-edit frame for a selected product record, routes selection and record edits through product-domain operations, persists the result through project truth and the product-owned local/mock backend scaffold, and restores the same selected/edited state after refresh.
+- The live proof used `/loop?projectId=exp001-live-1780930702514`, selected a visible record, assigned the owner to `נועה`, refreshed, and confirmed `selectedRecordId=rec-1`, `firstRecordOwner=נועה`, `productOwnedBackendTask=PRODUCT-BACKEND-SKEL-002`, `productionBackend=false`, and zero bad events.
+- This closes the first direct-edit slice only. It does not close arbitrary inline editing, deep product-direction changes, full mutation approval, standalone product package generation, production backend, release, providers, payments, or publishing.
+- The next canonical execution task is `MUT-001` because `FND-002`, `ENG-004`, `VBUILD-001`, and `EXP-001` are closed.
+
+## 2026-06-08 — MUT-001 Mutation Ownership Write-Back
+
+- `MUT-001` is trueGreen for Build-originating meaningful change ownership.
+- Nexus now creates a mutation decision before applying a Build change, distinguishes safe small changes from product-direction changes, records approval/checkpoint/verification flags, persists a product-readable mutation history record, and exposes the decision on the Build rail.
+- Safe request proof: `תוסיף שדה מקור ליד` produced `MUT-001`, status `applied`, change type `small`, product-truth mutation `true`, approval `false`, and a persisted lead-source field.
+- Direction-change proof: `תשנה את זה להזמנות במקום לידים` produced `MUT-001`, status `pending-approval`, change type `product-truth`, approval `true`, no silent identity switch, and refresh restored the pending approval state.
+- Live browser proof passed on `http://127.0.0.1:4014/loop?projectId=mut001-live-1780931764085`; evidence is `/private/tmp/nexus-mut-001-1780931764085-report.json` with screenshots for initial, safe change, direction request, and refresh.
+- This does not close `EXP-002`, `BUILD-APPROVAL-001`, `HIST-AGT-001`, `VER-AGT-001`, `REL-AGT-001`, provider connection, payments, publishing, production backend, or standalone generated product package output.
+- The next canonical execution task is `EXP-002`.
+
+## 2026-06-08 — EXP-002 Canonical Mutation Flow Shell Write-Back
+
+- `EXP-002` is trueGreen for the visible Build-shell mutation flow that consumes `MUT-001` decisions.
+- Nexus now shows a product-readable sequence on the Build rail: request, decision, approval, apply, and history. The flow is persisted in project truth and restored after refresh.
+- Safe request proof: `תוסיף שדה מקור ליד` produced EXP-002 status `applied`, approval skipped, apply done, history done, and MUT-001 status `applied`.
+- Direction-change proof: `תשנה את זה להזמנות במקום לידים` produced EXP-002 status `pending-approval`, approval waiting, apply blocked, MUT-001 status `pending-approval`, and no silent change from leads to orders.
+- Live proof first exposed a false apply state when a previous mutation existed. The flow law was fixed so pending approval always blocks application even when older Build mutation history exists.
+- Refresh proof restored the same pending approval flow from project truth with apply still blocked.
+- Live browser proof passed on `http://127.0.0.1:4014/loop?projectId=exp002-live-1781006481898`; evidence is `/private/tmp/nexus-exp-002-1781006481898-report.json` with screenshots for initial, safe change, direction request, and refresh.
+- This does not close approval execution UI, deep rollback/checkpoint history, verification execution, release execution, provider connection, payments, publishing, production backend, or standalone generated product package output.
+- The next canonical execution task is `HIST-AGT-001`.
+
+## 2026-06-09 — HIST-AGT-001 Partial Continuity Agent Write-Back
+
+- `HIST-AGT-001` is partial, not trueGreen.
+- Nexus now creates and persists a History / Continuity Agent envelope from project truth, mutation decisions, mutation history, and Build mutation history.
+- The History surface now shows product-readable change history, checkpoint candidates, restore-impact explanation, return-after-time summary, and a return-to-Build continuation path.
+- Live proof on `http://127.0.0.1:4014/timeline?projectId=histagt-live-1781007332744` showed: small lead-source change recorded as product history, product-direction change recorded as pending approval with checkpoint, restore-impact decision recorded without silent restore, refresh restored the same decision, and return to Build restored the pending approval flow.
+- Evidence: `/private/tmp/nexus-hist-agt-001-1781007332744-report.json` with screenshots for initial, after changes, History before restore, restore decision, refresh, and return to Build.
+- Canonical blocker: `BUILD-APPROVAL-001` is now a missing dependency for full `HIST-AGT-001` closure because History cannot prove approved direction-change restore/rollback until Build-facing approve/reject/cancel execution exists over `MUT-001` truth.
+- The next canonical execution task is `BUILD-APPROVAL-001`.
+
+## 2026-06-09 — BUILD-APPROVAL-001 Product-Direction Approval Write-Back
+
+- `BUILD-APPROVAL-001` is trueGreen for the Build-facing approval bridge over `MUT-001` truth.
+- Nexus now blocks product-direction changes from applying silently, shows a visible impact and approval state in Build, and supports approve, reject, and cancel decisions backed by project truth.
+- Rejection preserves the original lead product truth after refresh; approval applies the order product truth after refresh, including domain model `הזמנה` and runtime title `ניהול הזמנות`.
+- Live proof passed on `http://127.0.0.1:4015`; evidence is `/private/tmp/nexus-build-approval-001-1781008927427-report.json` with screenshots for pending, rejected, rejected-after-refresh, approved, and approved-after-refresh paths.
+- This closes only the approval bridge. It does not close deep rollback, full History restore, verification execution, release execution, providers, payments, publishing, production backend, or standalone generated product package output.
+- The next canonical execution task returns to `HIST-AGT-001`, now unblocked for approved direction-change restore/rollback proof.
+
+## 2026-06-09 — HIST-AGT-001 Restore Execution Write-Back
+
+- `HIST-AGT-001` is now trueGreen for History / Continuity Agent ownership of product-readable history, checkpoints, restore-impact decision, explicit restore execution, refresh persistence, and return-to-Build continuity.
+- Nexus now captures product snapshots before meaningful changes, including the human product model name, so a lead-product checkpoint is not saved as a generic record checkpoint.
+- Restore now requires an explicit restore action after impact framing, then applies the chosen checkpoint back into Product Graph truth and the visible Build surface.
+- A live regression exposed that rebuildContext could reapply a previously approved direction change after restore. The rebuild path now preserves restored History truth instead of reapplying the old approved direction.
+- Live proof passed on `http://127.0.0.1:4016`; evidence is `/private/tmp/nexus-hist-agt-001-1781010552491-report.json` with screenshots for initial, after changes, History before restore, restore decision, restore executed, after refresh, and return to Build.
+- The proof restored a project from approved orders direction back to lead product truth; backend evidence ended with `historyStatus=restored`, `restoreDecisionStatus=restored`, `restoreTruthUnchanged=false`, `domainModel=ליד`, and runtime title `ניהול לידים עם היסטוריה`.
+- This does not close `EXP-003`, release rollback, production backend, generated product runtime package, standalone artifact, providers, payments, publishing, or release gates.
+- The next canonical execution task is `SHARE-AGT-001`.
 
 ## Explicit Wave 4 Non-Goals
 

@@ -93,6 +93,7 @@ function createFakeDocument() {
     "#analyze-button",
     "#run-cycle-button",
     "#screen-create",
+    "#screen-loop",
     "#screen-onboarding",
     "#screen-workspace",
     "#workspace-board",
@@ -252,6 +253,11 @@ function createFakeDocument() {
   return {
     body: {
       dataset: {},
+      append(element) {
+        if (element?.id) {
+          elements.set(`#${element.id}`, element);
+        }
+      },
     },
     documentElement: {
       style: {
@@ -265,6 +271,11 @@ function createFakeDocument() {
     },
     querySelector(selector) {
       return elements.get(selector) ?? null;
+    },
+    createElement() {
+      const element = createElement();
+      element.append = () => {};
+      return element;
     },
     elements,
     styleValues,
@@ -1625,7 +1636,7 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
   assert.match(fakeDocument.elements.get("#onboarding-stage-title").textContent, /מחדדים את הפרויקט/);
   assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /מה הובן/);
   assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /מה עדיין חסר/);
-  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /מה מתחדד עכשיו/);
+  assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /מה מתבהר עכשיו/);
   assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /Launch App/);
   assert.match(fakeDocument.elements.get("#onboarding-notes-list").innerHTML, /עדיין חסר מי המשתמש המרכזי/);
   assert.match(fakeDocument.elements.get("#onboarding-current-question-title").textContent, /למי הפרויקט הזה מיועד/);
@@ -1669,7 +1680,7 @@ test("cockpit creates first project from empty app and lands in workspace", asyn
   assert.match(fakeDocument.elements.get("#graph-content").innerHTML, /Review bootstrap output/);
   assert.match(fakeDocument.elements.get("#decision-content").innerHTML, /Review bootstrap output/);
   assert.equal(fakeDocument.elements.get("#flow-feedback-banner").hidden, false);
-  assert.match(fakeDocument.elements.get("#flow-feedback-title").textContent, /הפרויקט שלך מוכן/);
+  assert.match(fakeDocument.elements.get("#flow-feedback-title").textContent, /השלד הראשון מוכן להמשך בנייה/);
   assert.match(fakeDocument.elements.get("#flow-feedback-message").textContent, /נכנסת עכשיו ל־workspace של Launch App/);
   assert.match(fakeDocument.elements.get("#flow-feedback-message").textContent, /מנהלי מוצר וצוותי פיתוח/);
   assert.equal(requests.some((request) => request.url === "/api/project-drafts" && request.method === "POST"), true);
@@ -2223,6 +2234,7 @@ test("cockpit can return from workspace to a clean create-project screen", async
   fakeDocument.elements.get("#create-project-link-input").value = "https://example.com";
   fakeDocument.elements.get("#create-project-file-name-input").value = "brief.md";
   fakeDocument.elements.get("#create-project-file-content-input").value = "# Brief";
+  fakeDocument.elements.get("#screen-loop").innerHTML = "<section data-runtime-project-id=\"giftwallet\" data-product-owned-backend-task=\"PRODUCT-BACKEND-SKEL-002\">Stale project truth</section>";
 
   fakeDocument.elements.get("#create-new-project-button").listeners.click();
 
@@ -2230,12 +2242,294 @@ test("cockpit can return from workspace to a clean create-project screen", async
   assert.equal(fakeDocument.elements.get("#screen-onboarding").hidden, true);
   assert.equal(fakeDocument.elements.get("#screen-workspace").hidden, true);
   assert.equal(fakeDocument.elements.get("#workspace-board").hidden, true);
-  assert.match(fakeDocument.elements.get("#empty-project-message").textContent, /צור פרויקט חדש/);
   assert.equal(fakeDocument.elements.get("#create-project-name-input").value, "");
   assert.equal(fakeDocument.elements.get("#create-project-vision-input").value, "");
   assert.equal(fakeDocument.elements.get("#create-project-link-input").value, "");
   assert.equal(fakeDocument.elements.get("#create-project-file-name-input").value, "");
   assert.equal(fakeDocument.elements.get("#create-project-file-content-input").value, "");
+  assert.equal(fakeDocument.elements.get("#screen-loop").innerHTML, "");
+});
+
+test("W4-FIX-001 fresh create with QA reset ignores stale project URL and storage state", async () => {
+  const fakeDocument = createFakeDocument();
+  const storage = new Map();
+  const staleFlowState = {
+    screen: "create",
+    currentProjectId: "courier-stale-project",
+    currentProjectSnapshot: {
+      id: "courier-stale-project",
+      name: "אפליקציית שליחים ישנה",
+      goal: "סריקת חבילות והצגת פינים על מפה",
+      artifactExpectation: {
+        projectType: "mobile-app",
+        deliverableLabel: "מפת משלוחים",
+      },
+    },
+    onboardingFlow: null,
+    onboardingConversation: null,
+    draftInputs: {
+      projectName: "אפליקציית שליחים ישנה",
+      visionText: "סריקת חבילות והצגת פינים על מפה",
+      supportingLink: "",
+      fileName: "",
+      fileContent: "",
+    },
+  };
+  const staleEncodedState = encodeURIComponent(JSON.stringify({
+    qaStateMode: "storage-backed-compact",
+    screen: "create",
+    currentProjectId: "courier-url-project",
+    currentProjectSnapshot: {
+      id: "courier-url-project",
+      name: "Courier URL Project",
+      goal: "Old courier URL state",
+      artifactExpectation: {
+        projectType: "mobile-app",
+        deliverableLabel: "Courier map",
+      },
+    },
+  }));
+  storage.set("nexus.flowState", JSON.stringify(staleFlowState));
+  storage.set("nexus.appUser", JSON.stringify({
+    userId: "qa-user",
+    email: "qa-user@nexus.local",
+  }));
+
+  const previousLocationDescriptor = Object.getOwnPropertyDescriptor(globalThis, "location");
+  const previousHistoryDescriptor = Object.getOwnPropertyDescriptor(globalThis, "history");
+  Object.defineProperty(globalThis, "location", {
+    configurable: true,
+    value: {
+      href: `http://127.0.0.1:4011/?qa=1&qaReset=1&qaState=${staleEncodedState}&qaScreen=create`,
+      hostname: "127.0.0.1",
+      pathname: "/",
+      search: `?qa=1&qaReset=1&qaState=${staleEncodedState}&qaScreen=create`,
+    },
+  });
+  Object.defineProperty(globalThis, "history", {
+    configurable: true,
+    value: {
+      replaceState() {},
+      pushState() {},
+    },
+  });
+
+  try {
+    const app = createCockpitApp({
+      doc: fakeDocument,
+      async fetchImpl(url) {
+        if (url === "/api/auth/signup") {
+          return {
+            ok: true,
+            async json() {
+              return {
+                authPayload: {
+                  userIdentity: {
+                    userId: "fresh-qa-user",
+                    email: "fresh-qa-user@nexus.local",
+                  },
+                },
+              };
+            },
+          };
+        }
+        if (url === "/api/projects") {
+          return {
+            ok: true,
+            async json() {
+              return {
+                projects: [{ id: "courier-stale-project", name: "אפליקציית שליחים ישנה" }],
+              };
+            },
+          };
+        }
+        throw new Error(`Unexpected fetch ${url}`);
+      },
+      storageImpl: {
+        getItem(key) {
+          return storage.get(key) ?? null;
+        },
+        setItem(key, value) {
+          storage.set(key, value);
+        },
+        removeItem(key) {
+          storage.delete(key);
+        },
+      },
+      setTimeoutImpl() {
+        return 0;
+      },
+      clearTimeoutImpl() {},
+    });
+
+    await app.ready;
+
+    const persistedFlowState = JSON.parse(storage.get("nexus.flowState"));
+    assert.equal(fakeDocument.elements.get("#screen-create").hidden, false);
+    assert.equal(fakeDocument.elements.get("#create-project-name-input").value, "");
+    assert.equal(fakeDocument.elements.get("#create-project-vision-input").value, "");
+    assert.equal(persistedFlowState.currentProjectId, null);
+    assert.equal(persistedFlowState.currentProjectSnapshot, null);
+    assert.equal(persistedFlowState.onboardingConversation, null);
+    assert.doesNotMatch(fakeDocument.elements.get("#screen-create").innerHTML, /שליחים|Courier|פינים|חבילות/);
+  } finally {
+    if (previousLocationDescriptor) {
+      Object.defineProperty(globalThis, "location", previousLocationDescriptor);
+    } else {
+      delete globalThis.location;
+    }
+    if (previousHistoryDescriptor) {
+      Object.defineProperty(globalThis, "history", previousHistoryDescriptor);
+    } else {
+      delete globalThis.history;
+    }
+  }
+});
+
+test("W4-FIX-005 direct loop route restores from project id and replaces full URL state", async () => {
+  const fakeDocument = createFakeDocument();
+  const storage = new Map();
+  const staleEncodedState = encodeURIComponent(JSON.stringify({
+    qaStateMode: "storage-backed-compact",
+    screen: "loop",
+    currentProjectId: "qa-preview-project",
+    currentProjectSnapshot: {
+      id: "qa-preview-project",
+      name: "QA Preview Project",
+      goal: "Wrong stale project",
+    },
+  }));
+  const mutableLocation = {
+    href: `http://127.0.0.1:4011/loop?qa=1&qaReset=1&projectId=giftwallet&qaState=${staleEncodedState}&qaScreen=loop`,
+    hostname: "127.0.0.1",
+    pathname: "/loop",
+    search: `?qa=1&qaReset=1&projectId=giftwallet&qaState=${staleEncodedState}&qaScreen=loop`,
+  };
+  const previousLocationDescriptor = Object.getOwnPropertyDescriptor(globalThis, "location");
+  const previousHistoryDescriptor = Object.getOwnPropertyDescriptor(globalThis, "history");
+  Object.defineProperty(globalThis, "location", {
+    configurable: true,
+    value: mutableLocation,
+  });
+  Object.defineProperty(globalThis, "history", {
+    configurable: true,
+    value: {
+      state: {},
+      replaceState(state, _title, url) {
+        this.state = state;
+        const nextUrl = new URL(url, "http://127.0.0.1:4011");
+        mutableLocation.href = nextUrl.href;
+        mutableLocation.pathname = nextUrl.pathname;
+        mutableLocation.search = nextUrl.search;
+      },
+      pushState(state, title, url) {
+        this.replaceState(state, title, url);
+      },
+    },
+  });
+
+  try {
+    const app = createCockpitApp({
+      doc: fakeDocument,
+      async fetchImpl(url) {
+        if (url === "/api/auth/signup") {
+          return {
+            ok: true,
+            async json() {
+              return {
+                authPayload: {
+                  userIdentity: {
+                    userId: "fresh-route-user",
+                    email: "fresh-route-user@nexus.local",
+                  },
+                },
+              };
+            },
+          };
+        }
+        if (url === "/api/projects") {
+          return {
+            ok: true,
+            async json() {
+              return {
+                projects: [{ id: "giftwallet", name: "GiftWallet" }],
+              };
+            },
+          };
+        }
+        if (url === "/api/projects/giftwallet") {
+          return {
+            ok: true,
+            async json() {
+              return {
+                id: "giftwallet",
+                name: "GiftWallet",
+                goal: "Restore from short route identity",
+                status: "active",
+                source: { baseUrl: "http://localhost:4101" },
+                overview: { bottleneck: "Short route restore" },
+                cycle: { roadmap: [] },
+                agents: [],
+                approvals: [],
+                events: [],
+                developerWorkspace: { contextSummary: { progressPercent: 12, progressStatus: "working", nextAction: "Continue", incidentStatus: "clear" } },
+                projectBrainWorkspace: { overview: { domain: "saas", currentPhase: "setup" }, summary: { blockerCount: 0, requiresApproval: false } },
+                releaseWorkspace: { releaseTarget: "staging", buildAndDeploy: { currentStage: "planned" }, validation: { status: "clear" }, summary: { isBlocked: false } },
+                growthWorkspace: { summary: { totalPillars: 0, totalChannels: 0, totalKpis: 0, hasGrowthPlan: false } },
+              };
+            },
+          };
+        }
+        if (url === "/api/projects/giftwallet/presence") {
+          return {
+            ok: true,
+            async json() {
+              return { ok: true };
+            },
+          };
+        }
+        throw new Error(`Unexpected fetch ${url}`);
+      },
+      storageImpl: {
+        getItem(key) {
+          return storage.get(key) ?? null;
+        },
+        setItem(key, value) {
+          storage.set(key, value);
+        },
+        removeItem(key) {
+          storage.delete(key);
+        },
+      },
+      setTimeoutImpl() {
+        return 0;
+      },
+      clearTimeoutImpl() {},
+    });
+
+    await app.ready;
+
+    assert.equal(fakeDocument.body.dataset.appScreen, "loop");
+    assert.equal(fakeDocument.elements.get("#screen-loop").hidden, false);
+    assert.equal(fakeDocument.elements.get("#hero-project-name").textContent, "GiftWallet");
+    assert.equal(mutableLocation.pathname, "/loop");
+    assert.equal(new URLSearchParams(mutableLocation.search).get("projectId"), "giftwallet");
+    assert.equal(new URLSearchParams(mutableLocation.search).get("qaState"), null);
+    assert.equal(new URLSearchParams(mutableLocation.search).get("nexusState"), null);
+    assert.equal(new URLSearchParams(mutableLocation.search).get("qaReset"), null);
+    assert.equal(new URLSearchParams(mutableLocation.search).get("qaScreen"), null);
+  } finally {
+    if (previousLocationDescriptor) {
+      Object.defineProperty(globalThis, "location", previousLocationDescriptor);
+    } else {
+      delete globalThis.location;
+    }
+    if (previousHistoryDescriptor) {
+      Object.defineProperty(globalThis, "history", previousHistoryDescriptor);
+    } else {
+      delete globalThis.history;
+    }
+  }
 });
 
 test("cockpit can exit real onboarding back to the create-project screen", async () => {

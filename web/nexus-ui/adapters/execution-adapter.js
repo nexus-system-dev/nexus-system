@@ -350,10 +350,10 @@ export function buildExecutionLiveViewModel({ project = null, qaMode = false } =
   return {
     title: "מבצעים את המשימה",
     subtitle: qaMode
-      ? "זה מצב QA זמני לבדיקת execution גם בלי runtime מלא."
-      : "המערכת פועלת עכשיו על המשימה שנבחרה לך.",
+      ? "זה מסך בדיקה זמני, אבל הוא עדיין מחזיק את צעד הביצוע הנכון."
+      : "אני כבר בתוך המשימה שנבחרה, ומחזיק את מה שצריך לקרות עכשיו.",
     projectName: safeProject.name ?? "QA mode",
-    badge: qaMode ? "QA preview override" : "Nexus עובד עכשיו",
+    badge: qaMode ? "QA preview override" : "עובדים על זה עכשיו",
     detail: fallbackDetail ?? taskSignal.reason,
     missionTitle: fallbackTitle ?? taskSignal.title,
     workspaceSurfaceModel: {

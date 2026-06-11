@@ -586,8 +586,8 @@ function buildInternalToolArtifactModel(project, proof, preview, expectation = n
   const sanitizedAudience = normalizeInternalToolCopy(audience, "צוותים פנימיים שצריכים תור עבודה ברור");
   const sanitizedProblem = normalizeInternalToolCopy(problem, "בקשות פתוחות נופלות בין הצוותים ואין בעלות ברורה על הטיפול.");
   const sanitizedSolution = normalizeInternalToolCopy(solution, "לוח פנימי שמרכז תור בקשות, אחריות, רמת שירות ופעולה הבאה לכל בקשה.");
-  const sanitizedTitle = normalizeInternalToolCopy(
-    normalizeString(normalizedExpectation.title, `${normalizeString(safeProject.name, "Ops Queue")} משטח עבודה`),
+  const sanitizedTitle = normalizeString(
+    normalizedExpectation.title,
     `${normalizeString(safeProject.name, "Ops Queue")} משטח עבודה`,
   );
   const sanitizedSummary = normalizeInternalToolCopy(

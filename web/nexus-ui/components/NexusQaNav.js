@@ -1,14 +1,14 @@
+import { escapeVisibleShellCopy } from "../copy/visible-shell-language.js";
+
 const QA_PRIMARY_ROUTES = [
-  { key: "create", label: "Create" },
-  { key: "onboarding", label: "Onboarding" },
-  { key: "understanding", label: "Understanding" },
-  { key: "loop", label: "Loop" },
-  { key: "execution", label: "Execution" },
-  { key: "proof", label: "Proof" },
-  { key: "confirmation", label: "Confirmation" },
-  { key: "state-update", label: "State Update" },
-  { key: "next-task", label: "Next Task" },
-  { key: "timeline", label: "Timeline" },
+  { key: "create", label: "יצירה" },
+  { key: "loop", label: "בנייה" },
+  { key: "execution", label: "ביצוע" },
+  { key: "proof", label: "בדיקה" },
+  { key: "confirmation", label: "אישור" },
+  { key: "state-update", label: "עדכון מצב" },
+  { key: "next-task", label: "הצעד הבא" },
+  { key: "timeline", label: "היסטוריה" },
 ];
 
 function isQaOptInEnabled() {
@@ -28,8 +28,8 @@ export function renderNexusQaNav(currentKey = "create") {
   return `
     <section class="nexus-ui-qa-nav" aria-label="QA navigation">
       <div class="nexus-ui-qa-nav__copy">
-        <strong>QA mode</strong>
-        <span>מעבר זמני בין מסכי הלופ בלי לחכות ל־runtime המלא.</span>
+        <strong>תצוגת בדיקה</strong>
+        <span>מעבר זמני בין מסכי העבודה בלי לחכות להרצה המלאה.</span>
       </div>
       <div class="nexus-ui-qa-nav__buttons">
         ${QA_PRIMARY_ROUTES.map((route) => `
@@ -37,7 +37,7 @@ export function renderNexusQaNav(currentKey = "create") {
             class="nexus-ui-qa-nav__button${route.key === currentKey ? " active" : ""}"
             type="button"
             data-nexus-ui-qa-target="${route.key}"
-          >${route.label}</button>
+          >${escapeVisibleShellCopy(route.label)}</button>
         `).join("")}
       </div>
     </section>

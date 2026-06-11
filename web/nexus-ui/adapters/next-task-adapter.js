@@ -134,8 +134,8 @@ function resolveNextMission(project) {
         : escapeText(
             artifactExpectation.loopReadyMessage
               ?? artifactExpectation.continuityLine
-              ?? "המערכת פותחת עכשיו סבב המשך אמיתי על גבי התוצר שאושר.",
-            "זה הצעד הבא שהמערכת ממליצה עליו לפי מצב הפרויקט כרגע.",
+              ?? "מכאן נפתח הצעד הבא על גבי מה שכבר אושר וננעל.",
+            "זה הצעד הבא שנכון לפתוח לפי מצב הפרויקט כרגע.",
           ),
     status: blockedTask ? "blocked" : assignedTask ? "assigned" : "pending",
     lane: assignedTask?.lane ?? blockedTask?.lane ?? "loop",
@@ -235,10 +235,10 @@ export function buildNextTaskViewModel({ project = null, qaMode = false } = {}) 
   return {
     title: "מאיפה ממשיכים עכשיו",
     subtitle: qaMode
-      ? "זה מצב QA זמני למסך next task גם בלי routing מלא של המשך הלולאה."
-      : "זאת המשימה הבאה שנפתחת מתוך התוצר שאושר עכשיו, עם כל ההקשר שכבר נצבר בלולאה.",
+      ? "זה מסך בדיקה זמני, אבל הוא עדיין משקף את נקודת ההמשך הנכונה."
+      : "זה הצעד הבא שנפתח מתוך מה שכבר נסגר, עם כל ההקשר שכבר נאסף בדרך.",
     projectName: safeProject.name ?? "QA mode",
-    badge: qaMode ? "QA preview override" : "המלצה מבוססת AI",
+    badge: qaMode ? "QA preview override" : "הצעד הבא",
     artifactTruth,
     mission: {
       title: mission.title,
@@ -254,7 +254,7 @@ export function buildNextTaskViewModel({ project = null, qaMode = false } = {}) 
     whyNow: requiresClarification
       ? escapeText(
           repeatedLoopClarification.detail,
-          "המערכת עוצרת כאן truthfully כי בלי עוד הקשר הסבב הבא יהיה replay של אותו artifact ולא שיפור אמיתי.",
+          "אני עוצר כאן כי בלי עוד הקשר, הסבב הבא פשוט יחזור על עצמו במקום לקדם את המוצר באמת.",
         )
       : buildWhyNow(safeProject, mission, roadmap),
     readyNowItems: buildReadyNowItems(safeProject, mission, roadmap),
@@ -312,7 +312,7 @@ export function buildNextTaskViewModel({ project = null, qaMode = false } = {}) 
     primaryAction: requiresClarification
       ? {
           label: "חזור להבנה והוסף חומר תומך",
-          target: "onboarding",
+          target: "create",
           actionKind: "navigate",
         }
       : {

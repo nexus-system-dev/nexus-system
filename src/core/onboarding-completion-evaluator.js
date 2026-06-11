@@ -1,3 +1,9 @@
+import {
+  createLearningGuidedOnboardingContext,
+  hasLearningGuidedSufficientUnderstanding,
+  resolveCanonicalOnboardingAnswers,
+} from "../../web/shared/learning-guided-onboarding.js";
+
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value)
     ? value
@@ -31,20 +37,17 @@ function resolveConversationAnswers(onboardingSession) {
   return normalizeObject(onboardingSession?.conversation?.answers);
 }
 
-function hasSufficientUnderstanding({ projectType, answers }) {
-  const audience = typeof answers["target-audience"] === "string" ? answers["target-audience"].trim() : "";
-  const problem = typeof answers["core-problem"] === "string" ? answers["core-problem"].trim() : "";
-  const solution = typeof answers["successful-solution"] === "string" ? answers["successful-solution"].trim() : "";
-
-  if (!audience || !problem) {
-    return false;
-  }
-
-  if (projectType === "landing-page") {
-    return true;
-  }
-
-  return Boolean(solution);
+function hasSufficientUnderstanding({ projectType, answers, learningContext }) {
+  const canonicalAnswers = resolveCanonicalOnboardingAnswers(answers);
+  return hasLearningGuidedSufficientUnderstanding({
+    projectType,
+    audience: canonicalAnswers.audience,
+    problem: canonicalAnswers.problem,
+    solution: canonicalAnswers.solution,
+    buildDirection: canonicalAnswers.buildDirection,
+    workflowDetail: normalizeObject(answers)["workflow-detail"],
+    learningContext,
+  });
 }
 
 function resolveContinuationGate({ projectType, supportingMaterialDeferred }) {
@@ -107,9 +110,28 @@ function buildClarificationPrompts(missingInputs, projectType, requiredActions) 
   return prompts;
 }
 
-function resolveReadinessLevel(missingInputs, requiresClarification) {
+function buildDepthClarificationPrompt(projectType) {
+  if (projectType === "landing-page") {
+    return "חדד מה חייב להיות ברור מיד בעמוד כדי שההבטחה, האמון וה־CTA לא יישארו כלליים";
+  }
+  if (projectType === "internal-tool") {
+    return "חדד מה חייב להיות ברור מיד במסך הראשון כדי שהצוות יבין בעלות ופעולה הבאה";
+  }
+  if (projectType === "commerce-ops") {
+    return "חדד מה חייב להיות גלוי מיד במסך הראשון כדי שהצוות יזהה מה דחוף ויפעל";
+  }
+  if (projectType === "mobile-app") {
+    return "חדד מה חייב להיות ברור מיד במסך הראשון כדי שהמשתמש יבין את הפעולה הראשונה";
+  }
+  return "חדד מה חייב להיות ברור מיד במשטח הראשון כדי שהבנייה לא תישאר כללית";
+}
+
+function resolveReadinessLevel(missingInputs, requiresClarification, hasDepthSignal) {
   if (!requiresClarification) {
     return "ready";
+  }
+  if (!hasDepthSignal) {
+    return "blocked";
   }
   if (missingInputs.length <= 1) {
     return "almost-ready";
@@ -130,10 +152,21 @@ export function createOnboardingCompletionEvaluator({
   const rawMissingInputs = inferMissingInputs(normalizedIntake);
   const projectType = normalizedIntake.projectType ?? "unknown";
   const answers = resolveConversationAnswers(normalizedSession);
+  const learningContext = createLearningGuidedOnboardingContext({
+    learningDecisionImpact: normalizedSession.initialInput?.learningContext?.learningDecisionImpact ?? null,
+    generationIntent: normalizedSession.initialInput?.learningContext?.generationIntent ?? null,
+    projectTypeHint: projectType,
+    visionText: normalizedIntake.visionText ?? normalizedSession.projectDraft?.goal ?? normalizedSession.initialInput?.goal ?? "",
+  });
+  const hasDepthSignal = hasSufficientUnderstanding({
+    projectType,
+    answers,
+    learningContext,
+  });
   const supportingMaterialDeferred = rawMissingInputs.length === 1
     && rawMissingInputs[0] === "supporting-material"
     && projectType !== "unknown"
-    && hasSufficientUnderstanding({ projectType, answers });
+    && hasDepthSignal;
   const missingInputs = supportingMaterialDeferred
     ? rawMissingInputs.filter((field) => field !== "supporting-material")
     : rawMissingInputs;
@@ -142,11 +175,17 @@ export function createOnboardingCompletionEvaluator({
     projectType,
     normalizedSession.requiredActions,
   );
-  const requiresClarification = missingInputs.length > 0 || projectType === "unknown";
+  if (!hasDepthSignal) {
+    const depthPrompt = buildDepthClarificationPrompt(projectType);
+    if (!clarificationPrompts.includes(depthPrompt)) {
+      clarificationPrompts.push(depthPrompt);
+    }
+  }
+  const requiresClarification = missingInputs.length > 0 || projectType === "unknown" || !hasDepthSignal;
   const isComplete = requiresClarification === false;
   const readinessLevel = supportingMaterialDeferred
     ? "ready-with-supporting-material-gap"
-    : resolveReadinessLevel(missingInputs, requiresClarification);
+    : resolveReadinessLevel(missingInputs, requiresClarification, hasDepthSignal);
   const completionStatus = resolveCompletionStatus(requiresClarification);
   const nextAction = isComplete
     ? (supportingMaterialDeferred
@@ -177,6 +216,7 @@ export function createOnboardingCompletionEvaluator({
           || normalizeArray(normalizedIntake.externalLinks).length > 0,
         supportingMaterialDeferred,
         projectTypeResolved: projectType !== "unknown",
+        minimumDepthReached: hasDepthSignal,
       },
     },
   };

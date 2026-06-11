@@ -53,7 +53,7 @@ function resolveUpdateCards(project, roadmap) {
       glyph: "✓",
       title: "התוצר אושרר ונשמר בפרויקט",
       description: humanizeValidationSummary(project),
-      impact: "עכשיו יש תוצאה גלויה שאפשר להמשיך ממנה בלי לחזור ל־review טכני.",
+      impact: "עכשיו יש תוצאה גלויה שאפשר להמשיך ממנה בלי לחזור אחורה למה שכבר נסגר.",
     });
   }
 
@@ -65,7 +65,7 @@ function resolveUpdateCards(project, roadmap) {
       title: status === "approved" ? "הפרויקט התקדם עם אישור" : "החלטת ההמשך נשמרה בפרויקט",
       description: humanizeApprovalSummary(project),
       impact: status === "approved"
-        ? "אפשר לעבור קדימה בלי להישאר בשלב review."
+        ? "אפשר להמשיך קדימה בלי לחזור לבדיקה שכבר נסגרה."
         : "ההחלטה נשמרה והיא כבר מגדירה את הצעד הבא.",
     });
   }
@@ -87,7 +87,7 @@ function resolveUpdateCards(project, roadmap) {
       tone: "success",
       glyph: "✓",
       title: "הפרויקט התקדם",
-      description: "המערכת רשמה את תוצאת העבודה ועדכנה את המצב בהתאם.",
+      description: "שמתי את תוצאת העבודה במקום, ועכשיו כבר ברור מאיפה ממשיכים.",
       impact: "אפשר להתקדם לצעד הבא בלולאה.",
     });
   }
@@ -130,8 +130,8 @@ export function buildStateUpdateViewModel({ project = null, qaMode = false } = {
   return {
     title: "הפרויקט התקדם צעד אמיתי",
     subtitle: qaMode
-      ? "זה מצב QA זמני למסך state update גם בלי רצף approval מלא."
-      : "האישור לא רק נשמר. הנה מה התקדם בפועל, ומה נפתח עכשיו להמשך הלולאה.",
+      ? "זה מסך בדיקה זמני, אבל הכיוון שלו נשאר אותו כיוון מוצרי."
+      : "לא רק שמרנו החלטה. משהו בפרויקט באמת זז, ועכשיו כבר ברור מה נפתח הלאה.",
     projectName: safeProject.name ?? "QA mode",
     badge: qaMode ? "QA preview override" : "אבן דרך הושלמה",
     artifactTruth,
@@ -151,7 +151,7 @@ export function buildStateUpdateViewModel({ project = null, qaMode = false } = {
     ],
     nextMeaning: blockedCount > 0
       ? "יש עדיין חסמים פתוחים, אבל עכשיו ברור מה לטפל בו קודם."
-      : "המצב החדש פותח את המסלול למשימה הבאה בלי לחזור אחורה למסכי review.",
+      : "המצב החדש פותח את הדרך לצעד הבא בלי לפתוח מחדש משהו שכבר נסגר.",
     primaryAction: {
       label: "המשך למשימה הבאה",
       target: "next-task",

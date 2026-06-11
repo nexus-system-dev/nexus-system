@@ -30,6 +30,14 @@ Skeleton נחשבת believable רק אם ה־first visible surface:
 - exposes the right first proof points
 - includes the minimal class-specific structure a user expects
 
+This baseline is not enough for the later interactive runtime standard.
+
+`RUNTIME-SKEL-001` raises the bar from "believable structure" to "simulated product behavior":
+- the user can interact with the skeleton
+- visible state changes after action
+- navigation or workflow changes where relevant
+- static frames and visual mockups are explicitly insufficient
+
 ## Baseline Fields
 
 לכל baseline חייבים להיות:
@@ -165,3 +173,4 @@ This means:
 Those belong to later tasks, especially:
 - `W4-MBN-005`
 - `W4-MBN-006`
+- `RUNTIME-SKEL-001`

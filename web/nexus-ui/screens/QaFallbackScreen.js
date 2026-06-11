@@ -1,6 +1,5 @@
 import { renderNexusButton } from "../components/NexusButton.js";
 import { renderNexusCard } from "../components/NexusCard.js";
-import { renderNexusQaNav } from "../components/NexusQaNav.js";
 import { renderNexusStepper } from "../components/NexusStepper.js";
 import { renderWorkspaceLayout } from "../layouts/WorkspaceLayout.js";
 
@@ -15,9 +14,8 @@ function escapeHtml(value) {
 
 const PRIMARY_SIDEBAR = [
   { title: "יצירה", href: "/create", target: "create", icon: "＋" },
-  { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
-  { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
-  { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
+  { title: "בנייה", href: "/loop", target: "loop", icon: "▦" },
+  { title: "היסטוריה", href: "/timeline", target: "timeline", icon: "◷" },
 ];
 
 const SUPPORT_SIDEBAR = [
@@ -56,9 +54,9 @@ const ROUTE_MODELS = {
   },
   proof: {
     title: "הנה מה שבניתי",
-    subtitle: "מצב QA זמני למסך proof עד החיבור הסופי ל־runtime.",
+    subtitle: "תצוגת בדיקה זמנית עד שהתוצר החי מוכן.",
     lead: "נוצר תוצר ראשוני עם deliverables, מדדים, וקבצים לבדיקה.",
-    note: "המסך נשאר עם המעטפת המאושרת של Figma גם כשאין עדיין proof backend מלא.",
+    note: "המסך נשאר עם מעטפת בטוחה גם כשאין עדיין תוצר חי מלא.",
     primaryCta: "המשך לאישור",
     secondaryCta: "פתח בדף חדש ↗",
   },
@@ -74,39 +72,36 @@ const ROUTE_MODELS = {
     title: "המצב עודכן",
     subtitle: "כך Nexus היה מסכם את שינוי המצב אחרי האישור.",
     lead: "המשימה סומנה כהושלמה והפרויקט התקדם לשלב הבא.",
-    note: "מצב mock בטוח כדי לבדוק את הסיפור הוויזואלי של transition בין אישור למשימה הבאה.",
+    note: "מצב זמני בטוח כדי לבדוק את הסיפור הוויזואלי בין אישור למשימה הבאה.",
     primaryCta: "המשך למשימה הבאה",
-    secondaryCta: "פתח את ציר הזמן",
+    secondaryCta: "פתח היסטוריה",
   },
   "next-task": {
     title: "המשימה הבאה",
     subtitle: "Nexus בחר את הצעד הבא כדי לשמור על מומנטום.",
     lead: "להכין ניסוי מעקב קצר אחרי העלייה הראשונה לאוויר.",
-    note: "מצב QA זמני למסך next task בלי תלות בהשלמת loop אמיתי.",
+    note: "מצב זמני למסך המשך בלי תלות בהשלמת בנייה אמיתית.",
     primaryCta: "התחל משימה חדשה",
     secondaryCta: "למה דווקא זה?",
   },
   timeline: {
-    title: "ציר הזמן של הפרויקט",
-    subtitle: "כל מה שכבר קרה בפרויקט, כרונולוגית.",
-    lead: "יצירת פרויקט → onboarding → understanding → loop → proof.",
-    note: "מצב QA זמני למסך timeline עד ההטמעה המלאה של history.",
+    title: "היסטוריית הפרויקט",
+    subtitle: "הרגעים המשמעותיים ששינו את המוצר.",
+    lead: "יצירת פרויקט → כיוון ראשוני → בנייה → בדיקה.",
+    note: "מצב זמני למסך היסטוריה עד ההטמעה המלאה.",
     primaryCta: "חזור לשלב הפעיל",
     secondaryCta: "פתח אבן דרך",
   },
 };
 
 function buildStepper(currentKey) {
-  const understandingStatus = currentKey === "understanding" ? "active" : "inactive";
   const loopStatus = ["loop", "execution", "proof", "confirmation", "state-update", "next-task", "timeline"].includes(currentKey)
     ? "active"
     : "inactive";
 
   return renderNexusStepper([
     { label: "יצירה", status: "complete", glyph: "✓" },
-    { label: "הכרת הפרויקט", status: "complete", glyph: "✓" },
-    { label: "הבנה", status: understandingStatus },
-    { label: "פעולה", status: loopStatus },
+    { label: "בנייה", status: loopStatus },
   ]);
 }
 
@@ -117,7 +112,6 @@ export function renderQaFallbackScreen(routeKey) {
       <div class="nexus-qa-fallback-screen__stepper">
         ${buildStepper(routeKey)}
       </div>
-      ${renderNexusQaNav(routeKey)}
       <div class="nexus-qa-fallback-screen__intro">
         <h1>${escapeHtml(model.title)}</h1>
         <p>${escapeHtml(model.subtitle)}</p>
@@ -127,7 +121,7 @@ export function renderQaFallbackScreen(routeKey) {
           className: "nexus-qa-fallback-screen__lead-card",
           padding: "lg",
           content: `
-            <strong class="nexus-qa-fallback-screen__eyebrow">QA preview override</strong>
+            <strong class="nexus-qa-fallback-screen__eyebrow">תצוגה זמנית</strong>
             <h2>${escapeHtml(model.lead)}</h2>
             <p>${escapeHtml(model.note)}</p>
             <div class="nexus-qa-fallback-screen__actions">
@@ -140,11 +134,11 @@ export function renderQaFallbackScreen(routeKey) {
           className: "nexus-qa-fallback-screen__meta-card",
           padding: "md",
           content: `
-            <h3>Safe mock state fallback</h3>
+            <h3>תצוגה בטוחה בלי פרויקט פעיל</h3>
             <ul class="nexus-qa-fallback-screen__list">
               <li>אין צורך בפרויקט אמיתי כדי לפתוח את המסך.</li>
               <li>ה־CTA נשארים נראים כמו במסך המאושר.</li>
-              <li>המצב הזה זמני לבדיקה ולא מחליף את ה־runtime האמיתי.</li>
+              <li>המצב הזה זמני לבדיקה ולא מחליף את התוצר החי.</li>
             </ul>
           `,
         })}
@@ -160,7 +154,7 @@ export function renderQaFallbackScreen(routeKey) {
       advanced: ADVANCED_SIDEBAR,
       footer: FOOTER_SIDEBAR,
     },
-    topbar: { projectName: "QA mode", avatar: "Q" },
+    topbar: { projectName: "Preview", avatar: "P" },
     content,
   });
 }

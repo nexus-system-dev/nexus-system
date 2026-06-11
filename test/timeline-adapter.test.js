@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { buildTimelineViewModel } from "../web/nexus-ui/adapters/timeline-adapter.js";
 
-test("timeline adapter exposes cross-surface continuity contract", () => {
+test("timeline adapter exposes preserved continuity data and SURF-006 history model", () => {
   const viewModel = buildTimelineViewModel({
     project: {
       name: "Landing QA",
@@ -158,10 +158,58 @@ test("timeline adapter exposes cross-surface continuity contract", () => {
           },
         },
       ],
+      historyContinuityAgent: {
+        taskId: "HIST-AGT-001",
+        agentId: "history-continuity-agent",
+        responseSource: "agent-envelope",
+        status: "recorded",
+        currentSummary: "השינוי האחרון נשמר כהיסטוריית מוצר.",
+        productHistory: [
+          {
+            eventId: "history-continuity-small",
+            eventType: "small-change",
+            requiresCheckpoint: false,
+            changeSummary: {
+              after: "נוסף שדה מקור ליד.",
+              unchanged: "הקשר הפרויקט נשמר.",
+            },
+            userReply: "נרשם שינוי מוצרי.",
+            createdAt: "עכשיו",
+          },
+        ],
+        checkpoints: [
+          {
+            checkpointId: "hist-checkpoint-small",
+            title: "נקודת חזרה לשינוי קטן",
+            body: "אפשר להבין את השינוי בלי לבצע שחזור שקט.",
+            restoreAvailability: "safe",
+            restoreImpact: {
+              willRestore: ["שדה מקור ליד"],
+              willRemove: [],
+              willKeep: ["השיחה"],
+              releaseImpact: "אין השפעת שחרור.",
+            },
+          },
+        ],
+        restoreDecision: {
+          status: "not-requested",
+          userReply: "אפשר לבדוק נקודת חזרה.",
+        },
+      },
     },
   });
 
   assert.equal(viewModel.crossSurfaceContinuity.statusLabel, "הרצף בין המסכים נשאר מחובר");
+  assert.equal(viewModel.contract.contractId, "SURF-006");
+  assert.equal(viewModel.contract.purpose, "product-continuity-and-change-memory-workspace");
+  assert.equal(viewModel.history.currentState.projectName, "Landing QA");
+  assert.equal(viewModel.history.changeLog[0].title, "נוסף שדה מקור ליד.");
+  assert.equal(viewModel.historyContinuityAgent.taskId, "HIST-AGT-001");
+  assert.equal(viewModel.history.restoreCheckpoints[0].id, "hist-checkpoint-small");
+  assert.equal(viewModel.history.versionSnapshots[0].taskId, "EXP-003");
+  assert.equal(viewModel.history.versionSnapshots[0].restoreCheckpointId, "hist-checkpoint-small");
+  assert.equal(viewModel.history.versionSnapshots[0].rollbackBoundary, "אין השפעת שחרור.");
+  assert.equal(viewModel.history.returnToBuild.target, "loop");
   assert.equal(viewModel.crossSurfaceContinuity.continuitySteps[0].routeKey, "execution");
   assert.match(viewModel.crossSurfaceContinuity.explainablePath, /proof:artifact/);
   assert.equal(viewModel.crossSurfaceContinuity.continuityChecks.includes("route-restore-survives-refresh"), true);

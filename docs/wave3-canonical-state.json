@@ -122,6 +122,8 @@
     "canonicalClassAwareRuntimeResolverPath": "docs/operating-system/wave4-class-aware-runtime-resolver.md",
     "canonicalPackagingPreviewContractPath": "docs/operating-system/wave4-packaging-preview-contract.md",
     "canonicalReleaseableProductStateContractPath": "docs/operating-system/wave4-releaseable-product-state-contract.md",
+    "canonicalStandaloneReleasableProductArtifactContractPath": "docs/operating-system/standalone-releasable-product-artifact-contract-2026-06-08.md",
+    "canonicalProductOwnedBackendSkeletonContractPath": "docs/operating-system/product-owned-backend-skeleton-contract-2026-06-08.md",
     "canonicalReleaseEvidenceHandoffModelPath": "docs/operating-system/wave4-release-evidence-handoff-model.md",
     "canonicalPostReleaseContinuationLoopPath": "docs/operating-system/wave4-post-release-continuation-loop.md",
     "canonicalGrowthOpportunitySurfacingBoundaryPath": "docs/operating-system/wave4-growth-opportunity-surfacing-boundary.md",
@@ -132,6 +134,7 @@
     "canonicalFigmaBackedLiveBuildWorkspaceContractPath": "docs/operating-system/wave4-figma-backed-live-build-workspace-contract.md",
     "canonicalFigmaBackedDesktopShellLocalWorkspaceFramePath": "docs/operating-system/wave4-figma-backed-desktop-shell-local-workspace-frame.md",
     "canonicalPostWave4LearningIntakeContinuationLanePath": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+    "canonicalFounderFieldTestTaskIntakePromptPath": "docs/operating-system/wave4-founder-field-test-task-intake-prompt-2026-05-24.md",
     "canonicalLearningSystemContractPath": "docs/operating-system/wave4-canonical-learning-system-contract.md",
     "canonicalDeepAdaptiveLearningDecisionImpactPath": "docs/operating-system/wave4-deep-adaptive-learning-decision-impact.md",
     "canonicalAdaptiveOnboardingAgentContractPath": "docs/operating-system/wave4-adaptive-onboarding-agent-contract.md",
@@ -143,7 +146,10 @@
       "real visible product build progression on live surfaces",
       "local-first workspace continuity",
       "runtime and packaging preparation per product class",
+      "product-owned backend skeleton generated with the first frontend skeleton and grown with future Build changes",
+      "generated product runtime package with product-owned dependencies, install plan, run command, and preview target before standalone artifact or release claims",
       "releaseable product state and continuation loop",
+      "standalone releasable product artifact before Nexus claims a user-ready product can be released",
       "no meaningful backend/core/runtime progression without visible surface progression and live browser verification in parallel",
       "external product intelligence must be integrated through canonical lane/task structure rather than copied or bolted on",
       "structural UI evolution must pass through coherent Figma-backed design planning",
@@ -151,8 +157,7 @@
       "Figma remains design support and visual-planning aid only; Nexus itself must own generation, runtime, release, and continuation capability internally"
     ],
     "interpretationRule": "Wave 4 may not be framed or closed truthfully as boundary, GTM, and owner shell only. Those layers remain subordinate to Minimum Believable Nexus core execution.",
-    "workRule": "From this point forward, meaningful Nexus capabilities must be built and verified as coupled backend-to-surface product truth: build capability, expose it visibly, test live, observe real behavior, repair or open a canonical task if broken, rerun live, and only then continue."
-    ,
+    "workRule": "From this point forward, meaningful Nexus capabilities must be built and verified as coupled backend-to-surface product truth: build capability, expose it visibly, test live, observe real behavior, repair or open a canonical task if broken, rerun live, and only then continue.",
     "delegationRule": "From this point forward, Nexus development should actively use bounded delegation to execution workers when it truthfully accelerates closure, while keeping one main orchestrator as the sole authority for architecture direction, task ordering, closure decisions, rerun discipline, canonical write-back, lane promotion, and wave transitions.",
     "adaptationPassStatus": "closed-canonical-engine-created",
     "laneStructure": [
@@ -365,66 +370,839 @@
           {
             "taskId": "W4-INTAKE-005",
             "title": "Inject smart onboarding agent truth into canonical downstream system surfaces",
-            "status": "selected-not-started",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-003",
               "W4-INTAKE-004",
               "W4-GEN-001"
+            ],
+            "closedAt": "2026-05-21",
+            "closureEvidence": [
+              "web/app.js",
+              "web/nexus-ui/adapters/onboarding-adapter.js",
+              "web/nexus-ui/adapters/understanding-adapter.js",
+              "src/core/onboarding-service.js",
+              "test/onboarding-loop-continuation.test.js",
+              "test/understanding-summary-screen-render.test.js",
+              "test/next-task-adapter.test.js",
+              "test/proof-adapter.test.js"
             ]
           },
           {
             "taskId": "W4-INTAKE-006",
             "title": "Connect onboarding agent to real external model provider APIs",
-            "status": "prepared-not-started",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-004",
               "W4-INTAKE-005"
             ],
-            "realExternalDependencyBlockers": [
-              "OPENAI_API_KEY",
-              "ANTHROPIC_API_KEY"
+            "closedAt": "2026-05-21",
+            "closureEvidence": [
+              "src/core/onboarding-provider-client.js",
+              "src/core/onboarding-service.js",
+              "src/core/project-service.js",
+              "src/server.js",
+              "web/shared/onboarding-provider-runtime.js",
+              "web/app.js",
+              "test/onboarding-service-conversation.test.js"
+            ],
+            "residualProviderAvailabilityNotes": [
+              "OpenAI live onboarding provider path is verified on the live QA route with provider-backed-live runtime truth, token accounting, and continuity-safe refresh.",
+              "Anthropic is now available in this environment and was used for live depth-gate verification on 2026-05-21."
             ]
+          },
+          {
+            "taskId": "W4-INTAKE-007",
+            "title": "Stream live provider responses through the onboarding conversation surface",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-INTAKE-005",
+              "W4-INTAKE-006"
+            ],
+            "closedAt": "2026-05-21",
+            "closureEvidence": [
+              "src/core/onboarding-provider-client.js",
+              "src/core/onboarding-service.js",
+              "src/core/project-service.js",
+              "src/server.js",
+              "web/app.js",
+              "test/onboarding-service-conversation.test.js"
+            ]
+          },
+          {
+            "taskId": "W4-INTAKE-008",
+            "title": "Add retry recovery and provider failover continuity to onboarding runtime",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-INTAKE-006",
+              "W4-INTAKE-007"
+            ],
+            "closedAt": "2026-05-21",
+            "closureEvidence": [
+              "src/core/onboarding-provider-client.js",
+              "src/core/onboarding-service.js",
+              "src/core/project-service.js",
+              "src/server.js",
+              "web/app.js",
+              "test/onboarding-provider-client.test.js",
+              "test/onboarding-service-conversation.test.js"
+            ]
+          },
+          {
+            "taskId": "W4-INTAKE-009",
+            "title": "Harden onboarding provider runtime to production-safe operation",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-INTAKE-006",
+              "W4-INTAKE-007",
+              "W4-INTAKE-008"
+            ],
+            "closedAt": "2026-05-22",
+            "closureEvidence": [
+              "src/core/onboarding-provider-client.js",
+              "src/core/onboarding-service.js",
+              "web/shared/onboarding-provider-runtime.js",
+              "web/nexus-ui/adapters/onboarding-adapter.js",
+              "web/nexus-ui/screens/SmartOnboardingScreen.js",
+              "web/app.js",
+              "test/onboarding-provider-client.test.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/smart-onboarding-screen-render.test.js"
+            ]
+          },
+          {
+            "taskId": "W4-INTAKE-010",
+            "title": "Expose user-facing provider, model, and intelligence controls on the onboarding agent",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-INTAKE-006",
+              "W4-INTAKE-007",
+              "W4-INTAKE-008",
+              "W4-INTAKE-009"
+            ],
+            "startedAt": "2026-05-22",
+            "closedAt": "2026-05-22",
+            "closureEvidence": [
+              "web/shared/onboarding-provider-runtime.js",
+              "src/core/onboarding-provider-client.js",
+              "src/core/onboarding-service.js",
+              "web/nexus-ui/adapters/onboarding-adapter.js",
+              "web/nexus-ui/screens/SmartOnboardingScreen.js",
+              "web/app.js",
+              "test/onboarding-provider-client.test.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/smart-onboarding-screen-render.test.js"
+            ],
+            "liveClosureProof": "A live QA rerun on 127.0.0.1:4011 with qaOnboardingAvailability=anthropic-missing-key surfaced Anthropic as a disabled option with visible ANTHROPIC_API_KEY availability truth, kept OpenAI active, and preserved the same unavailable-option truth after refresh."
           },
           {
             "taskId": "W4-AGENT-001",
             "title": "Enforce minimum real product-conversation depth before understanding closure",
-            "status": "prepared-not-started",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-003",
               "W4-INTAKE-004",
               "W4-INTAKE-005"
+            ],
+            "closedAt": "2026-05-21",
+            "closureEvidence": [
+              "web/shared/learning-guided-onboarding.js",
+              "src/core/onboarding-service.js",
+              "src/core/onboarding-completion-evaluator.js",
+              "src/core/onboarding-to-state-handoff-contract.js",
+              "web/shared/adaptive-onboarding-agent-contract.js",
+              "web/app.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/onboarding-completion-evaluator.test.js",
+              "test/onboarding-adapter.test.js",
+              "test/adaptive-onboarding-agent-contract.test.js",
+              "test/smart-onboarding-screen-render.test.js"
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-001A",
+            "title": "Enforce co-founder-style exploratory product reasoning before understanding closure",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-INTAKE-004",
+              "W4-INTAKE-005",
+              "W4-AGENT-001",
+              "W4-INTAKE-009",
+              "W4-INTAKE-010"
+            ],
+            "closedAt": "2026-05-22",
+            "closureEvidence": [
+              "src/core/onboarding-service.js",
+              "src/core/onboarding-provider-client.js",
+              "web/shared/adaptive-onboarding-agent-contract.js",
+              "web/shared/learning-guided-onboarding.js",
+              "web/nexus-ui/adapters/onboarding-adapter.js",
+              "web/nexus-ui/screens/SmartOnboardingScreen.js",
+              "web/app.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/onboarding-provider-client.test.js",
+              "test/onboarding-adapter.test.js",
+              "test/adaptive-onboarding-agent-contract.test.js",
+              "test/smart-onboarding-screen-render.test.js"
             ]
           },
           {
             "taskId": "W4-AGENT-002",
             "title": "Add floating cross-Nexus product-conversation agent presence",
-            "status": "prepared-not-started",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-004",
               "W4-INTAKE-005",
-              "W4-AGENT-001"
+              "W4-AGENT-001",
+              "W4-AGENT-001A",
+              "W4-INTAKE-009",
+              "W4-INTAKE-010"
+            ],
+            "closedAt": "2026-05-22",
+            "closureEvidence": [
+              "src/core/onboarding-provider-client.js",
+              "src/core/project-service.js",
+              "src/server.js",
+              "web/app.js",
+              "web/styles.css"
             ]
           },
           {
             "taskId": "W4-AGENT-003",
             "title": "Implement post-onboarding clarification and correction loop",
-            "status": "prepared-not-started",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-005",
               "W4-AGENT-001",
-              "W4-AGENT-002"
+              "W4-AGENT-001A",
+              "W4-AGENT-002",
+              "W4-INTAKE-009",
+              "W4-INTAKE-010"
+            ],
+            "researchInputs": [
+              "docs/operating-system/wave4-competitive-conversation-engine-research-2026-05-22.md"
+            ],
+            "closedAt": "2026-05-22",
+            "closureEvidence": [
+              "src/core/onboarding-service.js",
+              "src/core/project-service.js",
+              "src/server.js",
+              "web/app.js",
+              "web/index.html",
+              "web/nexus-ui/adapters/understanding-adapter.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/project-service-companion-correction.test.js"
             ]
           },
           {
             "taskId": "W4-AGENT-004",
             "title": "Bring competitor and comparable-product intelligence into the live agent dialogue",
-            "status": "prepared-not-started",
+            "status": "trueGreen",
             "dependsOn": [
               "W4-INTAKE-004",
               "W4-INTAKE-005",
               "W4-AGENT-001",
+              "W4-AGENT-001A",
               "W4-AGENT-002",
+              "W4-AGENT-003",
+              "W4-INTAKE-009",
+              "W4-INTAKE-010"
+            ],
+            "researchInputs": [
+              "docs/operating-system/wave4-competitive-conversation-engine-research-2026-05-22.md"
+            ],
+            "startedAt": "2026-05-23",
+            "closedAt": "2026-05-23",
+            "closureEvidence": [
+              "src/core/comparable-product-intelligence.js",
+              "src/core/onboarding-provider-client.js",
+              "src/core/project-service.js",
+              "src/core/onboarding-service.js",
+              "web/app.js",
+              "test/onboarding-provider-client.test.js",
+              "test/project-service-companion-correction.test.js"
+            ],
+            "liveClosureProof": [
+              "Comparable-product intelligence is live through the real project companion backend path on project-backed sessions.",
+              "The non-QA shell now restores a project-backed /loop surface with the floating companion visibly reachable from stored project/session context.",
+              "The non-QA shell now restores a project-backed /understanding surface with the floating companion visibly reachable from stored project/session context.",
+              "The restored /loop surface preserves the floating companion and comparable-product transcript through refresh continuity."
+            ],
+            "preparedChildren": [
+              "W4-AGENT-004A",
+              "W4-AGENT-004B"
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-004A",
+            "title": "Convert external product-conversation patterns into Nexus product-family wrapper packs",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-AGENT-004"
+            ],
+            "researchInputs": [
+              "docs/operating-system/wave4-competitive-conversation-engine-research-2026-05-22.md"
+            ],
+            "startedAt": "2026-05-23",
+            "closedAt": "2026-05-23",
+            "closureEvidence": [
+              "web/shared/learning-guided-onboarding.js",
+              "src/core/onboarding-service.js",
+              "web/app.js",
+              "test/onboarding-service-conversation.test.js"
+            ],
+            "liveClosureProof": [
+              "The live marketplace onboarding route now opens with a two-sided marketplace fork, keeps the second turn in matching/trust/closure space, preserves marketplace-specific summary and missing truth, and survives refresh without stale preview leakage.",
+              "The live logistics onboarding route now accepts a natural mixed first-turn actor answer, advances into scan/map/route ambiguity, keeps logistics-specific summary and missing truth, and survives refresh without stale session leakage.",
+              "The live CRM onboarding route now opens with lead-ownership / follow-up framing, keeps the second turn in ownership/reminder/next-step space, preserves CRM-specific summary and missing truth, and survives refresh without stale session leakage.",
+              "The live booking onboarding route now opens with patient-vs-clinic scheduling framing, keeps the second turn in availability/approval/cancellation space, preserves booking-specific summary and missing truth, and survives refresh without stale session leakage.",
+              "The live dashboard onboarding route now opens with operator decision-making framing, keeps the second turn in anomaly/decision/drill-down space, preserves dashboard-specific summary and missing truth, and survives refresh without stale session leakage."
+            ],
+            "openTruthGap": null
+          },
+          {
+            "taskId": "W4-AGENT-004B",
+            "title": "Derive live conversational tone and pacing rules from external product intelligence",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-AGENT-004"
+            ],
+            "researchInputs": [
+              "docs/operating-system/wave4-competitive-conversation-engine-research-2026-05-22.md"
+            ],
+            "closedAt": "2026-05-24",
+            "closureEvidence": [
+              "docs/operating-system/wave4-live-conversational-tone-and-pacing-contract.md",
+              "web/shared/live-conversation-tone-contract.js",
+              "web/nexus-ui/adapters/onboarding-adapter.js",
+              "web/nexus-ui/adapters/understanding-adapter.js",
+              "web/nexus-ui/screens/SmartOnboardingScreen.js",
+              "web/nexus-ui/screens/UnderstandingSummaryScreen.js",
+              "src/core/onboarding-service.js",
+              "web/app.js",
+              "test/onboarding-adapter.test.js",
+              "test/onboarding-service-conversation.test.js",
+              "test/smart-onboarding-screen-render.test.js",
+              "test/understanding-summary-screen-render.test.js"
+            ],
+            "liveClosureProof": [
+              "The live storefront onboarding route now opens with a momentum-based commerce question, keeps summary and missing blocks human, treats `לקוח שלי` as unresolved actor truth instead of hardening it, and survives refresh without losing storefront structure.",
+              "The live CRM onboarding route now keeps `המשתמש זה אני` in the correct body/person on visible Nexus copy, and the `/understanding` route now carries the same CRM truth into `אתה בעצמך` and `עבורך` without reverting to stale landing-page expectation.",
+              "The live `/understanding` screen now preserves the same product-family truth, human pacing, and non-robotic summary language after restore instead of leaking stale artifact expectations or system phrasing."
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-005A",
+            "title": "Define conversation-first entry foundation contract and route ownership",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-INTAKE-002",
+              "W4-INTAKE-005",
+              "W4-AGENT-003",
+              "W4-AGENT-004A",
+              "W4-AGENT-004B"
+            ],
+            "closedAt": "2026-05-24",
+            "closureEvidence": [
+              "docs/operating-system/wave4-conversation-first-entry-foundation-contract.md",
+              "docs/wave3-canonical-state.json",
+              "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+              "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+            ],
+            "liveClosureProof": [
+              "Repository and active-route reality still prove `/` resolves to `create` and the first-run path still depends on visible create state before onboarding begins.",
+              "Canonical state now releases the conversation-first entry pivot ahead of `W4-GEN-002` instead of forcing the work into the wrong task.",
+              "The replacement-first, no-broken-front-door, and Figma-threshold rules are now locked before any front-door demotion can happen."
+            ],
+            "preparedChildren": [
+              "W4-AGENT-005B",
+              "W4-AGENT-005C",
+              "W4-AGENT-005D",
+              "W4-AGENT-005E",
+              "W4-GEN-003"
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-005B",
+            "title": "Run Figma-backed primary entry shell structural pass",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-AGENT-005A"
+            ],
+            "closedAt": "2026-05-24",
+            "closureEvidence": [
+              "https://www.figma.com/design/MWqO2iBi3NGgxuTcl6s0Wy",
+              "docs/wave3-canonical-state.json",
+              "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+              "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+            ],
+            "liveClosureProof": [
+              "The Figma artifact now defines a Nexus-grade conversation-first front door instead of a generic chat shell.",
+              "The structural pass explicitly covers hidden bootstrap, progressive reveal of understanding support, and migration-safe fallback before any route demotion.",
+              "The old create/onboarding front door remains protected until later live implementation proof exists."
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-005C",
+            "title": "Implement conversation-first front door with hidden project/session/bootstrap",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-AGENT-005A",
+              "W4-AGENT-005B"
+            ],
+            "closedAt": "2026-05-24",
+            "closureEvidence": [
+              "web/app.js",
+              "web/nexus-ui/adapters/project-adapter.js",
+              "web/nexus-ui/screens/ProjectCreateScreen.js",
+              "web/nexus-ui/styles/screens.css",
+              "test/project-adapter.test.js",
+              "test/project-create-screen-render.test.js"
+            ],
+            "liveClosureProof": [
+              "The `/` route now opens on a Nexus-grade conversation-first composer instead of a visible project-create ritual.",
+              "A real first message submit now auto-creates the draft + onboarding session and opens the live CRM / follow-up onboarding question on `http://127.0.0.1:4011/onboarding?nexusState=...`.",
+              "A real reload on that live onboarding route now restores the same session-backed onboarding conversation and summary truth instead of collapsing to `אין onboarding פעיל לשחזור`.",
+              "The restore proof held after promoting top-level audience copy helpers and after hardening `persistFlowState()` so early restore writes preserve the live onboarding project/session/conversation truth."
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-005D",
+            "title": "Harden durability, idempotency, restore, and stale-state isolation on the new entry path",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-AGENT-005C"
+            ],
+            "closedAt": "2026-05-24",
+            "closureEvidence": [
+              "web/app.js",
+              "test/project-adapter.test.js",
+              "test/project-create-screen-render.test.js",
+              "docs/wave3-canonical-state.json",
+              "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+              "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+            ],
+            "liveClosureProof": [
+              "A fresh `/` entry now survives reload as `create` without rehydrating an older onboarding session, project id, or companion truth.",
+              "The conversation-first send path now disables the send and file-picker controls immediately so a second retry click cannot create a second canonical first turn while bootstrap is in flight.",
+              "A real first-message submit on `http://127.0.0.1:4011/` still opens a live onboarding session and the expected CRM / follow-up first question.",
+              "Refresh on that live onboarding route now shows an honest restore shell first and then rehydrates the same session-backed question instead of flashing a fake generic onboarding conversation or dropping to `אין onboarding פעיל לשחזור`.",
+              "The restored onboarding route keeps the same `sessionId`, same project id, same summary truth, and same first question after settle."
+            ]
+          },
+          {
+            "taskId": "W4-AGENT-005E",
+            "title": "Attach conversation-first origin to Understanding and downstream continuity",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-AGENT-005C",
+              "W4-AGENT-005D",
+              "W4-INTAKE-005"
+            ],
+            "closedAt": "2026-05-24",
+            "closureEvidence": [
+              "web/app.js",
+              "test/project-adapter.test.js",
+              "test/project-create-screen-render.test.js",
+              "docs/wave3-canonical-state.json",
+              "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+              "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+            ],
+            "liveClosureProof": [
+              "The live Understanding surface now preserves the same CRM / follow-up project truth that started on the conversation-first front door instead of regressing to generic downstream copy.",
+              "The live Loop, Proof, and Timeline surfaces now restore the same CRM / follow-up artifact continuity from that origin under direct downstream navigation and refresh-safe compact route state.",
+              "The live Understanding continue CTA now exposes a stateful `/loop?nexusState=...` route, and opening that exact visible route produces the correct CRM / follow-up loop surface on `http://127.0.0.1:4011/`."
+            ]
+          },
+          {
+            "taskId": "W4-GEN-003",
+            "title": "Transition conversation-first entry into entry-to-live-skeleton continuity",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-AGENT-005E",
+              "W4-GEN-002"
+            ],
+            "closedAt": "2026-05-24",
+            "closureEvidence": [
+              "web/app.js",
+              "web/nexus-ui/adapters/loop-adapter.js",
+              "web/nexus-ui/screens/LoopCoreScreen.js",
+              "test/loop-core-screen-render.test.js",
+              "docs/wave3-canonical-state.json",
+              "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+              "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+            ],
+            "liveClosureProof": [
+              "The live `loop` route on `http://127.0.0.1:4011/loop?...` now shows a visible CRM / follow-up first skeleton on screen instead of stopping at hidden planning or summary text.",
+              "The live `proof` route on `http://127.0.0.1:4011/proof?...` restores the same CRM / follow-up-specific skeleton continuity with class-aware stats, client list, next action, and generated message content.",
+              "Onboarding continuation payloads are now class-aware across landing-page, follow-up dashboard, internal ops dashboard, commerce ops dashboard, and mobile app families instead of collapsing to a generic preview shell."
+            ]
+          },
+          {
+            "taskId": "W4-FIX-001",
+            "title": "Isolate fresh project identity and kill shared project reuse across new conversations",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-AGENT-005C",
+              "W4-AGENT-005D"
+            ],
+            "closedAt": "2026-06-04",
+            "closureEvidence": [
+              "web/app.js",
+              "test/web-app-wave1-cockpit.test.js",
+              "test/project-adapter.test.js",
+              "test/project-create-screen-render.test.js",
+              "test/loop-core-screen-render.test.js",
+              "/private/tmp/nexus-w4-fix-001-visible-clean-create.png"
+            ],
+            "liveFieldTestEvidence": [
+              "2026-06-03 lead-management field-test on http://127.0.0.1:4011/?qaReset=1 still showed stale courier-app residue before the new lead-management idea was entered.",
+              "2026-06-04 visible Chrome proof loaded http://127.0.0.1:4011/?qa=1&qaReset=1 with stale courier-project qaState and stored create residue; the visible Create screen returned to a clean empty composer and did not render courier copy, courier project id, old assistant transcript, or inherited project snapshot truth."
+            ],
+            "passFailAddendum": [
+              "Pass only if a fresh lead-management start cannot inherit courier-app identity, copy, project id, artifact expectation, or old assistant question state."
+            ]
+          },
+          {
+            "taskId": "AUTH-SESSION-PROJECT-ISO-001",
+            "title": "Guest/auth session project isolation bridge",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-FIX-001",
+              "ENG-001"
+            ],
+            "closedAt": "2026-06-04",
+            "closureEvidence": [
+              "src/core/project-service.js",
+              "src/server.js",
+              "test/auth-session-project-isolation.test.js",
+              "test/web-app-wave1-cockpit.test.js",
+              "test/project-adapter.test.js",
+              "test/project-create-screen-render.test.js",
+              "test/loop-core-screen-render.test.js"
+            ],
+            "blocks": [
+              "W4-FIX-005",
+              "W4-FIX-007",
+              "BLD-AGT-001"
+            ],
+            "canonicalPlacement": "Inserted after W4-FIX-001 and before W4-FIX-005 because clean restore cannot be trusted until project ownership is scoped to an explicit authenticated user, guest session, or local workspace owner.",
+            "scopeBoundary": "This is not full first-release auth. ID-001 remains the broader login/registration/logout/account-session boundary. This task owns the minimum session/project isolation bridge required to stop cross-project leakage before server-backed restore.",
+            "liveFieldTestEvidence": [
+              "2026-06-04 visible Chrome test showed Create -> /loop handoff for a lead-management project, then refresh with qaReset=1 still in the URL reset the project to qa-preview-project and rendered a generic landing-page skeleton. That proves route restore can still accept stale/demo state instead of enforcing the active project/session boundary.",
+              "2026-06-04 live API proof on http://127.0.0.1:4011 created a fresh local user, verified unauthenticated /api/projects returns 401, verified the fresh user sees zero existing projects, and verified direct restore of onboarding-continuation-preview returns 404 for that user."
+            ],
+            "passFailAddendum": [
+              "Pass only if every fresh project is persisted with a stable owner/session scope before W4-FIX-005 short-route restore is trusted.",
+              "Pass only if direct route restore checks project id against the active owner/session scope.",
+              "Pass only if two sequential projects in one browser cannot inherit each other's class, copy, runtime skeleton, Build rail messages, mutation history, or product-domain state.",
+              "Fail if QA state, URL state, localStorage, or a process-global currentProjectId can replace the active project after handoff."
+            ]
+          },
+          {
+            "taskId": "W4-FIX-002",
+            "title": "Flush stale hidden brief, summary, placeholder, and family residue on fresh start and explicit correction",
+            "status": "partial-live-handoff-fixed",
+            "dependsOn": [
+              "W4-FIX-001",
               "W4-AGENT-003"
+            ],
+            "liveFieldTestEvidence": [
+              "2026-06-03 lead-management field-test required correction away from stale courier-app truth before the agent reached the right internal-tool understanding."
+            ],
+            "passFailAddendum": [
+              "Pass only if explicit correction to the lead-management internal tool flushes stale family residue from visible copy, hidden brief, summary, placeholder, and downstream skeleton inputs."
+            ]
+          },
+          {
+            "taskId": "W4-FIX-003",
+            "title": "Gate family reasoning behind confidence, grounded evidence, and synthesized referents",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-FIX-002",
+              "W4-INTAKE-003"
+            ]
+          },
+          {
+            "taskId": "W4-FIX-004",
+            "title": "Add canonical dual-audience and multi-actor product modeling",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-FIX-003",
+              "W4-INTAKE-005"
+            ]
+          },
+          {
+            "taskId": "W4-FIX-005",
+            "title": "Replace full-state URL serialization with short route identity and server-backed restore",
+            "status": "trueGreen",
+            "dependsOn": [
+              "W4-FIX-001",
+              "AUTH-SESSION-PROJECT-ISO-001",
+              "W4-AGENT-005D"
+            ],
+            "closedAt": "2026-06-04",
+            "closureEvidence": [
+              "web/app.js",
+              "test/web-app-wave1-cockpit.test.js",
+              "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
+              "docs/operating-system/wave4-minimum-believable-core-planning-track.md",
+              "docs/wave3-canonical-state.json"
+            ],
+            "liveFieldTestEvidence": [
+              "2026-06-03 lead-management loop restore still depended on a multi-thousand-character nexusState URL payload.",
+              "2026-06-04 live browser proof on http://127.0.0.1:4011/loop?qa=1&projectId=<fresh-project>&qaState=<stale-qa-preview> restored the fresh backend project, removed qaState/nexusState from the URL, did not render stale QA project text, and saved screenshot /private/tmp/nexus-w4-fix-005-short-route-live.png."
+            ],
+            "passFailAddendum": [
+              "Passed because workspace routes now persist short projectId URLs, direct loop restore prefers explicit projectId over stored QA/browser state, and backend project truth is loaded from /api/projects/<id>."
+            ]
+          },
+          {
+            "taskId": "W4-FIX-006",
+            "title": "Make the companion truthful, scoped to the canonical brief, and safely interactive",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-FIX-002",
+              "W4-FIX-004",
+              "W4-FIX-005"
+            ]
+          },
+          {
+            "taskId": "W4-FIX-007",
+            "title": "Add convergence guardrails and a fast path from corrected understanding to the first on-class skeleton",
+            "status": "trueGreen",
+            "closedAt": "2026-06-07",
+            "dependsOn": [
+              "W4-FIX-001",
+              "AUTH-SESSION-PROJECT-ISO-001",
+              "W4-FIX-005",
+              "W4-GEN-003"
+            ],
+            "liveFieldTestEvidence": [
+              "2026-06-03 lead-management field-test reached enough understanding and generated an on-class skeleton, but the visible create screen stayed disabled in a preparing-skeleton state and the skeleton was reachable only after manually opening the loop rail.",
+              "2026-06-04 live regression on http://127.0.0.1:4011/?qa=1&qaReset=1 with the lead-management internal-tool idea reached lastAgentDecision.nextMove=advance-to-skeleton and skeletonReady.ready=true, but after 90 seconds the visible app still had screen=create, runtimeTask=null, runtimeClass=null, and the body stayed on 'מכין שלד...'. Screenshot: /private/tmp/nexus-auto-transition-live.png.",
+              "2026-06-04 W4-FIX-007 live handoff patch proved automatic transition from 'מכין שלד...' to /loop without manual navigation: final run answered one legitimate clarification, reached 'מכין שלד...' at wait second 44, and reached screen=loop at wait second 45 with runtimeTask=SLICE-005, runtimeClass=internal-tool, runtimeShell=workspace-state-shell, createHidden=true, loopHidden=false. Screenshots: /private/tmp/nexus-w4-fix-007-final-page.png and /private/tmp/nexus-w4-fix-007-runtime-skeleton-element.png.",
+              "2026-06-04 visible Chrome test on http://127.0.0.1:4011/?qa=1&qaReset=1 reconfirmed automatic Create -> /loop handoff for the lead-management internal-tool idea, rendered a visible internal-tool runtime skeleton, and kept the Build rail visible. The same run found W4-FIX-005 restore debt: refresh with qaReset=1 still in the URL reset the project to qa-preview-project and rendered a generic landing-page skeleton instead of the lead-management workspace. Screenshot: /private/tmp/nexus-live-visible-leads-refresh-regression.png.",
+              "2026-06-06 W4-FIX-007 repair pass found a deeper restore contradiction: the automatic handoff could open /loop with projectId=project-draft, but /api/projects/project-draft returned 404 after refresh. The code now requires /finish to return a canonical project before visible /loop routing, and project-service accepts a discovery-agent advance-to-skeleton decision as build-ready project truth instead of leaving the old completion evaluator as the only gate. Focused tests pass, but a live end-to-end rerun did not reach a stable loop restore before timeout, so W4-FIX-007 remains partial rather than trueGreen.",
+              "2026-06-07 visible Chrome proof passed: the lead-management internal-tool idea moved automatically from Create / 'מכין שלד...' to http://127.0.0.1:4011/loop?qa=1&projectId=project-1780838528342-1 without manual navigation, removed qaState/nexusState/qaReset from the route, rendered runtimeTask=SLICE-005 with runtimeProjectId=project-1780838528342-1, and after refresh restored the same loop skeleton from /api/projects/project-1780838528342-1. Evidence: /private/tmp/nexus-w4-fix-007-live-summary.json, /private/tmp/nexus-w4-fix-007-live-before-refresh-proof.png, /private/tmp/nexus-w4-fix-007-live-after-refresh-proof.png."
+            ],
+            "passFailAddendum": [
+              "Pass only if enough-understanding / skeleton-ready state automatically opens the visible loop skeleton without manual downstream navigation.",
+              "Fail if the composer remains disabled in a preparing-skeleton state while the generated skeleton exists off-screen."
+            ],
+            "partialClosureEvidence": [
+              "web/app.js now opens the visible loop runtime skeleton from discovery truth when the product or visual skeleton agents are slow or unavailable, while preserving those agents as hidden engines.",
+              "src/core/project-service.js now lets finishOnboardingSession create canonical project truth when the discovery agent has nextMove=advance-to-skeleton and skeletonReady.ready=true, preventing a split between agent build truth and old completion-evaluator blocking.",
+              "web/app.js now refuses to route to /loop when /finish does not return a real project id, preventing a non-restorable projectDraftId route from masquerading as a completed Build handoff.",
+              "src/core/onboarding-service.js now prevents same-millisecond onboarding session id collisions by appending a monotonic sequence to session ids.",
+              "src/core/project-service.js now turns generic project-draft finishes into stable project ids derived from the onboarding session while preserving explicit project ids.",
+              "scripts/verify-w4-fix-007-live-proof.mjs now provides repeatable visible-browser proof for Create -> /loop?projectId=<real-project-id> -> refresh restore.",
+              "test/loop-core-screen-render.test.js covers W4-FIX-007 fallback runtime skeleton rendering from discovery truth.",
+              "test/project-service.test.js covers W4-FIX-007 project-truth finish when the discovery agent approved the skeleton handoff.",
+              "test/project-service.test.js covers generic project-draft sessions finishing to distinct restorable project ids.",
+              "node --check web/app.js passed.",
+              "node --check src/core/onboarding-service.js passed.",
+              "node --check src/core/project-service.js passed.",
+              "node --test --test-name-pattern \"W4-FIX-007|W4-FIX-005\" test/web-app-wave1-cockpit.test.js test/loop-core-screen-render.test.js test/project-service.test.js passed.",
+              "node scripts/verify-w4-fix-007-live-proof.mjs passed in visible Chrome."
+            ]
+          },
+          {
+            "taskId": "W4-UPGRADE-001",
+            "title": "Reach the first on-class skeleton within competitor-parity speed on the Sela regression case",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-FIX-007",
+              "W4-GEN-003"
+            ],
+            "liveFieldTestEvidence": [
+              "2026-06-03 lead-management field-test is a secondary speed regression because the skeleton existed but did not become visible automatically inside the live wait window."
+            ],
+            "passFailAddendum": [
+              "Pass only if the lead-management regression also reaches a first on-class visible skeleton without manual route intervention inside the same stopwatch discipline."
+            ]
+          },
+          {
+            "taskId": "RUNTIME-TRUTH-001",
+            "title": "Runtime skeleton backend truth binding",
+            "status": "trueGreen",
+            "dependsOn": [
+              "SLICE-005",
+              "ENG-001",
+              "ENG-002"
+            ],
+            "blocks": [
+              "PRODUCT-BACKEND-SKEL-001",
+              "RUNTIME-SKEL-001",
+              "BLD-AGT-001",
+              "W4-UPGRADE-002",
+              "W4-UPGRADE-003"
+            ],
+            "canonicalContract": "docs/operating-system/runtime-product-truth-binding-contract-2026-06-04.md",
+            "liveFieldTestEvidence": [
+              "2026-06-04 investigation found the current runtime skeleton was derived in the frontend Build adapter from product and visual skeleton envelopes; no stable backend/project runtime skeleton envelope was found before this task.",
+              "2026-06-04 implementation added runtimeSkeletonTruth to canonical project truth at root, context, and state, with stable project/runtime/artifact ids.",
+              "2026-06-04 live proof opened /loop?projectId=runtime-truth-live-002&qaReset=1 with no qaState/nexusState and rendered data-runtime-project-id=runtime-truth-live-002, data-runtime-truth-task=RUNTIME-TRUTH-001, and data-runtime-artifact-build-id=runtime-build:runtime-truth-live-002:first-skeleton.",
+              "2026-06-04 live refresh preserved the same backend-backed runtime truth dataset."
+            ],
+            "passFailAddendum": [
+              "Passed because first runtime skeleton creation now writes canonical Nexus project truth with stable project/runtime/artifact ids.",
+              "Passed because the visible Build route can restore from backend project truth through a short projectId route without a giant URL state blob.",
+              "This does not close PRODUCT-BACKEND-SKEL-001, because generated product-domain/backend logic is still a separate blocker."
+            ]
+          },
+          {
+            "taskId": "PRODUCT-BACKEND-SKEL-001",
+            "title": "Product backend/domain skeleton",
+            "status": "trueGreen",
+            "dependsOn": [
+              "RUNTIME-TRUTH-001",
+              "SKEL-001",
+              "VSKEL-001"
+            ],
+            "blocks": [
+              "RUNTIME-SKEL-001",
+              "BUILD-MUTATION-TRUTH-001",
+              "BLD-AGT-001",
+              "MUT-001"
+            ],
+            "canonicalContract": "docs/operating-system/runtime-product-truth-binding-contract-2026-06-04.md",
+            "liveFieldTestEvidence": [
+              "2026-06-04 investigation found product skeleton data objects and actions as descriptive envelopes, but no generated product-domain model, operations, local/mock persistence, or UI-to-domain operation boundary behind the runtime shell.",
+              "The current mobile runtime controls render as buttons in the Build surface, but they are not wired to generated product-domain operations.",
+              "2026-06-04 implementation added generated product-domain skeleton envelopes with models, operations, mock/local state, persistence boundary, and operation application for mobile app, landing page, internal tool, commerce, game, and generic tool families.",
+              "2026-06-04 implementation embedded productDomainSkeleton and productDomainSkeletonId in runtimeSkeletonTruth, persisted productDomainSkeleton at project root/context/state, exposed it through serialization, and rendered data-product-domain-task, data-product-domain-skeleton-id, data-product-domain-kind, data-product-domain-state, and data-product-domain-operation in Build.",
+              "2026-06-04 live browser proof rendered /loop with data-product-domain-task=PRODUCT-BACKEND-SKEL-001, product-domain:product-domain-live-proof:internal-tool, workflow-record-local-state, operation buttons, and domain state trace. Screenshot: /private/tmp/nexus-product-domain-skeleton-live.png."
+            ],
+            "passFailAddendum": [
+              "Passed because generated products now include product-domain models, operations, mock/local state transitions, and persistence boundaries.",
+              "Passed because project truth stores productDomainSkeleton and the visible Build surface binds runtime controls to generated product-domain operations.",
+              "Passed because tests prove mobile task creation/update, landing lead validation/submission, internal-tool status update, and commerce cart state through domain operations.",
+              "This does not close RUNTIME-SKEL-001, BUILD-MUTATION-TRUTH-001, BLD-AGT-001, production backend deployment, real provider connections, payments, publishing, or release/export."
+            ]
+          },
+          {
+            "taskId": "RUNTIME-SKEL-001",
+            "title": "Interactive product runtime skeleton standard",
+            "status": "trueGreen",
+            "dependsOn": [
+              "SLICE-005",
+              "RUNTIME-TRUTH-001",
+              "PRODUCT-BACKEND-SKEL-001",
+              "VSKEL-001",
+              "ENG-005",
+              "W4-UPGRADE-001"
+            ],
+            "blocks": [
+              "BUILD-MUTATION-TRUTH-001",
+              "BLD-AGT-001",
+              "W4-UPGRADE-002",
+              "W4-UPGRADE-003"
+            ],
+            "canonicalContract": "docs/operating-system/runtime-skeleton-interactive-standard-2026-06-04.md",
+            "liveFieldTestEvidence": [
+              "2026-06-04 user live review found that a phone frame and visual mobile preview are not enough; the skeleton must behave like a simulated product with navigation, local state, and visible interaction changes.",
+              "The same standard applies across product classes: mobile app, landing page, internal tool, game, software/tool, and commerce/product site.",
+              "2026-06-04 implementation added visible runtime live-state markers, mobile screen navigation, runtime score/state markers, and product-domain operation controls for mobile app, landing page, internal tool, game, commerce, and tool shells.",
+              "2026-06-04 implementation added client-side runtime interaction handling for data-runtime-screen-nav and data-product-domain-operation, updating visible runtime state, active mobile screen, interaction count, last operation, score/list state where relevant.",
+              "2026-06-04 live mobile proof clicked task.create and screen navigation inside /loop; DOM changed to interactionCount=2, lastOperation=task.create, activeTitle=סיכום, and liveState=עבר למסך: סיכום. Screenshot: /private/tmp/nexus-runtime-skel-mobile-interaction.png.",
+              "2026-06-04 live internal-tool proof clicked record.create inside /loop; DOM changed to interactionCount=1, lastOperation=record.create, liveState=פעולה בוצעה: record.create (1), and list item עודכן דרך record.create. Screenshot: /private/tmp/nexus-runtime-skel-internal-interaction.png."
+            ],
+            "passFailAddendum": [
+              "Passed because tests prove mobile, landing page, internal tool, game, commerce, and software/tool shells expose interactive state and product-domain operations.",
+              "Passed because live browser proof shows mobile screen/state changes and internal-tool list/state changes without manual route hacks.",
+              "This does not close BUILD-MUTATION-TRUTH-001, BLD-AGT-001, release/export, production backend deployment, real providers, payments, publishing, or App Store builds."
+            ]
+          },
+          {
+            "taskId": "BUILD-MUTATION-TRUTH-001",
+            "title": "Build agent frontend/backend/domain mutation contract",
+            "status": "trueGreen",
+            "dependsOn": [
+              "RUNTIME-SKEL-001",
+              "PRODUCT-BACKEND-SKEL-001",
+              "ENG-001",
+              "ENG-002"
+            ],
+            "blocks": [
+              "BLD-AGT-001",
+              "MUT-001",
+              "LEARNING-RUNTIME-001",
+              "W4-GEN-002"
+            ],
+            "canonicalContract": "docs/operating-system/runtime-product-truth-binding-contract-2026-06-04.md",
+            "liveFieldTestEvidence": [
+              "2026-06-04 investigation found the Build rail submit path only appends the user message to local companion conversation state and rerenders; it does not call a backend Build agent route or create a mutation intent.",
+              "Existing MUT-001 and BLD-AGT-001 contracts require mutation and routing truth, but no current binding guarantees frontend runtime, Nexus project truth, generated product-domain truth, and history/timeline mutation records move together.",
+              "2026-06-04 implementation added canonical Build mutation intent/history envelopes, project-service application through product-domain operations, POST /api/projects/:projectId/build-mutations, serialized restore truth, and Build surface mutation truth anchors.",
+              "2026-06-04 live Build surface proof opened /loop in QA mode with mutation truth and found data-build-mutation-task=BUILD-MUTATION-TRUTH-001, data-build-mutation-status=applied, data-build-mutation-operation=record.updateStatus, data-build-mutation-history-count=1, and a non-empty mutation id. Screenshot: /private/tmp/nexus-build-mutation-truth-live.png."
+            ],
+            "passFailAddendum": [
+              "Pass only if Build changes create mutation intents tied to project, runtime skeleton, and product-domain skeleton before visible success.",
+              "Fail if Build agent changes are frontend-only, transcript-only, or lost after refresh.",
+              "2026-06-04 passed: node --test test/build-mutation-truth.test.js; node --test --test-name-pattern 'RUNTIME-TRUTH-001|PRODUCT-BACKEND-SKEL-001' test/project-service.test.js; node --test --test-name-pattern 'RUNTIME-SKEL-001|SLICE-005|W4-FIX-007' test/loop-core-screen-render.test.js; node --test test/product-domain-skeleton.test.js.",
+              "Closure boundary: this does not close Build rail agent liveliness, natural-language mutation planning, visible agent response, general mutation generation, learning events, release/export, rollback UI, or production backend deployment."
+            ]
+          },
+          {
+            "taskId": "LEARNING-RUNTIME-001",
+            "title": "Connect learning layer to runtime skeleton and Build mutations",
+            "status": "trueGreen",
+            "dependsOn": [
+              "RUNTIME-TRUTH-001",
+              "PRODUCT-BACKEND-SKEL-001",
+              "BUILD-MUTATION-TRUTH-001",
+              "ENG-007"
+            ],
+            "blocks": [
+              "W4-GEN-002",
+              "W4-LEARN-002 runtime/build claims"
+            ],
+            "canonicalContract": "docs/operating-system/runtime-product-truth-binding-contract-2026-06-04.md",
+            "liveFieldTestEvidence": [
+              "2026-06-04 investigation found learning contracts and decision-impact code connected to onboarding, generation, release, deployment, continuation, rerun, approval, and failure signals, but not runtime skeleton creation, generated product-domain skeleton creation, Build mutation intents, or product-domain operation outcomes.",
+              "2026-06-07 implementation added runtime learning events for runtime_skeleton.created, product_domain_skeleton.created, build_agent_request.received, build_mutation_intent.created, build_mutation_outcome.applied/failed, and product_domain_operation outcome events.",
+              "2026-06-07 live API proof on http://127.0.0.1:4011 signed up runtime-learning-user-1780839167438, created runtime-learning-live-1780839167438, confirmed runtime/domain learning events after create, applied record.updateStatus through /api/projects/:projectId/build-mutations, and confirmed restored project truth includes six LEARNING-RUNTIME-001 event types with mayOverwriteProjectTruth=false."
+            ],
+            "passFailAddendum": [
+              "Pass only if learning events are emitted from runtime skeleton, product-domain skeleton, Build request, mutation intent, and mutation outcome flows with stable ids.",
+              "Fail if learning remains onboarding/planning-only while claiming runtime/build intelligence.",
+              "Passed because tests and live API verification proved runtime, product-domain, Build request, mutation intent, mutation outcome, and product-domain operation outcome events are stored with stable project/runtime/domain/mutation/outcome ids.",
+              "Closure boundary: this does not close BLD-AGT-001 natural-language routing, visible mutation planning, Visual Build Agent routing, Verification / QA Agent routing, Release Agent routing, rollback UI, or production backend deployment."
+            ],
+            "closedAt": "2026-06-07"
+          },
+          {
+            "taskId": "W4-UPGRADE-002",
+            "title": "Make the first visible skeleton deepen progressively and explain why this shape exists",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-UPGRADE-001",
+              "RUNTIME-TRUTH-001",
+              "PRODUCT-BACKEND-SKEL-001",
+              "RUNTIME-SKEL-001",
+              "W4-FIX-004"
+            ],
+            "liveFieldTestEvidence": [
+              "2026-06-03 lead-management skeleton preserved no-WhatsApp-integration and no-automation boundaries, but exposed internal or mistranslated trust-breaking copy and too much planning-document language."
+            ],
+            "passFailAddendum": [
+              "Pass only if the lead-management skeleton feels like a usable internal lead workspace with lead list, status, owner, reminder, and next step.",
+              "Pass only if relevant learning signals can influence skeleton choice or interaction emphasis without silently changing project truth.",
+              "Fail if first skeleton copy exposes internal/debug language, mistranslated labels, or planning-document framing instead of a live workspace.",
+              "Fail if stored learning exists but skeleton choice still behaves as if no prior runtime or mutation outcome was known."
+            ]
+          },
+          {
+            "taskId": "W4-UPGRADE-003",
+            "title": "Beat competitor first-artifact quality inside the same time band",
+            "status": "prepared-not-started",
+            "dependsOn": [
+              "W4-UPGRADE-001",
+              "RUNTIME-TRUTH-001",
+              "PRODUCT-BACKEND-SKEL-001",
+              "RUNTIME-SKEL-001",
+              "W4-UPGRADE-002"
             ]
           },
           {
@@ -437,7 +1215,19 @@
               "W4-INTAKE-002",
               "W4-INTAKE-003",
               "W4-INTAKE-005",
-              "W4-MBN-015"
+              "W4-MBN-015",
+              "W4-FIX-007",
+              "RUNTIME-TRUTH-001",
+              "PRODUCT-BACKEND-SKEL-001",
+              "BUILD-MUTATION-TRUTH-001",
+              "LEARNING-RUNTIME-001",
+              "W4-UPGRADE-002",
+              "W4-UPGRADE-003"
+            ],
+            "passFailAddendum": [
+              "Pass only if feedback-driven product changes use relevant learning signals as bounded working instructions before choosing a mutation path.",
+              "Fail if a failed change is presented as success.",
+              "Fail if learning remains stored but does not influence the visible product mutation loop."
             ]
           }
         ]
@@ -457,12 +1247,1434 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "W4-INTAKE-005",
-      "title": "Inject smart onboarding agent truth into canonical downstream system surfaces",
-      "source": "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
-      "status": "selected-not-started"
+      "taskId": "SURFACE-OWNER-RUNTIME-001",
+      "title": "Visible surface ownership and runtime path truth gate",
+      "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
+      "status": "selected-unblocked",
+      "reason": "A 2026-06-11 repository-truth and execution-integrity investigation found an earlier execution blocker: code edits can land in real files while visible Nexus behavior remains unchanged because route ownership, QA state, restore state, stale runtime, static asset loading, wrong port, or inactive frontend surfaces can mask the change. SURFACE-OWNER-RUNTIME-001 is now the earliest unblocked release-blocker before PRIVACY-001 and all later user-visible claims."
     },
     "completedCanonicalExecutionTasks": [
+      {
+        "taskId": "AUTH-TOKEN-001",
+        "title": "Server-verified session identity boundary",
+        "status": "trueGreen",
+        "closedAt": "2026-06-11",
+        "closureEvidence": [
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/app.js",
+          "test/auth-token-001-server-verified-session.test.js",
+          "test/acct-001-server-account-boundary.test.js",
+          "test/exp-009-server-team-membership.test.js",
+          "test/server-health-endpoints.test.js",
+          "scripts/verify-auth-token-001-live-proof.mjs"
+        ],
+        "verification": [
+          "node --check src/server.js",
+          "node --check src/core/project-service.js",
+          "node --check web/app.js",
+          "node --check test/auth-token-001-server-verified-session.test.js",
+          "node --check scripts/verify-auth-token-001-live-proof.mjs",
+          "node --test test/auth-token-001-server-verified-session.test.js test/acct-001-server-account-boundary.test.js test/exp-009-server-team-membership.test.js test/auth-session-project-isolation.test.js",
+          "node --test --test-name-pattern \"project writes when action-level authorization is invalid|unauthenticated project reads|workspace isolation boundary|actor-type spoofing|security envelope on newly created projects|live-events\" test/server-health-endpoints.test.js",
+          "NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-auth-token-001-live-proof.mjs"
+        ],
+        "boundary": "Closes server-verified local session identity for first-release sensitive routes: project read/write/list/create, project-draft ownership, settings profile, account actions, billing actions, and live-events. It rejects x-user-id/header-only spoofing, ignores forged user id when a valid token identifies the actor, authorizes live-events through the server-issued session cookie, and fails closed after logout-all revocation. It does not close SSO, full privacy rights execution, paid billing, provider connection governance, production enterprise account management, production-grade cryptographic token rotation, or cross-device hardening.",
+        "nextTaskTruth": {
+          "taskId": "PROV-001",
+          "status": "selected-unblocked",
+          "reason": "PROV-001 is now unblocked because AUTH-TOKEN-001 supplies the verified identity boundary required before provider, payment, publishing, deployment, email, analytics, social, creative generation, and external capability actions."
+        }
+      },
+      {
+        "taskId": "PROV-001",
+        "title": "First-release provider gateway and external capability boundary",
+        "status": "trueGreen",
+        "closedAt": "2026-06-11",
+        "closureEvidence": [
+          "src/core/provider-gateway-boundary.js",
+          "src/core/provider-connector-schema.js",
+          "src/core/provider-capability-descriptor.js",
+          "src/core/provider-operation-contract.js",
+          "src/core/build-agent-turn-router.js",
+          "src/core/build-speech-truth-gate.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/provider-gateway-boundary.test.js",
+          "test/provider-connector-schema.test.js",
+          "test/provider-capability-descriptor.test.js",
+          "test/provider-operation-contract.test.js",
+          "test/build-agent-turn-router.test.js",
+          "test/project-service.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-prov-001-live-proof.mjs",
+          "scripts/verify-prov-001-browser-proof.mjs"
+        ],
+        "verification": [
+          "node --check src/core/provider-gateway-boundary.js",
+          "node --check src/core/provider-capability-descriptor.js",
+          "node --check src/core/provider-operation-contract.js",
+          "node --check src/core/build-agent-turn-router.js",
+          "node --check src/core/build-speech-truth-gate.js",
+          "node --check src/core/project-service.js",
+          "node --check src/server.js",
+          "node --check web/nexus-ui/adapters/loop-adapter.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check scripts/verify-prov-001-live-proof.mjs",
+          "node --check scripts/verify-prov-001-browser-proof.mjs",
+          "node --test test/provider-gateway-boundary.test.js test/provider-connector-schema.test.js test/provider-capability-descriptor.test.js test/provider-operation-contract.test.js test/build-agent-turn-router.test.js test/loop-core-screen-render.test.js",
+          "node --test --test-name-pattern \"external accounts|provider gateway|PROV-001\" test/project-service.test.js test/server-health-endpoints.test.js",
+          "NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-prov-001-live-proof.mjs",
+          "NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-prov-001-browser-proof.mjs"
+        ],
+        "boundary": "Closes first-release provider gateway and external capability governance. Provider connection is not permission, permission is not explicit user approval, and external actions such as WhatsApp, payment, publishing, deployment, email, social posting, ad spend, creative-provider generation, provider-side deletion, and reference training remain blocked unless identity, project permission, provider scope, approval, and release gate all agree. Creative outputs are Nexus-owned draft assets with source, prompt, license, usage, approval, product, and optional package boundaries. This does not close real provider execution, provider marketplace onboarding, production provider health dashboards, provider token rotation, or provider-side release actions.",
+        "nextTaskTruth": {
+          "taskId": "SURFACE-OWNER-RUNTIME-001",
+          "status": "selected-unblocked",
+          "reason": "SURFACE-OWNER-RUNTIME-001 is now the earliest unblocked release-blocker after PROV-001 because visible surface ownership and runtime path truth must be proven before privacy, SSO, billing, runtime, package, verification, or release tasks can close user-visible behavior truthfully."
+        }
+      },
+      {
+        "taskId": "SURFACE-OWNER-RUNTIME-001",
+        "title": "Visible surface ownership and runtime path truth gate",
+        "status": "selected-unblocked",
+        "createdAt": "2026-06-11",
+        "source": "2026-06-11 repository-truth and execution-integrity investigation",
+        "reason": "Inserted because repository truth showed that editing web/nexus-ui screens, app code, or canonical docs does not by itself prove the same route/runtime/surface the user sees changed. The task blocks broad continuation until route owner, screen owner, adapter owner, restore path, static asset loading, QA mode, project id, and browser proof identity are explicit.",
+        "blocks": [
+          "LIVE-PROOF-INTEGRITY-001",
+          "PRIVACY-001",
+          "SSO-001",
+          "RUNTIME-001",
+          "FILE-001",
+          "USAGE-001",
+          "BILLING-001",
+          "OBS-001",
+          "ADMIN-001",
+          "RESP-001",
+          "LEGAL-001",
+          "STATE-001",
+          "DATA-001",
+          "A11Y-001",
+          "OPS-001",
+          "PRODUCT-RUNTIME-PACKAGE-001",
+          "STANDALONE-ARTIFACT-001",
+          "VER-AGT-001",
+          "REL-AGT-001"
+        ],
+        "nextTaskTruth": {
+          "taskId": "LIVE-PROOF-INTEGRITY-001",
+          "status": "blocked-on-SURFACE-OWNER-RUNTIME-001",
+          "reason": "LIVE-PROOF-INTEGRITY-001 depends on a real visible surface ownership map before it can enforce claim-to-visible-proof closure discipline."
+        }
+      },
+      {
+        "taskId": "LIVE-PROOF-INTEGRITY-001",
+        "title": "Claim-to-visible-proof execution integrity gate",
+        "status": "blocked",
+        "createdAt": "2026-06-11",
+        "source": "2026-06-11 repository-truth and execution-integrity investigation",
+        "reason": "Inserted to prevent future trueGreen claims unless repository diff, loaded runtime, static assets, route, browser proof, refresh proof, restore proof, and user-visible behavior all agree.",
+        "blockedBy": [
+          "SURFACE-OWNER-RUNTIME-001"
+        ],
+        "blocks": [
+          "PRIVACY-001",
+          "SSO-001",
+          "RUNTIME-001",
+          "FILE-001",
+          "USAGE-001",
+          "BILLING-001",
+          "OBS-001",
+          "ADMIN-001",
+          "RESP-001",
+          "LEGAL-001",
+          "STATE-001",
+          "DATA-001",
+          "A11Y-001",
+          "OPS-001",
+          "PRODUCT-PROMISE-GATE-001",
+          "VER-AGT-001",
+          "BUILD-RELEASE-GATE-001"
+        ]
+      },
+      {
+        "taskId": "BUILD-SPEECH-TRUTH-001",
+        "title": "No fake success speech and arbitrary-change truth gate",
+        "status": "trueGreen",
+        "closedAt": "2026-06-11",
+        "closureEvidence": [
+          "src/core/build-speech-truth-gate.js",
+          "src/core/project-service.js",
+          "src/core/build-agent-turn-router.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/build-speech-truth-gate.test.js",
+          "scripts/verify-build-speech-truth-001-live-proof.mjs",
+          "/private/tmp/nexus-build-speech-truth-001-1781186292694-report.json",
+          "/private/tmp/nexus-build-speech-truth-001-1781186292694-applied.png",
+          "/private/tmp/nexus-build-speech-truth-001-1781186292694-unsupported.png",
+          "/private/tmp/nexus-build-speech-truth-001-1781186292694-external-bounded.png",
+          "/private/tmp/nexus-build-speech-truth-001-1781186292694-after-refresh.png"
+        ],
+        "verification": [
+          "node --test test/build-speech-truth-gate.test.js",
+          "node --test test/build-agent-learning-bridge.test.js test/build-agent-turn-router.test.js test/build-mutation-truth.test.js test/canonical-mutation-flow-shell.test.js test/build-approval-flow.test.js test/loop-core-screen-render.test.js test/visual-build-truth.test.js test/skeleton-choice-candidates.test.js test/mutation-change-agent.test.js test/history-continuity-agent.test.js",
+          "NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-build-speech-truth-001-live-proof.mjs"
+        ],
+        "boundary": "Closes the Build speech truth gate: arbitrary free-text field requests must either produce real product truth mutation or a truthful not-applied state; unsupported screen/action/copy/provider/release/payment/WhatsApp/publish/deploy/verification requests cannot be described as applied unless their owning task produces a real result; refresh preserves truthful applied/not-applied history. It does not close provider execution, release execution, product package generation, standalone artifact generation, verification agent execution, or server-verified identity.",
+        "nextTaskTruth": {
+          "taskId": "AUTH-TOKEN-001",
+          "status": "selected-unblocked",
+          "reason": "AUTH-TOKEN-001 is now the earliest unblocked release-blocker before provider, privacy, SSO, billing, usage, release, and external capability work."
+        }
+      },
+      {
+        "taskId": "ACCT-001",
+        "title": "First-release account and privacy controls",
+        "status": "trueGreen",
+        "closedAt": "2026-06-10",
+        "closureEvidence": [
+          "src/core/first-release-account-boundary.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/app.js",
+          "web/nexus-ui/adapters/settings-adapter.js",
+          "web/nexus-ui/screens/SettingsScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/acct-001-account-boundary.test.js",
+          "test/acct-001-server-account-boundary.test.js",
+          "test/guided-task-and-settings-surfaces.test.js",
+          "scripts/verify-acct-001-live-proof.mjs",
+          "/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-acct-001-1781105624394-report.json"
+        ],
+        "verification": [
+          "node --check src/core/first-release-account-boundary.js",
+          "node --check src/core/project-service.js",
+          "node --check src/server.js",
+          "node --check web/nexus-ui/adapters/settings-adapter.js",
+          "node --check web/nexus-ui/screens/SettingsScreen.js",
+          "node --check web/app.js",
+          "node --check scripts/verify-acct-001-live-proof.mjs",
+          "node --test test/acct-001-account-boundary.test.js test/acct-001-server-account-boundary.test.js test/guided-task-and-settings-surfaces.test.js test/auth-session-project-isolation.test.js test/exp-009-team-membership-boundary.test.js test/exp-009-server-team-membership.test.js test/action-level-project-authorization-resolver.test.js",
+          "node scripts/verify-acct-001-live-proof.mjs"
+        ],
+        "boundary": "Closes first-release local account controls: settings path, profile identity, email-change verification state, local password change boundary, local logout-all/session revoke, deletion request record, account security state, and account activity history. It does not close full deletion/export/retention/consent, external identity/SSO, paid billing/entitlements, provider connection governance, production enterprise account management, or provider-side data deletion.",
+        "nextTaskTruth": {
+          "taskId": "BUILD-SPEECH-TRUTH-001",
+          "status": "superseded-closed-2026-06-11",
+          "reason": "PROV-001 was selected before the deep-review write-back. BUILD-SPEECH-TRUTH-001 then became the earlier blocker and is now closed trueGreen; current nextCanonicalExecutionTask points to AUTH-TOKEN-001."
+        }
+      },
+      {
+        "taskId": "EXP-009",
+        "title": "First-release organization and team membership boundary",
+        "status": "trueGreen",
+        "closedAt": "2026-06-10",
+        "closureEvidence": [
+          "src/core/workspace-membership-model.js",
+          "src/core/project-role-capability-matrix.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/exp-009-team-membership-boundary.test.js",
+          "test/exp-009-server-team-membership.test.js",
+          "test/project-role-capability-matrix.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-exp-009-live-proof.mjs",
+          "/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-exp-009-1781104789034-report.json"
+        ],
+        "verification": [
+          "node --check src/core/project-service.js",
+          "node --check src/server.js",
+          "node --check web/nexus-ui/adapters/loop-adapter.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check scripts/verify-exp-009-live-proof.mjs",
+          "node --test test/exp-009-team-membership-boundary.test.js test/exp-009-server-team-membership.test.js test/loop-core-screen-render.test.js test/workspace-membership-model.test.js test/role-assignment-invitation-flow.test.js test/project-role-capability-matrix.test.js test/action-level-project-authorization-resolver.test.js test/workspace-isolation-guard.test.js",
+          "node scripts/verify-exp-009-live-proof.mjs"
+        ],
+        "boundary": "Closes first-release organization/team membership truth for project ownership, invited members, accepted membership, removal, ownership transfer, refresh/rebuild restore, and SEC-001-backed project access enforcement. It does not close account management, privacy rights/deletion/export, external identity/SSO, paid billing/entitlements, provider connection governance, or post-release enterprise governance.",
+        "nextTaskTruth": {
+          "taskId": "ACCT-001",
+          "status": "selected-unblocked",
+          "reason": "ACCT-001 dependencies are now satisfied: ID-001 trueGreen and SEC-001 trueGreen; EXP-009 team truth is available for account settings linkage."
+        }
+      },
+      {
+        "taskId": "SEC-001",
+        "title": "First-release isolation and security boundary",
+        "status": "trueGreen",
+        "closedAt": "2026-06-10",
+        "closureEvidence": [
+          "src/server.js",
+          "src/core/project-service.js",
+          "test/server-health-endpoints.test.js",
+          "scripts/verify-sec-001-live-proof.mjs",
+          "/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-sec-001-1781103596046-report.json"
+        ],
+        "verification": [
+          "node --check src/server.js",
+          "node --check src/core/project-service.js",
+          "node --check scripts/verify-sec-001-live-proof.mjs",
+          "node --test --test-name-pattern \"actor-type spoofing|security envelope on newly created projects|project writes when action-level authorization is invalid|unauthenticated project reads|workspace isolation boundary\" test/server-health-endpoints.test.js",
+          "node --test test/action-level-project-authorization-resolver.test.js test/project-permission-schema.test.js test/project-role-capability-matrix.test.js test/workspace-isolation-guard.test.js test/auth-session-project-isolation.test.js",
+          "node scripts/verify-sec-001-live-proof.mjs"
+        ],
+        "boundary": "Closes first-release project isolation, action-level authorization, role-spoof blocking, workspace-isolation enforcement, and live-events authorization for project-backed routes. It does not close team invitations/membership UX, account management, provider gateway, privacy rights execution, SSO, usage/cost guard, billing, legal/trust copy, or production enterprise governance.",
+        "nextTaskTruth": {
+          "taskId": "EXP-009",
+          "status": "selected-unblocked",
+          "reason": "EXP-009 dependencies are now satisfied: EXP-005 trueGreen, ID-001 trueGreen, and SEC-001 trueGreen."
+        }
+      },
+      {
+        "taskId": "POST-ID-001-CANON-COVERAGE-001",
+        "title": "Post-identity canonical coverage for privacy, SSO, teams, billing, permissions, account, and provider authorization",
+        "status": "canonical-writeback-trueGreen",
+        "closedAt": "2026-06-09",
+        "closureEvidence": [
+          "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
+          "docs/wave3-canonical-state.json"
+        ],
+        "verification": [
+          "canonical task map inspection",
+          "canonical JSON parse"
+        ],
+        "boundary": "This closes only the canonical coverage gap. It does not implement privacy deletion/export, SSO, team invitations, billing, deep permissions, account management, or provider authorization behavior.",
+        "writeBackTruth": [
+          "EXP-009 now owns first-release organization/team membership instead of a vague minimal team note.",
+          "ACCT-001 now owns real account controls and handoffs to privacy, billing, and team truth.",
+          "SEC-001 now owns deep action authorization across view/edit/delete/release/provider/payment/billing/admin actions.",
+          "PROV-001 now owns identity plus permission plus approval gates for WhatsApp, payments, publishing, deployment, email, analytics, social, and creative generation providers.",
+          "2026-06-10 creative provider coverage added: Higgsfield-like, Runway-like, Adobe/Canva-like, Figma-like, creative MCP/CLI, and future equivalent providers must enter Nexus through provider gateway truth, then feed PRO-SKEL-003, SKELETON-CHOICE-001, GROW-PLUG-001, GROW-AGT-002, and PRODUCT-RUNTIME-PACKAGE-001 without becoming product truth owners.",
+          "PRIVACY-001 was added for deletion, export, retention, consent, data rights, and privacy lifecycle truth.",
+          "SSO-001 was added for Google, Microsoft, enterprise SSO, external identity provider, account linking, and organization login truth.",
+          "BILLING-001 was added for plans, payments, invoices, entitlement, debt/overage blocking, and billing ownership."
+        ],
+        "nextTaskTruth": {
+          "taskId": "SEC-001",
+          "status": "trueGreen",
+          "reason": "SEC-001 was closed on 2026-06-10 and now carries the authorization base needed by EXP-009, ACCT-001, PROV-001, PRIVACY-001, SSO-001, USAGE-001, and BILLING-001."
+        }
+      },
+      {
+        "taskId": "EXP-003",
+        "title": "Versioning / rollback visible through History",
+        "status": "trueGreen",
+        "closedAt": "2026-06-09",
+        "closureEvidence": [
+          "web/nexus-ui/adapters/timeline-adapter.js",
+          "web/nexus-ui/screens/TimelineHistoryScreen.js",
+          "test/timeline-adapter.test.js",
+          "test/timeline-history-screen-render.test.js",
+          "scripts/verify-exp-003-live-proof.mjs",
+          "/private/tmp/nexus-exp-003-1781016076984-report.json",
+          "/private/tmp/nexus-exp-003-1781016076984-before-restore.png",
+          "/private/tmp/nexus-exp-003-1781016076984-impact-ready.png",
+          "/private/tmp/nexus-exp-003-1781016076984-restored.png",
+          "/private/tmp/nexus-exp-003-1781016076984-after-refresh.png"
+        ],
+        "verification": [
+          "node --check web/nexus-ui/adapters/timeline-adapter.js",
+          "node --check web/nexus-ui/screens/TimelineHistoryScreen.js",
+          "node --check scripts/verify-exp-003-live-proof.mjs",
+          "node --test test/timeline-history-screen-render.test.js test/timeline-adapter.test.js",
+          "node scripts/verify-exp-003-live-proof.mjs"
+        ],
+        "boundary": "Closes visible versioning and rollback-through-History for current project truth only. It does not close EXP-004 release framing, release rollback, production backend, generated product runtime package, standalone artifact, providers, payments, public publishing, or deployment.",
+        "nextTaskTruth": {
+          "taskId": "EXP-004",
+          "status": "selected-unblocked",
+          "reason": "EXP-004 dependencies are now satisfied: EXP-003 trueGreen, SURF-004 trueGreen, ENG-006 existing-closed."
+        }
+      },
+      {
+        "taskId": "EXP-004",
+        "title": "Release framing connected to release engine",
+        "status": "trueGreen",
+        "closedAt": "2026-06-09",
+        "closureEvidence": [
+          "web/nexus-ui/adapters/release-surface-adapter.js",
+          "web/nexus-ui/screens/ReleaseSurfaceScreen.js",
+          "test/release-surface-canonical-structure-contract.test.js",
+          "scripts/verify-exp-004-live-proof.mjs",
+          "/private/tmp/nexus-exp-004-1781017028217-report.json",
+          "/private/tmp/nexus-exp-004-1781017028217-initial.png",
+          "/private/tmp/nexus-exp-004-1781017028217-after-refresh.png"
+        ],
+        "verification": [
+          "node --check web/nexus-ui/adapters/release-surface-adapter.js",
+          "node --check web/nexus-ui/screens/ReleaseSurfaceScreen.js",
+          "node --check scripts/verify-exp-004-live-proof.mjs",
+          "node --test test/release-surface-canonical-structure-contract.test.js test/release-workspace.test.js test/release-readiness-evaluator.test.js test/release-validation-assembler.test.js test/pre-deploy-quality-gate.test.js test/deployment-state-feedback-contract.test.js test/release-timeline-builder.test.js test/releaseable-product-state-contract.test.js test/class-aware-deployment-release-path.test.js",
+          "node scripts/verify-exp-004-live-proof.mjs"
+        ],
+        "boundary": "Closes only visible release framing over preserved release-engine truth. It does not close generated product runtime package, standalone releasable artifact, production backend, release execution, provider connection, payment, WhatsApp, App Store/Play Store submission, public publishing, or external deployment.",
+        "nextTaskTruth": {
+          "taskId": "GROW-AGT-001",
+          "status": "selected-unblocked",
+          "reason": "GROW-AGT-001 dependencies are now satisfied: EXP-004 trueGreen and SURF-005 trueGreen."
+        }
+      },
+      {
+        "taskId": "GROW-AGT-001",
+        "title": "Growth Agent bounded post-product opportunity ownership",
+        "status": "trueGreen",
+        "closedAt": "2026-06-09",
+        "closureEvidence": [
+          "src/core/growth-agent.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/nexus-ui/adapters/growth-surface-adapter.js",
+          "web/nexus-ui/screens/GrowthSurfaceScreen.js",
+          "test/growth-agent.test.js",
+          "test/growth-surface-canonical-structure-contract.test.js",
+          "scripts/verify-grow-agt-001-live-proof.mjs",
+          "/private/tmp/nexus-grow-agt-001-1781018475840-report.json",
+          "/private/tmp/nexus-grow-agt-001-1781018475840-no-product.png",
+          "/private/tmp/nexus-grow-agt-001-1781018475840-audience-test.png",
+          "/private/tmp/nexus-grow-agt-001-1781018475840-mutation.png",
+          "/private/tmp/nexus-grow-agt-001-1781018475840-share.png",
+          "/private/tmp/nexus-grow-agt-001-1781018475840-campaign.png"
+        ],
+        "verification": [
+          "node --check src/core/growth-agent.js",
+          "node --check src/core/project-service.js",
+          "node --check src/server.js",
+          "node --check web/nexus-ui/adapters/growth-surface-adapter.js",
+          "node --check web/nexus-ui/screens/GrowthSurfaceScreen.js",
+          "node --check scripts/verify-grow-agt-001-live-proof.mjs",
+          "node --test test/growth-agent.test.js test/growth-surface-canonical-structure-contract.test.js",
+          "node scripts/verify-grow-agt-001-live-proof.mjs"
+        ],
+        "boundary": "Closes only bounded Growth Agent opportunity ownership after product truth exists. It does not close Growth Plugin Layer, provider connection, social execution, SEO/SEM/email/landing experiments, measurement, public publishing, release execution, production backend, generated product runtime package, standalone artifact, payments, WhatsApp, or deployment.",
+        "knownFollowUp": [
+          {
+            "type": "continuity-routing-debt",
+            "severity": "blocks-broad-continuity-expansion",
+            "finding": "A broader neighboring next-task adapter test expected onboarding but received create.",
+            "requiredAction": "Resolve or assign this debt before treating broad continuation / next-task routing paths as clean."
+          }
+        ],
+        "nextTaskTruth": {
+          "taskId": "GROW-PLUG-001",
+          "status": "selected-blocked",
+          "reason": "GROW-PLUG-001 is next after GROW-AGT-001 in its lane, but it remains blocked by PROV-001. SEC-001 is now trueGreen."
+        }
+      },
+      {
+        "taskId": "ID-001",
+        "title": "First-release identity and session boundary",
+        "status": "trueGreen",
+        "closedAt": "2026-06-09",
+        "closureEvidence": [
+          "web/app.js",
+          "web/nexus-ui/adapters/project-adapter.js",
+          "web/nexus-ui/screens/ProjectCreateScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/project-create-screen-render.test.js",
+          "scripts/verify-id-001-live-proof.mjs",
+          "/private/tmp/nexus-id-001-1781019344409-report.json",
+          "/private/tmp/nexus-id-001-1781019344409-active.png",
+          "/private/tmp/nexus-id-001-1781019344409-after-refresh.png",
+          "/private/tmp/nexus-id-001-1781019344409-after-logout.png"
+        ],
+        "verification": [
+          "node --check web/app.js",
+          "node --check web/nexus-ui/adapters/project-adapter.js",
+          "node --check web/nexus-ui/screens/ProjectCreateScreen.js",
+          "node --check scripts/verify-id-001-live-proof.mjs",
+          "node --test test/project-create-screen-render.test.js test/auth-session-project-isolation.test.js",
+          "node --test --test-name-pattern \"signup|durable user|AUTH-SESSION|ID-001|auth flows\" test/project-service.test.js test/auth-session-project-isolation.test.js test/project-create-screen-render.test.js",
+          "node scripts/verify-id-001-live-proof.mjs"
+        ],
+        "boundary": "Closes the first-release local identity/session boundary for visible entry trust, project ownership, refresh, and logout blocking. It does not close ACCT-001 account/privacy controls, SEC-001 security isolation hardening, PROV-001 provider gateway, production SSO/OAuth, billing identity, team/org administration, or full privacy deletion/export flows.",
+        "nextTaskTruth": {
+          "taskId": "SEC-001",
+          "status": "selected-unblocked",
+          "reason": "SEC-001 dependencies are now satisfied: ID-001 trueGreen, ENG-001 existing-closed, and FND-002 existing-closed."
+        }
+      },
+      {
+        "taskId": "EXP-005",
+        "title": "Share review/demo path",
+        "status": "trueGreen",
+        "closedAt": "2026-06-09",
+        "closureEvidence": [
+          "web/app.js",
+          "web/nexus-ui/adapters/share-surface-adapter.js",
+          "web/nexus-ui/screens/ShareSurfaceScreen.js",
+          "test/share-surface-canonical-structure-contract.test.js",
+          "scripts/verify-exp-005-live-proof.mjs",
+          "/private/tmp/nexus-exp-005-1781015495859-report.json",
+          "/private/tmp/nexus-exp-005-1781015495859-initial.png",
+          "/private/tmp/nexus-exp-005-1781015495859-after-prepare.png",
+          "/private/tmp/nexus-exp-005-1781015495859-after-approve.png",
+          "/private/tmp/nexus-exp-005-1781015495859-after-revoke.png"
+        ],
+        "verification": [
+          "node --check web/app.js",
+          "node --check web/nexus-ui/adapters/share-surface-adapter.js",
+          "node --check web/nexus-ui/screens/ShareSurfaceScreen.js",
+          "node --check scripts/verify-exp-005-live-proof.mjs",
+          "node --test test/share-demo-agent.test.js test/share-surface-canonical-structure-contract.test.js",
+          "node scripts/verify-exp-005-live-proof.mjs"
+        ],
+        "boundary": "Closes only the visible bounded Share review/demo path: prepare, approval-required state, local review path approval, refresh restore, revoke, and product-language surface copy. It does not close public publishing, release readiness, external providers, permissions admin, production access control, comments/downloads, production backend, generated product runtime package, standalone artifact, payments, WhatsApp, or deployment.",
+        "nextTaskTruth": {
+          "taskId": "GROW-AGT-001",
+          "status": "selected-unblocked",
+          "reason": "EXP-004 is now trueGreen, so GROW-AGT-001 is no longer blocked by release framing."
+        }
+      },
+      {
+        "taskId": "MUT-001",
+        "title": "Mutation / Change Agent ownership",
+        "status": "trueGreen",
+        "closedAt": "2026-06-08",
+        "closureEvidence": [
+          "src/core/mutation-change-agent.js",
+          "src/core/project-service.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "test/mutation-change-agent.test.js",
+          "test/build-agent-learning-bridge.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-mut-001-live-proof.mjs",
+          "/private/tmp/nexus-mut-001-1780931764085-report.json",
+          "/private/tmp/nexus-mut-001-1780931764085-initial.png",
+          "/private/tmp/nexus-mut-001-1780931764085-after-safe-change.png",
+          "/private/tmp/nexus-mut-001-1780931764085-after-direction-request.png",
+          "/private/tmp/nexus-mut-001-1780931764085-after-refresh.png"
+        ],
+        "verification": [
+          "node --check src/core/mutation-change-agent.js",
+          "node --check src/core/project-service.js",
+          "node --check web/nexus-ui/adapters/loop-adapter.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check scripts/verify-mut-001-live-proof.mjs",
+          "node --test test/mutation-change-agent.test.js",
+          "node --test --test-name-pattern \"MUT-001|product direction|safe lead-source\" test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js",
+          "node --test test/build-agent-turn-router.test.js test/build-mutation-truth.test.js",
+          "node --test test/mutation-change-agent.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js test/build-agent-turn-router.test.js test/build-mutation-truth.test.js",
+          "NEXUS_BASE_URL=http://127.0.0.1:4014 node scripts/verify-mut-001-live-proof.mjs"
+        ],
+        "boundary": "Closes mutation interpretation, risk/approval decision, product-visible decision state, and product-readable history for Build-originating meaningful changes. It does not close EXP-002 shell flow depth, approval execution UI, rollback depth, verification execution, release execution, providers, payments, publishing, production backend, or standalone generated product package output."
+      },
+      {
+        "taskId": "EXP-002",
+        "title": "Canonical mutation flow in shell",
+        "status": "trueGreen",
+        "closedAt": "2026-06-08",
+        "closureEvidence": [
+          "src/core/canonical-mutation-flow-shell.js",
+          "src/core/project-service.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/canonical-mutation-flow-shell.test.js",
+          "test/build-agent-learning-bridge.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-exp-002-live-proof.mjs",
+          "/private/tmp/nexus-exp-002-1781006481898-report.json",
+          "/private/tmp/nexus-exp-002-1781006481898-initial.png",
+          "/private/tmp/nexus-exp-002-1781006481898-after-safe-change.png",
+          "/private/tmp/nexus-exp-002-1781006481898-after-direction-request.png",
+          "/private/tmp/nexus-exp-002-1781006481898-after-refresh.png"
+        ],
+        "verification": [
+          "node --check src/core/canonical-mutation-flow-shell.js",
+          "node --check src/core/project-service.js",
+          "node --check web/nexus-ui/adapters/loop-adapter.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check scripts/verify-exp-002-live-proof.mjs",
+          "node --test test/canonical-mutation-flow-shell.test.js",
+          "node --test test/canonical-mutation-flow-shell.test.js test/mutation-change-agent.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js test/build-agent-turn-router.test.js test/build-mutation-truth.test.js",
+          "NEXUS_BASE_URL=http://127.0.0.1:4014 node scripts/verify-exp-002-live-proof.mjs"
+        ],
+        "boundary": "Closes the visible Build-shell mutation flow from request to decision, approval state, application state, and history state using MUT-001 truth. It does not close approval execution UI, rollback/checkpoint depth, verification execution, release execution, providers, payments, publishing, production backend, or standalone generated product package output."
+      },
+      {
+        "taskId": "BUILD-APPROVAL-001",
+        "title": "Build-facing product-direction approval flow",
+        "status": "trueGreen",
+        "closedAt": "2026-06-09",
+        "closureEvidence": [
+          "src/core/build-approval-flow.js",
+          "src/core/project-service.js",
+          "src/core/canonical-mutation-flow-shell.js",
+          "src/server.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "web/app.js",
+          "test/build-approval-flow.test.js",
+          "test/build-agent-learning-bridge.test.js",
+          "test/canonical-mutation-flow-shell.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-build-approval-001-live-proof.mjs",
+          "/private/tmp/nexus-build-approval-001-1781008927427-report.json",
+          "/private/tmp/nexus-build-approval-001-1781008927427-reject-pending.png",
+          "/private/tmp/nexus-build-approval-001-1781008927427-reject-reject.png",
+          "/private/tmp/nexus-build-approval-001-1781008927427-reject-reject-after-refresh.png",
+          "/private/tmp/nexus-build-approval-001-1781008927427-approve-pending.png",
+          "/private/tmp/nexus-build-approval-001-1781008927427-approve-approve.png",
+          "/private/tmp/nexus-build-approval-001-1781008927427-approve-approve-after-refresh.png"
+        ],
+        "verification": [
+          "node --check src/core/build-approval-flow.js",
+          "node --check src/core/project-service.js",
+          "node --check src/core/canonical-mutation-flow-shell.js",
+          "node --check src/server.js",
+          "node --check web/nexus-ui/adapters/loop-adapter.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check web/app.js",
+          "node --check scripts/verify-build-approval-001-live-proof.mjs",
+          "node --test test/build-approval-flow.test.js test/build-agent-learning-bridge.test.js test/canonical-mutation-flow-shell.test.js",
+          "node --test --test-name-pattern \"BUILD-APPROVAL-001|BLD-AGT-001|EXP-002\" test/loop-core-screen-render.test.js",
+          "NEXUS_BASE_URL=http://127.0.0.1:4015 node scripts/verify-build-approval-001-live-proof.mjs"
+        ],
+        "boundary": "Closes the Build-facing approval bridge for product-direction changes over MUT-001 truth: pending state, visible impact, approve, reject, cancel state, refresh restore, no silent apply, and no fake success. It does not close deep rollback execution, full History restore, verification execution, release execution, providers, payments, publishing, production backend, or standalone generated product package output."
+      },
+      {
+        "taskId": "HIST-AGT-001",
+        "title": "History / Continuity Agent live continuity ownership",
+        "status": "trueGreen",
+        "closedAt": "2026-06-09",
+        "closureEvidence": [
+          "src/core/history-continuity-agent.js",
+          "src/core/mutation-change-agent.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/nexus-ui/adapters/timeline-adapter.js",
+          "web/nexus-ui/screens/TimelineHistoryScreen.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "web/app.js",
+          "test/history-continuity-agent.test.js",
+          "test/build-agent-learning-bridge.test.js",
+          "test/mutation-change-agent.test.js",
+          "test/timeline-adapter.test.js",
+          "test/timeline-history-screen-render.test.js",
+          "scripts/verify-hist-agt-001-live-proof.mjs",
+          "/private/tmp/nexus-hist-agt-001-1781007332744-report.json",
+          "/private/tmp/nexus-hist-agt-001-1781007332744-initial.png",
+          "/private/tmp/nexus-hist-agt-001-1781007332744-after-changes.png",
+          "/private/tmp/nexus-hist-agt-001-1781007332744-history-before-restore.png",
+          "/private/tmp/nexus-hist-agt-001-1781007332744-restore-decision.png",
+          "/private/tmp/nexus-hist-agt-001-1781007332744-after-refresh.png",
+          "/private/tmp/nexus-hist-agt-001-1781007332744-return-to-build.png",
+          "/private/tmp/nexus-hist-agt-001-1781010552491-report.json",
+          "/private/tmp/nexus-hist-agt-001-1781010552491-initial.png",
+          "/private/tmp/nexus-hist-agt-001-1781010552491-after-changes.png",
+          "/private/tmp/nexus-hist-agt-001-1781010552491-history-before-restore.png",
+          "/private/tmp/nexus-hist-agt-001-1781010552491-restore-decision.png",
+          "/private/tmp/nexus-hist-agt-001-1781010552491-restore-executed.png",
+          "/private/tmp/nexus-hist-agt-001-1781010552491-after-refresh.png",
+          "/private/tmp/nexus-hist-agt-001-1781010552491-return-to-build.png"
+        ],
+        "verification": [
+          "node --check src/core/mutation-change-agent.js",
+          "node --check src/core/history-continuity-agent.js",
+          "node --check src/core/project-service.js",
+          "node --check src/server.js",
+          "node --check web/nexus-ui/adapters/timeline-adapter.js",
+          "node --check web/nexus-ui/screens/TimelineHistoryScreen.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check web/app.js",
+          "node --check scripts/verify-hist-agt-001-live-proof.mjs",
+          "node --test test/history-continuity-agent.test.js test/build-agent-learning-bridge.test.js test/timeline-adapter.test.js test/timeline-history-screen-render.test.js test/canonical-mutation-flow-shell.test.js test/mutation-change-agent.test.js test/loop-core-screen-render.test.js test/slice-007-continuity-contract.test.js test/nexus-sidebar-navigation-contract.test.js",
+          "node --test test/slice-007-continuity-contract.test.js test/nexus-sidebar-navigation-contract.test.js",
+          "NEXUS_BASE_URL=http://127.0.0.1:4014 node scripts/verify-hist-agt-001-live-proof.mjs",
+          "NEXUS_BASE_URL=http://127.0.0.1:4016 node scripts/verify-hist-agt-001-live-proof.mjs"
+        ],
+        "resolvedBlocker": {
+          "type": "missing dependency",
+          "taskId": "BUILD-APPROVAL-001",
+          "resolvedBy": "BUILD-APPROVAL-001 trueGreen on 2026-06-09",
+          "reason": "Approved product-direction execution now exists, so HIST-AGT-001 proved restore from an approved orders direction back to the lead product snapshot."
+        },
+        "boundary": "Closes History / Continuity Agent ownership for product-readable history, checkpoint creation before meaningful change, restore-impact decision, explicit restore execution, Product Graph restore, visible History restore, refresh persistence, and return-to-Build continuity. It does not close EXP-003 versioning UI depth, release rollback, production backend, generated product runtime package, standalone artifact, providers, payments, or publishing."
+      },
+      {
+        "taskId": "SHARE-AGT-001",
+        "title": "Share / Demo Agent live review ownership",
+        "status": "trueGreen",
+        "closedAt": "2026-06-09",
+        "closureEvidence": [
+          "src/core/share-demo-agent.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/nexus-ui/adapters/share-surface-adapter.js",
+          "web/nexus-ui/screens/ShareSurfaceScreen.js",
+          "test/share-demo-agent.test.js",
+          "test/share-surface-canonical-structure-contract.test.js",
+          "/private/tmp/nexus-share-agt-001-share-agt-001-live-1781014819094-report.json",
+          "/private/tmp/nexus-share-agt-001-share-agt-001-live-1781014819094-approved.png"
+        ],
+        "verification": [
+          "node --check src/core/share-demo-agent.js",
+          "node --check src/core/project-service.js",
+          "node --check src/server.js",
+          "node --check web/nexus-ui/adapters/share-surface-adapter.js",
+          "node --check web/nexus-ui/screens/ShareSurfaceScreen.js",
+          "node --test test/share-demo-agent.test.js test/share-surface-canonical-structure-contract.test.js",
+          "Live browser proof on http://127.0.0.1:4011/share?projectId=share-agt-001-live-1781014819094"
+        ],
+        "dependencyCorrection": {
+          "previousDependency": "EXP-004",
+          "correction": "EXP-004 owns later release framing. SHARE-AGT-001 closes only bounded review/demo snapshot ownership after HIST-AGT-001 and SURF-007, without release or public publishing claims."
+        },
+        "boundary": "Closes bounded Share / Demo Agent review ownership only: safe proposal, approval-required snapshot, local review path, privacy include/exclude boundary, refresh restore, and revoke state. It does not close production release, public publishing, real external share provider execution, permissions admin, comments/downloads, production access control, release rollback, generated product package, standalone artifact, payments, WhatsApp, or deployment."
+      },
+      {
+        "taskId": "EXP-001",
+        "title": "Selection / direct editing on Build",
+        "status": "trueGreen",
+        "closedAt": "2026-06-08",
+        "closureEvidence": [
+          "web/shared/product-domain-skeleton.js",
+          "src/core/build-mutation-truth.js",
+          "web/shared/runtime-skeleton-truth.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "web/app.js",
+          "test/product-domain-skeleton.test.js",
+          "test/build-mutation-truth.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-exp-001-live-proof.mjs",
+          "/private/tmp/nexus-exp-001-1780930702514-report.json",
+          "/private/tmp/nexus-exp-001-1780930702514-initial.png",
+          "/private/tmp/nexus-exp-001-1780930702514-after-select.png",
+          "/private/tmp/nexus-exp-001-1780930702514-after-owner.png",
+          "/private/tmp/nexus-exp-001-1780930702514-after-refresh.png"
+        ],
+        "verification": [
+          "node --check web/app.js",
+          "node --check web/shared/product-domain-skeleton.js",
+          "node --check src/core/build-mutation-truth.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check scripts/verify-exp-001-live-proof.mjs",
+          "node --test --test-name-pattern \"EXP-001\" test/product-domain-skeleton.test.js test/build-mutation-truth.test.js",
+          "node --test test/product-domain-skeleton.test.js test/build-mutation-truth.test.js test/loop-core-screen-render.test.js",
+          "node --test test/product-owned-backend-skeleton.test.js",
+          "node scripts/verify-exp-001-live-proof.mjs"
+        ],
+        "boundary": "Closes bounded direct selection and product-language record editing on the current Build runtime skeleton. It does not close arbitrary inline editing, deep product-direction mutation, full Mutation / Change Agent ownership, standalone generated product package, production backend, release, providers, payments, or publishing."
+      },
+      {
+        "taskId": "SLICE-008",
+        "title": "First user-ready trust cleanup",
+        "status": "trueGreen",
+        "closedAt": "2026-06-08",
+        "closureEvidence": [
+          "web/app.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-slice-008-live-proof.mjs",
+          "/private/tmp/nexus-slice-008-1780930002538-report.json",
+          "/private/tmp/nexus-slice-008-1780930002538-initial-loop.png",
+          "/private/tmp/nexus-slice-008-1780930002538-after-action.png",
+          "/private/tmp/nexus-slice-008-1780930002538-after-refresh.png"
+        ],
+        "verification": [
+          "node --check web/app.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check scripts/verify-slice-008-live-proof.mjs",
+          "node --test --test-name-pattern \"SLICE-008\" test/loop-core-screen-render.test.js",
+          "node scripts/verify-slice-008-live-proof.mjs"
+        ],
+        "boundary": "Closes first-slice trust cleanup only: no premature release/project-ready claim, no raw internal operation or field-label text, and refresh-preserved bounded skeleton action feedback. It does not close generated product runtime package, standalone runnable artifact, production backend, provider integration, publishing, or release readiness."
+      },
+      {
+        "taskId": "PRODUCT-BACKEND-SKEL-002",
+        "title": "Product-owned backend skeleton from first skeleton",
+        "status": "trueGreen",
+        "closedAt": "2026-06-08",
+        "closureEvidence": [
+          "First runtime skeleton now includes productOwnedBackendSkeleton and productOwnedBackendSkeletonId alongside runtimeSkeletonTruth and PRODUCT-BACKEND-SKEL-001 productDomainSkeleton.",
+          "Build mutations now carry productOwnedBackendSkeletonId and update product-owned schema/models, local/mock persistence, API-like operation boundaries, and mutation history.",
+          "Project service persists productOwnedBackendSkeleton in project root, context, and state, and rebuilds it through mutation replay.",
+          "Live proof on http://127.0.0.1:4011/loop?projectId=product-backend-skel-002-live-1780927870928 restored PRODUCT-BACKEND-SKEL-002 after refresh and preserved record.addField on the product-owned backend scaffold."
+        ],
+        "verification": [
+          "node --check web/shared/product-owned-backend-skeleton.js",
+          "node --check web/shared/runtime-skeleton-truth.js",
+          "node --check src/core/build-mutation-truth.js",
+          "node --check src/core/project-service.js",
+          "node --test test/product-owned-backend-skeleton.test.js test/build-mutation-truth.test.js test/loop-core-screen-render.test.js",
+          "node --test --test-name-pattern \"RUNTIME-TRUTH-001\" test/project-service.test.js",
+          "node scripts/verify-product-backend-skel-002-live-proof.mjs"
+        ],
+        "boundary": "Closes generated product-owned local/mock backend skeleton from first skeleton; does not close production backend hosting, real external providers, payments, App Store builds, or standalone releasable artifact state."
+      },
+      {
+        "taskId": "SLICE-007",
+        "title": "Refresh / return preserves continuity",
+        "status": "trueGreen",
+        "closedAt": "2026-06-08",
+        "closureEvidence": [
+          "src/server.js",
+          "web/app.js",
+          "test/slice-007-continuity-contract.test.js",
+          "scripts/verify-slice-007-live-proof.mjs",
+          "/private/tmp/nexus-slice-007-1780925110507-report.json",
+          "/private/tmp/nexus-slice-007-1780925110507-initial-loop.png",
+          "/private/tmp/nexus-slice-007-1780925110507-after-refresh.png",
+          "/private/tmp/nexus-slice-007-1780925110507-home-detour.png",
+          "/private/tmp/nexus-slice-007-1780925110507-after-return-to-build.png",
+          "/private/tmp/nexus-slice-007-1780925110507-after-return-refresh.png",
+          "/private/tmp/nexus-slice-007-1780925110507-after-browser-back.png",
+          "/private/tmp/nexus-slice-007-1780925110507-after-browser-forward.png"
+        ],
+        "verification": [
+          "node --check src/server.js",
+          "node --check web/app.js",
+          "node --check scripts/verify-slice-007-live-proof.mjs",
+          "node --test test/slice-007-continuity-contract.test.js test/build-mutation-truth.test.js test/loop-core-screen-render.test.js",
+          "node scripts/verify-slice-007-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "The live proof used a clean /loop?projectId=slice007-proof-1780925110507 route with no qaState/nexusState, restored a persisted add-lead mutation after refresh, preserved project identity through /home?projectId=slice007-proof-1780925110507, returned to Build with the same runtime skeleton and product-domain rows, and kept browser back/forward project-scoped instead of falling to Create.",
+          "The live proof produced zero bad API responses and no /live-events 401 for the authenticated local project session.",
+          "One generic non-API 404 console resource load remains cleanup debt outside SLICE-007.",
+          "Exact replay of every intermediate support-route browser-history entry remains HIST-AGT-001 scope; SLICE-007 closes first-slice project truth continuity, not checkpoint/rollback/history-agent depth."
+        ]
+      },
+      {
+        "taskId": "SLICE-006",
+        "title": "Conversation mutation updates artifact",
+        "status": "trueGreen",
+        "closedAt": "2026-06-08",
+        "closureEvidence": [
+          "src/core/build-agent-downstream-action.js",
+          "src/core/build-agent-learning-instructions.js",
+          "src/core/build-mutation-truth.js",
+          "src/core/project-service.js",
+          "web/shared/product-domain-skeleton.js",
+          "web/app.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/build-mutation-truth.test.js",
+          "scripts/verify-slice-006-live-proof.mjs",
+          "/private/tmp/nexus-slice-006-1780922831912-report.json",
+          "/private/tmp/nexus-slice-006-1780922831912-before.png",
+          "/private/tmp/nexus-slice-006-1780922831912-after-mutation.png",
+          "/private/tmp/nexus-slice-006-1780922831912-after-refresh.png",
+          "/private/tmp/nexus-slice-006-1780922831912-after-button-mutation.png",
+          "/private/tmp/nexus-slice-006-1780922831912-after-button-refresh.png",
+          "/private/tmp/nexus-slice-006-1780922831912-after-boundary.png"
+        ],
+        "verification": [
+          "node --check test/build-mutation-truth.test.js",
+          "node --check src/core/build-mutation-truth.js",
+          "node --check web/shared/product-domain-skeleton.js",
+          "node --check src/core/project-service.js",
+          "node --check web/app.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check web/nexus-ui/adapters/loop-adapter.js",
+          "node --check scripts/verify-slice-006-live-proof.mjs",
+          "node --test test/build-mutation-truth.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js",
+          "node scripts/verify-slice-006-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "SLICE-006 closes safe artifact mutations from Build rail conversation and runtime controls only when they persist project-truth mutation history, update generated product-domain state, update visible runtime state, and restore after refresh.",
+          "Live proof used a clean /loop?projectId=slice006-proof-1780922831912 route with no qaState/nexusState; the Build rail request added a lead, restored the transcript and mutation after refresh, a runtime add-lead control persisted another mutation, and a WhatsApp/publish request was visibly bounded without adding mutation history.",
+          "The live proof repeated the known /api/projects/:projectId/live-events 401 console noise, which remains an events/auth cleanup debt.",
+          "A diagnostic run showed text containing בדיקה can route to verification instead of mutation; this remains classification hardening work for the Build Agent lane and does not reopen the proven safe add-lead mutation path.",
+          "SLICE-007 still owns broader refresh/return continuity and history-agent restore beyond the mutation-specific proof."
+        ]
+      },
+      {
+        "taskId": "VBUILD-001",
+        "title": "Visual Build Agent active visual build continuation",
+        "status": "trueGreen",
+        "closedAt": "2026-06-08",
+        "closureEvidence": [
+          "src/core/build-agent-turn-router.js",
+          "src/core/build-agent-downstream-action.js",
+          "src/core/visual-build-truth.js",
+          "src/core/project-service.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/build-agent-learning-bridge.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-vbuild-001-live-proof.mjs",
+          "/private/tmp/nexus-vbuild-001-1780921640537-report.json",
+          "/private/tmp/nexus-vbuild-001-1780921640537-before-visual-message.png",
+          "/private/tmp/nexus-vbuild-001-1780921640537-after-visual-message.png",
+          "/private/tmp/nexus-vbuild-001-1780921640537-after-refresh.png",
+          "/private/tmp/nexus-vbuild-001-1780921640537-after-premium-request.png"
+        ],
+        "verification": [
+          "node --check src/core/visual-build-truth.js",
+          "node --check src/core/build-agent-turn-router.js",
+          "node --check src/core/build-agent-downstream-action.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check src/core/build-agent-learning-instructions.js",
+          "node --check scripts/verify-vbuild-001-live-proof.mjs",
+          "node --test test/build-agent-turn-router.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js",
+          "node scripts/verify-vbuild-001-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "VBUILD-001 closes safe active visual continuation from a selected skeleton direction only.",
+          "Live proof used a clean /loop?projectId=vbuild-proof-1780921640537 route with no qaState/nexusState, applied visual.leads.cardsFollowupToday, restored it after refresh, and blocked a premium style change behind approval without fake mutation.",
+          "SLICE-006 and MUT-001 still own deeper artifact/product mutation semantics; release, verification execution, providers, WhatsApp, payments, and publishing remain owned by their later tasks."
+        ]
+      },
+      {
+        "taskId": "SKELETON-CHOICE-001",
+        "title": "Multi-provider skeleton candidates over Nexus truth",
+        "status": "trueGreen",
+        "closedAt": "2026-06-08",
+        "closureEvidence": [
+          "web/shared/skeleton-choice-candidates.js",
+          "src/core/skeleton-choice-candidates.js",
+          "src/core/project-service.js",
+          "src/core/runtime-learning-events.js",
+          "src/core/build-agent-learning-instructions.js",
+          "src/core/build-agent-turn-router.js",
+          "src/core/build-mutation-truth.js",
+          "src/core/visual-build-truth.js",
+          "src/server.js",
+          "web/app.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/skeleton-choice-candidates.test.js",
+          "test/build-agent-learning-bridge.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-skeleton-choice-001-live-proof.mjs",
+          "/private/tmp/nexus-skeleton-choice-001-1780920824537-report.json",
+          "/private/tmp/nexus-skeleton-choice-001-1780920824537-before-selection.png",
+          "/private/tmp/nexus-skeleton-choice-001-1780920824537-after-selection.png",
+          "/private/tmp/nexus-skeleton-choice-001-1780920824537-after-refresh.png",
+          "/private/tmp/nexus-skeleton-choice-001-1780920824537-after-agent-mutation.png"
+        ],
+        "verification": [
+          "node --check web/shared/skeleton-choice-candidates.js",
+          "node --check src/core/project-service.js",
+          "node --check web/nexus-ui/adapters/loop-adapter.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check scripts/verify-skeleton-choice-001-live-proof.mjs",
+          "node --test test/skeleton-choice-candidates.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js",
+          "node scripts/verify-skeleton-choice-001-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "SKELETON-CHOICE-001 closes provider/adaptor-backed candidate generation, user-facing selection, selected-direction persistence, refresh restore, and selected-candidate handoff into downstream project truth.",
+          "External design provider execution remains a bounded unavailable provider path in this environment; production external provider execution remains outside this task.",
+          "VBUILD-001 still owns deeper visual build continuation from the selected direction."
+        ]
+      },
+      {
+        "taskId": "BLD-AGT-001",
+        "title": "Build / Loop Agent active build continuation",
+        "status": "trueGreen",
+        "closedAt": "2026-06-07",
+        "closureEvidence": [
+          "src/core/build-agent-turn-router.js",
+          "src/core/build-agent-downstream-action.js",
+          "src/core/build-agent-learning-instructions.js",
+          "src/core/project-service.js",
+          "src/core/visual-build-truth.js",
+          "src/core/build-mutation-truth.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "test/build-agent-turn-router.test.js",
+          "test/build-agent-learning-instructions.test.js",
+          "test/build-agent-learning-bridge.test.js",
+          "test/loop-core-screen-render.test.js",
+          "test/build-mutation-truth.test.js",
+          "test/runtime-learning-events.test.js",
+          "scripts/verify-bld-agt-001-live-project-restore.mjs",
+          "scripts/verify-bld-agt-001-boundary-routing-live-proof.mjs",
+          "/private/tmp/nexus-bld-agt-001-live-1780842294265-summary.json",
+          "/private/tmp/nexus-bld-agt-001-visual-1780843234635-summary.json",
+          "/private/tmp/nexus-bld-agt-001-boundary-1780852361903-report.json"
+        ],
+        "verification": [
+          "node --check src/core/project-service.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check scripts/verify-bld-agt-001-boundary-routing-live-proof.mjs",
+          "node --test test/build-agent-turn-router.test.js test/build-agent-learning-instructions.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js",
+          "node --test --test-name-pattern \"BLD-AGT-001|BUILD-MUTATION-TRUTH|LEARNING-RUNTIME\" test/build-agent-turn-router.test.js test/build-agent-learning-instructions.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js test/build-mutation-truth.test.js test/runtime-learning-events.test.js",
+          "node scripts/verify-bld-agt-001-boundary-routing-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "BLD-AGT-001 closes the basic Build Agent loop only: alive rail, learning-before-reply, message classification, truthful routing, safe visual change, safe product-domain change, visible bounded failure, persisted project truth, and refresh restore.",
+          "MUT-001 still owns deep product-direction mutation, impact, approval, history, and rollback.",
+          "VER-AGT-001 still owns real screen/product verification execution and proof results.",
+          "REL-AGT-001 and provider/security/release tasks still own publishing, provider connection, WhatsApp, payment, deployment, and release execution.",
+          "The visible live proof still observed known /live-events 401 browser noise, owned by OBS-001."
+        ]
+      },
+      {
+        "taskId": "LEARNING-PRODUCT-INTELLIGENCE-001",
+        "title": "Learning-driven product pattern intelligence",
+        "status": "trueGreen",
+        "closedAt": "2026-06-07",
+        "closureEvidence": [
+          "web/shared/product-pattern-learning-intelligence.js",
+          "web/shared/product-kind-discovery.js",
+          "web/shared/runtime-skeleton-truth.js",
+          "src/core/runtime-learning-events.js",
+          "src/core/build-agent-learning-instructions.js",
+          "src/core/project-service.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "test/product-kind-discovery.test.js",
+          "test/build-agent-learning-instructions.test.js",
+          "test/runtime-learning-events.test.js",
+          "test/project-service.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-learning-product-intelligence-001-live-proof.mjs",
+          "/private/tmp/nexus-learning-product-intelligence-001-1780851177559-learning-applied.png",
+          "/private/tmp/nexus-learning-product-intelligence-001-1780851177559-report.json"
+        ],
+        "verification": [
+          "node --check web/shared/product-pattern-learning-intelligence.js",
+          "node --check web/shared/product-kind-discovery.js",
+          "node --check web/shared/runtime-skeleton-truth.js",
+          "node --check src/core/build-agent-learning-instructions.js",
+          "node --check src/core/runtime-learning-events.js",
+          "node --check src/core/project-service.js",
+          "node --check scripts/verify-learning-product-intelligence-001-live-proof.mjs",
+          "node --test test/product-kind-discovery.test.js test/build-agent-learning-instructions.test.js test/runtime-learning-events.test.js test/loop-core-screen-render.test.js",
+          "node --test --test-name-pattern \"LEARNING-PRODUCT-INTELLIGENCE-001|LEARNING-RUNTIME-001|PRODUCT-KIND-001|RUNTIME-TRUTH-001\" test/product-kind-discovery.test.js test/build-agent-learning-instructions.test.js test/runtime-learning-events.test.js test/project-service.test.js test/loop-core-screen-render.test.js",
+          "node scripts/verify-learning-product-intelligence-001-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "LEARNING-PRODUCT-INTELLIGENCE-001 closes bounded learning influence on product-pattern interpretation and skeleton choice only.",
+          "Learning remains recommendation-only and cannot overwrite project truth without real project state or mutation truth.",
+          "This does not close full self-improving autonomous product design, Build Agent mutation, release, provider connection, payment, publishing, or production deployment."
+        ]
+      },
+      {
+        "taskId": "PRODUCT-KIND-001",
+        "title": "Unknown product-kind discovery and skeleton selection",
+        "status": "trueGreen",
+        "closedAt": "2026-06-07",
+        "closureEvidence": [
+          "web/shared/product-kind-discovery.js",
+          "web/shared/runtime-skeleton-truth.js",
+          "web/shared/product-domain-skeleton.js",
+          "src/core/runtime-skeleton-truth.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "test/product-kind-discovery.test.js",
+          "test/loop-core-screen-render.test.js",
+          "test/project-service.test.js",
+          "scripts/verify-product-kind-001-live-proof.mjs",
+          "/private/tmp/nexus-product-kind-001-1780850270444-game.png",
+          "/private/tmp/nexus-product-kind-001-1780850270444-editor.png",
+          "/private/tmp/nexus-product-kind-001-1780850270444-simulator.png",
+          "/private/tmp/nexus-product-kind-001-1780850270444-report.json"
+        ],
+        "verification": [
+          "node --check web/shared/product-kind-discovery.js",
+          "node --check web/shared/runtime-skeleton-truth.js",
+          "node --check web/shared/product-domain-skeleton.js",
+          "node --check scripts/verify-product-kind-001-live-proof.mjs",
+          "node --test test/product-kind-discovery.test.js test/product-class-model.test.js test/product-domain-skeleton.test.js",
+          "node --test test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js",
+          "node --test --test-name-pattern \"RUNTIME-TRUTH-001\" test/project-service.test.js",
+          "node --test test/product-kind-discovery.test.js test/product-class-model.test.js test/product-domain-skeleton.test.js test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js --test-name-pattern \"PRODUCT-KIND-001|PRODUCT-BACKEND-SKEL-001|PRO-SKEL-001|RUNTIME-SKEL-001|SLICE-005|W4-FIX-007\"",
+          "node scripts/verify-product-kind-001-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "PRODUCT-KIND-001 closes unknown product-kind discovery and skeleton selection only.",
+          "It does not close learning-driven product-pattern intelligence, Build Agent mutation, release, provider connection, payment, publishing, production backend infrastructure, or deployment.",
+          "The live verification required restarting the stale 4011 server so the browser exercised the updated code."
+        ]
+      },
+      {
+        "taskId": "PRO-SKEL-003",
+        "title": "Product-realistic skeleton composition standard",
+        "status": "trueGreen",
+        "closedAt": "2026-06-07",
+        "closureEvidence": [
+          "web/shared/professional-skeleton-quality.js",
+          "web/shared/runtime-skeleton-truth.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "web/nexus-ui/copy/visible-shell-language.js",
+          "test/professional-skeleton-quality.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-pro-skel-001-live-proof.mjs",
+          "/private/tmp/nexus-pro-skel-003-1780848998219-mobile.png",
+          "/private/tmp/nexus-pro-skel-003-1780848998219-landing.png",
+          "/private/tmp/nexus-pro-skel-003-1780848998219-internal.png",
+          "/private/tmp/nexus-pro-skel-003-1780848998219-report.json"
+        ],
+        "verification": [
+          "node --check web/nexus-ui/copy/visible-shell-language.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --test test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js",
+          "node --test test/product-domain-skeleton.test.js test/build-mutation-truth.test.js test/runtime-learning-events.test.js test/build-agent-learning-instructions.test.js",
+          "curl -s -w '\\n%{http_code}\\n' http://127.0.0.1:4011/api/health",
+          "node scripts/verify-pro-skel-001-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "PRO-SKEL-003 closes first-skeleton product realism and composition only.",
+          "It does not close Build Agent continuation, product-direction approval, full verification, release, publishing, external providers, payments, WhatsApp, deployment, production backend infrastructure, or App Store delivery.",
+          "The live verification required restarting the stale 4011 server so the browser exercised the updated code."
+        ]
+      },
+      {
+        "taskId": "PRO-SKEL-001",
+        "title": "Professional product-grade skeleton standard",
+        "status": "trueGreen",
+        "closedAt": "2026-06-07",
+        "closureEvidence": [
+          "web/shared/professional-skeleton-quality.js",
+          "web/shared/runtime-skeleton-truth.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "web/shared/product-class-model.js",
+          "web/shared/split-workspace-live-build-surface-model.js",
+          "web/shared/product-domain-skeleton.js",
+          "test/professional-skeleton-quality.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-pro-skel-001-live-proof.mjs",
+          "/private/tmp/nexus-pro-skel-001-1780846302028-mobile.png",
+          "/private/tmp/nexus-pro-skel-001-1780846302028-landing.png",
+          "/private/tmp/nexus-pro-skel-001-1780846302028-internal.png",
+          "/private/tmp/nexus-pro-skel-001-1780846302028-report.json"
+        ],
+        "verification": [
+          "node --check web/shared/professional-skeleton-quality.js",
+          "node --check web/shared/runtime-skeleton-truth.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check web/shared/product-class-model.js",
+          "node --check web/shared/split-workspace-live-build-surface-model.js",
+          "node --check web/shared/product-domain-skeleton.js",
+          "node --check scripts/verify-pro-skel-001-live-proof.mjs",
+          "node --test test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js",
+          "node --test test/product-domain-skeleton.test.js test/build-mutation-truth.test.js test/runtime-learning-events.test.js test/build-agent-learning-instructions.test.js",
+          "node scripts/verify-pro-skel-001-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "npm run build is unavailable because package.json has no build script.",
+          "PRO-SKEL-001 does not close downstream Build Agent mutation, production app builds, real provider connections, payment, publishing, or release execution."
+        ]
+      },
+      {
+        "taskId": "PRO-SKEL-002",
+        "title": "Market-calibrated Nexus skeleton standard",
+        "status": "trueGreen",
+        "closedAt": "2026-06-07",
+        "closureEvidence": [
+          "docs/operating-system/market-calibrated-skeleton-standard-2026-06-07.md",
+          "web/shared/professional-skeleton-quality.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/professional-skeleton-quality.test.js",
+          "test/loop-core-screen-render.test.js",
+          "scripts/verify-pro-skel-001-live-proof.mjs",
+          "/private/tmp/nexus-pro-skel-002-1780847142664-mobile.png",
+          "/private/tmp/nexus-pro-skel-002-1780847142664-landing.png",
+          "/private/tmp/nexus-pro-skel-002-1780847142664-internal.png",
+          "/private/tmp/nexus-pro-skel-002-1780847142664-report.json"
+        ],
+        "verification": [
+          "node --check web/shared/professional-skeleton-quality.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --check scripts/verify-pro-skel-001-live-proof.mjs",
+          "node --test test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js",
+          "node scripts/verify-pro-skel-001-live-proof.mjs"
+        ],
+        "residualNotes": [
+          "PRO-SKEL-002 is based on official market-quality research but does not copy competitor UI, text, or brand language.",
+          "2026-06-07 revalidation: PRO-SKEL-002 remains closed only as a structured/live market-calibrated skeleton envelope; it does not prove that the first Build output feels like the beginning of a real product.",
+          "PRO-SKEL-003 now owns product-realistic skeleton composition and blocks downstream user-visible Build Agent work until live screenshots and tests prove the stronger bar.",
+          "PRO-SKEL-002 does not close Build Agent continuation, approval flows, production releases, external provider connections, payments, or App Store delivery."
+        ]
+      },
+      {
+        "taskId": "SLICE-005",
+        "title": "First product-type runtime skeleton visible on Build",
+        "status": "trueGreen",
+        "closedAt": "2026-06-04",
+        "closureEvidence": [
+          "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/loop-core-screen-render.test.js",
+          "/private/tmp/nexus-slice-005-mobile-live.png",
+          "/private/tmp/nexus-slice-005-internal-live.png",
+          "/private/tmp/nexus-slice-005-refresh-live.png"
+        ],
+        "verification": [
+          "node --check web/nexus-ui/adapters/loop-adapter.js",
+          "node --check web/nexus-ui/screens/LoopCoreScreen.js",
+          "node --test test/loop-core-screen-render.test.js",
+          "Live browser proof on http://127.0.0.1:4011/loop with qaState mobile app project rendered SLICE-005 mobile-simulator runtime skeleton.",
+          "Live browser proof on http://127.0.0.1:4011/loop with qaState internal tool project rendered SLICE-005 workspace-state-shell runtime skeleton and blocked stale landing-page generation hint.",
+          "Live refresh proof preserved internal-tool workspace-state-shell after reload.",
+          "2026-06-04 boundary update: SLICE-005 remains trueGreen for product-type runtime-looking surface and restore proof, but does not claim Xcode-level or cross-product interactive runtime behavior. That stronger bar is now owned by RUNTIME-SKEL-001."
+        ]
+      },
+      {
+        "taskId": "VSKEL-001",
+        "title": "Visual Product Skeleton Agent first visible skeleton",
+        "status": "trueGreen",
+        "closedAt": "2026-06-03",
+        "closureEvidence": [
+          "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
+          "docs/operating-system/visual-product-skeleton-agent-implementation-evidence-2026-06-03.md",
+          "src/core/onboarding-service.js",
+          "src/server.js",
+          "web/app.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "test/product-skeleton-agent-service.test.js",
+          "test/loop-core-screen-render.test.js",
+          "/private/tmp/nexus-vskel-premium-gifts-live.png"
+        ],
+        "verification": [
+          "node --check src/core/onboarding-provider-client.js",
+          "node --check src/core/onboarding-service.js",
+          "node --check src/server.js",
+          "node --check web/app.js",
+          "node --test test/onboarding-provider-client.test.js test/product-skeleton-agent-service.test.js test/loop-core-screen-render.test.js test/design-plugin-registry-contract.test.js test/design-plugin-built-ins.test.js test/design-plugin-user-preference.test.js",
+          "Live browser proof on http://127.0.0.1:4011/create?qa=1&qaReset=1&qaScreen=create reached Loop with SKEL-001 provider-composed, VSKEL-001 provider-composed, visual-product-skeleton-agent, premium-brand, and DESIGN-PLUG-004 for premium embroidered gifts."
+        ]
+      },
+      {
+        "taskId": "W4-GEN-003",
+        "title": "Transition conversation-first entry into entry-to-live-skeleton continuity",
+        "status": "trueGreen",
+        "closedAt": "2026-05-24",
+        "closureEvidence": [
+          "web/app.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "test/loop-core-screen-render.test.js",
+          "docs/wave3-canonical-state.json",
+          "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+          "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-005E",
+        "title": "Attach conversation-first origin to Understanding and downstream continuity",
+        "status": "trueGreen",
+        "closedAt": "2026-05-24",
+        "closureEvidence": [
+          "web/app.js",
+          "test/project-adapter.test.js",
+          "test/project-create-screen-render.test.js",
+          "docs/wave3-canonical-state.json",
+          "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+          "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-005D",
+        "title": "Harden durability, idempotency, restore, and stale-state isolation on the new entry path",
+        "status": "trueGreen",
+        "closedAt": "2026-05-24",
+        "closureEvidence": [
+          "web/app.js",
+          "test/project-adapter.test.js",
+          "test/project-create-screen-render.test.js",
+          "docs/wave3-canonical-state.json",
+          "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+          "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-005C",
+        "title": "Implement conversation-first front door with hidden project/session/bootstrap",
+        "status": "trueGreen",
+        "closedAt": "2026-05-24",
+        "closureEvidence": [
+          "web/app.js",
+          "web/nexus-ui/adapters/project-adapter.js",
+          "web/nexus-ui/screens/ProjectCreateScreen.js",
+          "web/nexus-ui/styles/screens.css",
+          "test/project-adapter.test.js",
+          "test/project-create-screen-render.test.js",
+          "docs/wave3-canonical-state.json",
+          "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+          "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-005B",
+        "title": "Run Figma-backed primary entry shell structural pass",
+        "status": "trueGreen",
+        "closedAt": "2026-05-24",
+        "closureEvidence": [
+          "https://www.figma.com/design/MWqO2iBi3NGgxuTcl6s0Wy",
+          "docs/wave3-canonical-state.json",
+          "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+          "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-005A",
+        "title": "Define conversation-first entry foundation contract and route ownership",
+        "status": "trueGreen",
+        "closedAt": "2026-05-24",
+        "closureEvidence": [
+          "docs/operating-system/wave4-conversation-first-entry-foundation-contract.md",
+          "docs/wave3-canonical-state.json",
+          "docs/operating-system/wave4-post-wave4-learning-intake-continuation-lane.md",
+          "docs/operating-system/wave4-minimum-believable-core-planning-track.md"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-004B",
+        "title": "Derive live conversational tone and pacing rules from external product intelligence",
+        "status": "trueGreen",
+        "closedAt": "2026-05-24",
+        "closureEvidence": [
+          "docs/operating-system/wave4-live-conversational-tone-and-pacing-contract.md",
+          "web/shared/live-conversation-tone-contract.js",
+          "web/nexus-ui/adapters/onboarding-adapter.js",
+          "web/nexus-ui/adapters/understanding-adapter.js",
+          "web/nexus-ui/screens/SmartOnboardingScreen.js",
+          "web/nexus-ui/screens/UnderstandingSummaryScreen.js",
+          "src/core/onboarding-service.js",
+          "web/app.js",
+          "test/onboarding-adapter.test.js",
+          "test/onboarding-service-conversation.test.js",
+          "test/smart-onboarding-screen-render.test.js",
+          "test/understanding-summary-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-004A",
+        "title": "Convert external product-conversation patterns into Nexus product-family wrapper packs",
+        "status": "trueGreen",
+        "closedAt": "2026-05-23",
+        "closureEvidence": [
+          "web/shared/learning-guided-onboarding.js",
+          "src/core/onboarding-service.js",
+          "web/app.js",
+          "test/onboarding-service-conversation.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-004",
+        "title": "Bring competitor and comparable-product intelligence into the live agent dialogue",
+        "status": "trueGreen",
+        "closedAt": "2026-05-23",
+        "closureEvidence": [
+          "src/core/comparable-product-intelligence.js",
+          "src/core/onboarding-provider-client.js",
+          "src/core/project-service.js",
+          "src/core/onboarding-service.js",
+          "web/app.js",
+          "test/onboarding-provider-client.test.js",
+          "test/project-service-companion-correction.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-003",
+        "title": "Implement post-onboarding clarification and correction loop",
+        "status": "trueGreen",
+        "closedAt": "2026-05-22",
+        "closureEvidence": [
+          "src/core/onboarding-service.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/app.js",
+          "web/index.html",
+          "web/nexus-ui/adapters/understanding-adapter.js",
+          "test/onboarding-service-conversation.test.js",
+          "test/project-service-companion-correction.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-002",
+        "title": "Add floating cross-Nexus product-conversation agent presence",
+        "status": "trueGreen",
+        "closedAt": "2026-05-22",
+        "closureEvidence": [
+          "src/core/onboarding-provider-client.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/app.js",
+          "web/styles.css"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-001A",
+        "title": "Enforce co-founder-style exploratory product reasoning before understanding closure",
+        "status": "trueGreen",
+        "closedAt": "2026-05-22",
+        "closureEvidence": [
+          "src/core/onboarding-service.js",
+          "src/core/onboarding-provider-client.js",
+          "web/shared/adaptive-onboarding-agent-contract.js",
+          "web/shared/learning-guided-onboarding.js",
+          "web/nexus-ui/adapters/onboarding-adapter.js",
+          "web/nexus-ui/screens/SmartOnboardingScreen.js",
+          "web/app.js",
+          "test/onboarding-service-conversation.test.js",
+          "test/onboarding-provider-client.test.js",
+          "test/onboarding-adapter.test.js",
+          "test/adaptive-onboarding-agent-contract.test.js",
+          "test/smart-onboarding-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-INTAKE-010",
+        "title": "Expose user-facing provider, model, and intelligence controls on the onboarding agent",
+        "status": "trueGreen",
+        "closedAt": "2026-05-22",
+        "closureEvidence": [
+          "web/shared/onboarding-provider-runtime.js",
+          "src/core/onboarding-provider-client.js",
+          "src/core/onboarding-service.js",
+          "web/nexus-ui/adapters/onboarding-adapter.js",
+          "web/nexus-ui/screens/SmartOnboardingScreen.js",
+          "web/app.js",
+          "test/onboarding-provider-client.test.js",
+          "test/onboarding-service-conversation.test.js",
+          "test/smart-onboarding-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-INTAKE-009",
+        "title": "Harden onboarding provider runtime to production-safe operation",
+        "status": "trueGreen",
+        "closedAt": "2026-05-22",
+        "closureEvidence": [
+          "src/core/onboarding-provider-client.js",
+          "src/core/onboarding-service.js",
+          "web/shared/onboarding-provider-runtime.js",
+          "web/nexus-ui/adapters/onboarding-adapter.js",
+          "web/nexus-ui/screens/SmartOnboardingScreen.js",
+          "web/app.js",
+          "test/onboarding-provider-client.test.js",
+          "test/onboarding-service-conversation.test.js",
+          "test/smart-onboarding-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-INTAKE-008",
+        "title": "Add retry recovery and provider failover continuity to onboarding runtime",
+        "status": "trueGreen",
+        "closedAt": "2026-05-21",
+        "closureEvidence": [
+          "src/core/onboarding-provider-client.js",
+          "src/core/onboarding-service.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/app.js",
+          "test/onboarding-provider-client.test.js",
+          "test/onboarding-service-conversation.test.js"
+        ]
+      },
       {
         "taskId": "W4-LEARN-002",
         "title": "Implement deep adaptive learning decision impact",
@@ -572,6 +2784,70 @@
           "web/nexus-ui/screens/SmartOnboardingScreen.js",
           "test/onboarding-service-conversation.test.js",
           "test/onboarding-adapter.test.js",
+          "test/smart-onboarding-screen-render.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-INTAKE-005",
+        "title": "Inject smart onboarding agent truth into canonical downstream system surfaces",
+        "status": "trueGreen",
+        "closedAt": "2026-05-21",
+        "closureEvidence": [
+          "web/app.js",
+          "web/nexus-ui/adapters/onboarding-adapter.js",
+          "web/nexus-ui/adapters/understanding-adapter.js",
+          "src/core/onboarding-service.js",
+          "test/onboarding-loop-continuation.test.js",
+          "test/understanding-summary-screen-render.test.js",
+          "test/next-task-adapter.test.js",
+          "test/proof-adapter.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-INTAKE-006",
+        "title": "Connect onboarding agent to real external model provider APIs",
+        "status": "trueGreen",
+        "closedAt": "2026-05-21",
+        "closureEvidence": [
+          "src/core/onboarding-provider-client.js",
+          "src/core/onboarding-service.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/shared/onboarding-provider-runtime.js",
+          "web/app.js",
+          "test/onboarding-service-conversation.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-INTAKE-007",
+        "title": "Stream live provider responses through the onboarding conversation surface",
+        "status": "trueGreen",
+        "closedAt": "2026-05-21",
+        "closureEvidence": [
+          "src/core/onboarding-provider-client.js",
+          "src/core/onboarding-service.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/app.js",
+          "test/onboarding-service-conversation.test.js"
+        ]
+      },
+      {
+        "taskId": "W4-AGENT-001",
+        "title": "Enforce minimum real product-conversation depth before understanding closure",
+        "status": "trueGreen",
+        "closedAt": "2026-05-21",
+        "closureEvidence": [
+          "web/shared/learning-guided-onboarding.js",
+          "src/core/onboarding-service.js",
+          "src/core/onboarding-completion-evaluator.js",
+          "src/core/onboarding-to-state-handoff-contract.js",
+          "web/shared/adaptive-onboarding-agent-contract.js",
+          "web/app.js",
+          "test/onboarding-service-conversation.test.js",
+          "test/onboarding-completion-evaluator.test.js",
+          "test/onboarding-adapter.test.js",
+          "test/adaptive-onboarding-agent-contract.test.js",
           "test/smart-onboarding-screen-render.test.js"
         ]
       },

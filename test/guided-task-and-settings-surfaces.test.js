@@ -6,6 +6,8 @@ import { createGuidedTaskExecutionSurface } from "../src/core/guided-task-execut
 import { createTaskStepFlowAndProgressBinder } from "../src/core/task-step-flow-progress-binder.js";
 import { createTaskApprovalHandoffPanel } from "../src/core/task-approval-handoff-panel.js";
 import { createSettingsAndProfileSurfaceModel } from "../src/core/settings-profile-surface-model.js";
+import { buildSettingsViewModel } from "../web/nexus-ui/adapters/settings-adapter.js";
+import { renderSettingsScreen } from "../web/nexus-ui/screens/SettingsScreen.js";
 
 test("daily workspace surface binds authenticated shell, navigation, and workspaces into one execution surface", () => {
   const { dailyWorkspaceSurface } = createDailyWorkspaceSurfaceModel({
@@ -123,4 +125,54 @@ test("settings and profile surface exposes actor, billing, notifications, and se
   assert.equal(settingsProfileSurface.billingSnapshot.currentPlan, "pro");
   assert.equal(settingsProfileSurface.securitySettings.mfaDecision, "required");
   assert.equal(settingsProfileSurface.summary.hasSettingsRoute, true);
+});
+
+test("ACCT-001 settings screen renders account boundary without internal task labels", () => {
+  const viewModel = buildSettingsViewModel({
+    activePanel: "account",
+    settingsProfileSurface: {
+      actorProfile: {
+        userId: "user-1",
+        displayName: "Yogev",
+        email: "yogev@example.com",
+        role: "owner",
+      },
+      accountBoundary: {
+        status: "ready",
+        userIdentity: {
+          verificationStatus: "verified",
+        },
+        activeSession: {
+          status: "active",
+        },
+        accountSecurity: {
+          authMethod: "password",
+          availableActions: ["change-password", "logout-all", "request-account-deletion"],
+        },
+        linkedTruth: {
+          privacy: { status: "linked-not-closed-here" },
+          billing: { status: "not-enabled-for-first-account-boundary" },
+          team: { role: "owner", status: "active" },
+          providerIdentity: { status: "provider-actions-require-explicit-provider-gate" },
+          externalIdentity: { status: "not-closed-by-account-settings" },
+        },
+        accountActivityHistory: [
+          {
+            summary: "Profile details were updated for the account.",
+            status: "completed",
+            occurredAt: "2026-06-10T00:00:00.000Z",
+          },
+        ],
+      },
+    },
+  });
+
+  const html = renderSettingsScreen(viewModel);
+
+  assert.match(html, /גבול חשבון/);
+  assert.match(html, /בקש מחיקת חשבון/);
+  assert.match(html, /פעילות חשבון/);
+  assert.doesNotMatch(html, /ACCT-001/);
+  assert.doesNotMatch(html, /PRIVACY-001/);
+  assert.doesNotMatch(html, /PROV-001/);
 });

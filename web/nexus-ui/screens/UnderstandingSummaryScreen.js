@@ -3,6 +3,12 @@ import { renderNexusCard } from "../components/NexusCard.js";
 import { renderNexusQaNav } from "../components/NexusQaNav.js";
 import { renderNexusStepper } from "../components/NexusStepper.js";
 import { renderWorkspaceLayout } from "../layouts/WorkspaceLayout.js";
+import {
+  resolveHumanConversationPauseBadge,
+  resolveHumanNextStepHeading,
+  resolveHumanWhyPauseHeading,
+} from "../../shared/live-conversation-tone-contract.js";
+import { getNexusButtonClassName } from "../components/NexusButton.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -52,7 +58,7 @@ function renderGenerationLearningCard(card) {
     padding: "lg",
     content: `
       <div class="nexus-understanding-screen__badge">${escapeHtml(card.badge)}</div>
-      <h2>איך Nexus עומדת לבנות את זה עכשיו</h2>
+      <h2>${escapeHtml(resolveHumanNextStepHeading())}</h2>
       <p><strong>${escapeHtml(card.title)}</strong></p>
       <p>${escapeHtml(card.body)}</p>
       <p>${escapeHtml(card.proofLine)}</p>
@@ -64,12 +70,31 @@ function renderGenerationLearningCard(card) {
   });
 }
 
+function renderUnderstandingActionLink({
+  label = "",
+  href = "/loop",
+  variant = "primary",
+  className = "",
+  attrs = {},
+} = {}) {
+  const extraAttrs = Object.entries(attrs)
+    .map(([key, value]) => `${key}="${String(value).replaceAll('"', "&quot;")}"`)
+    .join(" ");
+
+  return `
+    <a
+      href="${escapeHtml(href)}"
+      class="${getNexusButtonClassName({ variant, className })}"
+      ${extraAttrs}
+    >${escapeHtml(label)}</a>
+  `;
+}
+
 export function renderUnderstandingSummaryScreen(viewModel) {
   const sidebar = {
-    currentRoute: "/onboarding",
+    currentRoute: "/loop",
     primary: [
       { title: "יצירה", href: "/create", target: "create", icon: "＋" },
-      { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
       { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
       { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
     ],
@@ -99,10 +124,10 @@ export function renderUnderstandingSummaryScreen(viewModel) {
   const content = `
     <section class="nexus-understanding-screen">
       <div class="nexus-understanding-screen__stepper">${steps}</div>
-      ${renderNexusQaNav("understanding")}
+      ${renderNexusQaNav("loop")}
 
       <div class="nexus-understanding-screen__intro">
-        <div class="nexus-understanding-screen__badge">רגע קריטי בתהליך</div>
+        <div class="nexus-understanding-screen__badge">${escapeHtml(resolveHumanConversationPauseBadge())}</div>
         <h1 id="understanding-screen-title">${escapeHtml(viewModel.title)}</h1>
         <p id="understanding-screen-status">${escapeHtml(viewModel.subtitle)}</p>
         <p class="nexus-understanding-screen__detail">${escapeHtml(viewModel.detail)}</p>
@@ -116,7 +141,7 @@ export function renderUnderstandingSummaryScreen(viewModel) {
         className: "nexus-understanding-screen__why-card",
         padding: "lg",
         content: `
-          <h2>למה זה חשוב</h2>
+          <h2>${escapeHtml(resolveHumanWhyPauseHeading())}</h2>
           <p>${escapeHtml(viewModel.whyItMatters)}</p>
           <div class="nexus-understanding-screen__confidence">
             <span class="nexus-understanding-screen__confidence-dot" aria-hidden="true"></span>
@@ -134,8 +159,9 @@ export function renderUnderstandingSummaryScreen(viewModel) {
           className: "nexus-understanding-screen__button",
           attrs: { id: "understanding-correct-button" },
         })}
-        ${renderNexusButton({
+        ${renderUnderstandingActionLink({
           label: "נכון, בוא נתקדם",
+          href: "/loop",
           variant: "primary",
           className: "nexus-understanding-screen__button",
           attrs: { id: "understanding-continue-button" },

@@ -55,6 +55,15 @@ const WORKSPACE_SURFACE_FAMILIES = {
     buildSurfaceTitle: "ה־scene וה־HUD מתחילים להופיע",
     buildSurfaceDetail: "המשחק חייב להרגיש כמו playable progression ולא concept summary.",
   },
+  "software-tool": {
+    workspaceFamily: "tool-runtime-workspace",
+    previewFrameFamily: "tool-control-preview",
+    buildRegionEmphasis: "input-processing-output-surface",
+    orchestrationEmphasis: "input-operation-result-loop",
+    runtimeRegionEmphasis: "private-tool-release-direction",
+    buildSurfaceTitle: "כלי התוכנה מתחיל לרוץ מול המשתמש",
+    buildSurfaceDetail: "קלט, פעולה, פלט, ומצב שמור צריכים להופיע כחלק מאותו כלי עובד.",
+  },
   book: {
     workspaceFamily: "document-outline-workspace",
     previewFrameFamily: "document-preview",
@@ -101,6 +110,7 @@ export function createSplitWorkspaceAndLiveBuildSurfaceModel({
 
   return {
     modelId: `split-workspace:${normalizedProductClass}:${projectStage}`,
+    surfaceContractId: "SURF-001",
     productClass: normalizedProductClass,
     label: classProfile.label,
     workspaceFamily: familyDefinition.workspaceFamily,
@@ -111,7 +121,32 @@ export function createSplitWorkspaceAndLiveBuildSurfaceModel({
     releasePathFamily: runtimeDirection?.releasePathFamily ?? classProfile.releasePathFamily,
     projectStage,
     dominantRegion: "build-region",
+    workspaceLaw: "persistent-agent-rail-plus-live-build-canvas",
     regions: {
+      agentRail: {
+        regionId: "agent-conversation-rail",
+        persistence: "from-first-skeleton-through-release",
+        role: "guide-explain-change-verify-release",
+        emphasis: familyDefinition.orchestrationEmphasis,
+        visibleSignals: unique([
+          "agent-message",
+          "mission",
+          "current-stage",
+          "next-move",
+          ...(skeletonContract?.visibleMilestones ?? []).slice(0, 2),
+        ]),
+      },
+      buildCanvas: {
+        regionId: "live-artifact-build-canvas",
+        role: "live-product-surface-being-shaped",
+        emphasis: familyDefinition.buildRegionEmphasis,
+        title: familyDefinition.buildSurfaceTitle,
+        detail: familyDefinition.buildSurfaceDetail,
+        previewFrameFamily: runtimeDirection?.previewFamily ?? familyDefinition.previewFrameFamily,
+        requiredSurfaceElements: unique(skeletonQualityBaseline?.requiredSurfaceElements ?? []),
+        visibleMilestones: unique(skeletonContract?.visibleMilestones ?? []),
+        detachedPreviewAllowed: false,
+      },
       orchestration: {
         regionId: "orchestration-region",
         emphasis: familyDefinition.orchestrationEmphasis,
@@ -124,6 +159,7 @@ export function createSplitWorkspaceAndLiveBuildSurfaceModel({
       },
       build: {
         regionId: "build-region",
+        canonicalAliasFor: "live-artifact-build-canvas",
         emphasis: familyDefinition.buildRegionEmphasis,
         title: familyDefinition.buildSurfaceTitle,
         detail: familyDefinition.buildSurfaceDetail,
@@ -148,6 +184,10 @@ export function createSplitWorkspaceAndLiveBuildSurfaceModel({
       "projectStage",
     ],
     truthRequirements: [
+      "agent-conversation-rail-must-persist",
+      "live-build-canvas-must-stay-in-same-workspace",
+      "build-surface-must-not-be-only-chat",
+      "build-surface-must-not-be-only-preview",
       "orchestration-context-must-not-dominate-center-surface",
       "build-region-must-be-primary",
       "runtime-direction-must-remain-visible",

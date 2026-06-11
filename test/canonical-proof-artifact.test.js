@@ -41,8 +41,8 @@ test("canonical proof artifact reuses onboarding artifact expectation", () => {
 
   assert.equal(artifact.artifactType, "internal-ops-dashboard");
   assert.equal(artifact.title, "Queue Workspace workspace");
-  assert.equal(artifact.previewPayload.subtitle, "Workspace פנימי עם תור עבודה ברור, ownership, SLA ופעולה הבאה.");
-  assert.match(artifact.previewPayload.insight, /ownership/);
+  assert.equal(artifact.previewPayload.subtitle, "משטח עבודה פנימי עם תור עבודה ברור, בעלות, רמת שירות ופעולה הבאה.");
+  assert.match(artifact.previewPayload.insight, /בעלות/);
 });
 
 test("canonical proof artifact builds a landing page artifact from landing runtime truth", () => {

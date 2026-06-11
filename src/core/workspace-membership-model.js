@@ -11,7 +11,9 @@ function normalizeRoles(userIdentity, workspaceMetadata) {
     return workspaceMetadata.roles;
   }
 
-  return [userIdentity?.userId ? "owner" : "viewer"];
+  return userIdentity?.userId
+    ? ["owner", "admin", "editor", "viewer"]
+    : ["viewer", "guest"];
 }
 
 export function defineWorkspaceAndMembershipModel({
@@ -52,6 +54,21 @@ export function defineWorkspaceAndMembershipModel({
           ? workspaceMetadata.memberCount
           : 1,
       roles,
+      members: Array.isArray(workspaceMetadata?.members) && workspaceMetadata.members.length > 0
+        ? workspaceMetadata.members
+        : [
+            {
+              membershipId: `${workspaceId}:${userIdentity?.userId ?? "anonymous"}`,
+              workspaceId,
+              userId: userIdentity?.userId ?? null,
+              email: userIdentity?.email ?? null,
+              displayName: userIdentity?.displayName ?? userIdentity?.email ?? userIdentity?.userId ?? "Owner",
+              role: userIdentity?.userId ? "owner" : "viewer",
+              status: membershipStatus,
+              isOwner: ownerUserId != null && ownerUserId === userIdentity?.userId,
+            },
+          ],
+      invitations: Array.isArray(workspaceMetadata?.invitations) ? workspaceMetadata.invitations : [],
     },
     membershipRecord: {
       membershipId: `${workspaceId}:${userIdentity?.userId ?? "anonymous"}`,

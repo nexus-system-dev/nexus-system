@@ -3,14 +3,10 @@ import { renderNexusCard } from "../components/NexusCard.js";
 import { renderNexusQaNav } from "../components/NexusQaNav.js";
 import { renderNexusStepper } from "../components/NexusStepper.js";
 import { renderWorkspaceLayout } from "../layouts/WorkspaceLayout.js";
+import { escapeVisibleShellCopy } from "../copy/visible-shell-language.js";
 
 function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+  return escapeVisibleShellCopy(value);
 }
 
 function renderStatusRow(item) {
@@ -59,9 +55,8 @@ export function renderExecutionLiveScreen(viewModel) {
     currentRoute: "/loop",
     primary: [
       { title: "יצירה", href: "/create", target: "create", icon: "＋" },
-      { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
-      { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
-      { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
+      { title: "בנייה", href: "/loop", target: "loop", icon: "▦" },
+      { title: "היסטוריה", href: "/timeline", target: "timeline", icon: "◷" },
     ],
     support: [
       { title: "בית", href: "/home", icon: "⌂" },
@@ -126,7 +121,7 @@ export function renderExecutionLiveScreen(viewModel) {
             content: `
               <div class="nexus-execution-screen__build-state-head">
                 <div>
-                  <h2>Build progression</h2>
+                  <h2>התקדמות הבנייה</h2>
                   <p>השלב הפעיל: ${escapeHtml(viewModel.buildProgressionStateMachine.currentLabel)}</p>
                 </div>
                 <span class="nexus-execution-screen__build-state-route">${escapeHtml(viewModel.buildProgressionStateMachine.currentRouteKey)}</span>
@@ -150,15 +145,15 @@ export function renderExecutionLiveScreen(viewModel) {
                 <p>${escapeHtml(viewModel.workspaceSurfaceModel.buildSurfaceDetail)}</p>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Orchestration</span>
+                    <span>תיאום העבודה</span>
                     <strong>${escapeHtml(viewModel.workspaceSurfaceModel.orchestrationEmphasis)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Preview frame</span>
+                    <span>תצוגה חיה</span>
                     <strong>${escapeHtml(viewModel.workspaceSurfaceModel.previewFrameFamily)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Runtime / release</span>
+                    <span>הרצה ושחרור</span>
                     <strong>${escapeHtml(`${viewModel.workspaceSurfaceModel.runtimeDirection} -> ${viewModel.workspaceSurfaceModel.releasePathFamily}`)}</strong>
                   </div>
                 </div>
@@ -170,21 +165,21 @@ export function renderExecutionLiveScreen(viewModel) {
               </div>
               <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--evolution">
                 <div class="nexus-execution-screen__workspace-contract-head">
-                  <strong>Class-aware evolution</strong>
+                  <strong>התפתחות לפי סוג המוצר</strong>
                   <span>${escapeHtml(viewModel.classSpecificSurfaceEvolutionRules.evolutionFamily)}</span>
                 </div>
                 <p>${escapeHtml(viewModel.classSpecificSurfaceEvolutionRules.visibleEvolutionRule)}</p>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Frontend surface</span>
+                    <span>משטח מוצר</span>
                     <strong>${escapeHtml(viewModel.classSpecificSurfaceEvolutionRules.frontendSurfaceType)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Backend state</span>
+                    <span>מצב מוצר</span>
                     <strong>${escapeHtml(viewModel.classSpecificSurfaceEvolutionRules.backendStateType)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Scene / workflow</span>
+                    <span>זרימת עבודה</span>
                     <strong>${escapeHtml(viewModel.classSpecificSurfaceEvolutionRules.sceneType)}</strong>
                   </div>
                 </div>
@@ -196,21 +191,21 @@ export function renderExecutionLiveScreen(viewModel) {
               </div>
               <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--local">
                 <div class="nexus-execution-screen__workspace-contract-head">
-                  <strong>Local workspace contract</strong>
+                  <strong>רצף עבודה מקומי</strong>
                   <span>${escapeHtml(viewModel.localWorkspaceContract.workspaceMode)}</span>
                 </div>
-                <p>${escapeHtml(`resume via ${viewModel.localWorkspaceContract.resumeWorkspace} | source ${viewModel.localWorkspaceContract.continuitySource}`)}</p>
+                <p>${escapeHtml(`חוזרים דרך ${viewModel.localWorkspaceContract.resumeWorkspace} | מקור ${viewModel.localWorkspaceContract.continuitySource}`)}</p>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Current workspace</span>
+                    <span>מרחב נוכחי</span>
                     <strong>${escapeHtml(viewModel.localWorkspaceContract.currentWorkspaceKey)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Build route</span>
+                    <span>מסך בנייה</span>
                     <strong>${escapeHtml(viewModel.localWorkspaceContract.buildRouteKey)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Desktop shell</span>
+                    <span>עבודה מקומית</span>
                     <strong>${escapeHtml(viewModel.localWorkspaceContract.desktopShellStatus)}</strong>
                   </div>
                 </div>
@@ -222,17 +217,17 @@ export function renderExecutionLiveScreen(viewModel) {
               </div>
               <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--shell">
                 <div class="nexus-execution-screen__workspace-contract-head">
-                  <strong>Desktop shell scope</strong>
+                  <strong>עבודה מקומית</strong>
                   <span>${escapeHtml(viewModel.desktopShellScopeContract.shellFamily)}</span>
                 </div>
                 <p>${escapeHtml(`${viewModel.desktopShellScopeContract.currentWave4Path} -> ${viewModel.desktopShellScopeContract.preferredFutureShell}`)}</p>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Shell status</span>
+                    <span>מצב סביבת העבודה</span>
                     <strong>${escapeHtml(viewModel.desktopShellScopeContract.shellStatus)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Release workflow</span>
+                    <span>תהליך שחרור</span>
                     <strong>${escapeHtml(viewModel.desktopShellScopeContract.releaseWorkflowMode)}</strong>
                   </div>
                 </div>
@@ -244,21 +239,21 @@ export function renderExecutionLiveScreen(viewModel) {
               </div>
               <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--runtime">
                 <div class="nexus-execution-screen__workspace-contract-head">
-                  <strong>Runtime path</strong>
+                  <strong>מסלול הרצה</strong>
                   <span>${escapeHtml(viewModel.classAwareRuntimeResolver.runtimeFamily)}</span>
                 </div>
                 <p>${escapeHtml(viewModel.classAwareRuntimeResolver.visibleRuntimeRule)}</p>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Project-facing path</span>
+                    <span>מה המשתמש רואה</span>
                     <strong>${escapeHtml(viewModel.classAwareRuntimeResolver.projectFacingPath)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Packaging path</span>
+                    <span>הכנה לשיתוף</span>
                     <strong>${escapeHtml(viewModel.classAwareRuntimeResolver.packagingPath)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Shell path</span>
+                    <span>מסלול עבודה</span>
                     <strong>${escapeHtml(viewModel.classAwareRuntimeResolver.shellPath)}</strong>
                   </div>
                 </div>
@@ -270,35 +265,35 @@ export function renderExecutionLiveScreen(viewModel) {
               </div>
               <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--package-preview">
                 <div class="nexus-execution-screen__workspace-contract-head">
-                  <strong>Packaging / preview contract</strong>
+                  <strong>הכנה לתצוגה ושיתוף</strong>
                   <span>${escapeHtml(viewModel.classAwarePackagingPreviewContract.previewMode)}</span>
                 </div>
                 <p>${escapeHtml(viewModel.classAwarePackagingPreviewContract.packagingExpectation)}</p>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Preview path</span>
+                    <span>מסלול תצוגה</span>
                     <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.previewPath)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Package path</span>
+                    <span>מסלול אריזה</span>
                     <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.packagePath)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Package artifact</span>
+                    <span>תוצר ארוז</span>
                     <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.packageArtifactType)}</strong>
                   </div>
                 </div>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Preview surface</span>
+                    <span>משטח תצוגה</span>
                     <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.previewSurface)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Preview artifact</span>
+                    <span>תוצר תצוגה</span>
                     <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.previewArtifact)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Shell path</span>
+                    <span>מסלול עבודה</span>
                     <strong>${escapeHtml(viewModel.classAwarePackagingPreviewContract.shellPath)}</strong>
                   </div>
                 </div>
@@ -313,35 +308,35 @@ export function renderExecutionLiveScreen(viewModel) {
               </div>
               <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--releaseable">
                 <div class="nexus-execution-screen__workspace-contract-head">
-                  <strong>Releaseable state</strong>
+                  <strong>מוכנות לשיתוף</strong>
                   <span>${escapeHtml(viewModel.releaseableProductStateContract.label)}</span>
                 </div>
                 <p>${escapeHtml(viewModel.releaseableProductStateContract.visibleStateRule)}</p>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Release target</span>
+                    <span>יעד שחרור</span>
                     <strong>${escapeHtml(viewModel.releaseableProductStateContract.releaseTarget)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Package path</span>
+                    <span>מסלול אריזה</span>
                     <strong>${escapeHtml(viewModel.releaseableProductStateContract.packagePath)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Next action</span>
+                    <span>הפעולה הבאה</span>
                     <strong>${escapeHtml(viewModel.releaseableProductStateContract.nextAction)}</strong>
                   </div>
                 </div>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Preview path</span>
+                    <span>מסלול תצוגה</span>
                     <strong>${escapeHtml(viewModel.releaseableProductStateContract.previewPath)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Package artifact</span>
+                    <span>תוצר ארוז</span>
                     <strong>${escapeHtml(viewModel.releaseableProductStateContract.packageArtifactType)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Readiness score</span>
+                    <span>רמת מוכנות</span>
                     <strong>${escapeHtml(viewModel.releaseableProductStateContract.readinessScore)}%</strong>
                   </div>
                 </div>
@@ -358,35 +353,35 @@ export function renderExecutionLiveScreen(viewModel) {
               </div>
               <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--deployment-path">
                 <div class="nexus-execution-screen__workspace-contract-head">
-                  <strong>Deployment / release path</strong>
+                  <strong>מסלול שחרור</strong>
                   <span>${escapeHtml(viewModel.classAwareDeploymentReleasePath.pathFamily)}</span>
                 </div>
                 <p>${escapeHtml(viewModel.classAwareDeploymentReleasePath.visibleReleaseRule)}</p>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Provider</span>
+                    <span>ספק</span>
                     <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.providerType)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Primary target</span>
+                    <span>יעד מרכזי</span>
                     <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.primaryTarget)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Next gate</span>
+                    <span>בדיקה הבאה</span>
                     <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.nextGate)}</strong>
                   </div>
                 </div>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Environment path</span>
+                    <span>סביבת שחרור</span>
                     <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.environmentPath)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Operational path</span>
+                    <span>מסלול עבודה</span>
                     <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.operationalPath)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Artifact</span>
+                    <span>תוצר</span>
                     <strong>${escapeHtml(viewModel.classAwareDeploymentReleasePath.deploymentArtifactType)}</strong>
                   </div>
                 </div>
@@ -399,21 +394,21 @@ export function renderExecutionLiveScreen(viewModel) {
               </div>
               <div class="nexus-execution-screen__workspace-contract nexus-execution-screen__workspace-contract--deployment-feedback">
                 <div class="nexus-execution-screen__workspace-contract-head">
-                  <strong>Deployment feedback</strong>
+                  <strong>מצב השחרור</strong>
                   <span>${escapeHtml(viewModel.deploymentStateFeedbackContract.statusLabel)}</span>
                 </div>
                 <p>${escapeHtml(viewModel.deploymentStateFeedbackContract.visibleFeedbackRule)}</p>
                 <div class="nexus-execution-screen__workspace-contract-grid">
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Provider</span>
+                    <span>ספק</span>
                     <strong>${escapeHtml(viewModel.deploymentStateFeedbackContract.providerType)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Environment</span>
+                    <span>סביבה</span>
                     <strong>${escapeHtml(viewModel.deploymentStateFeedbackContract.environment)}</strong>
                   </div>
                   <div class="nexus-execution-screen__workspace-contract-item">
-                    <span>Current step</span>
+                    <span>שלב נוכחי</span>
                     <strong>${escapeHtml(viewModel.deploymentStateFeedbackContract.currentStepLabel)}</strong>
                   </div>
                 </div>
@@ -433,7 +428,7 @@ export function renderExecutionLiveScreen(viewModel) {
                     <span>${escapeHtml(item)}</span>
                   `).join("")}
                   ${viewModel.deploymentStateFeedbackContract.nextPollInSeconds !== null
-                    ? `<span>poll in ${escapeHtml(String(viewModel.deploymentStateFeedbackContract.nextPollInSeconds))}s</span>`
+                    ? `<span>בדיקה נוספת בעוד ${escapeHtml(String(viewModel.deploymentStateFeedbackContract.nextPollInSeconds))} שניות</span>`
                     : ""}
                   <span>${escapeHtml(viewModel.deploymentStateFeedbackContract.continuityRule)}</span>
                 </div>

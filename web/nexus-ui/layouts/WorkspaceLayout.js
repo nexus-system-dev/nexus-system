@@ -1,18 +1,25 @@
-import { renderNexusSidebar } from "../components/NexusSidebar.js";
 import { renderNexusTopbar } from "../components/NexusTopbar.js";
+import {
+  normalizeNexusWorkspaceRailRoute,
+  renderNexusWorkspaceRail,
+} from "../components/NexusWorkspaceRail.js";
 
 export function renderWorkspaceLayout({
   sidebar = null,
   topbar = null,
   content = "",
 } = {}) {
-  const sidebarMarkup = sidebar ? renderNexusSidebar(sidebar) : "";
+  const railMarkup = sidebar
+    ? renderNexusWorkspaceRail({
+        currentRoute: normalizeNexusWorkspaceRailRoute(sidebar.currentRoute),
+      })
+    : "";
   const topbarMarkup = topbar ? renderNexusTopbar(topbar) : "";
 
   return `
     <div class="nexus-ui-shell">
       <div class="nexus-ui-workspace-shell">
-        ${sidebarMarkup}
+        ${railMarkup}
         <div class="nexus-ui-main">
           ${topbarMarkup}
           <main class="nexus-ui-content">

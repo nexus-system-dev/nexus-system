@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 
 import { renderProofResultScreen } from "../web/nexus-ui/screens/ProofResultScreen.js";
 
-test("proof result screen renders release evidence and handoff card", () => {
+test("proof result screen renders product-facing readiness card without orchestration-first handoff UI", () => {
   const html = renderProofResultScreen({
-    showQaNav: true,
+    showQaNav: false,
     badge: "QA preview override",
     title: "זה מה שנבנה עד עכשיו",
     subtitle: "כאן רואים את התוצר שנבנה עבורך, ולמה הוא כבר מוכן לצעד הבא.",
@@ -64,10 +64,13 @@ test("proof result screen renders release evidence and handoff card", () => {
     primaryAction: { label: "המשך לאישור", target: "confirmation" },
   });
 
-  assert.match(html, /Release evidence and handoff/);
-  assert.match(html, /handoff בהכנה/);
-  assert.match(html, /live-browser-preview -&gt; web-build -&gt; web-deployment|live-browser-preview -> web-build -> web-deployment/);
-  assert.match(html, /complete-release-handoff/);
-  assert.match(html, /build-surface-visible/);
-  assert.match(html, /handoff missing/);
+  assert.match(html, /מה צריך לפני שיתוף/);
+  assert.match(html, /המשך מסודר בהכנה/);
+  assert.match(html, /complete-release-המשך מסודר/);
+  assert.match(html, /המשך מסודר missing/);
+  assert.doesNotMatch(html, /Release evidence and handoff/);
+  assert.doesNotMatch(html, /Handoff step/);
+  assert.doesNotMatch(html, /Open blocker/);
+  assert.doesNotMatch(html, /build-surface-visible/);
+  assert.doesNotMatch(html, /live-browser-preview -&gt; web-build -&gt; web-deployment|live-browser-preview -> web-build -> web-deployment/);
 });

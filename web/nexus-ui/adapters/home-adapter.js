@@ -60,6 +60,10 @@ function buildProjectCard(project, currentProjectId) {
       { label: "משימות", value: String(roadmap.length) },
       { label: "עכשיו", value: assignedTask?.summary ?? "אין משימה רצה" },
     ],
+    lastMeaningfulAction: assignedTask?.summary
+      ?? project.projectBrainWorkspace?.overview?.lastMeaningfulAction
+      ?? project.overview?.lastMeaningfulAction
+      ?? "להמשיך מהמקום האחרון שבו Nexus עצרה.",
   };
 }
 
@@ -68,26 +72,55 @@ export function buildHomeSupportViewModel({ projects = [], currentProjectId = nu
     .map((project) => buildProjectCard(normalizeObject(project), currentProjectId))
     .filter((project) => project.id);
 
-  const activeProjects = normalizedProjects.filter((project) => project.status.tone === "active").length;
-  const approvedProjects = normalizedProjects.filter((project) => project.status.tone === "success").length;
+  const currentProject = normalizedProjects.find((project) => project.isCurrent) ?? normalizedProjects[0] ?? null;
+  const recentProjects = normalizedProjects
+    .filter((project) => !currentProject || project.id !== currentProject.id)
+    .slice(0, 3);
 
   return {
-    badge: "Support screen",
-    title: "הבית שלך ב־Nexus",
-    subtitle: "כאן רואים את כל הפרויקטים, בוחרים על מה להמשיך, או פותחים פרויקט חדש.",
+    surfaceContract: "SURF-002",
+    workspaceLaw: "momentum-gateway",
+    ideaHandoff: {
+      sliceContract: "SLICE-002",
+      sourceSurface: "home",
+      targetSurface: "create",
+      responsibleAgent: "project-discovery-agent",
+      hiddenEngine: "onboarding-intake-engine",
+      boundary: "handoff-only-not-agent-response",
+      intent: "new-product-idea",
+    },
+    badge: "שער מומנטום",
+    title: currentProject ? "להמשיך מהמקום הנכון" : "מה בונים עכשיו?",
+    subtitle: currentProject
+      ? "Home לא מנהל פרויקטים. הוא מחזיר אותך לפעולה הבאה הכי משמעותית."
+      : "שיחה אחת עם Nexus פותחת הבנה מוצרית ואז סביבת בנייה חיה.",
     projects: normalizedProjects,
-    stats: [
-      { label: "סה\"כ פרויקטים", value: String(normalizedProjects.length) },
-      { label: "פעילים עכשיו", value: String(activeProjects) },
-      { label: "אושרו", value: String(approvedProjects) },
-    ],
+    currentProject,
+    recentProjects,
+    lastMeaningfulAction: currentProject
+      ? {
+        title: "הפעולה הבאה",
+        body: currentProject.lastMeaningfulAction,
+        projectId: currentProject.id,
+        projectName: currentProject.name,
+      }
+      : {
+        title: "הפעולה הבאה",
+        body: "להתחיל שיחת מוצר חדשה ולתת ל־Nexus להבין מה לבנות.",
+        projectId: "",
+        projectName: "",
+      },
     emptyState: {
-      title: "עדיין אין פרויקטים",
-      body: "כדי להתחיל את הלופ, צריך ליצור פרויקט ראשון ולחבר אליו את ההקשר הראשוני.",
-      actionLabel: "צור פרויקט חדש",
+      title: "עוד אין מוצר להמשיך ממנו",
+      body: "הכניסה הנכונה היא שיחת גילוי קצרה. משם Nexus תפתח סביבת בנייה חיה.",
+      actionLabel: "פתח שיחה עם Nexus",
     },
     primaryAction: {
-      label: "צור פרויקט חדש",
+      label: currentProject ? "המשך בבנייה" : "פתח שיחה עם Nexus",
+      target: "create",
+    },
+    secondaryAction: {
+      label: "שיחה חדשה",
       target: "create",
     },
   };

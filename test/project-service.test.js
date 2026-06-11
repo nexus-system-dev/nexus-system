@@ -1057,6 +1057,210 @@ test("project service seeds and serializes the demo cockpit state", () => {
   assert.equal(typeof project.state.observed.lastObservedAt, "string");
 });
 
+test("RUNTIME-TRUTH-001 — project service persists runtime skeleton truth", () => {
+  const service = createProjectService();
+  const project = service.createProject({
+    id: "runtime-truth-leads",
+    name: "ניהול לידים",
+    goal: "כלי פנימי לניהול לידים עם סטטוס, אחראי, תזכורת וצעד הבא.",
+  });
+  project.artifactExpectation = {
+    projectType: "internal tool",
+    title: "רשימת לידים עם אחריות",
+  };
+  project.productSkeletonAgentOutput = {
+    agentId: "product-skeleton-agent",
+    responseSource: "provider-composed",
+    productType: "internal tool for lead follow up",
+    primaryUser: "בעל עסק קטן",
+    primaryProblem: "לידים נופלים כי אין אחראי ותזכורת",
+    firstWorkflow: { title: "רשימת לידים", steps: ["הוסף ליד", "שייך אחראי"] },
+    initialActions: ["הוסף ליד"],
+    dataObjects: [{ name: "ליד", fields: ["שם", "סטטוס", "אחראי", "תזכורת"] }],
+    versionOneBoundary: { buildNow: ["טבלה", "אחראי"], doNotBuildNow: ["וואטסאפ"] },
+  };
+
+  const serialized = service.rebuildContext("runtime-truth-leads");
+
+  assert.equal(serialized.runtimeSkeletonTruth.truthTaskId, "RUNTIME-TRUTH-001");
+  assert.equal(serialized.runtimeSkeletonTruth.taskId, "SLICE-005");
+  assert.equal(serialized.runtimeSkeletonTruth.projectId, "runtime-truth-leads");
+  assert.equal(serialized.runtimeSkeletonTruth.runtimeSkeletonId, "runtime-skeleton:runtime-truth-leads:internal-tool");
+  assert.equal(serialized.runtimeSkeletonTruth.artifactBuildId, "runtime-build:runtime-truth-leads:first-skeleton");
+  assert.equal(serialized.runtimeSkeletonTruth.shellFamily, "workspace-state-shell");
+  assert.equal(serialized.runtimeSkeletonTruth.productKindTaskId, "PRODUCT-KIND-001");
+  assert.equal(serialized.runtimeSkeletonTruth.productKindStatus, "resolved");
+  assert.equal(serialized.runtimeSkeletonTruth.productPattern, "management-records");
+  assert.equal(serialized.runtimeSkeletonTruth.productKindSkeletonSelection.shellFamily, "workspace-state-shell");
+  assert.equal(serialized.runtimeSkeletonTruth.productPatternLearningDecision.taskId, "LEARNING-PRODUCT-INTELLIGENCE-001");
+  assert.equal(serialized.runtimeSkeletonTruth.productPatternLearningDecision.mustUseBeforeProductKindDecision, true);
+  assert.equal(serialized.runtimeSkeletonTruth.productPatternLearningDecision.mayOverwriteProjectTruth, false);
+  assert.equal(serialized.runtimeSkeletonTruth.productDomainSkeleton.domainTaskId, "PRODUCT-BACKEND-SKEL-001");
+  assert.equal(serialized.runtimeSkeletonTruth.productDomainSkeleton.productDomainSkeletonId, "product-domain:runtime-truth-leads:internal-tool");
+  assert.equal(serialized.runtimeSkeletonTruth.productOwnedBackendSkeleton.taskId, "PRODUCT-BACKEND-SKEL-002");
+  assert.equal(serialized.runtimeSkeletonTruth.productOwnedBackendSkeleton.productOwnedBackendSkeletonId, "product-owned-backend:runtime-truth-leads:internal-tool");
+  assert.equal(serialized.productDomainSkeleton.productDomainSkeletonId, "product-domain:runtime-truth-leads:internal-tool");
+  assert.equal(serialized.productOwnedBackendSkeleton.productOwnedBackendSkeletonId, "product-owned-backend:runtime-truth-leads:internal-tool");
+  assert.equal(serialized.productOwnedBackendSkeleton.frontendBackendPairing.status, "paired-from-first-skeleton");
+  assert.equal(serialized.productDomainSkeleton.operations.some((operation) => operation.id === "record.updateStatus"), true);
+  assert.equal(service.getProject("runtime-truth-leads").runtimeSkeletonTruth.runtimeSkeletonId, serialized.runtimeSkeletonTruth.runtimeSkeletonId);
+  assert.equal(service.getProject("runtime-truth-leads").runtimeSkeletonTruth.productPattern, "management-records");
+  assert.equal(service.getProject("runtime-truth-leads").runtimeSkeletonTruth.productPatternLearningDecision.taskId, "LEARNING-PRODUCT-INTELLIGENCE-001");
+  assert.equal(service.getProject("runtime-truth-leads").productDomainSkeleton.productDomainSkeletonId, serialized.productDomainSkeleton.productDomainSkeletonId);
+  assert.equal(service.getProject("runtime-truth-leads").productOwnedBackendSkeleton.productOwnedBackendSkeletonId, serialized.productOwnedBackendSkeleton.productOwnedBackendSkeletonId);
+  assert.equal(service.getProject("runtime-truth-leads").context.runtimeSkeletonTruth.runtimeSkeletonId, serialized.runtimeSkeletonTruth.runtimeSkeletonId);
+  assert.equal(service.getProject("runtime-truth-leads").context.runtimeSkeletonTruth.productPattern, "management-records");
+  assert.equal(service.getProject("runtime-truth-leads").context.runtimeSkeletonTruth.productPatternLearningDecision.taskId, "LEARNING-PRODUCT-INTELLIGENCE-001");
+  assert.equal(service.getProject("runtime-truth-leads").context.productDomainSkeleton.productDomainSkeletonId, serialized.productDomainSkeleton.productDomainSkeletonId);
+  assert.equal(service.getProject("runtime-truth-leads").context.productOwnedBackendSkeleton.productOwnedBackendSkeletonId, serialized.productOwnedBackendSkeleton.productOwnedBackendSkeletonId);
+  assert.equal(service.getProject("runtime-truth-leads").state.runtimeSkeletonTruth.runtimeSkeletonId, serialized.runtimeSkeletonTruth.runtimeSkeletonId);
+  assert.equal(service.getProject("runtime-truth-leads").state.runtimeSkeletonTruth.productPattern, "management-records");
+  assert.equal(service.getProject("runtime-truth-leads").state.runtimeSkeletonTruth.productPatternLearningDecision.taskId, "LEARNING-PRODUCT-INTELLIGENCE-001");
+  assert.equal(service.getProject("runtime-truth-leads").state.productDomainSkeleton.productDomainSkeletonId, serialized.productDomainSkeleton.productDomainSkeletonId);
+  assert.equal(service.getProject("runtime-truth-leads").state.productOwnedBackendSkeleton.productOwnedBackendSkeletonId, serialized.productOwnedBackendSkeleton.productOwnedBackendSkeletonId);
+});
+
+test("LEARNING-PRODUCT-INTELLIGENCE-001 — project creation promotes runtime learning truth from initial state", () => {
+  const service = createProjectService();
+  const project = service.createProject({
+    id: "learning-product-create-state",
+    name: "סידור צורות",
+    goal: "כלי לסידור צורות על משטח עבודה",
+    state: {
+      artifactExpectation: { title: "סידור צורות" },
+      runtimeLearningDecisionHints: {
+        recommendedPatterns: [
+          {
+            patternId: "editor-canvas",
+            productClass: "software-tool",
+            skeletonFamily: "editor-canvas-shell",
+            domainKind: "editor-document-local-state",
+            confidence: 0.78,
+            signalCount: 3,
+          },
+        ],
+      },
+      productSkeletonAgentOutput: {
+        agentId: "product-skeleton-agent",
+        productType: "כלי עבודה",
+        primaryUser: "מעצב",
+        primaryProblem: "צריך לסדר צורות ולראות שינוי על משטח",
+        firstWorkflow: { title: "סידור צורות", steps: ["הוסף צורה", "בחר", "שנה"] },
+        initialActions: ["הוסף צורה", "בחר"],
+      },
+    },
+  });
+  const serialized = service.rebuildContext(project.id);
+
+  assert.equal(project.productSkeletonAgentOutput.agentId, "product-skeleton-agent");
+  assert.equal(project.runtimeLearningDecisionHints.recommendedPatterns[0].patternId, "editor-canvas");
+  assert.equal(serialized.runtimeSkeletonTruth.productPatternLearningDecision.taskId, "LEARNING-PRODUCT-INTELLIGENCE-001");
+  assert.equal(serialized.runtimeSkeletonTruth.productPatternLearningApplied, true);
+  assert.equal(serialized.runtimeSkeletonTruth.productPattern, "editor-canvas");
+  assert.equal(serialized.runtimeSkeletonTruth.shellFamily, "editor-canvas-shell");
+  assert.equal(serialized.runtimeSkeletonTruth.productPatternLearningDecision.mayOverwriteProjectTruth, false);
+});
+
+test("LEARNING-RUNTIME-001 — project service emits runtime and domain creation learning events", () => {
+  const service = createProjectService();
+  const project = service.createProject({
+    id: "runtime-learning-leads",
+    name: "ניהול לידים",
+    goal: "כלי פנימי לניהול לידים עם סטטוס, אחראי, תזכורת וצעד הבא.",
+  });
+  project.artifactExpectation = {
+    projectType: "internal tool",
+    title: "רשימת לידים עם אחריות",
+  };
+  project.productSkeletonAgentOutput = {
+    agentId: "product-skeleton-agent",
+    responseSource: "provider-composed",
+    productType: "internal tool for lead follow up",
+    primaryUser: "בעל עסק קטן",
+    primaryProblem: "לידים נופלים כי אין אחראי ותזכורת",
+    firstWorkflow: { title: "רשימת לידים", steps: ["הוסף ליד", "שייך אחראי"] },
+    initialActions: ["הוסף ליד"],
+    dataObjects: [{ name: "ליד", fields: ["שם", "סטטוס", "אחראי", "תזכורת"] }],
+    versionOneBoundary: { buildNow: ["טבלה", "אחראי"], doNotBuildNow: ["וואטסאפ"] },
+  };
+
+  const serialized = service.rebuildContext("runtime-learning-leads");
+  const eventTypes = serialized.runtimeLearningEvents.map((event) => event.eventType);
+
+  assert.equal(serialized.runtimeLearningDecisionHints.status, "live");
+  assert.equal(serialized.runtimeLearningDecisionHints.mayOverwriteProjectTruth, false);
+  assert.equal(eventTypes.includes("runtime_skeleton.created"), true);
+  assert.equal(eventTypes.includes("product_domain_skeleton.created"), true);
+  assert.equal(serialized.runtimeLearningEvents.every((event) => event.taskId === "LEARNING-RUNTIME-001"), true);
+  assert.equal(serialized.runtimeLearningEvents.every((event) => event.projectId === "runtime-learning-leads"), true);
+  assert.equal(
+    serialized.runtimeLearningEvents.every((event) => event.runtimeSkeletonId === "runtime-skeleton:runtime-learning-leads:internal-tool"),
+    true,
+  );
+  assert.equal(
+    serialized.runtimeLearningEvents.every((event) => event.productDomainSkeletonId === "product-domain:runtime-learning-leads:internal-tool"),
+    true,
+  );
+  assert.equal(service.getProject("runtime-learning-leads").context.runtimeLearningEvents.length, serialized.runtimeLearningEvents.length);
+  assert.equal(service.getProject("runtime-learning-leads").state.runtimeLearningEvents.length, serialized.runtimeLearningEvents.length);
+});
+
+test("LEARNING-RUNTIME-001 — build mutation learning events persist without overwriting product truth", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "nexus-runtime-learning-"));
+  const service = createProjectService(directory);
+  const project = service.createProject({
+    id: "runtime-learning-mutation",
+    name: "ניהול לידים",
+    goal: "כלי פנימי לניהול לידים עם סטטוס, אחראי, תזכורת וצעד הבא.",
+  });
+  project.artifactExpectation = {
+    projectType: "internal tool",
+    title: "רשימת לידים עם אחריות",
+  };
+  project.productSkeletonAgentOutput = {
+    agentId: "product-skeleton-agent",
+    responseSource: "provider-composed",
+    productType: "internal tool for lead follow up",
+    primaryUser: "בעל עסק קטן",
+    primaryProblem: "לידים נופלים כי אין אחראי ותזכורת",
+    firstWorkflow: { title: "רשימת לידים", steps: ["הוסף ליד", "שייך אחראי"] },
+    initialActions: ["הוסף ליד"],
+    dataObjects: [{ name: "ליד", fields: ["שם", "סטטוס", "אחראי", "תזכורת"] }],
+    versionOneBoundary: { buildNow: ["טבלה", "אחראי"], doNotBuildNow: ["וואטסאפ"] },
+  };
+  const before = service.rebuildContext("runtime-learning-mutation");
+  const beforeRuntimeSkeletonId = before.runtimeSkeletonTruth.runtimeSkeletonId;
+  const beforeProductDomainSkeletonId = before.productDomainSkeleton.productDomainSkeletonId;
+
+  const result = service.applyBuildMutation({
+    projectId: "runtime-learning-mutation",
+    requestText: "תעביר את הליד הראשון לטיפול",
+    operationId: "record.updateStatus",
+    payload: { recordId: "rec-1", status: "בטיפול" },
+    requestedBy: "learning-runtime-test",
+  });
+  const eventTypes = result.project.runtimeLearningEvents.map((event) => event.eventType);
+
+  assert.equal(result.project.name, "ניהול לידים");
+  assert.equal(result.project.goal, "כלי פנימי לניהול לידים עם סטטוס, אחראי, תזכורת וצעד הבא.");
+  assert.equal(result.project.runtimeSkeletonTruth.runtimeSkeletonId, beforeRuntimeSkeletonId);
+  assert.equal(result.project.productDomainSkeleton.productDomainSkeletonId, beforeProductDomainSkeletonId);
+  assert.equal(result.project.runtimeLearningDecisionHints.status, "live");
+  assert.equal(result.project.runtimeLearningDecisionHints.mayOverwriteProjectTruth, false);
+  assert.equal(eventTypes.includes("build_agent_request.received"), true);
+  assert.equal(eventTypes.includes("build_mutation_intent.created"), true);
+  assert.equal(eventTypes.includes("build_mutation_outcome.applied"), true);
+  assert.equal(eventTypes.includes("product_domain_operation.outcome_applied"), true);
+  assert.equal(result.project.runtimeLearningEvents.some((event) => event.mutationId === result.mutation.intent.mutationId), true);
+  assert.equal(result.project.productDomainSkeleton.state.records[0].status, "בטיפול");
+
+  const restoredService = createProjectService(directory);
+  const restored = restoredService.getProject("runtime-learning-mutation");
+  assert.equal(restored.runtimeLearningEvents.some((event) => event.eventType === "build_mutation_outcome.applied"), true);
+  assert.equal(restored.runtimeLearningDecisionHints.mayOverwriteProjectTruth, false);
+  assert.equal(restored.productDomainSkeleton.state.records[0].status, "בטיפול");
+});
+
 test("project service can run additional cycles against persisted events", () => {
   const service = createProjectService();
   service.seedDemoProject();
@@ -2188,6 +2392,50 @@ test("project service creates onboarding session for a new project draft", () =>
   assert.equal(service.getOnboardingSession(session.sessionId)?.sessionId, session.sessionId);
 });
 
+test("project service exposes onboarding intake as a hidden engine envelope for the new shell", () => {
+  const service = createProjectService();
+
+  const session = service.createOnboardingSession({
+    userId: "user-hidden-onboarding",
+    projectDraftId: "ops-queue",
+    initialInput: {
+      projectName: "Ops Queue",
+      visionText: "כלי פנימי לצוות תפעול עם תור עבודה, בעלות ברורה ואישורים",
+    },
+  });
+
+  service.getOnboardingConversationState(session.sessionId);
+  service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: Ops Queue\nכלי פנימי לצוות תפעול עם תור עבודה, בעלות ברורה ואישורים",
+    uploadedFiles: [{ name: "spec.md", type: "markdown", content: "# Ops Queue" }],
+    externalLinks: [],
+  });
+
+  const envelope = service.getOnboardingIntakeEnvelope(session.sessionId);
+
+  assert.equal(envelope.sessionId, session.sessionId);
+  assert.equal(envelope.projectDraftId, "ops-queue");
+  assert.equal(envelope.projectName, "Ops Queue");
+  assert.equal(envelope.canonicalTruthOwner, "project-service");
+  assert.equal(envelope.truthSource, "onboarding-session-and-handoff-contract");
+  assert.equal(envelope.surfaceMode, "hidden-engine");
+  assert.equal(envelope.engineRole, "bounded-intake-before-build");
+  assert.equal(typeof envelope.projectDraft?.name, "string");
+  assert.equal(typeof envelope.projectIntake?.projectType, "string");
+  assert.equal(typeof envelope.currentStep?.currentStep, "string");
+  assert.equal(typeof envelope.conversationState?.onboardingConversation?.currentIndex, "number");
+  assert.equal(typeof envelope.onboardingCompletionDecision?.decisionId, "string");
+  assert.equal(typeof envelope.onboardingStateHandoff?.handoffId, "string");
+  assert.equal(typeof envelope.artifactExpectation?.artifactType, "string");
+  assert.equal(typeof envelope.adaptiveOnboardingAgentContract?.contractId, "string");
+  assert.equal(typeof envelope.adaptiveOnboardingAgentContract?.handoffStatus, "string");
+  assert.equal(typeof envelope.shellAnchors?.canStartBuild, "boolean");
+  assert.equal(typeof envelope.shellAnchors?.readinessLevel, "string");
+  assert.equal(typeof envelope.shellAnchors?.handoffStatus, "string");
+  assert.equal(typeof envelope.shellAnchors?.projectType, "string");
+});
+
 test("project service creates project draft for authenticated user", () => {
   const service = createProjectService();
 
@@ -2442,6 +2690,170 @@ test("project service supports onboarding intake updates file uploads current st
   assert.equal(typeof finished.project.state.firstValueOutput?.outputId, "string");
   assert.equal(typeof finished.project.state.projectExplanation?.explanationId, "string");
   assert.equal(service.listProjects().some((project) => project.id === "launch-app"), true);
+});
+
+test("W4-FIX-007 preserves automatic skeleton handoff outputs on the finished project truth", () => {
+  const service = createProjectService();
+  const session = service.createOnboardingSession({
+    userId: "user-w4-fix-007",
+    projectDraftId: "lead-workspace-app",
+    initialInput: "",
+  });
+
+  service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: Lead Workspace App\nאפליקציה עם התחברות ורשימת לידים, אחראי, תזכורת וצעד הבא",
+    uploadedFiles: [{ name: "spec.md", type: "markdown", content: "# Spec\nרשימת לידים עם אחראי ותזכורת." }],
+    externalLinks: [],
+  });
+
+  const storedSession = service.onboarding.sessions.get(session.sessionId);
+  service.onboarding.sessions.set(session.sessionId, {
+    ...storedSession,
+    conversation: {
+      ...(storedSession.conversation ?? {}),
+      answers: {
+        ...(storedSession.conversation?.answers ?? {}),
+        "target-audience": "בעל עסק קטן שמקבל לידים",
+        "core-problem": "לידים נופלים כי אין אחראי ותזכורת",
+        "successful-solution": "כלי פנימי עם רשימת לידים, סטטוס, אחראי, תזכורת וצעד הבא",
+        "build-direction": "מסך ראשון עם רשימת לידים, שיוך אחראי וקביעת תזכורת",
+      },
+    },
+    productSkeletonAgentOutput: {
+      agentId: "product-skeleton-agent",
+      responseSource: "provider-composed",
+      productType: "internal tool",
+      primaryUser: "בעל עסק קטן",
+      primaryProblem: "לידים נופלים בלי אחראי ותזכורת",
+      firstWorkflow: {
+        title: "מעקב לידים יומי",
+        steps: ["הוספת ליד", "שיוך אחראי", "קביעת תזכורת"],
+      },
+      initialActions: ["הוסף ליד", "עדכן סטטוס"],
+      dataObjects: [{ name: "ליד", fields: ["שם", "סטטוס", "אחראי", "תזכורת", "צעד הבא"] }],
+      versionOneBoundary: { buildNow: ["לידים", "אחראי"], doNotBuildNow: ["חיבור וואטסאפ"] },
+    },
+    visualProductSkeletonAgentOutput: {
+      agentId: "visual-product-skeleton-agent",
+      responseSource: "provider-composed",
+      productType: "internal tool",
+      firstScreen: { name: "לידים היום", primaryAction: "הוסף ליד" },
+      regions: [],
+      components: [],
+    },
+  });
+
+  const finished = service.finishOnboardingSession(session.sessionId);
+  const project = service.getProject("lead-workspace-app");
+  const rawProject = service.projects.get("lead-workspace-app");
+
+  assert.equal(finished.blocked, false);
+  assert.equal(finished.project.id, "lead-workspace-app");
+  assert.equal(project.productSkeletonAgentOutput.agentId, "product-skeleton-agent");
+  assert.equal(project.visualProductSkeletonAgentOutput.agentId, "visual-product-skeleton-agent");
+  assert.equal(rawProject.onboardingStateHandoff.productSkeletonAgentOutput.firstWorkflow.title, "מעקב לידים יומי");
+});
+
+test("W4-FIX-007 finishes project truth when discovery agent approved skeleton handoff", () => {
+  const service = createProjectService();
+  const session = service.createOnboardingSession({
+    userId: "user-w4-fix-007-agent-ready",
+    projectDraftId: "agent-ready-workspace",
+    initialInput: "",
+  });
+
+  service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "כלי פנימי פשוט לניהול לידים עם אחראי, סטטוס, תזכורת וצעד הבא",
+    uploadedFiles: [],
+    externalLinks: [],
+  });
+
+  const storedSession = service.onboarding.sessions.get(session.sessionId);
+  service.onboarding.sessions.set(session.sessionId, {
+    ...storedSession,
+    conversation: {
+      ...(storedSession.conversation ?? {}),
+      answers: {
+        ...(storedSession.conversation?.answers ?? {}),
+        "target-audience": "בעל עסק ועוד שני עובדים",
+        "successful-solution": "כלי פנימי עם רשימת לידים, אחראי, תזכורת וצעד הבא",
+      },
+      lastAgentDecision: {
+        intent: "product-answer",
+        nextMove: "advance-to-skeleton",
+        skeletonReady: {
+          ready: true,
+          reason: "Enough discovery truth for a first runtime skeleton.",
+        },
+        confidence: 0.91,
+      },
+    },
+  });
+
+  const finished = service.finishOnboardingSession(session.sessionId);
+
+  assert.equal(finished.blocked, false);
+  assert.equal(finished.project.id, "agent-ready-workspace");
+  assert.equal(service.getProject("agent-ready-workspace").id, "agent-ready-workspace");
+});
+
+test("W4-FIX-007 turns generic draft identity into a restorable real project id", () => {
+  const service = createProjectService();
+  const firstSession = service.createOnboardingSession({
+    userId: "user-w4-fix-007-generic-1",
+    projectDraftId: "project-draft",
+    initialInput: "כלי פנימי לניהול לידים עם אחראי ותזכורת",
+  });
+  const secondSession = service.createOnboardingSession({
+    userId: "user-w4-fix-007-generic-2",
+    projectDraftId: "project-draft",
+    initialInput: "כלי פנימי לניהול הזמנות עם סטטוס ותזכורת",
+  });
+
+  service.updateOnboardingIntake({
+    sessionId: firstSession.sessionId,
+    visionText: "כלי פנימי לניהול לידים עם אחראי, סטטוס, תזכורת וצעד הבא",
+    uploadedFiles: [],
+    externalLinks: [],
+  });
+  service.updateOnboardingIntake({
+    sessionId: secondSession.sessionId,
+    visionText: "כלי פנימי לניהול הזמנות עם סטטוס, בעלים ותזכורת",
+    uploadedFiles: [],
+    externalLinks: [],
+  });
+
+  for (const session of [firstSession, secondSession]) {
+    const storedSession = service.onboarding.sessions.get(session.sessionId);
+    service.onboarding.sessions.set(session.sessionId, {
+      ...storedSession,
+      conversation: {
+        ...(storedSession.conversation ?? {}),
+        lastAgentDecision: {
+          intent: "product-answer",
+          nextMove: "advance-to-skeleton",
+          skeletonReady: {
+            ready: true,
+            reason: "Enough discovery truth for a first runtime skeleton.",
+          },
+          confidence: 0.91,
+        },
+      },
+    });
+  }
+
+  const firstFinished = service.finishOnboardingSession(firstSession.sessionId);
+  const secondFinished = service.finishOnboardingSession(secondSession.sessionId);
+
+  assert.equal(firstFinished.blocked, false);
+  assert.equal(secondFinished.blocked, false);
+  assert.notEqual(firstFinished.project.id, "project-draft");
+  assert.notEqual(secondFinished.project.id, "project-draft");
+  assert.notEqual(firstFinished.project.id, secondFinished.project.id);
+  assert.equal(service.getProject(firstFinished.project.id).id, firstFinished.project.id);
+  assert.equal(service.getProject(secondFinished.project.id).id, secondFinished.project.id);
 });
 
 test("project service restores default agents before rerunning a finished onboarding project cycle", () => {
@@ -2709,6 +3121,146 @@ test("project service persists durable project and workspace state across restar
   const rerun = restartedService.runCycle("giftwallet");
   assert.equal(rerun.id, "giftwallet");
   assert.equal(Array.isArray(rerun.cycle.roadmap), true);
+});
+
+test("project service exposes a canonical truth envelope for the new shell", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const envelope = service.getProjectTruthEnvelope("giftwallet");
+
+  assert.equal(envelope.projectId, "giftwallet");
+  assert.equal(envelope.projectName, "GiftWallet");
+  assert.equal(envelope.canonicalTruthOwner, "project-service");
+  assert.equal(envelope.truthSource, "serialized-project-record");
+  assert.equal(typeof envelope.projectState?.workspaceModel?.workspaceId, "string");
+  assert.equal(Array.isArray(envelope.roadmap), true);
+  assert.equal(Array.isArray(envelope.productGraph?.nodes), true);
+  assert.equal(Array.isArray(envelope.productGraph?.edges), true);
+  assert.equal(typeof envelope.workspaceModel?.workspaceId, "string");
+  assert.equal(typeof envelope.releaseReadinessEvaluation?.releaseReadinessEvaluationId, "string");
+  assert.equal(typeof envelope.shellAnchors?.proofArtifact?.artifactId, "string");
+});
+
+test("project service exposes a canonical recovery envelope for the new shell", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: true,
+      intervalSeconds: 60,
+      preChangeTriggers: ["deploy"],
+    },
+  });
+  service.configureSnapshotRetentionPolicy({
+    projectId: "giftwallet",
+    retentionInput: {
+      enabled: true,
+      maxSnapshots: 3,
+    },
+  });
+  service.runSnapshotBackupNow({ projectId: "giftwallet", triggerType: "manual" });
+  service.getBusinessContinuityState({
+    projectId: "giftwallet",
+    refresh: true,
+  });
+
+  const envelope = service.getProjectRecoveryEnvelope({
+    projectId: "giftwallet",
+    refresh: true,
+  });
+
+  assert.equal(envelope.projectId, "giftwallet");
+  assert.equal(envelope.projectName, "GiftWallet");
+  assert.equal(envelope.canonicalTruthOwner, "project-service");
+  assert.equal(envelope.truthSource, "serialized-project-record");
+  assert.equal(typeof envelope.workspaceModel?.workspaceId, "string");
+  assert.equal(typeof envelope.snapshotRecord?.snapshotRecordId, "string");
+  assert.equal(envelope.snapshotSchedule?.enabled, true);
+  assert.equal(envelope.snapshotRetentionPolicy?.maxSnapshots, 3);
+  assert.equal(typeof envelope.snapshotBackupWorker?.status, "string");
+  assert.equal(typeof envelope.snapshotJobState?.status, "string");
+  assert.equal(typeof envelope.continuityPlan?.continuityPlanId, "string");
+  assert.equal(typeof envelope.disasterRecoveryChecklist?.checklistId, "string");
+  assert.equal(typeof envelope.businessContinuityState?.continuityStateId, "string");
+  assert.equal(typeof envelope.rollbackPlan?.rollbackPlanId, "string");
+  assert.equal(typeof envelope.restoreDecision?.restoreDecisionId, "string");
+  assert.equal(typeof envelope.rollbackExecutionResult?.executionStatus, "string");
+  assert.equal(typeof envelope.shellAnchors?.latestSnapshotId, "string");
+  assert.equal(typeof envelope.shellAnchors?.recoveryReadinessScore, "number");
+  assert.equal(typeof envelope.shellAnchors?.continuityLifecycleState, "string");
+
+  service.configureSnapshotBackupSchedule({
+    projectId: "giftwallet",
+    scheduleInput: {
+      enabled: false,
+    },
+  });
+});
+
+test("project service exposes artifact generation as a hidden engine envelope for the new shell", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const envelope = service.getProjectArtifactGenerationEnvelope({
+    projectId: "giftwallet",
+    refresh: true,
+  });
+
+  assert.equal(envelope.projectId, "giftwallet");
+  assert.equal(envelope.projectName, "GiftWallet");
+  assert.equal(envelope.canonicalTruthOwner, "project-service");
+  assert.equal(envelope.truthSource, "canonical-proof-artifact-engine");
+  assert.equal(envelope.surfaceMode, "hidden-engine");
+  assert.equal(envelope.engineRole, "artifact-generation-for-new-shell");
+  assert.equal(typeof envelope.proofArtifact?.artifactId, "string");
+  assert.equal(typeof envelope.proofArtifact?.artifactType, "string");
+  assert.equal(typeof envelope.proofArtifact?.previewPayload?.kind, "string");
+  assert.equal(typeof envelope.generatedSurfaceProofSchema?.proofId, "string");
+  assert.equal(typeof envelope.previewScreenViewModel?.screenId, "string");
+  assert.equal(typeof envelope.shellAnchors?.artifactId, "string");
+  assert.equal(typeof envelope.shellAnchors?.artifactType, "string");
+  assert.equal(typeof envelope.shellAnchors?.previewKind, "string");
+  assert.equal(typeof envelope.shellAnchors?.artifactTitle, "string");
+  assert.equal(typeof envelope.shellAnchors?.canOpenArtifact, "boolean");
+  assert.equal(typeof envelope.shellAnchors?.canDownloadArtifact, "boolean");
+  assert.equal(envelope.shellAnchors.routeKey, "artifact");
+});
+
+test("project service exposes continuity memory refresh as a hidden engine envelope for the new shell", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const envelope = service.getProjectContinuityMemoryEnvelope({
+    projectId: "giftwallet",
+    refresh: true,
+  });
+
+  assert.equal(envelope.projectId, "giftwallet");
+  assert.equal(envelope.projectName, "GiftWallet");
+  assert.equal(envelope.canonicalTruthOwner, "project-service");
+  assert.equal(envelope.truthSource, "context-builder-continuity-memory-refresh");
+  assert.equal(envelope.surfaceMode, "hidden-engine");
+  assert.equal(envelope.engineRole, "continuity-memory-refresh-for-new-shell");
+  assert.equal(typeof envelope.returnTomorrowContinuity?.status, "string");
+  assert.equal(typeof envelope.reactiveWorkspaceState?.refreshMode, "string");
+  assert.equal(typeof envelope.crossSurfaceContinuityContract?.status, "string");
+  assert.equal(typeof envelope.canonicalLearningSystemContract?.status, "string");
+  assert.equal(Array.isArray(envelope.canonicalLearningSystemContract?.memoryLayers), true);
+  assert.equal(Array.isArray(envelope.userActivityHistory?.entries), true);
+  assert.equal(Array.isArray(envelope.userSessionHistory?.entries), true);
+  assert.equal(typeof envelope.returningUserMetric?.isReturningUser, "boolean");
+  assert.equal(typeof envelope.retentionSummary?.retentionRate, "number");
+  assert.equal(typeof envelope.shellAnchors?.recommendedDestination, "string");
+  assert.equal(typeof envelope.shellAnchors?.refreshMode, "string");
+  assert.equal(typeof envelope.shellAnchors?.learningContractStatus, "string");
+  assert.equal(typeof envelope.shellAnchors?.memoryLayerCount, "number");
+  assert.equal(typeof envelope.shellAnchors?.userActivityCount, "number");
+  assert.equal(typeof envelope.shellAnchors?.userSessionCount, "number");
+  assert.equal(typeof envelope.shellAnchors?.returningUser, "boolean");
+  assert.equal(typeof envelope.shellAnchors?.retentionRate, "number");
 });
 
 test("project service persists durable session continuity state across restart", () => {
@@ -3251,6 +3803,10 @@ test("project service links verifies lists and unlinks external accounts", () =>
   assert.equal(typeof linked.linkedAccountPayload.accountRecord.accountId, "string");
   assert.equal(typeof linked.linkedAccountPayload.credentialReference, "string");
   assert.equal(typeof linked.linkedAccountPayload.encryptedCredential?.ciphertext, "string");
+  assert.equal(linked.linkedAccountPayload.providerGatewayBoundary.taskId, "PROV-001");
+  assert.equal(linked.linkedAccountPayload.providerGatewayBoundary.capability.canExecuteExternally, false);
+  assert.equal(linked.linkedAccountPayload.providerGatewayBoundary.blockers.includes("explicit-approval-missing"), true);
+  assert.equal(linked.linkedAccountPayload.providerReleaseRegistry.providers.some((provider) => provider.providerType === "openai"), true);
   assert.equal(linked.linkedAccounts.length >= 1, true);
 
   const listed = service.listExternalAccounts("giftwallet");
@@ -3266,6 +3822,37 @@ test("project service links verifies lists and unlinks external accounts", () =>
     linked.linkedAccountPayload.accountRecord.accountId,
   );
   assert.equal(removed.removed, true);
+});
+
+test("project service evaluates provider gateway and normalizes creative assets", () => {
+  const service = createProjectService();
+  service.seedDemoProject();
+
+  const gateway = service.evaluateProviderGateway("giftwallet", {
+    requestText: "תייצר וידאו קריאייטיב ותפרסם אותו",
+    actor: {
+      actorId: "demo-user",
+      role: "owner",
+    },
+  });
+
+  assert.equal(gateway.providerGatewayBoundary.taskId, "PROV-001");
+  assert.equal(gateway.providerGatewayBoundary.request.isProviderScoped, true);
+  assert.equal(gateway.providerGatewayBoundary.capability.canExecuteExternally, false);
+  assert.equal(gateway.providerGatewayBoundary.blockers.includes("explicit-approval-missing"), true);
+
+  const asset = service.normalizeCreativeProviderAsset("giftwallet", {
+    providerType: "higgsfield",
+    assetType: "motion-video",
+    prompt: "founder story",
+    sourceAssetId: "video-1",
+    packageId: "package-1",
+  });
+
+  assert.equal(asset.creativeProviderAsset.truthOwner, "nexus");
+  assert.equal(asset.creativeProviderAsset.canPublishWithoutApproval, false);
+  assert.equal(asset.creativeProviderAsset.packageLink, "package-1");
+  assert.equal(asset.creativeProviderAssets.length, 1);
 });
 
 test("project service rotates credential references and updates dependent connectors", () => {

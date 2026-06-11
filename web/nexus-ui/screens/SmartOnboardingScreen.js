@@ -1,9 +1,13 @@
 import { renderNexusButton } from "../components/NexusButton.js";
 import { renderNexusCard } from "../components/NexusCard.js";
 import { renderNexusInput } from "../components/NexusInput.js";
-import { renderNexusQaNav } from "../components/NexusQaNav.js";
 import { renderNexusStepper } from "../components/NexusStepper.js";
 import { renderWorkspaceLayout } from "../layouts/WorkspaceLayout.js";
+import {
+  resolveHumanContinuationHeading,
+  resolveHumanDirectionHeading,
+  resolveHumanReasoningNotesHeading,
+} from "../../shared/live-conversation-tone-contract.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -12,6 +16,19 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function resolveVisibleRuntimeShellLine(providerRuntime = {}) {
+  if (typeof providerRuntime?.visibleShellLine === "string" && providerRuntime.visibleShellLine.trim()) {
+    return providerRuntime.visibleShellLine.trim();
+  }
+  if (providerRuntime?.healthStatus === "degraded") {
+    return "אם יש עיכוב קטן ברקע, השיחה עצמה לא נשברת ואני ממשיך איתך מאותה נקודה.";
+  }
+  if (typeof providerRuntime?.availabilityLine === "string" && providerRuntime.availabilityLine.trim()) {
+    return "אני ממשיך איתך עם מה שזמין כאן עכשיו, בלי לשבור את הרצף של השיחה.";
+  }
+  return "אני ממשיך איתך מאותה נקודה, ולא מתקדם לפני שברור מה באמת חשוב כאן.";
 }
 
 function renderSummaryList(items, emptyText) {
@@ -41,10 +58,9 @@ function renderUnderstandingCard({ icon, title, strongId, bodyId, strongText, bo
 
 export function renderSmartOnboardingScreen(viewModel) {
   const sidebar = {
-    currentRoute: "/onboarding",
+    currentRoute: "/",
     primary: [
       { title: "יצירה", href: "/create", target: "create", icon: "＋" },
-      { title: "הבנה", href: "/onboarding", target: "onboarding", icon: "⌂" },
       { title: "לולאה", href: "/loop", target: "loop", icon: "▦" },
       { title: "ציר זמן", href: "/timeline", target: "timeline", icon: "◷" },
     ],
@@ -74,8 +90,6 @@ export function renderSmartOnboardingScreen(viewModel) {
   const content = `
     <section class="nexus-onboarding-screen">
       <div class="nexus-onboarding-screen__stepper">${steps}</div>
-      ${renderNexusQaNav(viewModel.isUnderstandingMode ? "understanding" : "onboarding")}
-
       <div class="nexus-onboarding-screen__intro">
         <h1 id="onboarding-screen-message" class="nexus-onboarding-screen__title">${escapeHtml(viewModel.title)}</h1>
         <p id="onboarding-screen-status" class="nexus-onboarding-screen__status">${escapeHtml(viewModel.statusMessage)}</p>
@@ -90,7 +104,6 @@ export function renderSmartOnboardingScreen(viewModel) {
               <div class="nexus-onboarding-chat-card__meta">
                 <div class="nexus-onboarding-chat-card__progress-row">
                   <span id="onboarding-progress-pill" class="nexus-onboarding-chat-card__pill">${escapeHtml(viewModel.progressLabel)}</span>
-                  <span id="onboarding-provider-runtime-pill" class="nexus-onboarding-chat-card__pill">${escapeHtml(viewModel.providerRuntime.selectedProviderLabel)}</span>
                   <div class="nexus-onboarding-chat-card__nav">
                     ${renderNexusButton({
                       label: "חזור",
@@ -110,17 +123,32 @@ export function renderSmartOnboardingScreen(viewModel) {
                   <h2 id="onboarding-current-question-title">${escapeHtml(viewModel.questionTitle)}</h2>
                   <p id="onboarding-current-question-body">${escapeHtml(viewModel.questionBody)}</p>
                 </div>
-                <div class="nexus-onboarding-chat-card__provider">
-                  <label class="mini-label" for="onboarding-provider-select">שוחח עם</label>
+                <div class="nexus-onboarding-chat-card__provider" hidden aria-hidden="true">
                   <select id="onboarding-provider-select" class="nexus-select">
                     ${viewModel.providerRuntime.availableProviders.map((provider) => `
-                      <option value="${escapeHtml(provider.providerId)}"${provider.providerId === viewModel.providerRuntime.selectedProviderId ? " selected" : ""}>
-                        ${escapeHtml(provider.companyLabel)}
+                      <option value="${escapeHtml(provider.providerId)}"${provider.providerId === viewModel.providerRuntime.selectedProviderId ? " selected" : ""}${provider.disabled ? " disabled" : ""}>
+                        ${escapeHtml(provider.companyLabel)}${provider.disabled ? " (לא זמין כרגע)" : ""}
                       </option>
                     `).join("")}
                   </select>
-                  <p id="onboarding-provider-runtime-label">${escapeHtml(viewModel.providerRuntime.selectedRuntimeLabel)}</p>
-                  <p id="onboarding-provider-rule-line">${escapeHtml(viewModel.providerRuntime.enforcementLine)}</p>
+                  <select id="onboarding-model-family-select" class="nexus-select">
+                    ${viewModel.providerRuntime.availableModelFamilies.map((family) => `
+                      <option value="${escapeHtml(family.modelFamilyId)}"${family.modelFamilyId === viewModel.providerRuntime.selectedModelFamilyId ? " selected" : ""}${family.disabled ? " disabled" : ""}>
+                        ${escapeHtml(family.modelLabel)}${family.disabled ? " (לא זמין כרגע)" : ""}
+                      </option>
+                    `).join("")}
+                  </select>
+                  <select id="onboarding-intelligence-select" class="nexus-select">
+                    ${viewModel.providerRuntime.availableIntelligenceLevels.map((level) => `
+                      <option value="${escapeHtml(level.intelligenceLevelId)}"${level.intelligenceLevelId === viewModel.providerRuntime.selectedIntelligenceLevel ? " selected" : ""}${level.disabled ? " disabled" : ""}>
+                        ${escapeHtml(level.intelligenceLabel)}${level.disabled ? " (לא זמין כרגע)" : ""}
+                      </option>
+                    `).join("")}
+                  </select>
+                  <p id="onboarding-provider-runtime-label" hidden>${escapeHtml(viewModel.providerRuntime.selectedRuntimeLabel)}</p>
+                  <p id="onboarding-provider-tradeoff-line">${escapeHtml(viewModel.providerRuntime.tradeoffLine ?? "")}</p>
+                  <p id="onboarding-provider-rule-line" hidden>${escapeHtml(viewModel.providerRuntime.enforcementLine)}</p>
+                  <p id="onboarding-provider-availability-line" class="nexus-onboarding-chat-card__helper"${viewModel.providerRuntime.availabilityLine ? "" : " hidden"}>${escapeHtml(viewModel.providerRuntime.availabilityLine ?? "")}</p>
                 </div>
               </div>
 
@@ -214,9 +242,9 @@ export function renderSmartOnboardingScreen(viewModel) {
             padding: "md",
             className: "nexus-onboarding-summary-card nexus-onboarding-summary-card--success",
             content: `
-              <h3>מה הבנתי</h3>
+              <h3>ממה שכבר ברור לי</h3>
               <div id="onboarding-understood-list" class="onboarding-route-summary-list">
-                ${renderSummaryList(viewModel.summary.understood, "עדיין אין מסקנות.")}
+                ${renderSummaryList(viewModel.summary.understood, "אני עוד בונה כאן תמונה ראשונית.")}
               </div>
             `,
           })}
@@ -224,9 +252,9 @@ export function renderSmartOnboardingScreen(viewModel) {
             padding: "md",
             className: "nexus-onboarding-summary-card nexus-onboarding-summary-card--warning",
             content: `
-              <h3>מה חסר</h3>
+              <h3>מה שעוד לא סגור לי</h3>
               <div id="onboarding-missing-list" class="onboarding-route-summary-list">
-                ${renderSummaryList(viewModel.summary.missing, "כרגע אין פערים פתוחים.")}
+                ${renderSummaryList(viewModel.summary.missing, "כרגע אין לי חור הבנה מרכזי פתוח.")}
               </div>
             `,
           })}
@@ -234,7 +262,7 @@ export function renderSmartOnboardingScreen(viewModel) {
             padding: "md",
             className: "nexus-onboarding-summary-card",
             content: `
-              <h3>מה מתחדד עכשיו</h3>
+              <h3>${escapeHtml(resolveHumanReasoningNotesHeading())}</h3>
               <div id="onboarding-notes-list" class="nexus-onboarding-notes-list"></div>
             `,
           })}
@@ -242,32 +270,22 @@ export function renderSmartOnboardingScreen(viewModel) {
             padding: "md",
             className: "nexus-onboarding-summary-card",
             content: `
-              <h3>Adaptive intake contract</h3>
+              <h3>${escapeHtml(resolveHumanDirectionHeading())}</h3>
               <p id="onboarding-adaptive-contract-status">${escapeHtml(viewModel.adaptiveOnboardingAgentContract.statusLabel)}</p>
               <p id="onboarding-adaptive-contract-project-type">${escapeHtml(viewModel.adaptiveOnboardingAgentContract.currentProjectTypeLabel)}</p>
               <p id="onboarding-adaptive-contract-path">${escapeHtml(viewModel.adaptiveOnboardingAgentContract.currentQuestionPathLabel)}</p>
-              <p id="onboarding-adaptive-contract-gate">${escapeHtml(`handoff: ${viewModel.adaptiveOnboardingAgentContract.handoffStatus} · readiness: ${viewModel.adaptiveOnboardingAgentContract.readinessLevel}`)}</p>
-              <div id="onboarding-adaptive-contract-behaviors" class="onboarding-route-summary-list">
-                ${renderContractBehaviorList(
-                  viewModel.adaptiveOnboardingAgentContract.behaviors,
-                  "adaptive-intake behaviors are not yet exposed",
-                )}
-              </div>
-              <div id="onboarding-adaptive-contract-prohibitions" class="onboarding-route-summary-list">
-                ${renderSummaryList(
-                  viewModel.adaptiveOnboardingAgentContract.explicitProhibitions,
-                  "no explicit prohibitions are available yet.",
-                )}
-              </div>
+              <p id="onboarding-adaptive-contract-gate">${escapeHtml(viewModel.adaptiveOnboardingAgentContract.gateLabel ?? "")}</p>
             `,
           })}
           ${renderNexusCard({
             padding: "md",
             className: "nexus-onboarding-summary-card",
             content: `
-              <h3>Provider-backed runtime</h3>
-              <p id="onboarding-provider-summary-line">${escapeHtml(viewModel.providerRuntime.summaryLine)}</p>
-              <p id="onboarding-provider-canonical-rule">${escapeHtml(`rules: ${viewModel.providerRuntime.canonicalRuleLayer} · mode: ${viewModel.providerRuntime.runtimeMode}`)}</p>
+              <h3>${escapeHtml(resolveHumanContinuationHeading())}</h3>
+              <p id="onboarding-provider-summary-line">${escapeHtml(resolveVisibleRuntimeShellLine(viewModel.providerRuntime))}</p>
+              <p id="onboarding-provider-canonical-rule" hidden>${escapeHtml(viewModel.providerRuntime.tradeoffLine ?? "")}</p>
+              <p id="onboarding-provider-accounting-line" hidden>${escapeHtml(viewModel.providerRuntime.accountingLine ?? "")}</p>
+              <p id="onboarding-provider-operator-line" hidden>${escapeHtml(viewModel.providerRuntime.operatorTruthLine ?? "")}</p>
             `,
           })}
         </aside>
@@ -299,10 +317,16 @@ export function bindSmartOnboardingScreenElements(doc, elements) {
     onboardingProgressPill: "#onboarding-progress-pill",
     onboardingProviderRuntimePill: "#onboarding-provider-runtime-pill",
     onboardingProviderSelect: "#onboarding-provider-select",
+    onboardingModelFamilySelect: "#onboarding-model-family-select",
+    onboardingIntelligenceSelect: "#onboarding-intelligence-select",
     onboardingProviderRuntimeLabel: "#onboarding-provider-runtime-label",
+    onboardingProviderTradeoffLine: "#onboarding-provider-tradeoff-line",
     onboardingProviderRuleLine: "#onboarding-provider-rule-line",
     onboardingProviderSummaryLine: "#onboarding-provider-summary-line",
     onboardingProviderCanonicalRule: "#onboarding-provider-canonical-rule",
+    onboardingProviderAvailabilityLine: "#onboarding-provider-availability-line",
+    onboardingProviderAccountingLine: "#onboarding-provider-accounting-line",
+    onboardingProviderOperatorLine: "#onboarding-provider-operator-line",
     onboardingBackButton: "#onboarding-back-button",
     onboardingForwardButton: "#onboarding-forward-button",
     onboardingNotesList: "#onboarding-notes-list",
