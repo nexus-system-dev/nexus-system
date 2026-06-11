@@ -1,5 +1,9 @@
 .DS_Store
 .env
 .env.local
+node_modules/
+**/node_modules/
+dist/
+**/dist/
 data/*.ndjson
 data/analysis-cache.json
