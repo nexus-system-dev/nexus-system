@@ -56,6 +56,8 @@ function labelExternalAction(action) {
 
 function renderGrowthPluginLayer(pluginLayer = {}) {
   const primary = pluginLayer.primaryPlugin ?? {};
+  const registry = pluginLayer.registry ?? {};
+  const registryPlugins = registry.plugins ?? [];
   return `
     <section
       class="nexus-growth-surface__panel"
@@ -97,6 +99,19 @@ function renderGrowthPluginLayer(pluginLayer = {}) {
       <div class="nexus-growth-surface__plugin-list">
         <strong>חסום בלי אישור או אמת ספק</strong>
         ${renderList(primary.blockedActions ?? [], "אין חסימות נוספות.")}
+      </div>
+      <div
+        class="nexus-growth-surface__plugin-list"
+        data-growth-plugin-registry-task="${escapeHtml(registry.taskId ?? "GROW-PLUG-002")}"
+        data-growth-plugin-registry-status="${escapeHtml(registry.status ?? "ready")}"
+        data-growth-plugin-registry-mode="${escapeHtml(registry.userFacingMode ?? "simple-intents-not-marketplace")}"
+        data-growth-plugin-registry-count="${escapeHtml(registryPlugins.length)}"
+      >
+        <strong>יכולות השחרור הראשון</strong>
+        ${renderList(
+          registryPlugins.map((item) => item.userIntentLabel ?? item.pluginId).slice(0, 6),
+          "רישום היכולות עדיין לא זמין.",
+        )}
       </div>
     </section>
   `;

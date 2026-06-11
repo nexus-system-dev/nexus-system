@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildGrowthPluginLayer } from "../src/core/growth-plugin-layer.js";
+import {
+  buildFirstReleaseGrowthPluginRegistry,
+  buildGrowthPluginLayer,
+} from "../src/core/growth-plugin-layer.js";
 
 const leadProject = {
   id: "growth-plugin-leads",
@@ -105,4 +108,57 @@ test("GROW-PLUG-001 keeps provider and result boundaries explicit", () => {
   assert.equal(layer.boundaries.noExternalActionWithoutApproval, true);
   assert.equal(layer.boundaries.noTrafficRevenueViralityPromise, true);
   assert.equal(layer.historySummary.shouldRecord, true);
+});
+
+test("GROW-PLUG-002 defines the first-release Growth Plugin registry without exposing a marketplace", () => {
+  const registry = buildFirstReleaseGrowthPluginRegistry();
+  const pluginIds = registry.plugins.map((plugin) => plugin.pluginId);
+
+  assert.equal(registry.taskId, "GROW-PLUG-002");
+  assert.equal(registry.status, "ready");
+  assert.equal(registry.marketplaceMode, false);
+  assert.equal(registry.userFacingMode, "simple-intents-not-marketplace");
+  assert.deepEqual(pluginIds, [
+    "social-campaign-draft",
+    "seo-page-draft",
+    "paid-test-draft",
+    "email-draft",
+    "landing-experiment-draft",
+    "measurement-plan",
+  ]);
+
+  for (const plugin of registry.plugins) {
+    assert.equal(Boolean(plugin.userIntentLabel), true);
+    assert.equal(plugin.whenToUse.length > 0, true);
+    assert.equal(plugin.whenNotToUse.length > 0, true);
+    assert.equal(plugin.allowedActions.length > 0, true);
+    assert.equal(plugin.blockedActions.length > 0, true);
+    assert.equal(Boolean(plugin.productHistorySummaryShape), true);
+    assert.equal(Boolean(plugin.smallSuccessMetric), true);
+  }
+
+  const paid = registry.plugins.find((plugin) => plugin.pluginId === "paid-test-draft");
+  assert.equal(paid.providerRequiredForExternalAction, true);
+  assert.equal(paid.approvalRequiredForExternalAction, true);
+  assert.equal(paid.blockedActions.includes("spend"), true);
+
+  const measurement = registry.plugins.find((plugin) => plugin.pluginId === "measurement-plan");
+  assert.equal(measurement.providerRequiredForExternalAction, false);
+  assert.equal(measurement.blockedActions.includes("fabricate-metrics"), true);
+});
+
+test("GROW-PLUG-002 connects selected Growth capabilities to registry truth", () => {
+  const layer = buildGrowthPluginLayer({
+    project: leadProject,
+    userInput: "תכין מייל ראשון ללקוחות",
+  });
+
+  assert.equal(layer.registry.taskId, "GROW-PLUG-002");
+  assert.equal(layer.registry.plugins.length, 6);
+  assert.equal(layer.registrySelection.selectedPluginId, "email-draft");
+  assert.equal(layer.registrySelection.selectedPluginRegistered, true);
+  assert.equal(layer.registrySelection.userFacingMode, "simple-intents-not-marketplace");
+  assert.equal(layer.primaryPlugin.registryTaskId, "GROW-PLUG-002");
+  assert.equal(layer.primaryPlugin.firstReleaseRegistered, true);
+  assert.equal(layer.primaryPlugin.productHistorySummaryShape.includes("טיוטת מייל"), true);
 });

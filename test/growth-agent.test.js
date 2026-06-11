@@ -67,6 +67,8 @@ test("GROW-AGT-001 recommends one product-connected audience test for lead skele
     /conversion|revenue|virality|TikTok|SEO/i,
   );
   assert.equal(envelope.growthPluginLayer.taskId, "GROW-PLUG-001");
+  assert.equal(envelope.growthPluginLayer.registry.taskId, "GROW-PLUG-002");
+  assert.equal(envelope.growthPluginLayer.registry.marketplaceMode, false);
   assert.equal(envelope.growthPluginLayer.primaryPlugin.pluginId, "audience-understanding-test");
   assert.equal(envelope.growthPluginLayer.selectionPolicy.onePrimaryRecommendation, true);
 });
@@ -119,5 +121,7 @@ test("GROW-AGT-001 keeps email draft requests aligned with GROW-PLUG-001", () =>
   assert.equal(email.requiresApproval, true);
   assert.equal(email.campaignExecution.requiresProviderConnection, true);
   assert.equal(email.growthPluginLayer.primaryPlugin.pluginId, "email-draft");
+  assert.equal(email.growthPluginLayer.registrySelection.selectedPluginRegistered, true);
+  assert.equal(email.growthPluginLayer.primaryPlugin.registryTaskId, "GROW-PLUG-002");
   assert.doesNotMatch(email.userMessage, /דמו|קישור ציבורי/);
 });

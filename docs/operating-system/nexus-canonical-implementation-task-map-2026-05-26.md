@@ -4660,7 +4660,7 @@ Write-back:
   - draft-only output is presented as external action or real result
 
 #### `GROW-PLUG-002 — First-release Growth Plugin registry`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `new shell task`
 - source:
@@ -4696,6 +4696,14 @@ Write-back:
   - registry exposes a marketplace in V1
   - plugins have no action boundaries
   - future plugins like retargeting or marketplaces appear as active without implementation
+- closure_update:
+  - `2026-06-11: GROW-PLUG-002 implemented and verified. src/core/growth-plugin-layer.js now exposes a first-release registry for Social Campaign, SEO, SEM / Ads, Email Campaign, Landing Page Experiment, and Measurement, with when-to-use, when-not-to-use, provider requirements, approval requirements, allowed actions, blocked actions, small success metric, product-history summary shape, and simple user intent labels.`
+  - `Growth Plugin Layer output now includes registry truth and registrySelection so selected plugin capability is tied to GROW-PLUG-002 instead of existing only as free-text matching.`
+  - `Growth surface rendering now exposes data-growth-plugin-registry-task="GROW-PLUG-002", ready status, simple-intent-not-marketplace mode, and six first-release intent labels without exposing a plugin marketplace.`
+  - `Evidence: node --check src/core/growth-plugin-layer.js; node --check src/core/growth-agent.js; node --check web/nexus-ui/adapters/growth-surface-adapter.js; node --check web/nexus-ui/screens/GrowthSurfaceScreen.js; node --check scripts/verify-grow-plug-002-live-proof.mjs.`
+  - `Evidence: node --test test/growth-plugin-layer.test.js test/growth-agent.test.js test/growth-surface-canonical-structure-contract.test.js test/provider-gateway-boundary.test.js test/mutation-change-agent.test.js passed 22/22.`
+  - `Live evidence: NEXUS_BASE_URL=http://127.0.0.1:4017 node scripts/verify-grow-plug-002-live-proof.mjs passed against a fresh current-code server. The proof created a real authenticated project, selected all six first-release plugins by goal, verified registryCount=6 in project truth and visible Growth DOM, proved no marketplace language leaked, refreshed/project-read restored measurement-plan selection, and wrote report /private/tmp/nexus-grow-plug-002-1781204963932-report.json with screenshot /private/tmp/nexus-grow-plug-002-1781204963932.png.`
+  - `Truth boundary: this closes the first-release growth plugin registry only. It does not publish, send email, spend ad budget, connect providers, measure real external results, execute social campaigns, apply SEO changes, apply landing experiments, or close GROW-MEASURE-001, GROW-AGT-002, GROW-SEO-001, GROW-SEM-001, GROW-EMAIL-001, or GROW-LAND-001.`
 
 #### `GROW-SEO-001 — SEO action path`
 - status: `new-proposed`

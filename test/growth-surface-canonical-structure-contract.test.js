@@ -109,6 +109,21 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
             allowedActions: ["prepare-demo-script"],
             blockedActions: ["publish", "claim-results"],
           },
+          registry: {
+            taskId: "GROW-PLUG-002",
+            registryId: "first-release-growth-plugin-registry:v1",
+            status: "ready",
+            userFacingMode: "simple-intents-not-marketplace",
+            marketplaceMode: false,
+            plugins: [
+              { pluginId: "social-campaign-draft", userIntentLabel: "קמפיין חברתי", status: "available-draft" },
+              { pluginId: "seo-page-draft", userIntentLabel: "חיפוש אורגני", status: "available-draft" },
+              { pluginId: "paid-test-draft", userIntentLabel: "פרסום ממומן", status: "available-draft" },
+              { pluginId: "email-draft", userIntentLabel: "אימייל", status: "available-draft" },
+              { pluginId: "landing-experiment-draft", userIntentLabel: "דף נחיתה", status: "available-draft" },
+              { pluginId: "measurement-plan", userIntentLabel: "מדידה", status: "available-internal" },
+            ],
+          },
         },
       },
     },
@@ -124,9 +139,15 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
   assert.match(html, /data-growth-agent-requires-agent="none"/);
   assert.match(html, /data-growth-agent-can-run="true"/);
   assert.match(html, /data-growth-plugin-task="GROW-PLUG-001"/);
+  assert.match(html, /data-growth-plugin-registry-task="GROW-PLUG-002"/);
+  assert.match(html, /data-growth-plugin-registry-mode="simple-intents-not-marketplace"/);
+  assert.match(html, /data-growth-plugin-registry-count="6"/);
   assert.match(html, /data-growth-plugin-primary="audience-understanding-test"/);
   assert.match(html, /data-growth-plugin-provider-required="false"/);
   assert.match(html, /בדיקת הבנת קהל/);
+  assert.match(html, /יכולות השחרור הראשון/);
+  assert.match(html, /קמפיין חברתי/);
+  assert.match(html, /מדידה/);
   assert.match(html, /data-growth-campaign-external-action-locked="true"/);
   assert.match(html, /data-growth-workspace-shell="canonical-right-rail"/);
   assert.match(html, /data-nexus-workspace-rail="canonical-right-rail"/);

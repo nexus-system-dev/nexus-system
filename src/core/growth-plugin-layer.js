@@ -15,6 +15,187 @@ function includesAny(text, patterns) {
   return patterns.some((pattern) => pattern.test(text));
 }
 
+const FIRST_RELEASE_GROWTH_PLUGIN_REGISTRY = [
+  {
+    pluginId: "social-campaign-draft",
+    taskId: "GROW-AGT-002",
+    userIntentLabel: "קמפיין חברתי",
+    internalCapability: "social-campaign",
+    whenToUse: ["launch-message", "social-learning", "founder-story", "product-update"],
+    whenNotToUse: ["paid-boost", "direct-message", "comment-moderation", "unsupported-provider"],
+    draftOnlyByDefault: true,
+    providerRequiredForExternalAction: true,
+    approvalRequiredForExternalAction: true,
+    providerRequirements: {
+      firstReleaseRealProviders: ["instagram", "facebook"],
+      draftOnlyProviders: ["tiktok", "linkedin", "youtube", "x"],
+      requiredScopes: ["social-draft", "schedule", "publish"],
+    },
+    allowedActions: ["prepare-post-drafts", "prepare-creative-brief", "propose-schedule"],
+    blockedActions: ["publish", "schedule", "reply", "delete", "direct-message", "spend", "claim-virality"],
+    productHistorySummaryShape: "טיוטת קמפיין חברתי עם מסר, נכס מקור, אישור נדרש ומדד קטן.",
+    smallSuccessMetric: "לקבל 3 תגובות איכותיות מתוך 10 פניות או חשיפות מאושרות.",
+    status: "available-draft",
+  },
+  {
+    pluginId: "seo-page-draft",
+    taskId: "GROW-SEO-001",
+    userIntentLabel: "חיפוש אורגני",
+    internalCapability: "seo",
+    whenToUse: ["search-intent", "page-structure", "faq", "message-clarity"],
+    whenNotToUse: ["ranking-guarantee", "search-console-results", "public-publish-without-gate"],
+    draftOnlyByDefault: true,
+    providerRequiredForExternalAction: false,
+    approvalRequiredForExternalAction: true,
+    providerRequirements: {
+      optionalProviders: ["google-search-console"],
+      requiredScopes: [],
+    },
+    allowedActions: ["draft-title", "draft-meta", "draft-faq", "propose-page-structure"],
+    blockedActions: ["promise-ranking", "fabricate-search-volume", "publish-public-page"],
+    productHistorySummaryShape: "טיוטת חיפוש עם כותרת, תיאור, שאלות ותיקוני מסר לאישור.",
+    smallSuccessMetric: "בודק מבין מה העמוד מציע מתוך הכותרת והפתיחה.",
+    status: "available-draft",
+  },
+  {
+    pluginId: "paid-test-draft",
+    taskId: "GROW-SEM-001",
+    userIntentLabel: "פרסום ממומן",
+    internalCapability: "sem-paid-test",
+    whenToUse: ["paid-search-test", "ad-copy", "budget-hypothesis", "landing-path-exists"],
+    whenNotToUse: ["no-landing-or-demo", "no-measurement", "budget-not-approved", "paid-social-boost-without-sem"],
+    draftOnlyByDefault: true,
+    providerRequiredForExternalAction: true,
+    approvalRequiredForExternalAction: true,
+    providerRequirements: {
+      firstReleaseRealProviders: ["google-ads"],
+      draftOnlyProviders: ["meta-ads", "tiktok-ads", "linkedin-ads"],
+      requiredScopes: ["ad-draft", "spend-approval"],
+    },
+    allowedActions: ["draft-ad-copy", "draft-audience", "draft-budget-request"],
+    blockedActions: ["spend", "activate-campaign", "raise-budget", "claim-leads"],
+    productHistorySummaryShape: "טיוטת ניסוי ממומן עם קהל, מסר, תקציב לאישור ומדד לפני הוצאה.",
+    smallSuccessMetric: "לאשר אם המסר ברור לפני שקל אחד של הוצאה.",
+    status: "available-draft",
+  },
+  {
+    pluginId: "email-draft",
+    taskId: "GROW-EMAIL-001",
+    userIntentLabel: "אימייל",
+    internalCapability: "email-campaign",
+    whenToUse: ["email-draft", "test-send", "sequence-copy", "known-audience"],
+    whenNotToUse: ["unknown-audience-source", "scraped-contacts", "bulk-send-by-default", "fabricated-email-results"],
+    draftOnlyByDefault: true,
+    providerRequiredForExternalAction: true,
+    approvalRequiredForExternalAction: true,
+    providerRequirements: {
+      preferredProviders: ["mailchimp", "sendgrid"],
+      limitedProviders: ["gmail"],
+      optionalProviders: ["convertkit"],
+      requiredScopes: ["email-draft", "test-send", "send"],
+    },
+    allowedActions: ["draft-subject", "draft-body", "prepare-test-send"],
+    blockedActions: ["send-audience", "scrape-contacts", "fabricate-open-rate"],
+    productHistorySummaryShape: "טיוטת מייל עם מקור קהל, מצב אישור, ספק נדרש ומדד למידה.",
+    smallSuccessMetric: "נמען בדיקה אחד מבין את ההצעה ומשיב אם זה רלוונטי.",
+    status: "available-draft",
+  },
+  {
+    pluginId: "landing-experiment-draft",
+    taskId: "GROW-LAND-001",
+    userIntentLabel: "דף נחיתה",
+    internalCapability: "landing-experiment",
+    whenToUse: ["message-test", "audience-specific-page", "cta-test", "lead-form-draft"],
+    whenNotToUse: ["unclear-audience", "no-product-direction", "public-publish-without-share-or-release", "fake-testimonial"],
+    draftOnlyByDefault: true,
+    providerRequiredForExternalAction: false,
+    approvalRequiredForExternalAction: true,
+    providerRequirements: {
+      optionalProviders: [],
+      requiredScopes: [],
+    },
+    allowedActions: ["draft-hero", "draft-form", "draft-message-test"],
+    blockedActions: ["publish-public-page", "change-product-truth-without-mutation", "claim-conversions"],
+    productHistorySummaryShape: "טיוטת ניסוי דף נחיתה עם קהל, מסר, קריאה לפעולה ומדידת בסיס.",
+    smallSuccessMetric: "3 מתוך 5 צופים מבינים למי העמוד ומה הערך.",
+    status: "available-draft",
+  },
+  {
+    pluginId: "measurement-plan",
+    taskId: "GROW-MEASURE-001",
+    userIntentLabel: "מדידה",
+    internalCapability: "growth-measurement",
+    whenToUse: ["define-metric", "manual-observation", "internal-event", "provider-result-intake"],
+    whenNotToUse: ["source-less-metric", "fake-result", "success-claim-from-hypothesis"],
+    draftOnlyByDefault: false,
+    providerRequiredForExternalAction: false,
+    approvalRequiredForExternalAction: false,
+    providerRequirements: {
+      optionalProviders: ["google-analytics", "search-console", "provider-results"],
+      requiredScopes: ["read-results"],
+    },
+    allowedActions: ["define-event", "define-baseline", "mark-data-source"],
+    blockedActions: ["fabricate-metrics", "claim-conversion", "change-product-directly"],
+    productHistorySummaryShape: "מדידה עם מקור, זמן, מדד, רמת ביטחון וקישור לפעולת צמיחה.",
+    smallSuccessMetric: "מדד אחד נאסף ממקור אמיתי ולא מהשערה.",
+    status: "available-internal",
+  },
+];
+
+const FIRST_RELEASE_GROWTH_PLUGIN_IDS = new Set(
+  FIRST_RELEASE_GROWTH_PLUGIN_REGISTRY.map((plugin) => plugin.pluginId),
+);
+
+function cloneRegistryEntry(entry) {
+  return {
+    ...entry,
+    whenToUse: normalizeArray(entry.whenToUse).map((item) => normalizeString(item)).filter(Boolean),
+    whenNotToUse: normalizeArray(entry.whenNotToUse).map((item) => normalizeString(item)).filter(Boolean),
+    allowedActions: normalizeArray(entry.allowedActions).map((item) => normalizeString(item)).filter(Boolean),
+    blockedActions: normalizeArray(entry.blockedActions).map((item) => normalizeString(item)).filter(Boolean),
+    providerRequirements: {
+      ...normalizeObject(entry.providerRequirements),
+      firstReleaseRealProviders: normalizeArray(entry.providerRequirements?.firstReleaseRealProviders).map((item) => normalizeString(item)).filter(Boolean),
+      draftOnlyProviders: normalizeArray(entry.providerRequirements?.draftOnlyProviders).map((item) => normalizeString(item)).filter(Boolean),
+      preferredProviders: normalizeArray(entry.providerRequirements?.preferredProviders).map((item) => normalizeString(item)).filter(Boolean),
+      limitedProviders: normalizeArray(entry.providerRequirements?.limitedProviders).map((item) => normalizeString(item)).filter(Boolean),
+      optionalProviders: normalizeArray(entry.providerRequirements?.optionalProviders).map((item) => normalizeString(item)).filter(Boolean),
+      requiredScopes: normalizeArray(entry.providerRequirements?.requiredScopes).map((item) => normalizeString(item)).filter(Boolean),
+    },
+  };
+}
+
+export function buildFirstReleaseGrowthPluginRegistry() {
+  return {
+    taskId: "GROW-PLUG-002",
+    registryId: "first-release-growth-plugin-registry:v1",
+    status: "ready",
+    userFacingMode: "simple-intents-not-marketplace",
+    marketplaceMode: false,
+    plugins: FIRST_RELEASE_GROWTH_PLUGIN_REGISTRY.map(cloneRegistryEntry),
+    simpleIntentLabels: FIRST_RELEASE_GROWTH_PLUGIN_REGISTRY.map((entry) => ({
+      pluginId: entry.pluginId,
+      label: entry.userIntentLabel,
+    })),
+    boundaries: {
+      internalRegistryOnly: true,
+      draftModeWorksWithoutProvider: true,
+      providerConnectionIsNotApproval: true,
+      noExternalActionWithoutApprovalAndScope: true,
+      noFakeMetricsOrOutcomeClaims: true,
+      productHistoryRequired: true,
+    },
+    unsupportedPluginPolicy: {
+      status: "unavailable",
+      userMessage: "היכולת הזו לא פתוחה בשחרור הראשון, ולכן Nexus לא תעמיד פנים שהיא ביצעה אותה.",
+    },
+  };
+}
+
+function lookupRegistryPlugin(pluginId) {
+  return FIRST_RELEASE_GROWTH_PLUGIN_REGISTRY.find((plugin) => plugin.pluginId === pluginId) ?? null;
+}
+
 function hasProductTruth(project) {
   const safeProject = normalizeObject(project);
   const state = normalizeObject(safeProject.state);
@@ -106,6 +287,7 @@ function buildReadiness(project) {
 }
 
 function pluginDefinition(id, overrides = {}) {
+  const registryEntry = lookupRegistryPlugin(id);
   const base = {
     pluginId: id,
     taskId: "GROW-PLUG-001",
@@ -130,7 +312,26 @@ function pluginDefinition(id, overrides = {}) {
       recordsProductHistory: true,
     },
   };
-  return { ...base, ...overrides };
+  const merged = {
+    ...base,
+    ...(registryEntry ? {
+      registryTaskId: "GROW-PLUG-002",
+      registryStatus: registryEntry.status,
+      registryCapability: registryEntry.internalCapability,
+      userIntentLabel: registryEntry.userIntentLabel,
+      providerScopeRequired: registryEntry.providerRequirements?.requiredScopes ?? [],
+      productHistorySummaryShape: registryEntry.productHistorySummaryShape,
+      firstReleaseRegistered: true,
+    } : {
+      firstReleaseRegistered: false,
+    }),
+    ...overrides,
+  };
+
+  return {
+    ...merged,
+    firstReleaseRegistered: FIRST_RELEASE_GROWTH_PLUGIN_IDS.has(id) || merged.firstReleaseRegistered === true,
+  };
 }
 
 function blockedPlugin(readiness) {
@@ -331,6 +532,7 @@ export function buildGrowthPluginLayer({ project = null, userInput = "" } = {}) 
   const readiness = buildReadiness(safeProject);
   const primaryPlugin = resolvePrimaryPlugin({ input, readiness });
   const alternatives = buildAlternatives(primaryPlugin);
+  const registry = buildFirstReleaseGrowthPluginRegistry();
 
   return {
     taskId: "GROW-PLUG-001",
@@ -346,6 +548,18 @@ export function buildGrowthPluginLayer({ project = null, userInput = "" } = {}) 
     },
     primaryPlugin,
     alternatives,
+    registry,
+    registrySelection: {
+      taskId: "GROW-PLUG-002",
+      selectedPluginId: primaryPlugin.pluginId,
+      selectedPluginRegistered: primaryPlugin.firstReleaseRegistered === true,
+      unsupportedPluginStatus: primaryPlugin.firstReleaseRegistered === true
+        ? "registered"
+        : primaryPlugin.pluginId === "product-readiness-blocker" || primaryPlugin.handoffRequired !== "none"
+          ? "outside-growth-registry-with-explicit-boundary"
+          : "unavailable",
+      userFacingMode: registry.userFacingMode,
+    },
     boundaries: {
       draftOnlyWithoutProvider: true,
       noExternalActionWithoutApproval: true,
@@ -371,6 +585,7 @@ export function summarizeGrowthPluginLayer(layer = {}) {
   const safeLayer = normalizeObject(layer);
   const primaryPlugin = normalizeObject(safeLayer.primaryPlugin);
   const readiness = normalizeObject(safeLayer.readiness);
+  const registry = normalizeObject(safeLayer.registry);
   return {
     taskId: normalizeString(safeLayer.taskId, "GROW-PLUG-001"),
     status: normalizeString(safeLayer.status, "needs-product-first"),
@@ -393,7 +608,40 @@ export function summarizeGrowthPluginLayer(layer = {}) {
       whyThisPlugin: normalizeString(primaryPlugin.whyThisPlugin, "הצעד חייב להיות מחובר לתוצר."),
       allowedActions: normalizeArray(primaryPlugin.allowedActions).map((item) => normalizeString(item)).filter(Boolean),
       blockedActions: normalizeArray(primaryPlugin.blockedActions).map((item) => normalizeString(item)).filter(Boolean),
+      firstReleaseRegistered: primaryPlugin.firstReleaseRegistered === true,
+      registryTaskId: normalizeString(primaryPlugin.registryTaskId, primaryPlugin.firstReleaseRegistered === true ? "GROW-PLUG-002" : ""),
+      registryCapability: normalizeString(primaryPlugin.registryCapability),
+      productHistorySummaryShape: normalizeString(primaryPlugin.productHistorySummaryShape),
     },
+    registry: {
+      taskId: normalizeString(registry.taskId, "GROW-PLUG-002"),
+      registryId: normalizeString(registry.registryId, "first-release-growth-plugin-registry:v1"),
+      status: normalizeString(registry.status, "ready"),
+      userFacingMode: normalizeString(registry.userFacingMode, "simple-intents-not-marketplace"),
+      marketplaceMode: registry.marketplaceMode === true,
+      plugins: normalizeArray(registry.plugins)
+        .map((item) => normalizeObject(item))
+        .map((item) => ({
+          pluginId: normalizeString(item.pluginId),
+          taskId: normalizeString(item.taskId),
+          userIntentLabel: normalizeString(item.userIntentLabel),
+          internalCapability: normalizeString(item.internalCapability),
+          status: normalizeString(item.status),
+          draftOnlyByDefault: item.draftOnlyByDefault !== false,
+          providerRequiredForExternalAction: item.providerRequiredForExternalAction === true,
+          approvalRequiredForExternalAction: item.approvalRequiredForExternalAction === true,
+          whenToUse: normalizeArray(item.whenToUse).map((entry) => normalizeString(entry)).filter(Boolean),
+          whenNotToUse: normalizeArray(item.whenNotToUse).map((entry) => normalizeString(entry)).filter(Boolean),
+          allowedActions: normalizeArray(item.allowedActions).map((entry) => normalizeString(entry)).filter(Boolean),
+          blockedActions: normalizeArray(item.blockedActions).map((entry) => normalizeString(entry)).filter(Boolean),
+          productHistorySummaryShape: normalizeString(item.productHistorySummaryShape),
+          smallSuccessMetric: normalizeString(item.smallSuccessMetric),
+        }))
+        .filter((item) => item.pluginId),
+      boundaries: normalizeObject(registry.boundaries),
+      unsupportedPluginPolicy: normalizeObject(registry.unsupportedPluginPolicy),
+    },
+    registrySelection: normalizeObject(safeLayer.registrySelection),
     alternatives: normalizeArray(safeLayer.alternatives)
       .map((item) => normalizeObject(item))
       .map((item) => ({

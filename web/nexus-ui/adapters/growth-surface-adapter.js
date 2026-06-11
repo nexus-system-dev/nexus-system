@@ -73,6 +73,7 @@ function summarizeGrowthAgentForSurface(value) {
   const pluginLayer = normalizeObject(agent.growthPluginLayer);
   const primaryPlugin = normalizeObject(pluginLayer.primaryPlugin);
   const pluginReadiness = normalizeObject(pluginLayer.readiness);
+  const pluginRegistry = normalizeObject(pluginLayer.registry);
 
   return {
     taskId: normalizeString(agent.taskId, "GROW-AGT-001"),
@@ -129,7 +130,31 @@ function summarizeGrowthAgentForSurface(value) {
         whyThisPlugin: normalizeString(primaryPlugin.whyThisPlugin, "הצעד חייב להיות מחובר לתוצר."),
         allowedActions: normalizeArray(primaryPlugin.allowedActions).map((item) => normalizeString(item)).filter(Boolean),
         blockedActions: normalizeArray(primaryPlugin.blockedActions).map((item) => normalizeString(item)).filter(Boolean),
+        firstReleaseRegistered: primaryPlugin.firstReleaseRegistered === true,
+        registryTaskId: normalizeString(primaryPlugin.registryTaskId, primaryPlugin.firstReleaseRegistered === true ? "GROW-PLUG-002" : ""),
+        registryCapability: normalizeString(primaryPlugin.registryCapability),
       },
+      registry: {
+        taskId: normalizeString(pluginRegistry.taskId, "GROW-PLUG-002"),
+        registryId: normalizeString(pluginRegistry.registryId, "first-release-growth-plugin-registry:v1"),
+        status: normalizeString(pluginRegistry.status, "ready"),
+        userFacingMode: normalizeString(pluginRegistry.userFacingMode, "simple-intents-not-marketplace"),
+        marketplaceMode: pluginRegistry.marketplaceMode === true,
+        plugins: normalizeArray(pluginRegistry.plugins)
+          .map((item) => normalizeObject(item))
+          .map((item) => ({
+            pluginId: normalizeString(item.pluginId),
+            taskId: normalizeString(item.taskId),
+            userIntentLabel: normalizeString(item.userIntentLabel),
+            status: normalizeString(item.status),
+            draftOnlyByDefault: item.draftOnlyByDefault !== false,
+            providerRequiredForExternalAction: item.providerRequiredForExternalAction === true,
+            approvalRequiredForExternalAction: item.approvalRequiredForExternalAction === true,
+          }))
+          .filter((item) => item.pluginId),
+        boundaries: normalizeObject(pluginRegistry.boundaries),
+      },
+      registrySelection: normalizeObject(pluginLayer.registrySelection),
       alternatives: normalizeArray(pluginLayer.alternatives)
         .map((item) => normalizeObject(item))
         .map((item) => ({
