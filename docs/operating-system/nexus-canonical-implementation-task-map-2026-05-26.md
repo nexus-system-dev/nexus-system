@@ -1,0 +1,6766 @@
+# Nexus Canonical Implementation Task Map
+
+תאריך: `2026-05-26`  
+סטטוס: `canonical execution map`  
+מטרת המסמך: להפוך את החוזה הקנוני של Nexus לרשימת מימוש אחת מסודרת, עד `Nexus ready for release`.
+
+---
+
+## 1. Scope
+
+המסמך הזה כן נועד לכסות:
+- את כל המשימות הקנוניות שנדרשות כדי להעביר את Nexus מהמצב הקיים
+- אל `new Nexus shell`
+- עם `first truthful vertical slice`
+- ועם מסלול מלא עד `release-ready Nexus`
+
+המסמך הזה לא נועד לכסות עכשיו:
+- marketplace רחב
+- enterprise depth מלא
+- ecosystem economy
+- advanced org/governance beyond what blocks first release
+- late-generation ambient AI
+
+כלומר:
+
+```txt
+זהו execution map מלא עד Nexus מוכנה לצאת לאור בצורה אמינה.
+זה לא roadmap מלא לכל השנים הבאות.
+```
+
+---
+
+## 2. Sources Of Truth
+
+המסמך הזה נגזר מ:
+
+- [nexus-canonical-product-system-2026-05-26.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/nexus-canonical-product-system-2026-05-26.md)
+- [wave3-canonical-state.json](/Users/yogevlavian/Desktop/The%20Nexus/docs/wave3-canonical-state.json)
+- [wave4-minimum-believable-core-planning-track.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/wave4-minimum-believable-core-planning-track.md)
+- [v2-wave4-execution-plan.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/v2-wave4-execution-plan.md)
+- [backlog-unified-status-and-order.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/backlog-unified-status-and-order.md)
+- [nexus-wide-implementation-flow.svg](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/nexus-wide-implementation-flow.svg)
+
+---
+
+## 3. Status Legend
+
+- `existing-closed`: משימה קיימת שכבר נסגרה truthfully במסמכי ה־Wave
+- `existing-partial`: משימה קיימת שיש לה עוגן, אבל לא מספיקה לבדה לסגירת Nexus החדשה
+- `new-proposed`: משימה חדשה שנגזרת ישירות מהחוזה הקנוני
+- `release-blocker`: משימה שחייבת להיסגר לפני `Nexus ready for release`
+- `post-release`: משימה שלא חוסמת יציאה ראשונה
+
+---
+
+## 4. Canonical Release Boundary
+
+`Nexus ready for release` משמע:
+
+- יש `new visible shell`
+- יש `Home + Build` שעובדים באמת
+- יש `first vertical slice` חי מקצה לקצה
+- יש `mutation model` מחובר ל־product truth
+- יש `history / rollback / release framing` אמינים
+- יש `release path` עם gates ו־verification
+- יש `continuity / refresh / return` אמינים
+- יש `share` לפחות ברמת review/demo
+- יש `growth` ברמה בסיסית ולא noisy
+- יש `Studio boundary` ברור, גם אם Studio עצמה עדיין לא מלאה
+
+לא נדרש לפני יציאה ראשונה:
+
+- marketplace
+- advanced org layer
+- deep enterprise compliance
+- full extensibility ecosystem
+- ambient AI
+
+---
+
+## 5. Phase Map
+
+סדר המימוש הקנוני:
+
+1. `Foundation and truth lock`
+2. `Preserve existing engines`
+3. `Remove old visible shell`
+4. `Agentic front door product gap`
+5. `Build new shell surfaces`
+6. `Ship first vertical slice`
+7. `Expand to release-capable product`
+8. `Release readiness and launch gate`
+9. `Post-release continuation`
+
+---
+
+## 6. Phase 1 — Foundation And Truth Lock
+
+מטרה:
+- לא לנחש אמת בזמן rewrite
+- לנעול את המודל שמעליו בונים את ה־shell
+
+### Tasks
+
+#### `FND-001 — Canonical product system complete`
+- status: `existing-closed`
+- type: `release-blocker`
+- source:
+  - [nexus-canonical-product-system-2026-05-26.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/nexus-canonical-product-system-2026-05-26.md)
+- done when:
+  - all major system contracts exist in one canonical doc
+
+#### `FND-002 — Product Graph / Artifact / Release truth model locked`
+- status: `existing-closed`
+- type: `release-blocker`
+- source:
+  - canonical doc sections `34`, `35`, `41`, `44`, `54`
+- depends_on:
+  - `FND-001`
+
+#### `FND-003 — Inheritance / override model locked`
+- status: `existing-closed`
+- type: `release-blocker`
+- source:
+  - canonical doc section `52`
+- depends_on:
+  - `FND-001`
+
+#### `FND-004 — Identity / taste / entropy rules locked`
+- status: `existing-closed`
+- type: `release-blocker`
+- source:
+  - canonical doc sections `45`, `53`, `55`
+- depends_on:
+  - `FND-001`
+
+#### `FND-005 — Implementation bridge tasks formalized`
+- status: `existing-closed`
+- type: `release-blocker`
+- source:
+  - canonical doc section `56`
+- depends_on:
+  - `FND-001`
+
+---
+
+## 7. Phase 2 — Preserve Existing Engines
+
+מטרה:
+- לשמור את המנועים האמיתיים שכבר יש
+- בלי לשמר את ה־old visible product
+
+### Tasks
+
+#### `ENG-001 — Preserve project service as internal truth engine`
+- status: `existing-closed`
+- type: `release-blocker`
+- source anchors:
+  - `src/core/project-service.js`
+  - `test/project-service.test.js`
+  - [preserved-project-service-truth-engine-contract-2026-05-26.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/preserved-project-service-truth-engine-contract-2026-05-26.md)
+- depends_on:
+  - `FND-002`
+
+#### `ENG-002 — Preserve snapshots / rollback / continuity engine`
+- status: `existing-closed`
+- type: `release-blocker`
+- source anchors:
+  - `src/core/project-rollback-execution-module.js`
+  - snapshot/store modules
+  - `src/core/project-service.js`
+  - `test/project-service.test.js`
+  - [preserved-snapshot-rollback-continuity-engine-contract-2026-05-26.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/preserved-snapshot-rollback-continuity-engine-contract-2026-05-26.md)
+- depends_on:
+  - `ENG-001`
+
+#### `ENG-003 — Preserve onboarding / intake engine as hidden engine`
+- status: `existing-closed`
+- type: `release-blocker`
+- source anchors:
+  - `src/core/onboarding-service.js`
+  - `web/shared/adaptive-onboarding-agent-contract.js`
+  - `src/core/project-service.js`
+  - `test/project-service.test.js`
+  - `test/onboarding-adapter.test.js`
+  - `test/smart-onboarding-screen-render.test.js`
+  - [preserved-onboarding-intake-hidden-engine-contract-2026-05-27.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/preserved-onboarding-intake-hidden-engine-contract-2026-05-27.md)
+- depends_on:
+  - `FND-001`
+
+#### `ENG-004 — Preserve artifact / proof engine as artifact-generation engine`
+- status: `existing-closed`
+- type: `release-blocker`
+- source anchors:
+  - `src/core/canonical-proof-artifact.js`
+  - `src/core/project-service.js`
+  - `web/nexus-ui/adapters/proof-adapter.js`
+  - `test/project-service.test.js`
+  - `test/canonical-proof-artifact.test.js`
+  - `test/proof-adapter.test.js`
+  - [preserved-artifact-proof-generation-engine-contract-2026-05-27.md](/Users/yogevlavian/Desktop/The%20Nexus/docs/operating-system/preserved-artifact-proof-generation-engine-contract-2026-05-27.md)
+- depends_on:
+  - `FND-002`
+
+#### `ENG-005 — Preserve class-aware generation engine`
+- status: `existing-closed`
+- type: `release-blocker`
+- source:
+  - `W4-MBN-007`
+  - `W4-GEN-001..003`
+- depends_on:
+  - `FND-001`
+
+#### `ENG-006 — Preserve runtime/build/release contracts`
+- status: `existing-closed`
+- type: `release-blocker`
+- source:
+  - `W4-MBN-002`
+  - `W4-MBN-011..018`
+- depends_on:
+  - `FND-001`
+
+#### `ENG-007 — Preserve continuity / memory / refresh behavior`
+- status: `existing-closed`
+- type: `release-blocker`
+- source:
+  - `W4-MBN-019`
+  - `W4-LEARN-001..002`
+- depends_on:
+  - `ENG-001`
+  - `ENG-002`
+- closure_contract:
+  - `docs/operating-system/preserved-continuity-memory-refresh-engine-contract-2026-05-27.md`
+- closure_evidence:
+  - `src/core/project-service.js#getProjectContinuityMemoryEnvelope`
+  - `src/core/context-builder.js`
+  - `src/core/return-tomorrow-continuity-resolver.js`
+  - `src/core/reactive-workspace-refresh-model.js`
+  - `src/core/cross-surface-continuity-contract.js`
+  - `src/core/canonical-learning-system-contract.js`
+  - `src/core/durable-session-continuity-store.js`
+  - `test/project-service.test.js`
+  - `test/canonical-learning-system-contract.test.js`
+  - `test/reactive-workspace-refresh-model.test.js`
+- verification:
+  - `node --test --test-name-pattern 'project service exposes continuity memory refresh as a hidden engine envelope for the new shell|project service keeps durable user activity/session history stable across repeated rebuilds and restart|project service persists durable project and workspace state across restart|project service persists durable session continuity state across restart' test/project-service.test.js`
+  - `node --test test/canonical-learning-system-contract.test.js`
+  - `node --test test/reactive-workspace-refresh-model.test.js`
+
+---
+
+## 8. Phase 3 — Remove Old Visible Shell
+
+מטרה:
+- להסיר מהחוויה הגלויה את כל מסכי ה־orchestration הישנים
+- מבלי לשבור את היכולות שמאחוריהם
+
+### Tasks
+
+#### `SHL-001 — Legacy frontend decomposition map`
+- status: `existing-closed`
+- type: `release-blocker`
+- source:
+  - canonical doc `56.3`
+  - `web/index.html`
+  - `web/nexus-ui/routes/index.js`
+- depends_on:
+  - `ENG-001..007`
+- done when:
+  - כל route/section קיים מסומן כאחד מ:
+    - `preserve hidden`
+    - `remove visible`
+    - `replace`
+    - `migrate`
+- closure_contract:
+  - `docs/operating-system/legacy-frontend-decomposition-map-2026-05-27.md`
+- closure_evidence:
+  - `web/nexus-ui/routes/legacy-decomposition.js`
+  - `web/nexus-ui/routes/index.js`
+  - `web/index.html`
+  - `test/legacy-frontend-decomposition-map.test.js`
+- verification:
+  - `node --test test/legacy-frontend-decomposition-map.test.js`
+  - `node --test test/execution-adapter.test.js test/execution-live-screen-render.test.js`
+
+#### `SHL-002 — Remove onboarding screen as standalone visible route`
+- status: `existing-closed`
+- type: `release-blocker`
+- depends_on:
+  - `SHL-001`
+- closure_contract:
+  - `docs/operating-system/remove-onboarding-standalone-visible-route-contract-2026-05-27.md`
+- closure_evidence:
+  - `web/nexus-ui/routes/index.js`
+  - `web/app.js`
+  - `web/nexus-ui/components/NexusQaNav.js`
+  - `web/nexus-ui/screens/*Screen.js`
+  - `web/nexus-ui/adapters/loop-adapter.js`
+  - `web/nexus-ui/adapters/next-task-adapter.js`
+  - `test/onboarding-standalone-route-removal.test.js`
+- verification:
+  - `node --test test/onboarding-standalone-route-removal.test.js test/legacy-frontend-decomposition-map.test.js`
+  - `node --test test/project-create-screen-render.test.js test/smart-onboarding-screen-render.test.js test/loop-core-screen-render.test.js test/execution-live-screen-render.test.js`
+  - `node --check web/app.js`
+  - `node --test --test-name-pattern 'project service exposes onboarding intake as a hidden engine envelope for the new shell|onboarding adapter exposes adaptive intake progress and contract truth|onboarding conversation creates adaptive transcript and summary' test/project-service.test.js test/onboarding-adapter.test.js test/onboarding-service-conversation.test.js`
+  - `Playwright live route check: /onboarding renders appScreen=create, shellRoute=create, hasOnboardingLink=false, visibleOnboarding=false`
+
+#### `SHL-003 — Remove understanding screen as standalone visible route`
+- status: `existing-closed`
+- type: `release-blocker`
+- depends_on:
+  - `SHL-001`
+- classification: `new shell task`
+- closure_contract:
+  - `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/remove-understanding-standalone-visible-route-contract-2026-05-27.md`
+- closure_evidence:
+  - `understanding` removed from visible primary loop routes and QA route exposure
+  - browser route sync / shell chrome / app screen / persisted screen no longer target `understanding`
+  - legacy `screen=understanding` restore migrates to `loop` when project truth exists, otherwise `create`
+  - understanding adapter / artifact expectation / companion correction engine remains preserved
+- verification:
+  - `node --test test/understanding-standalone-route-removal.test.js test/legacy-frontend-decomposition-map.test.js`
+  - `node --test test/understanding-summary-screen-render.test.js test/onboarding-loop-continuation.test.js test/loop-core-screen-render.test.js test/execution-live-screen-render.test.js`
+  - `node --check web/app.js`
+  - `node --test --test-name-pattern 'project companion correction updates the onboarding session truth and returns refreshed understanding|conversation project-class answer overrides stale landing-page intake and keeps product understanding open|understanding summary screen renders learning-aware generation card when present' test/project-service-companion-correction.test.js test/onboarding-service-conversation.test.js test/understanding-summary-screen-render.test.js`
+
+#### `SHL-004 — Remove loop/proof/timeline orchestration-first UX`
+- status: `existing-closed`
+- type: `release-blocker`
+- depends_on:
+  - `SHL-001`
+- classification: `new shell task`
+- closure_contract:
+  - `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/remove-loop-proof-timeline-orchestration-first-ux-contract-2026-05-27.md`
+- closure_evidence:
+  - `LoopCoreScreen` now frames the transitional route as product-facing Build
+  - `ProofResultScreen` no longer renders release evidence / handoff / checkId internals as visible UI
+  - `TimelineHistoryScreen` no longer renders learning-system, verification-matrix, or cross-surface-continuity debug panels
+  - `QaFallbackScreen` no longer leaks loop/proof/timeline/runtime fallback language on direct route fallback
+  - loop/proof/timeline adapters remain preserved and tested
+- verification:
+  - `node --test test/legacy-orchestration-first-ux-removal.test.js test/legacy-frontend-decomposition-map.test.js`
+  - `node --test test/loop-core-screen-render.test.js test/proof-result-screen-render.test.js test/timeline-history-screen-render.test.js test/onboarding-loop-continuation.test.js test/execution-live-screen-render.test.js`
+  - `node --test test/proof-adapter.test.js test/timeline-adapter.test.js test/execution-adapter.test.js`
+  - `node --check web/app.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js && node --check web/nexus-ui/screens/ProofResultScreen.js && node --check web/nexus-ui/screens/TimelineHistoryScreen.js && node --check web/nexus-ui/screens/QaFallbackScreen.js && node --check web/nexus-ui/adapters/loop-adapter.js`
+  - `Playwright live fallback check: /timeline renders no banned orchestration strings and shows product-facing בנייה / היסטוריה / תצוגה בטוחה בלי פרויקט פעיל`
+
+#### `SHL-005 — Remove orchestration language from visible shell`
+- status: `existing-closed`
+- type: `release-blocker`
+- depends_on:
+  - `SHL-001`
+- classification: `new shell task`
+- closure_contract:
+  - `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/remove-visible-shell-orchestration-language-contract-2026-05-27.md`
+- closure_evidence:
+  - shared visible-shell copy sanitizer added for product-facing language
+  - QA nav no longer renders English `QA mode`, `Loop`, `Proof`, or `Timeline` labels
+  - topbar/sidebar/buttons/task cards/artifact surfaces now sanitize visible orchestration language
+  - execution/next-task/state-update/proof/timeline/loop screens render product-facing copy while preserving internal route keys and engines
+  - live fallback copy no longer exposes `לולאה`, `ציר זמן`, `blocked state`, `shell`, or `URL` language
+  - visible guard test checks rendered text rather than internal class names/data attributes
+- verification:
+  - `node --test test/visible-shell-language-removal.test.js test/execution-live-screen-render.test.js test/next-task-screen-render.test.js test/state-update-screen-render.test.js test/proof-result-screen-render.test.js test/timeline-history-screen-render.test.js`
+  - `node --test test/visible-shell-language-removal.test.js test/legacy-orchestration-first-ux-removal.test.js test/execution-live-screen-render.test.js test/next-task-screen-render.test.js test/state-update-screen-render.test.js test/proof-result-screen-render.test.js test/timeline-history-screen-render.test.js && node --check web/app.js && node --check web/nexus-ui/copy/visible-shell-language.js`
+  - `Playwright live fallback check: /loop?qa=1 renders no banned visible strings for QA mode / Loop / Proof / Timeline / orchestration / runtime / handoff / verification matrix / לולאה / ציר זמן / blocked state / shell הקנוני`
+
+---
+
+## 9. Phase 3.5 — Agentic Front Door Product Gap
+
+מטרה:
+- לנעול שה־front door הסופי של Nexus אינו שאלון
+- לא לפתוח מחדש את הסרת מסכי ה־legacy
+- לשמר את מנוע ה־intake הישן כתשתית נסתרת עד שיש סוכן שיחה אמיתי
+
+### Tasks
+
+#### `AGT-001 — Replace rigid intake UX with Nexus Project Discovery Agent`
+- status: `trueGreen`
+- type: `release-blocker`
+- blocker_class: `front-door/core-product blocker`
+- source:
+  - canonical clarification `2026-05-27`
+  - `docs/operating-system/wave4-conversation-first-entry-foundation-contract.md`
+- depends_on:
+  - `SHL-002`
+  - `SHL-003`
+  - `W4-AGENT-005A`
+- canonical_contract:
+  - `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/nexus-project-discovery-agent-front-door-contract-2026-05-27.md`
+- closure_contract:
+  - `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/project-discovery-agent-front-door-implementation-contract-2026-05-27.md`
+- blocked_by:
+  - none
+- canonical_law:
+  - `The old onboarding route is removed.`
+  - `The old intake engine is preserved.`
+  - `The final Nexus front door is an agentic discovery conversation, not a questionnaire.`
+  - `The final Nexus front door is a real multi-turn chat agent, not an agent-looking card.`
+  - `The final Nexus front door is a real role-defined agent, Codex-like in behavior but specialized for product discovery.`
+  - `The Nexus front door is a real role-defined agent, not an intake screen, not a form, and not an agent-looking card.`
+  - `A technical transition to Build/Loop is not enough; the response itself must feel like a real product discovery agent.`
+  - `System-status language is a product failure for AGT-001.`
+  - `Nexus defines the Project Discovery Agent role and behavior; the agent composes the user-facing response from the actual conversation.`
+  - `Hardcoded sentence templates are allowed only for empty/error/provider-unavailable states, not as the main discovery response.`
+  - `The visible front door must be a minimal conversational surface, not a discovery report dashboard.`
+  - `Nexus must not put words in the agent's mouth; Nexus defines role and behavior only, and the agent/provider composes the visible speech.`
+  - `Replacing visible copy is not proof that the Project Discovery Agent is real.`
+  - `The agent may use OpenAI, Anthropic, or another model provider behind an abstraction, but the user works with Nexus, not a provider UI.`
+  - `Enough product truth must trigger the first live skeleton and Nexus Build/Loop handoff; the agent must not wait for a perfect end-of-conversation.`
+- Project Discovery Agent role:
+  - understand the user's free-form idea
+  - extract details across product categories
+  - detect what is missing or contradictory
+  - ask intelligent follow-up questions
+  - know when enough product truth exists
+  - turn the conversation into canonical project understanding
+  - hand off to Build/Loop with the first task and first skeleton
+- preserve:
+  - onboarding/intake persistence
+  - sessions
+  - summaries
+  - compatibility
+  - handoff
+  - restore / continuity fallback
+- do_not_do_now:
+  - do not reopen `SHL-002`
+  - do not delete the current intake engine
+- closure_evidence:
+  - Project Discovery Agent state model added for create/front-door
+  - create screen now renders agent role, mode, current message, canonical understanding, missing information, product gaps, and first-task candidate
+  - create screen now renders a real conversation transcript from hidden onboarding/session conversation state
+  - second create submit now sends a reply into the same onboarding session instead of creating a new project
+  - live multi-turn check proved user message -> agent response -> user reply -> adapted agent response
+  - old onboarding/intake engine remains preserved as hidden infrastructure for sessions, summaries, restore, and handoff
+  - weak/generic input is not promoted to ready product truth
+  - create/front-door no longer presents questionnaire/checklist helper-card UX
+  - live create route renders `data-agent-mode="project-discovery"` and `data-hidden-intake-engine="preserved"`
+  - live submit creates project/session truth from the first message while keeping the hidden intake engine preserved
+  - automatic project-name derivation keeps Hebrew product ideas intact instead of breaking on `follow-up`
+  - visible default-name leakage (`My SaaS App`) removed from Project Discovery Agent understanding
+  - hidden intake answers are enriched from one free-form product message, including actor, problem, workflow detail, build direction, and success condition
+  - completion evaluator now includes `workflow-detail`, so hidden intake truth and visible enough-truth framing can agree
+  - enough product truth now triggers `finishFirstProjectOnboarding()` from the create/front-door flow
+  - live non-QA product check proved `/create` free-form idea -> `/loop` handoff with first skeleton surface visible
+  - Loop handoff showed `data-app-screen="loop"`, `.nexus-loop-screen`, and product-facing first-build framing `מה נבנה עכשיו`
+  - `AGT-001A` real agent layer contract is wired into the create/front-door flow
+  - front-door handoff now checks `Project Discovery Agent` state and `nextAgentHandoff`, not old `isComplete` gates alone
+  - enough free-form product truth can override stale hidden-intake missing items when the idea already contains actor, pain, and first workflow
+  - if the old finish path cannot create a persisted project, Nexus opens the first skeleton through agent-layer handoff instead of returning to the questionnaire
+  - live QA product check proved free-form Hebrew idea -> `/loop` -> first skeleton with no visible `backend`/`finish` language leakage
+  - `AGT-001B` closure proved enough-truth handoff shows a human Project Discovery Agent response that reflects actor, pain, and first flow before the first skeleton
+  - Loop no longer shows false blocked language such as `ממתין להבהרה`, `צריך עוד חומר תומך`, or `מה חסר כדי שזה ירגיש מוכן` after enough product truth exists
+- false_closure_reopened:
+  - prior closure improved visible chat behavior and enough-truth handoff, but still leaned on the old intake/completion system as the effective decision layer
+  - product clarification rejected closing `AGT-001` by making the old intake engine smarter
+  - a second product clarification rejected closing `AGT-001` by transition mechanics alone because the visible agent response still sounded like a system status message
+  - `AGT-001B` improved wording and live flow mechanics, but product clarification rejected closing by scripted sentence replacement
+  - resolved by `AGT-001C` and `AGT-001D`: visible discovery speech now comes from the agent envelope and the active conversation route is `generateAgentTurn`, not the old intake/question/repair engine
+- blocker:
+  - none
+- closure_evidence_2026_05_29:
+  - `AGT-001A` locked the real agent-layer contract and old-intake boundary.
+  - `AGT-001B` is now closed by live quality evidence: the user-facing Project Discovery Agent path behaves as a conversation, not as a status report or scripted sentence replacement.
+  - `AGT-001C` is closed: Nexus defines role/behavior; the agent/provider composes visible discovery speech from the actual conversation.
+  - `AGT-001D` is closed: the visible front door is a minimal conversation surface, and the active conversation manager is the `generateAgentTurn` / `agent-envelope` route.
+  - `2026-05-29` regression: `node --check web/app.js` passed.
+  - `2026-05-29` regression: `node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/onboarding-service-agent-turn.test.js test/onboarding-provider-client.test.js` passed `40/40`.
+  - `2026-05-29` live Chrome proof covered meta-question, messy idea, product info, correction, mature idea to `/loop`, and provider failure/retry behavior.
+  - old intake/question/repair compatibility code may remain in the repository, but the active conversation path is no longer managed by it.
+- verification:
+  - `node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js`
+  - `node --test test/onboarding-standalone-route-removal.test.js test/understanding-standalone-route-removal.test.js test/onboarding-service-conversation.test.js test/onboarding-adapter.test.js`
+  - `node --check web/shared/project-discovery-agent.js`
+  - `node --check web/nexus-ui/adapters/project-adapter.js`
+  - `node --check web/nexus-ui/screens/ProjectCreateScreen.js`
+  - `node --check web/app.js`
+  - `Playwright live create check: /create?qa=1 renders Project Discovery Agent, preserves hidden intake marker, and does not render questionnaire step labels`
+  - `Playwright live submit check: /create?qa=1 -> fill idea -> click start creates project/session truth, preserves hidden intake marker, and derives coherent Hebrew project name`
+  - `Follow-up live product check before SURF-001: reopened blocker found loop handoff and UI/hidden-intake truth alignment incomplete`
+  - `Resolution live product check: enough free-form product truth now hands off to Loop with first skeleton visible`
+  - `Playwright live multi-turn check: /create?qa=1 -> first user message -> Nexus response -> second user reply -> adapted Nexus response, same session, no questionnaire labels, no My SaaS App visible leakage`
+  - `node --check src/core/onboarding-service.js`
+  - `node --check src/core/onboarding-completion-evaluator.js`
+  - `node --check web/app.js`
+  - `node --test test/onboarding-service-conversation.test.js`
+  - `node --test test/onboarding-service-conversation.test.js test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js test/onboarding-standalone-route-removal.test.js test/understanding-standalone-route-removal.test.js test/onboarding-adapter.test.js`
+  - `Playwright live non-QA check: /create -> free-form Hebrew product idea -> start -> /loop with first skeleton and מה נבנה עכשיו`
+  - `QA query route caveat: productCheck/qaScreen preview params can mask handoff state and are not the closure source for AGT-001`
+  - `node --check web/shared/project-discovery-agent.js && node --check web/app.js && node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js test/real-agent-layer-contract.test.js test/onboarding-service-conversation.test.js`
+  - `Playwright live QA check: /create?qa=1 -> enough free-form Hebrew product idea -> /loop with first skeleton visible, agent-layer handoff active, no visible backend/finish language`
+  - `Playwright live clean Chrome check: /create -> enough free-form Hebrew product idea -> /loop with first skeleton visible, no My SaaS App leakage`
+  - `Playwright live clean Chrome messy check: unclear first idea stayed in Project Discovery Agent, asked one adaptive follow-up, then user clarification with actor/pain/first workflow handed off to /loop with first skeleton visible`
+  - `node --check web/nexus-ui/adapters/loop-adapter.js && node --check web/app.js && node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js test/real-agent-layer-contract.test.js test/onboarding-service-conversation.test.js`
+  - `Playwright live Chrome final pass: weak idea stays in Create and asks "מי הבן אדם שבאמת צריך את זה?"; complete idea reaches /loop with agent reflection of actor/pain/first flow, no old system copy, no false blocked copy, and positive "מה כבר סגור לשלד הראשון" Loop wording`
+- follow_up_debt:
+  - `The messy-flow skeleton currently derives a weak display name from the first vague sentence; this is a product-naming quality issue for a later refinement, not a blocker to the agentic handoff behavior.`
+- status_note:
+  - `AGT-001` is `trueGreen` for replacing the rigid intake UX with the Project Discovery Agent front door. Follow-up quality work may improve naming, wording polish, or downstream skeleton fidelity, but does not keep the release-blocking front-door task open.
+
+#### `AGT-001B — Real Agent Conversation Quality Gate`
+- status: `trueGreen`
+- type: `release-blocker`
+- blocker_class: `agent-feel/product-quality blocker before SURF-001`
+- source:
+  - live product rejection `2026-05-28`
+- depends_on:
+  - `AGT-001`
+  - `AGT-001A`
+- canonical_law:
+  - `The user must feel they are talking to a real product discovery agent, not reading a status report.`
+  - `A response like "there is enough direction, I will save the understanding and move you to a task" is not acceptable.`
+  - `The agent must reflect the user's idea in natural language, identify what is understood, ask one smart follow-up when needed, explain why it matters, and only then hand off to skeleton/build.`
+  - `Visible copy must not expose internal agent-chain, hidden-engine, runtime, backend, finish, or orchestration language.`
+  - `This gate cannot close by replacing one fixed sentence with another fixed sentence.`
+- closure_evidence_so_far:
+  - static enough-truth message replaced with a human-facing response
+  - weak-input response now asks a direct next product question instead of showing system readiness copy
+  - visible agent-chain / hidden-engine labels removed from the create surface while remaining available as internal data attributes
+  - Loop fallback copy changed from system-status language to user-facing build language
+  - `node --check web/shared/project-discovery-agent.js && node --check web/nexus-ui/screens/ProjectCreateScreen.js && node --check web/app.js && node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js test/real-agent-layer-contract.test.js test/onboarding-service-conversation.test.js`
+  - `Playwright live Chrome voice check: weak idea stays in create and asks a short follow-up with no old system copy; complete idea reaches loop with no old system copy`
+  - enough-truth handoff detail now reuses the Project Discovery Agent's human understanding message instead of a generic continuation status
+  - ready Loop path no longer marks the first skeleton as a blocked clarification gate
+  - Loop metadata now says `מה כבר סגור לשלד הראשון` instead of `מה חסר כדי שזה ירגיש מוכן` for the non-blocked ready path
+  - `node --check web/nexus-ui/adapters/loop-adapter.js && node --check web/app.js && node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js test/real-agent-layer-contract.test.js test/onboarding-service-conversation.test.js`
+  - `Playwright live Chrome final pass: weak idea remains in Project Discovery Agent and asks one smart follow-up; complete idea reaches /loop and visibly says "הבנתי. המשתמש המרכזי הוא איש מכירות, הכאב הוא..., השלד הראשון..." before the skeleton`
+- false_closure_reopened:
+  - the final live pass proved better copy and handoff mechanics, not that the agent composes responses from conversation policy
+  - code inspection found `web/shared/project-discovery-agent.js` still building main discovery responses through `buildAgentMessage()` templates
+  - user clarification explicitly rejected hardcoded main-agent copy as a substitute for a real agent
+- blocked_by:
+  - none
+- closure_evidence_2026_05_29:
+  - `AGT-001C` closed the behavior-policy boundary: Nexus defines role/behavior, while visible discovery speech must come from provider/agent-composed conversation output rather than local scripted copy.
+  - `AGT-001D` closed the visible front-door surface: Create renders only conversation bubbles and the composer, not report cards or system-status panels.
+  - `AGT-001D` Step 3 replaced the active conversation manager with the strict `generateAgentTurn` / `agent-envelope` path; AI transcript entries now come from `envelope.replyToUser`.
+  - `2026-05-29` regression: `node --check web/app.js` passed.
+  - `2026-05-29` regression: `node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/onboarding-service-agent-turn.test.js test/onboarding-provider-client.test.js` passed `40/40`.
+  - `2026-05-29` live Chrome proof: messy idea (`תבנה לי אפליקציה`) produced a provider-composed natural follow-up with `responseSource: agent-envelope`, no internal labels, and no product-understanding mutation.
+  - `2026-05-29` live Chrome proof: product information was stored only from the agent envelope into `understanding`, `summarySnapshot`, and derived read-model answers.
+  - `2026-05-29` live Chrome proof: correction turn removed/corrected prior mistaken truth instead of preserving the old understanding.
+  - `2026-05-29` live Chrome proof: mature three-turn conversation reflected enough product truth, reached `nextMove: advance-to-skeleton`, `skeletonReady.ready: true`, and visibly transitioned to `/loop`.
+  - `2026-05-29` live Chrome proof: provider failure with `qaFault=rate-limit-all` rendered bounded system status, preserved the pending user message, appended no fake Nexus/AI answer, and kept understanding empty.
+  - `2026-05-29` grep proof: no visible front-door references to `Nexus Wave 2 Permanent Executor`, `Wave 2 Permanent`, `policy-draft`, or `provider-composed`; legacy helper definitions remain only as compatibility code and are not used by the active agent-turn tests.
+- done_when:
+  - live Create response sounds like a product discovery expert, not a system status message
+  - live weak-input response asks exactly one useful follow-up and explains or implies why it matters
+  - live enough-truth response reflects actor, pain, and first flow in human language before handoff
+  - live Build/Loop handoff copy stays user-facing and avoids system-status wording
+  - no visible `project-discovery-agent -> product-skeleton-agent`, `support-infrastructure-only`, `backend`, `finish`, `runtime`, or `orchestration` language appears in the normal user path
+  - user-visible behavior is verified in browser, not only by unit tests
+- status_note:
+  - `AGT-001B` is closed by the later `AGT-001C` and `AGT-001D` implementation/evidence. The earlier false closure remains documented as history, but the current active path now satisfies the real-agent quality gate without relying on fixed main-agent sentence templates.
+
+- done when:
+  - free-flowing Project Discovery Agent exists as the front-door UX as an actual chat conversation
+  - the user can send a message, receive an agent response, reply again, and see the agent adapt
+  - agent has role-defined behavior and boundaries
+  - agent behaves as a real Nexus-native work agent, not as a passive chat widget or visual intake component
+  - agent detects missing information, contradictions, assumptions, and product gaps
+  - agent asks adaptive follow-up questions only when needed
+  - agent remembers prior turns and updates understanding instead of restarting intake
+  - agent produces canonical project understanding
+  - agent creates or bootstraps project/session truth
+  - agent hands off into Nexus Loop with the first meaningful task only after enough truth exists
+  - enough product truth creates or reveals the first live skeleton in Build/Loop
+  - refresh / retry / restore do not lose or duplicate turns
+  - the visible experience does not feel like a form, card summary, or one-submit intake flow
+
+#### `AGT-001C — Project Discovery Agent Behavior Policy`
+- status: `existing-closed`
+- type: `release-blocker`
+- blocker_class: `runtime/provider-backed-agent blocker before SURF-001`
+- source:
+  - product clarification `2026-05-28`
+- depends_on:
+  - `AGT-001A`
+  - `AGT-001B`
+- canonical_law:
+  - `Nexus defines the Project Discovery Agent role and behavior.`
+  - `The agent composes the user-facing response from the actual conversation.`
+  - `The main discovery conversation must not be hardcoded sentence templates pretending to understand.`
+  - `Hardcoded copy is allowed only for empty state, provider unavailable, safe error, or fallback states.`
+  - `SURF-001 must not begin until this behavior-policy boundary is closed truthfully.`
+- required_contract:
+  - define what Nexus owns: role, product categories, boundaries, follow-up policy, enough-truth rule, and handoff proof
+  - define what the agent owns: natural language response, reflection, follow-up wording, and handoff explanation
+  - prove the UI distinguishes provider/agent-composed responses from fallback copy
+  - prove the Project Discovery Agent does not close through copy replacement alone
+- closure_evidence_so_far:
+  - `src/core/real-agent-layer-contract.js` now includes `discoveryResponsePolicy`
+  - `web/shared/project-discovery-agent.js` now exposes `responsePolicy` and `agentResponseSource`
+  - tests now assert scripted main discovery responses are prohibited by contract
+  - `web/app.js` now blocks first-skeleton handoff unless the discovery response source is `agent-composed-transcript`
+  - `src/core/onboarding-provider-client.js` now has a dedicated `generateDiscoveryResponse()` provider path for Project Discovery Agent opening responses instead of reusing a next-question template
+  - `src/core/onboarding-service.js` now primes the first discovery response through the selected provider and marks successful responses as `responseSource: provider-composed`
+  - `src/core/onboarding-service.js` now marks a failed live provider as `availabilityStatus: degraded` instead of keeping it visually `ready` after provider execution fails
+  - `src/server.js` exposes `POST /api/onboarding/sessions/:sessionId/conversation-prime`
+  - `2026-05-28` regression: `node --check src/core/onboarding-provider-client.js && node --check src/core/onboarding-service.js && node --check src/core/project-service.js && node --check src/server.js && node --check web/app.js && node --test test/onboarding-service-conversation.test.js test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js test/real-agent-layer-contract.test.js` passed `42/42`
+  - `2026-05-28` provider-truth regression: `node --check src/core/onboarding-service.js && node --test test/onboarding-service-conversation.test.js test/project-discovery-agent-front-door.test.js test/real-agent-layer-contract.test.js` passed `41/41`
+  - `2026-05-28` live Chrome check: complete CRM/follow-up idea stayed on `create`, did not open `Loop`, did not show `אין חוסר קריטי`, did not show first-skeleton build copy, and surfaced the missing live-agent response blocker
+  - `2026-05-28` direct endpoint check: `POST /api/onboarding/sessions/:sessionId/conversation-prime` returned `providerRuntime.runtimeMode = provider-backed-degraded`, `healthStatus = degraded`, `operatorTruthLine = health: degraded · error: provider-error`, zero provider token usage, and no `responseSource: provider-composed`
+  - `2026-05-28` provider execution fix: `src/core/onboarding-provider-client.js` now budgets enough output and low/medium reasoning for the OpenAI Responses discovery path so `gpt-5-mini` returns a completed user-facing response instead of exhausting output on reasoning tokens
+  - `2026-05-28` front-door runtime fix: `web/app.js`, `web/shared/onboarding-provider-runtime.js`, and `src/core/onboarding-service.js` now default Project Discovery sessions to the verified `fast/low` runtime path and pass `modelFamilyId` / `intelligenceLevel` from create into the onboarding session
+  - `2026-05-28` regression: `node --check web/app.js && node --check web/shared/onboarding-provider-runtime.js && node --check src/core/onboarding-service.js && node --test test/onboarding-service-conversation.test.js test/project-discovery-agent-front-door.test.js test/real-agent-layer-contract.test.js` passed `41/41`
+  - `2026-05-28` live API check through the local server at `127.0.0.1:4011`: create draft -> create onboarding session with `openai/fast/low` -> `conversation-prime` produced `providerRuntime.runtimeMode = provider-backed-live`, `deliveryMode = live-api`, `availabilityStatus = ready`, `lastModelUsed = gpt-5-mini-2025-08-07`, token usage recorded, and an AI transcript entry with `responseSource = provider-composed`, `providerId = openai`
+  - `2026-05-28` implementation correction: `web/shared/project-discovery-agent.js` no longer creates a visible local fallback agent response; without provider-composed transcript the state is `agentResponseSource = no-agent-response`
+  - `2026-05-28` regression: `node --check web/shared/project-discovery-agent.js && node --check web/nexus-ui/screens/ProjectCreateScreen.js && node --check web/app.js && node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js test/real-agent-layer-contract.test.js test/onboarding-service-conversation.test.js` passed `44/44`
+- blocker:
+  - `AGT-001D`
+- status_note:
+  - `AGT-001C` is closed at the behavior-policy boundary: Nexus defines role/behavior; visible agent speech can only come from provider-composed conversation transcript.
+
+#### `AGT-001D — Minimal Live Conversational Front Door`
+- status: `trueGreen`
+- type: `release-blocker`
+- blocker_class: `visible front-door/product-surface blocker before SURF-001`
+- source:
+  - live product rejection `2026-05-28`
+- depends_on:
+  - `AGT-001C`
+- canonical_law:
+  - `The visible Nexus front door is a minimal conversational surface, not an intake report.`
+  - `The user must not see summary cards such as "what I understand", "what is missing", "what can fail", or "what I will build first" on the front door.`
+  - `The Project Discovery Agent must not have local scripted user-facing answers.`
+  - `Nexus defines the agent role, required checks, follow-up policy, enough-truth rule, and handoff proof.`
+  - `The agent/provider composes all visible discovery speech from the actual conversation.`
+  - `Provider-unavailable/error states may show bounded system status, but must not pretend to be an agent answer.`
+  - `SURF-001 must not begin until this surface is verified in the visible browser path.`
+- required_contract:
+  - remove visible intake-dashboard/report sections from the Create/front-door surface
+  - render only user turns and provider-composed agent turns as conversation bubbles
+  - use a Nexus-native Figma-backed front-door direction before product-surface closure; competitor screenshots may inform the quality bar, but may not become the visual source of truth
+  - keep hidden intake/session/restore support preserved behind the surface
+  - block first-skeleton handoff if enough product truth exists but provider-composed agent speech is missing
+  - verify live browser path from typed user idea to provider-composed response and first skeleton/Loop handoff
+- closure_evidence_so_far:
+  - `web/shared/project-discovery-agent.js` removed local main-agent sentence generation
+  - `web/nexus-ui/screens/ProjectCreateScreen.js` now renders a temporary minimal front door with prompt composer and transcript only; this is not final design authority
+  - report cards for understood/missing/gaps/first-task were removed from the visible front-door surface
+  - advanced/manual fields were removed from the visible surface and kept as hidden inputs for compatibility
+  - `web/app.js` reset/create path now clears stale project/session/draft state and no longer seeds demo ideas such as `My SaaS App` or `מערכת לניהול לקוחות עם AI`
+  - `web/app.js` and `web/nexus-ui/adapters/project-adapter.js` now use only minimal wrapper copy (`מה אתה רוצה לבנות?`, `כתוב חופשי. נמשיך משם.`) and do not render status text as an agent answer
+  - visible send action was reduced to an icon-only submit affordance so the front door does not display a scripted CTA as agent speech
+  - `2026-05-28` Figma artifact created for Nexus-native front-door design authority: [Nexus AGT-001D Front Door Direction](https://www.figma.com/design/OatMcC7ZRdWLV7PjPQ3Ryt)
+  - first Figma direction was rejected as not aligned enough with the existing Nexus product language
+  - corrected Figma direction `AGT-001D Nexus Existing-Language Direction` now uses the current Nexus shell language: `#f6f7fb` canvas, white cards, `#6d5dfc -> #3b82f6` primary gradient, subtle borders, existing sidebar/topbar/workspace hierarchy, and conversation-first content inside that shell
+  - the corrected Figma direction defines the front door as a Nexus conversation workspace with hidden understanding, live transcript, and composer, while preserving existing Nexus colors and structure
+  - `web/nexus-ui/screens/ProjectCreateScreen.js` now renders the create/front-door inside the existing Nexus workspace shell with sidebar, topbar, and project workspace hierarchy instead of a standalone competitor-like landing surface
+  - `web/nexus-ui/styles/screens.css` now aligns the front-door styling to the corrected Nexus existing-language Figma direction: Nexus canvas, white cards, subtle primary/blue glows, existing sidebar/topbar visibility, Nexus composer card, and no copied competitor gradient surface
+  - tests now assert no visible hardcoded agent copy, no visible report-card headings, and no visible agent speech unless `responseSource = provider-composed`
+  - `2026-05-28` implementation correction: `web/app.js` no longer treats backend `onboardingConversation.isComplete` as sufficient to open the first skeleton; create submit, reply submit, finish, and fallback Loop paths now require the Project Discovery Agent handoff contract (`agent-composed-transcript`, ready canonical understanding, `nextAgentHandoff.handoffAllowed`, hidden intake not acting as brain)
+  - `2026-05-28` regression added: completed backend intake without provider-composed agent speech stays blocked from first skeleton handoff
+  - `2026-05-28` regression: `node --check web/app.js` passed
+  - `2026-05-28` regression: `node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js test/real-agent-layer-contract.test.js test/onboarding-service-conversation.test.js` passed `45/45`
+  - `2026-05-28` regression: `node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/project-adapter.test.js test/real-agent-layer-contract.test.js test/onboarding-service-conversation.test.js` passed `44/44`
+  - `2026-05-28` focused regression: `node --test test/project-create-screen-render.test.js test/project-adapter.test.js test/project-discovery-agent-front-door.test.js` passed `9/9`
+  - `2026-05-28` in-app browser proof: `/ ?qa=1&qaReset=1` renders a clean minimal front door with empty composer, no report cards, no visible `Project Discovery Agent` label, no demo idea, no local/fake Nexus speech, and icon-only submit
+  - `2026-05-29` AGT-001D Step 3 regression: `node --check web/app.js` passed
+  - `2026-05-29` AGT-001D Step 3 regression: `node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/onboarding-service-agent-turn.test.js test/onboarding-provider-client.test.js` passed `40/40`
+  - `2026-05-29` live Chrome proof: provider failure with `qaFault=rate-limit-all` renders bounded visible system status (`הסוכן לא זמין כרגע...`), preserves the pending user message in the composer, appends no fake Nexus/AI answer, and keeps understanding empty
+  - `2026-05-29` live Chrome proof: messy idea (`תבנה לי אפליקציה`) produces a provider-composed natural follow-up with `responseSource: agent-envelope`, no internal labels, and no product-understanding mutation
+  - `2026-05-29` live Chrome proof: product information is stored only from the agent envelope into `understanding`, `summarySnapshot`, and derived read-model answers
+  - `2026-05-29` live Chrome proof: correction turn removes/corrects prior storefront truth and does not keep the old class as active understanding
+  - `2026-05-29` live Chrome proof: a mature three-turn product conversation reaches `nextMove: advance-to-skeleton`, `skeletonReady.ready: true`, and visibly transitions to `/loop`
+  - `2026-05-29` grep proof: no visible front-door references to `Nexus Wave 2 Permanent Executor`, `Wave 2 Permanent`, `policy-draft`, or `provider-composed`; legacy helper definitions remain only as compatibility code and are not used by the active agent-turn tests
+- blocker:
+  - none
+- status_note:
+  - `AGT-001D` is `trueGreen` for the minimal live conversational front door. Remaining quality improvements, such as stricter agent wording polish or richer downstream skeleton fidelity, must be tracked as follow-up tasks and must not reopen the front-door blocker unless live behavior regresses.
+
+#### `AGT-001A — Real Agent Layer Contract`
+- status: `existing-closed`
+- type: `release-blocker`
+- blocker_class: `resolved front-door/agent-architecture blocker`
+- source:
+  - canonical clarification `2026-05-28`
+- depends_on:
+  - `AGT-001`
+- contract:
+  - `/Users/yogevlavian/Desktop/The Nexus/docs/operating-system/real-agent-layer-contract-2026-05-28.md`
+- canonical_law:
+  - `The Nexus front door is a role-defined multi-agent system.`
+  - `It is not an onboarding screen, not a form, not a chatbot wrapper, and not an improved intake engine.`
+  - `The old intake engine may support persistence, sessions, restore, summaries, and continuity, but must not be the agent brain.`
+- required_agents:
+  - `Project Discovery Agent`
+  - `Product Skeleton Agent`
+  - `Build / Loop Agent`
+- required_contracts:
+  - Project Discovery Agent role, skill, conversation policy, memory/context ownership, decision policy, and enough-truth rule
+  - Product Skeleton Agent role, input, output, required skeleton fields, and unknown/open-state handling
+  - Build / Loop Agent role, input, output, first build slice, and Loop handoff
+  - Agent-to-agent handoff payload, proof, persisted state, visible user state, and internal-only state
+  - explicit boundary from the old intake engine
+- historical_prohibitions_before_closure:
+  - do not continue to `SURF-001`
+  - do not fix more gates in the old intake engine as a substitute for agent architecture
+  - do not implement new UI before this contract is closed
+  - do not mark `AGT-001` trueGreen until this blocker is closed
+- done when:
+  - real agent-layer contract is locked
+  - `Project Discovery Agent -> Product Skeleton Agent -> Build / Loop Agent` chain is defined
+  - old intake engine boundary is explicit
+  - task map blocks `SURF-001` on `AGT-001A`
+  - next implementation work knows where the agent role, policy, decision, skeleton, and handoff live
+- closure_evidence:
+  - `docs/operating-system/real-agent-layer-contract-2026-05-28.md` defines the canonical multi-agent front-door contract
+  - `src/core/real-agent-layer-contract.js` defines the Nexus-owned agent chain in code
+  - `test/real-agent-layer-contract.test.js` verifies the agent chain, decision ownership, and intake boundary
+  - the test proves the old intake engine is allowed for persistence/sessions/restore/summaries, but prohibited as the `agent-brain`
+- verification:
+  - `node --check src/core/real-agent-layer-contract.js`
+  - `node --test test/real-agent-layer-contract.test.js`
+
+### Agent Coverage Audit — 2026-05-30
+
+Canonical law:
+- `Every canonical agent named in the product architecture must have either an implementation task, an explicit dependency on an existing task that owns it, or a canonical note saying it is out of scope for the current release.`
+- `A surface is not an agent. Release screen is not Release Agent. History screen is not History / Continuity Agent. Share screen is not Share / Demo Agent. Studio surface is not Studio handoff agent.`
+- `Coverage requires role/contract, active path, implementation task, or explicit dependency ownership.`
+- `When a capability must reason, decide, generate, verify, or hand off product truth, surface coverage is not enough; it needs a live-agent implementation task or an explicit out-of-scope decision.`
+
+Audit result:
+- `Project Discovery Agent` — covered by `AGT-001`, `AGT-001C`, and `AGT-001D`; active path is `generateAgentTurn` / `agent-envelope`.
+- `Product Skeleton Agent` — covered by bridge task `SKEL-001`; visual first-skeleton ownership is now explicit in `VSKEL-001`; `SLICE-005` depends on visual skeleton output, not a static preview.
+- `Visual Product Skeleton Agent` — missing before 2026-06-01; now covered by `VSKEL-001`.
+- `Build / Loop Agent` — covered by bridge task `BLD-AGT-001`; visual build continuation is now explicit in `VBUILD-001` before mutation work.
+- `Visual Build Agent` — missing before 2026-06-01; now covered by `VBUILD-001`.
+- `Mutation / Change Agent` — not sufficiently covered by `EXP-002` as a flow title alone; new bridge task `MUT-001` owns agent interpretation, impact analysis, approval, application, verification, commit, and history update.
+- `Verification / QA Agent` — surface coverage was not enough; now covered by `VER-AGT-001`, and `REL-001` depends on it.
+- `Release Agent` — screen/gate coverage was not enough; now covered by `REL-AGT-001`, and `REL-002` / `REL-006` depend on it.
+- `Growth Agent` — surface coverage was not enough; now covered by `GROW-AGT-001`, and `EXP-006` depends on it.
+- `History / Continuity Agent` — history surface coverage was not enough; now covered by `HIST-AGT-001`, and `EXP-003` / `SLICE-007` depend on it.
+- `Share / Demo Agent` — share surface coverage was not enough; now covered by `SHARE-AGT-001`, and `EXP-005` / `REL-004` depend on it.
+- `Studio handoff agent` — Studio boundary surface coverage was not enough; now covered by `STD-HANDOFF-AGT-001`; Studio itself remains bounded by `SURF-008` and later desktop-local expansion.
+- `Design Plugin Layer` — missing before 2026-06-01; now covered by `DESIGN-PLUG-001..004` before `VSKEL-001` and `VBUILD-001`.
+
+Write-back:
+- `2026-05-30: Agent coverage audit closed before continuing to SURF-003.`
+- `SKEL-001 remains the Product Skeleton Agent bridge before SLICE-005.`
+- `BLD-AGT-001 added as Build / Loop Agent bridge before artifact mutation.`
+- `MUT-001 added as Mutation / Change Agent bridge before EXP-002.`
+- `2026-06-04: Runtime truth review inserted RUNTIME-TRUTH-001, PRODUCT-BACKEND-SKEL-001, RUNTIME-SKEL-001, and BUILD-MUTATION-TRUTH-001 before BLD-AGT-001. This means BLD-AGT-001 remains the Build / Loop Agent bridge, but it is not the next executable bridge until runtime backend truth, generated product-domain truth, interactive runtime quality, and mutation truth are closed.`
+- `EXP-003/005/006/007 and REL-001/002/004/006 now explicitly own their agent coverage where the implementation task already existed.`
+- `No new task was marked trueGreen by this audit.`
+- `2026-06-01: Live-agent gap audit reopened surface-only coverage. Added explicit agent bridge tasks for visual skeleton, visual build, verification, release, growth, history/continuity, share/demo, and Studio handoff.`
+- `Downstream tasks now depend on the live-agent bridge where active reasoning or product-truth ownership is required.`
+- `2026-06-01: Product Skeleton Agent canonical definition added in product-skeleton-agent-contract-2026-06-01.md. Visual Product Skeleton Agent canonical definition added in visual-product-skeleton-agent-contract-2026-06-01.md. Design Plugin Layer added in design-plugin-layer-contract-2026-06-01.md and mapped into DESIGN-PLUG-001..004.`
+- `2026-06-01: Visual Build Agent canonical definition added in visual-build-agent-contract-2026-06-01.md. VBUILD-001 now requires safe-change vs approval rules, Mutation Agent boundary, Design Plugin preservation, structured visual diff, failure-safe retry, and live visual change proof.`
+- `2026-06-01: Build / Loop Agent canonical definition added in build-loop-agent-contract-2026-06-01.md. BLD-AGT-001 now requires message classification, correct agent routing, speech/state consistency, pending approval/clarification/retry states, and live routing proofs.`
+- `2026-06-01: Mutation / Change Agent canonical definition added in mutation-change-agent-contract-2026-06-01.md. MUT-001 now requires visual-vs-product-truth classification, impact analysis, approval boundary, product-readable history, checkpoint/rollback decision, and live small-change versus product-truth-change proof.`
+- `2026-06-01: History / Continuity Agent canonical definition added in history-continuity-agent-contract-2026-06-01.md. HIST-AGT-001 now requires conversation/product/change history separation, checkpoint policy, safe restore validation, product-readable history, return-after-time summary, and live restore proof.`
+- `2026-06-01: Share / Demo Agent canonical definition added in share-demo-agent-contract-2026-06-01.md. SHARE-AGT-001 now requires share/demo/public-link mode separation, snapshot-by-default, explicit approval for public/live/external share, include/exclude privacy boundary, revoke/scope controls, and live no-leak proof.`
+- `2026-06-01: Growth Agent canonical definition added in growth-agent-contract-2026-06-01.md. GROW-AGT-001 now requires product-readiness gating, product-connected opportunity selection, one-next-move policy, no fabricated metrics/outcomes, Mutation/Share/Release/Verification handoff rules, campaign execution approval boundary, and live non-generic growth proof.`
+- `2026-06-01: Social Campaign Execution Agent canonical definition added in social-campaign-execution-agent-contract-2026-06-01.md. GROW-AGT-002 moved into the upcoming release as a release-blocker with strict draft/schedule/publish separation, explicit user approval, provider-scope gating, blocked reply/moderation/direct-message/ad-spend scopes, and no fabricated campaign result.`
+- `2026-06-01: GROW-AGT-002 social campaign answers locked into social-campaign-execution-agent-contract-2026-06-01.md. V1 real social provider execution is limited to Instagram and Facebook; TikTok, LinkedIn, YouTube, and X are draft-only unless explicitly promoted. Publication and scheduling require connected provider, scoped permission, and per-post approval. V1 campaigns are small 2-4 post narratives, support manual copy fallback, route missing media to Visual Build or Share/Demo, summarize comments, block replies/moderation/DM/ad-spend/account edits, and record campaign state in product-readable history.`
+- `2026-06-01: GROW-SEO-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. SEO V1 covers title, meta description, headings, opening copy, FAQ, keyword hypotheses, and message-to-search-intent alignment. It drafts first, applies only after approval, routes product-message changes through Mutation and visible page changes through Visual Build, treats Search Console as optional/post-release, puts Analytics under GROW-MEASURE-001, supports Hebrew/RTL, blocks ranking/traffic/lead/sales guarantees, and records SEO state in product-readable history.`
+- `2026-06-01: GROW-SEM-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. SEM V1 defaults to full draft plus publishing preparation, with Google Ads as the only possible first real provider if paid execution is enabled; Meta Ads, TikTok Ads, LinkedIn Ads, and paid social boosts remain draft-only or post-release unless explicitly promoted. SEM cannot spend by default, requires separate explicit approval for campaign, each ad, budget, budget change, and activation, enforces a first-campaign budget cap, requires landing/demo path and measurement plan, routes paid social to SEM instead of organic social, routes page/product-message changes through Visual Build or Mutation, consumes measurement truth from GROW-MEASURE-001, supports draft-only mode without provider, and blocks spend/result guarantees.`
+- `2026-06-02: GROW-EMAIL-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. Email V1 defaults to drafts plus test send, with real audience send only after connected provider, clear lawful audience source, scoped send permission, and explicit approval. Preferred V1 providers are Mailchimp and SendGrid; Gmail is limited to test/small personal email, while ConvertKit is optional/post-release unless promoted. Campaign approval prepares a sequence but every real email requires separate approval. Email supports two variants, basic list cleanup, test send, simple user-facing framing, audience-source blocking, product/page change routing through Mutation or Visual Build, measurement ownership through GROW-MEASURE-001, product-readable history, and no promises about opens, replies, leads, sales, conversions, revenue, or audience interest.`
+- `2026-06-02: GROW-LAND-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. Landing Page Experiment V1 defaults to internal draft/experiment, creates a new landing page only from clear audience, problem, core value, and product direction, treats the page as a growth asset connected to the product rather than product truth, limits V1 to up to two manual-comparison versions, requires Mutation for product-message/audience/promise/value changes, requires Visual Build for visible changes, requires Share / Demo or Release plus explicit approval for external visibility, supports basic lead capture with consent and defined storage, routes privacy/data concerns through LEGAL / DATA / SEC, routes measurement through GROW-MEASURE-001, supports Hebrew/RTL, records product-readable history, and blocks fake proof, fake success, unapproved claims, unapproved publication, and release impersonation.`
+- `2026-06-02: GROW-MEASURE-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. Growth measurement is the truth guard for Growth: every real measurement requires a clear source, manual user reports are valid only when labeled manual, internal Nexus measurement is sufficient for V1, Google Analytics and Search Console are optional, required V1 internal events include demo view, share-link open, CTA click, form submit, lead created, action approved, landing opened, test email sent, failed action, and completed action. Every external growth action requires a small success metric, draft-only actions may exist without measurement, measurement separates hypothesis/result/insight, V1 defaults to indication language rather than proof, every conclusion has low/medium/high confidence, source/time/path/experiment are stored for each datapoint, users see a simple summary by default, sensitive data stays internal unless approved, provider failures and conflicting data fail safely, Growth owns next-action decisions, and Mutation owns product-truth changes from measurement.`
+- `2026-06-02: Growth consistency audit completed before returning to execution. Fixed dependency drift so SEO, Email, and Landing paths explicitly depend on GROW-MEASURE-001 where they consume or produce measurement truth; SEO and Email now explicitly depend on MUT-001 and VBUILD-001 where they can route product-message or visible page changes. Updated the Growth Plugin shared output envelope so handoffRequired includes Growth Agent, Visual Build Agent, and Analytics / Measurement Plugin, not only Share/Mutation/Release/Verification/Social. No Growth task was marked trueGreen by this audit.`
+- `2026-06-01: Growth Plugin Layer canonical definition added in growth-plugin-layer-contract-2026-06-01.md. Added first-release release-blockers GROW-PLUG-001, GROW-PLUG-002, GROW-SEO-001, GROW-SEM-001, GROW-EMAIL-001, GROW-LAND-001, and GROW-MEASURE-001 so Growth can choose Social, SEO, SEM, Email, Landing Experiment, and Measurement capabilities by product goal instead of exposing provider tools as the product.`
+- `2026-06-01: GROW-PLUG-001/002 product answers locked into growth-plugin-layer-contract-2026-06-01.md. Nexus chooses one primary Growth step, treats channel names as secondary, requires product/skeleton + audience + core value + showable artifact before plugin use, supports draft-only mode without providers, selects by product fit -> learning speed -> risk -> cost -> user acquisition potential, requires a small success metric, routes product changes through Mutation, keeps the registry mostly internal, and records plugin results in product-readable history.`
+
+### Product Shell Coverage Audit — 2026-05-30
+
+Canonical law:
+- `Every first-release product-shell responsibility must have either an implementation task, an explicit dependency on an existing task that owns it, a post-release task, or a canonical out-of-scope decision.`
+- `A screen is not enough to cover a product-shell responsibility when the engine, persistence, security, provider, or release path is missing.`
+- `QA/demo routes and local storage state do not count as production truth unless a release task explicitly accepts them.`
+
+Audit result:
+- `Users / login / session` — missing release-blocker -> `ID-001`.
+- `External login providers / SSO` — missing release-blocker -> `SSO-001`; later expansion -> `POST-006`.
+- `Account management` — missing release-blocker -> `ACCT-001`.
+- `Full privacy rights / deletion / export / retention / consent` — missing release-blocker -> `PRIVACY-001`.
+- `Organization / teams / roles / project membership` — missing release-blocker -> `EXP-009`.
+- `Permissions / security / isolation` — missing release-blocker -> `SEC-001`.
+- `AI and external provider boundary` — missing release-blocker -> `PROV-001`.
+- `Visible surface ownership / runtime path truth / claim-to-visible-proof integrity` — missing release-blockers -> `SURFACE-OWNER-RUNTIME-001` and `LIVE-PROOF-INTEGRITY-001`.
+- `Release surfaces / gates / rollback / share` — covered by `EXP-004`, `EXP-005`, and `REL-001..006`.
+- `Build / preview / deploy failure truth` — missing release-blocker -> `RUNTIME-001`.
+- `Files / assets` — missing release-blocker -> `FILE-001`.
+- `History / continuity / restore` — covered by `ENG-002`, `ENG-007`, `SLICE-007`, and `EXP-003`.
+- `Billing / paid plans / invoices / entitlement` — missing release-blocker -> `BILLING-001`; later monetization expansion -> `POST-007`.
+- `Usage limits / cost guard` — missing release-blocker -> `USAGE-001`.
+- `Owner / admin` — missing release-blocker -> `ADMIN-001`.
+- `Share / demo` — covered by `SURF-007`, `EXP-005`, and `REL-004`.
+- `Mobile / tablet full support` — post-release -> `POST-008`.
+- `Desktop responsive boundary` — missing release-blocker -> `RESP-001`.
+- `Hebrew / RTL / internal-language blocking` — covered by `SHL-005`, `AGT-001D`, and `SURF-001`.
+- `Legal / privacy / trust` — missing release-blocker -> `LEGAL-001`.
+- `Navigation / routing / deep links` — covered by `SHL-001..003` and `SURF-002..009`.
+- `Empty / loading / error states` — missing release-blocker -> `STATE-001`.
+- `Persistence / data ownership` — missing release-blocker -> `DATA-001`.
+- `Accessibility / keyboard / usability` — missing release-blocker -> `A11Y-001`.
+- `Observability / diagnostics` — missing release-blocker -> `OBS-001`.
+- `Deployment / packaging / runtime boundary` — missing release-blocker -> `OPS-001`.
+- `QA / test strategy` — covered by `SLICE-008`, `REL-001`, `REL-005`, and `REL-006`.
+
+Write-back:
+- `2026-05-30: Product shell coverage audit closed before continuing to SURF-003.`
+- `ID-001`, `ACCT-001`, `SEC-001`, `PROV-001`, `RUNTIME-001`, `FILE-001`, `USAGE-001`, `OBS-001`, `ADMIN-001`, `RESP-001`, `LEGAL-001`, `STATE-001`, `DATA-001`, `A11Y-001`, and `OPS-001` added as release-blockers in Phase 6.
+- `2026-06-09: Added/deepened PRIVACY-001, SSO-001, BILLING-001, and EXP-009 so full privacy rights, external identity, paid billing/entitlement, and real teams/project membership are no longer hidden inside broad account/security/provider tasks or post-release placeholders.`
+- `2026-06-11: Added SURFACE-OWNER-RUNTIME-001 and LIVE-PROOF-INTEGRITY-001 after repository-truth investigation found that code edits can land in real files while the visible product stays unchanged because web/app.js route/restore/QA/runtime ownership, stale browser state, static asset loading, or wrong-port proof can mask the edited surface. These tasks block future release-blocker closure before broad continuation.`
+- `POST-006`, `POST-007`, and `POST-008` added as post-release scope decisions.
+- Release-readiness dependencies updated so final release cannot bypass these product-shell responsibilities.
+- `No new task was marked trueGreen by this audit.`
+
+---
+
+## 10. Phase 4 — Build The New Shell
+
+מטרה:
+- ליצור את Nexus החדשה כמשטחים אמיתיים
+- לא כעוד מסמך
+
+### Tasks
+
+#### `SURF-001 — Canonical Surface Pass`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - canonical doc `56.2`
+- depends_on:
+  - `SHL-001..005`
+  - `AGT-001`
+  - `AGT-001A`
+  - `AGT-001C`
+- canonical_surface_law:
+  - `Build surface = persistent agent conversation rail + live artifact/build canvas in the same workspace.`
+  - `The user should feel: “I am talking to Nexus, and Nexus is building the product in front of me.”`
+  - `Discovery chat does not disappear. It compresses into the persistent right-side agent rail while the live build canvas opens beside it.`
+  - `After Project Discovery Agent -> Product Skeleton Agent -> Build / Loop Agent handoff, the conversation must not disappear or become a separate mode.`
+  - `The build canvas must not be a disconnected preview; it is the live product surface being shaped.`
+  - `The transition into Build must be gentle, futuristic, respectful, and reduced-motion safe.`
+  - `This paired workspace remains the primary work surface from first skeleton through release.`
+  - `SURF-001 must prevent implementations that become only chat, only artifact preview, a dashboard, or another internal loop screen.`
+- output:
+  - structural truth for all main surfaces
+  - explicit Build workspace structure: agent rail + live build canvas + progress/change/release affordances in one continuous surface
+- canonical_write_back:
+  - `2026-05-29: SURF-001 closed as canonical surface contract, not as final per-surface implementation.`
+  - `Contract added: docs/operating-system/surf-001-canonical-surface-pass-contract-2026-05-29.md.`
+  - `Code contract added: src/core/canonical-surface-pass-contract.js.`
+  - `Build/Loop visible surface now exposes data-surface-contract="SURF-001" with paired regions data-build-region="agent-conversation-rail" and data-build-region="live-artifact-build-canvas".`
+  - `Verification: node --check canonical contract/model/adapter/screen files passed.`
+  - `Verification: node --test test/canonical-surface-pass-contract.test.js test/split-workspace-live-build-surface-model.test.js test/loop-core-screen-render.test.js passed 5/5.`
+  - `Live DOM verification on 127.0.0.1:4011 with explicit qaState screen=loop confirmed appScreen=loop, contract=SURF-001, workspaceLaw=persistent-agent-rail-plus-live-build-canvas, agent rail present, and build canvas present.`
+  - `Initial qaReset live check correctly did not count as closure because qaReset forces qaScreen=create; final proof used explicit loop qaState.`
+  - `2026-05-30 motion proof added for discovery-to-build transition: QA route qaMotionFlow=discovery-to-build starts on Create with visible user+agent conversation, carries agent-envelope summarySnapshot/understanding product truth, runs nexus-discovery-stage-contracts-to-rail, and lands in Loop with SURF-001 workspaceLaw=persistent-agent-rail-plus-live-build-canvas.`
+  - `2026-05-30 regression added: node --test test/build-surface-motion-flow-contract.test.js locks the motion proof, product truth handoff, agent-envelope source, and reduced-motion-safe transition names.`
+- next:
+  - `SURF-002 — Home surface canonical structure`
+
+#### `SURF-002 — Home surface canonical structure`
+- status: `trueGreen`
+- type: `release-blocker`
+- depends_on:
+  - `SURF-001`
+- canonical_surface_law:
+  - `Home surface = momentum gateway, not dashboard, workspace manager, or onboarding ritual.`
+  - `Home must expose create-or-continue-entry, recent-product-continuation, and last-meaningful-action as the visible product regions.`
+  - `Home must send the user toward the next meaningful product action: continue Build or start a new discovery conversation.`
+- canonical_write_back:
+  - `2026-05-30: Home screen rewritten as SURF-002 momentum gateway.`
+  - `Visible Home now exposes data-surface-contract="SURF-002" and data-surface-purpose="momentum-gateway".`
+  - `Visible regions added: data-home-region="create-or-continue-entry", data-home-region="recent-product-continuation", and data-home-region="last-meaningful-action".`
+  - `Old dashboard stats copy removed from active Home surface: no visible "סה״כ פרויקטים", "פעילים עכשיו", or "אושרו" metrics in the live proof.`
+  - `Verification: node --check web/app.js and node --check web/nexus-ui/screens/HomeSupportScreen.js passed.`
+  - `Verification: node --test test/home-surface-contract.test.js test/canonical-surface-pass-contract.test.js passed 4/4.`
+  - `Live browser verification on http://127.0.0.1:4011/home?qa=1 confirmed appScreen=home, contract=SURF-002, purpose=momentum-gateway, all three canonical home regions present, create button present, and banned dashboard copy absent.`
+- next:
+  - `SURF-003 — Build surface canonical structure`
+
+#### `SURF-003 — Build surface canonical structure`
+- status: `trueGreen`
+- type: `release-blocker`
+- depends_on:
+  - `SURF-001`
+- canonical_surface_law:
+  - `Build surface = persistent Nexus agent rail plus live product/build canvas in one workspace.`
+  - `The old Loop route may remain a compatibility route, but the visible product surface is Build, not Loop.`
+  - `The Build surface must expose a writable agent conversation rail, a primary live artifact/build canvas, human progress state, change-direction affordance, release-readiness affordance, and continuity/restore anchor.`
+  - `Build must not regress into timeline/stepper/proof-dashboard/detached-details UI as the primary product experience.`
+- canonical_write_back:
+  - `2026-05-30: SURF-003 closed as concrete Build surface structure.`
+  - `Contract added: docs/operating-system/surf-003-build-surface-canonical-structure-contract-2026-05-30.md.`
+  - `Code contract added: src/core/build-surface-canonical-structure-contract.js.`
+  - `Loop compatibility route now renders the Build surface with data-build-surface-contract="SURF-003" while preserving data-surface-contract="SURF-001".`
+  - `Visible workspace exposes data-surface-id="build", data-surface-purpose="live-creation-workspace", data-workspace-law="persistent-agent-rail-plus-live-build-canvas", and data-legacy-route-boundary="loop-route-renders-build-surface".`
+  - `Required Build regions verified: agent-conversation-rail, live-artifact-build-canvas, human-progress-state, change-direction-affordance, release-readiness-affordance, continuity-restore-anchor.`
+  - `Agent rail is writable via data-agent-rail-writable="true" and an enabled data-agent-rail-input; live canvas is primary via data-build-canvas-primary="true".`
+  - `Old visible Loop/orchestration-first shapes are absent from the active Build proof: no visible "Nexus Loop", no visible "Timeline", no .nexus-stepper, and no .nexus-qa-nav.`
+  - `Verification: node --check src/core/build-surface-canonical-structure-contract.js web/nexus-ui/adapters/loop-adapter.js web/nexus-ui/screens/LoopCoreScreen.js passed.`
+  - `Verification: node --test test/build-surface-canonical-structure-contract.test.js test/loop-core-screen-render.test.js test/canonical-surface-pass-contract.test.js test/split-workspace-live-build-surface-model.test.js passed 8/8.`
+  - `Live DOM verification on 127.0.0.1:4011/loop with explicit qaState screen=loop confirmed appScreen=loop, SURF-003 page/workspace contract, SURF-001 paired workspace contract, build surface id/purpose/law, writable rail, primary canvas, all required regions, visible transcript continuity, and no forbidden visible Loop/Timeline/stepper/QA-nav leakage.`
+  - `2026-05-30 follow-up: Build now uses the canonical compact right rail with data-nexus-workspace-rail="canonical-right-rail"; all rail items are real data-nexus-ui-target buttons, and the Build item is active via aria-current="page".`
+  - `2026-05-30 follow-up live proof: clicking the visible Build rail Release item on 127.0.0.1:4011/loop moved to /release, while preserving the Build continuity region and writable agent composer.`
+- next:
+  - `SURF-004 — Release surface canonical structure`
+
+#### `SURF-004 — Release surface canonical structure`
+- status: `trueGreen`
+- type: `release-blocker`
+- depends_on:
+  - `SURF-001`
+- canonical_surface_law:
+  - `Release surface = final human release decision workspace, not an Advanced side route, proof dashboard, deploy log, or timeline clone.`
+  - `Release must expose preview, release gate, verification evidence, deploy/publish action, failed-release recovery, rollback affordance, share/demo link, and version history anchor in one visible workspace.`
+  - `Release cannot claim publish readiness without visible verification and release gate truth.`
+- canonical_write_back:
+  - `2026-05-30: SURF-004 closed as concrete Release surface structure.`
+  - `Contract added: docs/operating-system/surf-004-release-surface-canonical-structure-contract-2026-05-30.md.`
+  - `Code contract added: src/core/release-surface-canonical-structure-contract.js.`
+  - `Release route now renders data-release-surface-contract="SURF-004", data-surface-id="release", data-surface-purpose="human-release-decision-workspace", and data-release-law="preview-plus-gate-plus-deploy-truth".`
+  - `Required Release regions verified: release-preview-surface, release-gate, verification-evidence, deploy-publish-action, failed-release-recovery, rollback-affordance, share-demo-link, version-history-anchor.`
+  - `Old visible Advanced fallback inertia removed from active /release: no Advanced lane, QA fallback, Timeline clone, or temporary QA card copy appears in the live proof.`
+  - `Route/restore truth fixed so /release with project state restores the Release surface instead of being overridden by stale QA/create state.`
+  - `Verification: node --check src/core/release-surface-canonical-structure-contract.js web/nexus-ui/adapters/release-surface-adapter.js web/nexus-ui/screens/ReleaseSurfaceScreen.js web/app.js passed.`
+  - `Verification: node --test test/release-surface-canonical-structure-contract.test.js test/release-workspace.test.js test/release-readiness-evaluator.test.js test/release-validation-assembler.test.js test/pre-deploy-quality-gate.test.js test/deployment-state-feedback-contract.test.js test/release-timeline-builder.test.js passed 12/12.`
+  - `Live DOM verification on 127.0.0.1:4011/release with explicit qaState screen=release confirmed appScreen=release, shellRoute=release, SURF-004 contract, release purpose/law, publish action, all eight required release regions, and no forbidden Advanced/QA fallback copy.`
+  - `2026-05-30 follow-up: Release now uses the same canonical compact right rail as Build instead of the wide WorkspaceLayout sidebar; the visible rail exposes Create, Build, Release, History, Home, Files, Settings, and Help as clickable route targets.`
+  - `2026-05-30 follow-up verification: node --check web/nexus-ui/components/NexusWorkspaceRail.js web/nexus-ui/screens/LoopCoreScreen.js web/nexus-ui/screens/ReleaseSurfaceScreen.js passed, node --test test/loop-core-screen-render.test.js test/release-surface-canonical-structure-contract.test.js passed 4/4, and live DOM confirmed no visible .nexus-ui-sidebar on Build or Release.`
+- next:
+  - `SURF-005 — Growth surface canonical structure`
+
+#### `SURF-005 — Growth surface canonical structure`
+- status: `trueGreen`
+- type: `release-blocker`
+- depends_on:
+  - `SURF-001`
+- canonical_surface_law:
+  - `Growth surface = bounded product evolution workspace, not an Advanced side route, generic marketing dashboard, analytics noise board, or fake autonomous GTM ownership.`
+  - `Growth may surface only product-connected next moves tied to the last approved artifact, release target, current product bottleneck, and continuity state.`
+  - `Growth must expose readiness gate, product-connected insights, bounded opportunity list, metric baseline, experiment next move, and post-release continuity anchor in one visible workspace.`
+- canonical_write_back:
+  - `2026-05-30: SURF-005 closed as concrete Growth surface structure.`
+  - `Contract added: docs/operating-system/surf-005-growth-surface-canonical-structure-contract-2026-05-30.md.`
+  - `Code contract added: src/core/growth-surface-canonical-structure-contract.js.`
+  - `Growth route now renders data-growth-surface-contract="SURF-005", data-surface-id="growth", data-surface-purpose="bounded-product-evolution-workspace", and data-growth-law="product-connected-growth-insight-not-analytics-noise".`
+  - `Required Growth regions verified: growth-readiness-gate, product-connected-growth-insights, bounded-opportunity-list, growth-metric-baseline, experiment-next-move, post-release-continuity-anchor.`
+  - `Growth now uses the same canonical compact right rail as Build and Release, with Growth active via aria-current="page" and clickable rail navigation to Release.`
+  - `Old visible Growth inertia removed from active /growth: no Advanced lane, Growth Workspace, KPI marketing-lane copy, QA fallback copy, visible legacy sidebar, or generic autonomous GTM surface appears in the live proof.`
+  - `Route/restore truth fixed so /growth with project state restores the Growth surface instead of being overridden by stale create state.`
+  - `Verification: node --check src/core/growth-surface-canonical-structure-contract.js web/nexus-ui/adapters/growth-surface-adapter.js web/nexus-ui/screens/GrowthSurfaceScreen.js web/app.js passed.`
+  - `Verification: node --test test/growth-surface-canonical-structure-contract.test.js test/growth-workspace.test.js test/growth-opportunity-surfacing-boundary.test.js passed 5/5.`
+  - `Regression verification: node --test test/loop-core-screen-render.test.js test/release-surface-canonical-structure-contract.test.js test/growth-surface-canonical-structure-contract.test.js passed 6/6.`
+  - `Live DOM verification on 127.0.0.1:4011/growth with explicit qaState screen=growth confirmed appScreen=growth, shellRoute=growth, SURF-005 contract, growth purpose/law, all six required growth regions, canonical right rail active on growth, no visible legacy sidebar, and click-through to /release rendering SURF-004.`
+- next:
+  - `SURF-006 — History surface canonical structure`
+
+#### `SURF-006 — History surface canonical structure`
+- status: `trueGreen`
+- type: `release-blocker`
+- depends_on:
+  - `SURF-001`
+- canonical_surface_law:
+  - `History surface = product continuity and change memory workspace, not a technical timeline, debug event stream, proof dashboard, QA fallback, or orchestration log.`
+  - `History preserves project events, artifact snapshots, route restore state, and release continuity internally while showing only product memory, meaningful change log, restore checkpoints, continuity thread, version snapshots, and return-to-build.`
+  - `History must use the canonical compact right rail with History active and clickable navigation to Build, Release, Growth, Home, Files, Settings, and Help.`
+- canonical_write_back:
+  - `2026-05-31: SURF-006 closed as concrete History surface structure.`
+  - `Contract added: docs/operating-system/surf-006-history-surface-canonical-structure-contract-2026-05-31.md.`
+  - `Core contract added: src/core/history-surface-canonical-structure-contract.js.`
+  - `Served UI contract added: web/nexus-ui/contracts/history-surface-canonical-structure-contract.js so browser runtime does not import from non-served src/.`
+  - `Timeline route now renders data-history-surface-contract="SURF-006", data-surface-id="timeline", data-surface-purpose="product-continuity-and-change-memory-workspace", and data-history-law="product-memory-and-restore-truth-not-debug-timeline".`
+  - `Required History regions verified: history-current-state-anchor, history-change-log, history-restore-checkpoints, history-continuity-thread, history-version-snapshots, history-return-to-build.`
+  - `History now uses the same canonical compact right rail as Build, Release, and Growth, with History active and clickable rail navigation to Growth.`
+  - `Old visible History inertia removed from active /timeline: no visible technical timeline, proof dashboard, orchestration log, QA nav, stepper, or wide legacy sidebar appears in the live proof.`
+  - `Route/restore truth fixed so /timeline with explicit qaState and qaReset restores the canonical History surface instead of being overridden by QA fallback or compact URL state truncation.`
+  - `Verification: node --check src/core/history-surface-canonical-structure-contract.js web/nexus-ui/contracts/history-surface-canonical-structure-contract.js web/nexus-ui/adapters/timeline-adapter.js web/nexus-ui/screens/TimelineHistoryScreen.js web/app.js passed.`
+  - `Verification: node --test test/history-surface-canonical-structure-contract.test.js test/timeline-history-screen-render.test.js test/timeline-adapter.test.js test/legacy-orchestration-first-ux-removal.test.js test/visible-shell-language-removal.test.js test/nexus-sidebar-navigation-contract.test.js passed 12/12.`
+  - `Regression verification: node --test test/loop-core-screen-render.test.js test/release-surface-canonical-structure-contract.test.js test/growth-surface-canonical-structure-contract.test.js test/history-surface-canonical-structure-contract.test.js passed 8/8.`
+  - `Live DOM verification on 127.0.0.1:4011/timeline with explicit qaState screen=timeline confirmed appScreen=timeline, shellRoute=timeline, SURF-006 contract, history purpose/law, all six required history regions, canonical right rail physically on the right and active on timeline, no visible legacy sidebar, no QA nav, no stepper, no forbidden internal labels, and click-through to /growth rendering SURF-005 with Growth active.`
+- next:
+  - `SURF-007 — Share surface canonical structure`
+
+#### `SURF-007 — Share surface canonical structure`
+- status: `trueGreen`
+- type: `release-blocker`
+- canonical_surface_law:
+  - `Share surface = experience-oriented review/demo workspace, not permissions admin, generic social sharing, QA fallback, or a fabricated public link.`
+- depends_on:
+  - `SURF-001`
+- preserves:
+  - release readiness and artifact truth
+  - review/demo link truth when it exists
+  - project continuity and return-to-build context
+  - canonical compact right rail
+- removes:
+  - legacy wide sidebar
+  - QA placeholder navigation
+  - permissions/admin framing as the main product shape
+  - generic social sharing affordances
+  - provider/runtime/orchestration/debug language
+  - fabricated share links
+- builds:
+  - `/share` route backed by `screen-share`
+  - `data-share-surface-contract="SURF-007"`
+  - required regions: `share-experience-preview`, `share-audience-access-boundary`, `share-review-demo-link`, `share-copy-open-actions`, `share-privacy-scope`, `share-return-to-build`
+  - canonical compact right rail with Share active and the same ten product navigation targets as the other shell surfaces
+- canonical_write_back:
+  - `docs/operating-system/surf-007-share-surface-canonical-structure-contract-2026-05-31.md`
+- verification:
+  - `node --check web/app.js`
+  - `node --check web/nexus-ui/screens/ShareSurfaceScreen.js`
+  - `node --test test/share-surface-canonical-structure-contract.test.js test/nexus-sidebar-navigation-contract.test.js` passed `9/9`.
+  - `Live DOM verification on 127.0.0.1:4011/share confirmed appScreen=share, shellRoute=share, SURF-007 contract, purpose/law, all six required share regions, canonical rail active on share, ten rail targets including share/growth/release, no legacy sidebar, no QA nav, no internal provider/runtime/debug labels, no permissions/admin framing, and no fabricated public link.`
+  - `Live click-through from Share rail to Growth and then Release confirmed appScreen/shellRoute/active rail state changed to growth and release with no legacy sidebar.`
+- next:
+  - `SURF-008 — Studio surface and boundary contract`
+
+#### `SURF-008 — Studio surface and boundary contract`
+- status: `trueGreen`
+- type: `release-blocker`
+- depends_on:
+  - `SURF-001`
+- preserves:
+  - Nexus Web as the cloud/canonical product truth surface
+  - Nexus Studio as a desktop-local workspace, not another web screen
+  - project identity and return-to-build continuity
+  - local capability honesty: files, local run, heavy execution, offline drafts require Desktop
+  - canonical compact right rail
+- removes:
+  - Studio as a full web workspace
+  - web-based local file editor claims
+  - Developer console as the product surface
+  - fake local filesystem/runtime control
+  - Studio replacing Build
+  - provider/runtime/orchestration/debug language
+- builds:
+  - `/studio` route backed by `screen-studio`
+  - `data-studio-boundary-contract="SURF-008"`
+  - required regions: `studio-web-boundary-explanation`, `studio-desktop-connection-status`, `studio-open-desktop-action`, `studio-install-fallback`, `studio-web-vs-desktop-split`, `studio-return-to-web-product-truth`
+  - canonical compact right rail with Studio active and the same eleven product navigation targets as the other shell surfaces
+  - web-to-desktop handoff action using a bounded `nexus-studio://open?...` deep link without claiming Desktop is installed
+- canonical_write_back:
+  - `docs/operating-system/surf-008-studio-boundary-surface-contract-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-canonical-product-system-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+- studio_scope_boundary:
+  - `SURF-008` is trueGreen only as the Web boundary / handoff surface.
+  - Studio itself is not implemented by `/studio`.
+  - Studio implementation readiness is governed by `STD-*` tasks in `nexus-studio-canonical-implementation-task-map-2026-05-31.md`.
+- verification:
+  - `node --check web/app.js`
+  - `node --check web/nexus-ui/screens/StudioBoundaryScreen.js`
+  - `node --check web/nexus-ui/adapters/studio-boundary-adapter.js`
+  - `node --test test/studio-boundary-surface-contract.test.js test/nexus-sidebar-navigation-contract.test.js` passed `9/9`.
+  - `node --test test/release-surface-canonical-structure-contract.test.js test/growth-surface-canonical-structure-contract.test.js test/history-surface-canonical-structure-contract.test.js test/share-surface-canonical-structure-contract.test.js test/studio-boundary-surface-contract.test.js test/nexus-sidebar-navigation-contract.test.js` passed `18/18`.
+  - `Live DOM verification on 127.0.0.1:4011/studio confirmed appScreen=studio, shellRoute=studio, SURF-008 contract, purpose/law, all six required Studio boundary regions, visible canonical rail active on studio, eleven rail targets including studio/share/growth/release, rail pinned to the physical right of content, no legacy sidebar, no QA/internal debug/orchestration labels, no Developer/Project Brain leakage, no fake web Studio workspace, and a bounded Nexus Studio Desktop open action.`
+  - `Live click-through from Studio rail to Share and back to Studio confirmed appScreen/shellRoute/active rail state changed to share and studio with SURF-007/SURF-008 contracts visible.`
+- next:
+  - `SURF-009A — Shell-to-engine and contract-anchor bridge`
+
+#### `SURF-009A — Shell-to-engine and contract-anchor bridge`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - canonical doc `56.4`
+  - `docs/operating-system/surf-009-shell-to-engine-integration-contract-2026-06-02.md`
+- depends_on:
+  - `SURF-002..008`
+  - `ENG-001..007`
+- canonical_law:
+  - `Every canonical surface must connect to both its preserved truth engines and the live agent or explicit open agent task that owns decisions/actions on that surface.`
+  - `A surface is the face, an agent is the decision/action owner, and an engine is the truth/persistence/action backend.`
+  - `SURF-009A closes the structural bridge only: engine anchors, explicit agent/open-agent anchors, planning-contract anchors, and promise boundaries.`
+  - `SURF-009A does not prove live agents, Desktop implementation, local execution, live sync, or live handoff.`
+  - `If a surface agent is not implemented, the dependency must be explicit and must move to SURF-009B rather than blocking the first vertical slice forever.`
+- preserves:
+  - `project-service-truth-engine`
+  - `onboarding-intake-engine`
+  - `artifact-generation-engine`
+  - `continuity-memory-refresh-engine`
+  - `release-readiness-engine`
+- removes:
+  - `old visible route as truth owner`
+  - `legacy orchestration-first UX as active product behavior`
+  - `surface claims that imply live agent action without live agent proof`
+- builds:
+  - `src/core/shell-to-engine-integration-contract.js`
+  - `web/nexus-ui/contracts/shell-to-engine-integration-contract.js`
+  - `data-shell-engine-integration-contract="SURF-009"` on canonical product rail surfaces
+  - `explicit engineAnchors and agentAnchors for Home, Build, Release, Growth, History, Share, and Studio`
+- done_when:
+  - `every canonical surface declares engine anchors and agent anchors`
+  - `hidden engines stay hidden and cannot become visible product owners`
+  - `all visible agent-action promises either have a live agent proof or an explicit open release-blocker in SURF-009B`
+  - `tests prove agent dependencies prevent fake green at the bridge-contract level`
+  - `live browser proof shows SURF-009 marker on canonical product surfaces`
+- not_trueGreen:
+  - `engine bridge exists but open agent dependencies are not explicit`
+  - `any surface claims live decision/action ownership without a live agent or explicit open agent task`
+  - `old visible route logic owns product truth`
+  - `mutation, verification, release, history, continuity, or Studio handoff bypasses the declared agent/engine boundary`
+  - `planning-contract anchors are treated as live Desktop or live-agent proof`
+- canonical_write_back:
+  - `2026-06-02: SURF-009 contract started as shell-to-engine-and-agent bridge. Code contract and visible rail marker added. Task remains partial because required live surface agents are explicit open release-blockers and have not passed Agent Reality Gate.`
+  - `2026-06-03: SURF-009 bridge updated after Studio rulebook closure. Studio surface bridge now declares planning-contract anchors for STD-DOOR-001, STD-SYNC-001, STD-PERM-001, STD-RUN-001, STD-PKG-001, STD-DESIGN-001, STD-AGENT-001, and STD-HIST-001, plus a Web promise boundary forbidding installation, local run, file write, sync, package, or recovery claims before Desktop proof. Task remains partial because STD-HANDOFF-AGT-001 and other live surface agents are still open release-blockers.`
+  - `2026-06-03: SURF-009 revalidated after Studio rulebook closure. Code tests and live Studio route proof confirmed the visible bridge marker and truthful Studio boundary, but the single-task interpretation remained blocked from trueGreen by Agent Reality Gate: SKEL-001, VSKEL-001, BLD-AGT-001, VBUILD-001, MUT-001, HIST-AGT-001, SHARE-AGT-001, GROW-AGT-001, GROW-AGT-002, GROW-MEASURE-001, VER-AGT-001, REL-AGT-001, and STD-HANDOFF-AGT-001 remained open agent runtime dependencies. This exposed a canonical dependency cycle: SLICE-001 depended on SURF-009, SKEL-001 depended on SLICE-004, and SURF-009 was blocked by SKEL-001. This finding was superseded by the SURF-009A / SURF-009B split below.`
+  - `2026-06-03: SURF-009 was split to resolve the canonical dependency cycle. SURF-009A is trueGreen as the already-verified shell-to-engine and contract-anchor bridge only. It preserves explicit open agent dependencies and Studio Desktop promise boundaries, but it does not close live agents, Desktop implementation, local handoff, local run, file write, package, recovery, or live sync.`
+- verification:
+  - `node --test test/shell-to-engine-integration-contract.test.js` passed `6/6`.
+  - `node --test test/release-surface-canonical-structure-contract.test.js test/growth-surface-canonical-structure-contract.test.js test/history-surface-canonical-structure-contract.test.js test/share-surface-canonical-structure-contract.test.js test/studio-boundary-surface-contract.test.js test/nexus-sidebar-navigation-contract.test.js test/shell-to-engine-integration-contract.test.js` passed `24/24`.
+  - `Live Studio route proof confirmed appScreen=studio, visible rail active on studio, shellRoute=studio, visible SURF-009 family marker, Studio boundary truth, and no fake Desktop implementation claim.`
+- next:
+  - `SLICE-001 — First vertical slice execution lane`
+
+#### `SURF-009B — Live surface agent integration gate`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - canonical doc `56.4`
+  - `docs/operating-system/surf-009-shell-to-engine-integration-contract-2026-06-02.md`
+- depends_on:
+  - `SKEL-001`
+  - `VSKEL-001`
+  - `BLD-AGT-001`
+  - `VBUILD-001`
+  - `MUT-001`
+  - `HIST-AGT-001`
+  - `SHARE-AGT-001`
+  - `GROW-AGT-001`
+  - `GROW-AGT-002`
+  - `GROW-MEASURE-001`
+  - `VER-AGT-001`
+  - `REL-AGT-001`
+  - `STD-HANDOFF-AGT-001`
+- canonical_law:
+  - `SURF-009B closes only after visible product surfaces are connected to live agents that pass Agent Reality Gate.`
+  - `A planning contract, shell marker, or engine anchor is not live agent proof.`
+  - `No surface may claim a live action, decision, mutation, verification, release, share, growth, or Studio handoff if the responsible agent has not passed Agent Reality Gate.`
+- done_when:
+  - `every live surface agent listed in depends_on has role, rules, structured input, structured output, external live provider path if required, no fake fallback, tests, and live proof`
+  - `each relevant surface shows either a real agent action path or a truthful blocked/open state`
+  - `live browser proof demonstrates user input -> live agent -> structured result -> surface/product change or truthful blocked state`
+- not_trueGreen:
+  - `any live surface action is simulated by a template, old engine, local fallback, or UI-only response`
+  - `a visible surface claims action changed the product when no agent-backed or engine-backed change happened`
+  - `Studio Web claims Desktop handoff, install detection, local run, file write, package, recovery, or live sync before Desktop proof`
+- canonical_write_back:
+  - `2026-06-03: SURF-009B was created as the later live-agent gate split out of SURF-009. It intentionally does not block SLICE-001 because the live agents it requires are produced by the slice and agent chain. It remains open until all listed surface agents pass Agent Reality Gate.`
+  - `2026-06-07: NEXUS-FACADE-001 added after user clarification that internal multi-agent ownership must be invisible to normal users. SURF-009B still owns live surface-agent integration; NEXUS-FACADE-001 owns the unified user-facing Nexus agent facade after those live agent paths exist.`
+
+#### `NEXUS-FACADE-001 — Unified user-facing Nexus agent facade`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - user clarification 2026-06-07: users must experience Nexus as one smart agent from 0 to 100
+  - `SURF-009B`
+  - `BLD-AGT-001`
+  - canonical product system visible/internal boundary
+- depends_on:
+  - `SURF-009B`
+  - `BLD-AGT-001`
+  - `VBUILD-001`
+  - `MUT-001`
+  - `HIST-AGT-001`
+  - `SHARE-AGT-001`
+  - `GROW-AGT-001`
+  - `VER-AGT-001`
+  - `REL-AGT-001`
+- canonical_law:
+  - `Users must experience Nexus as one intelligent agent that takes them from idea to build to proof to release, not as a visible committee of internal agents.`
+  - `Internal agent ownership remains canonical for engineering truth, but must be hidden behind one product-facing Nexus voice and one coherent action flow.`
+  - `Nexus may explain what is happening in product language, but must not expose internal agent names, routing, task ids, engine labels, provider internals, or ownership boundaries as user-facing experience.`
+  - `A handoff between internal agents must appear to the user as continuity, not as mode switching, technical escalation, or implementation bureaucracy.`
+- preserve:
+  - internal agent ownership and truth boundaries
+  - routing, approval, verification, release, growth, share, history, and mutation engines
+  - product-readable history and restore truth
+- remove_from_active_path:
+  - user-facing internal agent names
+  - task ids, route ids, owner labels, provider labels, or engine labels shown as product copy
+  - visible handoff language that makes Nexus feel fragmented
+  - UI that asks the user to understand which internal agent owns an action
+- build:
+  - unified Nexus agent voice contract
+  - product-facing status language for internal handoffs
+  - one visible agent rail that persists across Create, Build, Test, Share, Growth, Release, History, and Studio boundaries where relevant
+  - internal-to-user translation layer for action states: building, checking, asking approval, blocked, ready, failed, saved, restored
+  - no-internal-leak guard for normal user mode
+  - continuity proof that a user can move from idea to build to next action without seeing internal ownership
+- done when:
+  - tests prove normal user surfaces do not expose internal agent names, task ids, engine labels, provider internals, or routing language as visible copy
+  - tests prove internal ownership still exists in hidden state and is not erased by the facade
+  - tests prove Build, Verification, Release, Share, Growth, History, and Studio-facing handoffs use one Nexus voice
+  - live browser proof shows a real project progressing across at least Create -> Build -> one downstream action with one visible Nexus agent experience and no internal labels
+  - live browser proof shows failure/approval/release-boundary states are explained as Nexus actions, not internal agent bureaucracy
+- regression guards:
+  - users see internal task ids or agent ownership labels in normal mode
+  - the UI tells users which internal agent is responsible instead of what Nexus is doing for them
+  - hiding internal labels breaks project truth, routing truth, or auditability
+  - each surface feels like a separate product instead of one continuous Nexus agent
+- next:
+  - `NEXUS-ACTION-FACADE-001 — Unified Nexus action facade changes the visible product`
+
+#### `NEXUS-ACTION-FACADE-001 — Unified Nexus action facade changes the visible product`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-11 user clarification: the user must experience one Nexus agent, not separate receiving/building/releasing agents`
+  - `2026-06-11 user clarification: the right-side Build rail agent must change whatever product surface, asset, action, package, or release-boundary work the user asks for, or return a precise blocker`
+  - `NEXUS-FACADE-001`
+  - `VBUILD-001`
+  - `MUT-001`
+  - `BUILD-SPEECH-TRUTH-001`
+  - `PROV-001`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+- depends_on:
+  - `NEXUS-FACADE-001`
+  - `VBUILD-001`
+  - `MUT-001`
+  - `BUILD-SPEECH-TRUTH-001`
+  - `PROV-001`
+  - `HIST-AGT-001`
+  - `SHARE-AGT-001`
+  - `GROW-AGT-001`
+  - `REL-AGT-001`
+- blocks:
+  - `SURF-CODE-001`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `STANDALONE-ARTIFACT-001`
+  - `PRODUCT-PROMISE-GATE-001`
+  - `VER-AGT-001`
+  - `BUILD-TEST-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `REL-001`
+  - `REL-002`
+  - `REL-003`
+  - `REL-004`
+  - `REL-006`
+- canonical_law:
+  - `For the user, there is one Nexus agent. Internal agent boundaries are implementation truth only and may not reduce the user's ability to ask for product work from any active Nexus rail.`
+  - `The persistent right-side Build rail is not a narrow chat widget. It is the user's active Nexus agent for building, changing, generating, checking, packaging, sharing, growing, and release-framing the product.`
+  - `When the user asks Nexus to change the product, the request must either produce a real visible product change backed by project truth, package truth when applicable, history truth, and restore proof, or show a precise user-facing blocker.`
+  - `Nexus may route internally to Build, Visual Build, Mutation, Provider, Growth, Share, Verification, Release, History, or Runtime Package agents, but the user-facing experience must remain one continuous Nexus action.`
+  - `A request for assets such as images, videos, brand materials, screens, campaigns, icons, or motion must route through provider governance and then enter product truth, package asset manifest, visible surface, and history when approved.`
+  - `A request for product structure such as screens, fields, actions, flows, data, backend operations, persistence, dependencies, package files, preview, or release readiness must update all relevant product layers together instead of changing only copy or local UI state.`
+  - `The agent may never answer as if work was done when the visible product, project truth, package truth when applicable, and restore path do not reflect the work.`
+- preserve:
+  - internal multi-agent ownership and auditability
+  - Product Graph truth
+  - selected skeleton direction truth
+  - Visual Build, Mutation, Provider, Growth, Share, History, Verification, Release, and Runtime Package boundaries
+  - approval/security/provider/release gates
+- remove_from_active_path:
+  - Build rail replies that say or imply a change was made while the visible product does not change
+  - narrow free-text mutation support that only handles a few record operations while ordinary product changes fall through as chat
+  - user-facing differences between the discovery agent, Build rail agent, Growth agent, Share agent, Release agent, or any other internal agent
+  - fake success for asset generation, screen changes, copy changes, action additions, provider actions, package changes, tests, share, growth, or release
+  - changes stored only in transient browser state, QA state, local DOM state, or hidden conversation text
+- build:
+  - unified action facade contract for the right-side agent rail and any other Nexus conversation entry point
+  - request-to-capability router that maps natural user requests to product change, visual change, asset generation, package change, backend/domain change, verification, growth, share, release, or precise blocker
+  - action plan envelope with requested outcome, affected product surfaces, required internal agents, approval need, provider need, package need, verification need, expected visible result, and restore requirements
+  - apply path for supported changes that updates visible artifact, Product Graph/domain truth, product-owned backend/local persistence, package truth when applicable, history, and refresh restore together
+  - provider asset insertion path for generated/imported assets that stores asset source, approval, usage boundary, package link, visible placement, and history
+  - no-fake-success gate that blocks user-facing success unless the expected visible/product/package/history state exists
+  - fallback blocker language for unsupported, unsafe, provider-missing, package-missing, permission-missing, release-blocked, or verification-failed requests
+  - live proof scripts that exercise the same right-side rail a real user uses, not a hidden API-only shortcut
+- done when:
+  - tests prove the right-side Nexus rail can change visible product copy, fields, actions, screens/sections, layout/composition, and product-domain data when those requests are supported
+  - tests prove a request to generate and insert multiple assets, such as ten images, routes through provider governance and either inserts approved product-owned assets into the visible product/package/history path or shows the exact blocker
+  - tests prove adding a field changes UI, schema/domain truth, product-owned backend/local persistence, package truth when available, history, and restore state
+  - tests prove adding an action creates or updates a visible control, backend/domain operation, package operation when available, history, and restore state
+  - tests prove adding a screen or section updates visible navigation/surface, product truth, package route/screen truth when available, history, and restore state
+  - tests prove visual changes go through Visual Build and Mutation ownership while still appearing to the user as one Nexus action
+  - tests prove release/share/growth/provider/payment/publishing requests from the same rail route to the correct gated path without exposing internal agent names or claiming completion early
+  - tests prove unsupported requests return a precise blocker and do not create success wording, fake history, fake package mutations, or invisible state changes
+  - tests prove refresh restores every applied action from project/package truth and not from transient browser state
+  - live browser proof shows a real project on a clean `/loop?projectId=<real-project-id>` route, the right-side rail receives multiple user requests, at least one visible product change applies, at least one asset/provider/package-sensitive request is truthfully applied or blocked, refresh restores the result, and the user never sees internal agent boundaries
+- not trueGreen:
+  - the rail can only answer or update conversation text
+  - the rail changes only a narrow set of record operations while ordinary product-building requests are not applied
+  - a visible product change can happen without project truth, mutation/history truth, or restore proof
+  - provider-generated assets remain loose drafts and are not linked to product/package/history truth
+  - generated package or backend truth is ignored when the requested change affects product structure, actions, persistence, or dependencies
+  - the user must know which internal agent owns the request
+  - success is claimed before the visible product and persisted truth agree
+- next:
+  - `SURF-CODE-001 — Surface code decomposition and state-leak prevention`
+
+#### `SURF-CODE-001 — Surface code decomposition and state-leak prevention`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `nexus-deep-system-review-2026-06-10.md`
+  - repeated route/state leakage findings around `project-draft`, `nexusState`, `qaState`, stale `currentProjectId`, and create/build restore
+- depends_on:
+  - `SURF-009A`
+  - `SLICE-007`
+  - `NEXUS-FACADE-001`
+  - `NEXUS-ACTION-FACADE-001`
+- blocks:
+  - `REL-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `REL-001`
+  - `REL-002`
+  - `REL-003`
+  - `REL-004`
+  - `REL-006`
+- canonical_law:
+  - `The visible shell may not depend on one oversized file owning route state, project identity, local persistence, companion turns, QA state, and render orchestration at once.`
+  - `State-leak fixes must become structural boundaries, not repeated patches.`
+  - `Create, Build, History, Share, Release, Growth, Settings, and Studio routes must consume one explicit route/project/session state owner.`
+- preserve:
+  - existing working UI screens and adapters
+  - hidden engines and project-service truth
+  - live route behavior already proven by slice tasks
+- remove_from_active_path:
+  - ad hoc route/project/session state scattered through the visible app shell
+  - QA/localStorage/project-draft fallback paths that can appear in real user flows
+  - duplicate companion-turn or project-restore logic outside a bounded client/state module
+- build:
+  - extracted route state module
+  - extracted session/project identity client
+  - extracted companion-turn client
+  - extracted restore/bootstrap boundary
+  - tests that prove create/new-project cleanup, return-to-project, refresh, and route transitions do not leak old project truth
+  - migration notes showing old visible shell inertia was removed without deleting preserved engines
+- done_when:
+  - tests prove real project flows do not use `project-draft`, `nexusState`, or `qaState`
+  - tests prove creating a new project clears prior runtime/backend/build anchors from the Create screen
+  - tests prove Build/History/Share/Release/Growth route transitions preserve only the correct project id and project truth
+  - tests prove the extracted modules own route/session/companion-turn responsibilities that were previously mixed into `web/app.js`
+  - live browser proof covers create -> build -> refresh -> route transitions -> new create clean state without stale project truth
+- not_trueGreen:
+  - `web/app.js` remains the only owner of route state, project identity, companion turn dispatch, restore/bootstrap, and QA fallback behavior
+  - state leaks are fixed only by adding another special-case patch
+  - real user flows can still surface `project-draft`, `nexusState`, `qaState`, or stale project anchors
+  - tests only assert DOM labels and do not prove cross-route state isolation
+- next:
+  - `later release hardening before release/user-ready claims`
+
+#### `STD-FND-001 — Define Nexus Studio identity and truth boundary`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-product-system-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+- depends_on:
+  - `FND-001`
+  - `SURF-008`
+- canonical_law:
+  - Studio is desktop-local Nexus power mode, not a second product or second source of truth.
+- done_when:
+  - Studio identity/truth law is linked from the main product system and Studio product system
+- not_trueGreen:
+  - any doc still treats Studio as a normal Web surface or Developer page
+- verification:
+  - grep/doc review shows Studio is not defined as Web IDE, VS Code clone, or truth owner
+- evidence:
+  - `2026-06-02: Studio identity/truth boundary cross-read verified in the main product system, Studio product system, Studio implementation map, and main implementation map. Studio is desktop-local Nexus power mode, not a Web surface, Developer page, IDE clone, or second source of truth.`
+- write_back:
+  - `STD-FND-001 is trueGreen as a planning/write-back task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-QUEST-001`
+
+#### `STD-QUEST-001 — Lock Nexus Studio deep product questions and answers`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-product-system-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-deep-product-answers-2026-06-02.md`
+- depends_on:
+  - `STD-FND-001`
+- canonical_law:
+  - Studio must be locked through deep product questions, canonical answers, and task extraction before implementation or proof.
+- done_when:
+  - questions cover Studio identity, outside app shell, inside workspace, Web door, sync, offline, permissions, files, secrets, runtime, preview, debug, package, release handoff, local agents, recovery, failure states, and forbidden behaviors
+  - answers are written into the Studio product system
+  - implementation tasks are updated from the answers
+- not_trueGreen:
+  - Studio implementation begins while V1 product-definition questions remain open
+  - answers are not converted into map tasks
+- verification:
+  - doc audit confirms no unanswered V1 Studio product-definition blocker remains
+- evidence:
+  - `2026-06-02: first Studio deep-answer batch captured the first user, Web-to-Studio door, install/connect states, desktop application feel, first bound project workspace, persistent local-aware Nexus agent, action buttons, locked states, relevant files area, local/canonical labels, unsynced status bar, and close/reopen recovery baseline.`
+  - `2026-06-02: second Studio deep-answer batch captured Product Graph as the project truth engine, bounded opening package, Studio Local Agent, local run permission boundary, run failure UX, file-write approval, pre-sync product-meaning review, sync evidence, evidence-only vs truth-change candidates, Mutation Agent + sync engine bridge, bounded offline, and cloud-changed-while-local conflict behavior.`
+  - `2026-06-02: third Studio deep-answer batch captured existing-command-first local run, proposed new run commands, approval-gated dependency installation, filtered error display, in-workspace debug area, error-fix classification, package-as-candidate, package approval gate, folder grant/revoke, missing-folder fallback, and local-secret run-only boundary.`
+  - `2026-06-02: fourth Studio deep-answer batch captured three-region visual shell, top-corner return-to-Web, next-action card, persistent action row, healthy center state, center error state, locked action visual language, relevant-files cards, persistent Nexus side panel, outside app identity, and Figma-first visual contract.`
+  - `2026-06-02: fifth Studio deep-answer batch locked the official V1 screen list: Studio Opening, Web Project Opening Confirmation, Main Project Workspace, Error / Debug State, Preview Before Sync, Cloud Conflict, Permissions, Read-Only Mode, Local Recovery, Package / Release Candidate, and Basic Studio Settings.`
+  - `2026-06-02: sixth Studio deep-answer batch locked the Figma artifact contract: 11 V1 frames, outside-application frame, 5-6 deep locked frames, Nexus Design System + Studio Depth Layer, local-action Nexus side panel, quiet/prominent bottom status behavior, required failure states, and control-over-chaos visual wow.`
+  - `2026-06-02: seventh Studio deep-answer batch locked Mac-only V1, Electron default, project-command-first runtime, internal app storage vs approved project-folder writes, and transition to STD-VISION-001.`
+- derived_tasks:
+  - `STD-ENTRY-001`
+  - `STD-SHELL-001`
+  - `STD-WORKSPACE-001`
+  - `STD-ACTIONS-001`
+  - `STD-FILES-001`
+  - `STD-LOCAL-STATE-001`
+  - `STD-RECOVERY-001`
+  - `STD-OFFLINE-001`
+  - `STD-EVIDENCE-001`
+  - `STD-MUTATION-BRIDGE-001`
+  - `STD-DEBUG-001`
+  - `STD-ERROR-STATE-001`
+  - `STD-SETTINGS-001`
+  - `STD-PLATFORM-001`
+  - `STD-SHELL-002`
+  - `STD-STORAGE-001`
+- write_back:
+  - `STD-QUEST-001 is trueGreen as a planning/write-back task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-VISION-001`
+
+#### `STD-VISION-001 — Nexus Studio V1 visual product vision`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-product-system-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+- depends_on:
+  - `STD-QUEST-001`
+- canonical_law:
+  - Studio must have a visual product vision before UI implementation; text-only definition is insufficient.
+- done_when:
+  - visual artifact shows the app from the outside and the V1 workspaces from the inside
+  - visual artifact covers Studio Home, project-bound workspace, local preview, build/run, debug/errors, package/export, sync/conflict/offline, permissions/secrets, and return-to-Web
+  - design direction is Nexus-native and not file-tree-first, terminal-first, or VS Code clone
+- not_trueGreen:
+  - no vision image/prototype exists
+  - `/studio` Web boundary is mistaken for the desktop application
+- verification:
+  - visual review confirms all required states and forbidden directions
+- evidence:
+  - `2026-06-02: Figma visual vision created at https://www.figma.com/design/PayxllrD8TrZdg3FIASn4g.`
+  - `2026-06-02: artifact includes outside application identity and all 11 Studio V1 screen frames, with six deep locked frames for healthy workspace, error/debug, pre-sync, cloud conflict, permissions, and package/release candidate.`
+- write_back:
+  - `STD-VISION-001 is trueGreen as a planning/design artifact task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-SCREENS-001`
+
+#### `STD-SCREENS-001 — Nexus Studio V1 screen and workspace map`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+- depends_on:
+  - `STD-VISION-001`
+- canonical_law:
+  - Studio V1 screens/workspaces must be mapped before implementation, including agent owners and engine owners.
+- done_when:
+  - every V1 Studio screen has purpose, user action, visible regions, engine dependency, agent dependency, approval boundaries, sync impact, and failure behavior
+  - V1 vs post-release screens are explicit
+- not_trueGreen:
+  - implementation starts from vague app concept or visual only
+  - screens imply local power without permission/sync/failure boundaries
+- verification:
+  - screen map audit confirms truth owner, agent owner, and failure path for every V1 screen
+- evidence:
+  - `2026-06-02: Studio V1 screen/workspace map created at docs/operating-system/nexus-studio-v1-screen-workspace-map-2026-06-02.md.`
+  - `2026-06-02: all 11 Studio V1 screens are mapped against purpose, user action, visible regions, buttons, truth engine, responsible agent, permissions, sync impact, failure behavior, and implementation boundary.`
+- write_back:
+  - `STD-SCREENS-001 is trueGreen as a planning/screen-contract task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-ENTRY-001`
+
+#### `STD-ENTRY-001 — Define Studio Web entry and install/connect states`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-web-entry-contract-2026-06-02.md`
+- depends_on:
+  - `STD-SCREENS-001`
+  - `SURF-008`
+- canonical_law:
+  - Web opens Studio only when local computer power is required, and never pretends Studio is a Web screen.
+- done_when:
+  - Web entry states include `not-installed`, `installed-not-connected`, `connected-project-bound`, and `handoff-failed`
+  - install, connect, approve, fail, and continue-in-Web states are documented
+  - what Web may promise and must not promise is explicit
+- not_trueGreen:
+  - Web presents local capability without installed/connected Studio truth
+  - Web opens/binds a local project without user approval
+  - Web implies Studio Desktop is implemented by `/studio`
+- verification:
+  - entry contract includes `not-installed`, `installed-not-connected`, `connected-project-bound`, `handoff-failed`, `version-mismatch`, `stale-project-binding`, `local-dirty`, `offline-bounded`, and `sync-rejected`
+- evidence:
+  - `2026-06-02: Web entry contract created at docs/operating-system/nexus-studio-web-entry-contract-2026-06-02.md.`
+  - `2026-06-02: contract defines button copy, handoff envelope, deep-link boundary, Studio confirmation, return-to-Web states, and Web promise boundaries.`
+- write_back:
+  - `STD-ENTRY-001 is trueGreen as a planning/entry-contract task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-FND-002`
+
+#### `STD-FND-002 — Lock cloud truth vs local working-state model`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-product-system-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+- depends_on:
+  - `STD-SCREENS-001`
+- canonical_law:
+  - local files, runtime logs, previews, packages, and checkpoints are candidate/evidence state until accepted by Nexus.
+- done_when:
+  - canonical, local, candidate, evidence, proposed mutation, accepted mutation, and rejected mutation states are documented
+- not_trueGreen:
+  - local artifacts can be mistaken for committed Product Graph truth
+- verification:
+  - Studio doc contains the full truth-state list
+- evidence:
+  - `2026-06-02: cloud/local truth-state contract created at docs/operating-system/nexus-studio-cloud-local-truth-contract-2026-06-02.md.`
+  - `2026-06-02: contract defines canonical-truth, local-working-state, candidate-artifact, local-evidence, proposed-mutation, accepted-mutation, rejected-mutation, opening package fields, allowed transitions, blocked transitions, stale/conflict rules, offline rules, evidence rules, and rejection rules.`
+- write_back:
+  - `STD-FND-002 is trueGreen as a planning/truth-state contract task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-DOOR-001`
+
+#### `STD-DOOR-001 — Lock Web↔Studio door contract`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-web-studio-door-contract-2026-06-02.md`
+- depends_on:
+  - `STD-FND-002`
+  - `STD-SCREENS-001`
+  - `SURF-008`
+- canonical_law:
+  - Web opens the door, Studio executes locally, Web remains canonical.
+  - `STD-DOOR-001` must consume the `STD-FND-002` truth-state contract before defining any Web↔Studio promise.
+  - Web may explain, prepare, and request handoff; Web must not claim installed Studio, successful deep link, local execution, live sync, accepted mutation, or local evidence unless that state was truthfully returned by implemented Studio/Desktop capability.
+- done_when:
+  - bidirectional Web->Studio and Studio->Web contract is documented with connection states, project binding, version compatibility, stale rejection, failure fallback, and approval boundaries
+  - contract explicitly separates expected future capability from implemented capability
+  - Web promise boundaries map every visible state to one of: not installed, installed but not connected, connected project-bound, handoff failed, local dirty, offline bounded, sync rejected, evidence returned, mutation accepted, or mutation rejected
+  - every state that depends on real Desktop implementation is marked as contract-only until installation detection, deep-link handling, Desktop confirmation, and live sync are implemented and verified
+- not_trueGreen:
+  - Web handoff is one-way only
+  - Studio cannot return status/sync/evidence/recovery to Web
+  - Web promises local capability without installed/connected Studio truth
+  - Web claims installation detection, deep-link success, local execution, live sync, evidence return, or mutation acceptance before real implementation verifies it
+  - `/studio` Web boundary is treated as the Desktop app
+- verification:
+  - contract includes `not-installed`, `installed-not-connected`, `connected-project-bound`, `handoff-failed`, `version-mismatch`, `stale-project-binding`, `local-dirty`, `offline-bounded`, `sync-rejected`, `evidence-returned`, `mutation-accepted`, and `mutation-rejected`
+  - contract cross-check proves every visible Web promise is backed by a truth state from `STD-FND-002` or marked unavailable/contract-only
+- evidence:
+  - `2026-06-02: Web↔Studio door contract created at docs/operating-system/nexus-studio-web-studio-door-contract-2026-06-02.md.`
+  - `2026-06-02: contract defines Web open behavior, Studio return envelope, handoff envelope, deep-link boundary, promise boundary matrix, failure categories, what Web may show, what Web must not promise, and contract-only Desktop-dependent states.`
+- write_back:
+  - `STD-DOOR-001 is trueGreen as a planning/door-contract task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-SYNC-001`
+
+#### `STD-SYNC-001 — Lock sync, stale-state, and bounded offline model`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-sync-stale-offline-contract-2026-06-02.md`
+- depends_on:
+  - `STD-DOOR-001`
+- canonical_law:
+  - Studio sync uses explicit mutation/checkpoint envelopes; offline work may queue proposals but may not mint shared truth.
+- done_when:
+  - local candidate/evidence states, sync states, stale rejection, conflict handling, and offline limits are defined
+- not_trueGreen:
+  - sync is vague continuity
+  - local folder state can overwrite Product Graph truth
+- verification:
+  - scenarios cover offline queue, stale cloud truth, conflict, rejected mutation, and reconnect
+- evidence:
+  - `2026-06-02: sync/stale/offline contract created at docs/operating-system/nexus-studio-sync-stale-offline-contract-2026-06-02.md.`
+  - `2026-06-02: contract defines sync states, stale-state checks, conflict rules, bounded offline queue, pre-sync review, sync proposal envelope, accepted sync result, rejected sync result, evidence rules, failure/retry behavior, and Web display boundaries.`
+- write_back:
+  - `STD-SYNC-001 is trueGreen as a planning/sync-contract task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-PERM-001`
+
+#### `STD-PERM-001 — Lock permissions/files/secrets/computer boundary`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-permissions-files-secrets-computer-contract-2026-06-02.md`
+- depends_on:
+  - `STD-SCREENS-001`
+  - `STD-FND-002`
+  - `STD-DOOR-001`
+  - `STD-SYNC-001`
+- canonical_law:
+  - local power must be scoped, visible, revocable, auditable, and approval-bounded.
+- done_when:
+  - file grants, local secrets, computer access, revocation, and forbidden unrestricted shell/filesystem behavior are defined
+- not_trueGreen:
+  - Studio can browse arbitrary folders, dump env vars, or run unrestricted commands
+- verification:
+  - permission matrix exists for files, runtime, package, debug, secrets, and evidence
+- evidence:
+  - `2026-06-02: permissions/files/secrets/computer access contract created at docs/operating-system/nexus-studio-permissions-files-secrets-computer-contract-2026-06-02.md.`
+  - `2026-06-02: contract defines permission classes, permission cards, folder grant/revoke, read/write boundaries, runtime/install/sync/package/evidence boundaries, local secrets boundary, computer access boundary, locked action display, read-only mode, revocation, failures, and Web display boundaries.`
+- write_back:
+  - `STD-PERM-001 is trueGreen as a planning/permission-contract task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-RUN-001`
+
+#### `STD-RUN-001 — Define Studio local runtime and preview contract`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-local-runtime-preview-contract-2026-06-02.md`
+- depends_on:
+  - `STD-PERM-001`
+  - `STD-SYNC-001`
+- canonical_law:
+  - Studio may run local preview/build flows only for the active Nexus project, and runtime output is evidence, not truth.
+- done_when:
+  - local runtime action classes, preview evidence, failure behavior, and bounded project scope are defined
+- not_trueGreen:
+  - local runtime output can be mistaken for Product Graph truth
+- verification:
+  - doc distinguishes runtime evidence from canonical truth
+- evidence:
+  - `2026-06-02: local runtime/preview contract created at docs/operating-system/nexus-studio-local-runtime-preview-contract-2026-06-02.md.`
+  - `2026-06-02: contract defines runtime action classes, existing-command-first rule, new command approval rule, run permission gate, preview boundary, dependency install boundary, secrets boundary during run, runtime evidence, failure display, proposed fix classification, stop behavior, and Web display boundary.`
+- write_back:
+  - `STD-RUN-001 is trueGreen as a planning/runtime-contract task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-PKG-001`
+
+#### `STD-PKG-001 — Define packaging/debug/release handoff contract`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-packaging-debug-release-handoff-contract-2026-06-03.md`
+- depends_on:
+  - `STD-RUN-001`
+  - `STD-PERM-001`
+  - `STD-SYNC-001`
+- canonical_law:
+  - packaging/debug happen locally; release closes canonically in Nexus Web.
+- done_when:
+  - local package/debug outputs are defined as candidate evidence and release handoff to Web gates is defined
+- not_trueGreen:
+  - local package output can bypass release gates
+- verification:
+  - scenarios cover package success, package failure, stale package, verification fail, and Web release continuation
+- evidence:
+  - `2026-06-03: packaging/debug/release handoff contract created at docs/operating-system/nexus-studio-packaging-debug-release-handoff-contract-2026-06-03.md.`
+  - `2026-06-03: contract defines package candidates as candidate artifacts, debug outputs as local evidence, pre-package review, package blockers, package candidate card, release handoff to Web Release, evidence attachment, failure behavior, and Web display boundaries.`
+- write_back:
+  - `STD-PKG-001 is trueGreen as a planning/package-debug-release-handoff contract task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-DESIGN-001`
+
+#### `STD-DESIGN-001 — Lock Studio V1 design/tooling contract`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-v1-design-tooling-contract-2026-06-03.md`
+- depends_on:
+  - `STD-VISION-001`
+  - `STD-SCREENS-001`
+  - `STD-PKG-001`
+- canonical_law:
+  - Studio is Nexus-native, product-first, agent-guided, local-power aware, and never file-tree-first.
+- done_when:
+  - Figma is selected as the first design authority and `Nexus Studio V1 Desktop Workspace Contract` is required before implementation
+- not_trueGreen:
+  - Studio can be built as VS Code clone, fake terminal-first UI, or generic developer dashboard
+- verification:
+  - design contract includes forbidden directions and required proof states
+- evidence:
+  - `2026-06-03: design/tooling contract created at docs/operating-system/nexus-studio-v1-design-tooling-contract-2026-06-03.md.`
+  - `2026-06-03: contract defines Figma as first design authority, Nexus Design System + Studio Depth Layer, product-framed tooling surfaces, required proof states, and anti-pattern checklist.`
+- write_back:
+  - `STD-DESIGN-001 is trueGreen as a planning/design-tooling contract task only; no Studio implementation task is trueGreen.`
+- next:
+  - `STD-AGENT-001`
+
+#### `STD-AGENT-001 — Define bounded Studio local agents`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-local-agents-contract-2026-06-03.md`
+- depends_on:
+  - `STD-SYNC-001`
+  - `STD-PERM-001`
+  - `STD-RUN-001`
+  - `STD-PKG-001`
+  - `STD-DESIGN-001`
+- canonical_law:
+  - local agents can operate tools; only Nexus canonical sync may change truth.
+- done_when:
+  - each V1 local agent has role, input, output, approval boundary, sync boundary, and failure boundary
+  - dangerous actions, relationship to Web conversation agent, and future Agent Reality Gate are defined
+- not_trueGreen:
+  - a vague `Studio Agent` or unrestricted desktop super-agent exists
+- verification:
+  - bounded V1 local agents are listed: `Studio Local Agent`, `Studio Local Runtime Operator`, `Studio Sync Guard`, and `Studio Package Verifier`
+  - no Desktop implementation, live local agent, local execution, file write, or live sync is closed by this planning task
+- evidence:
+  - `docs/operating-system/nexus-studio-local-agents-contract-2026-06-03.md`
+- write_back:
+  - closed as planning/local-agent-contract only
+- next:
+  - `STD-HIST-001`
+
+#### `STD-HIST-001 — Define Studio history and recovery contract`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `docs/operating-system/nexus-studio-canonical-implementation-task-map-2026-05-31.md`
+  - `docs/operating-system/nexus-studio-history-recovery-contract-2026-06-03.md`
+- depends_on:
+  - `STD-FND-002`
+  - `STD-SYNC-001`
+  - `STD-PERM-001`
+  - `STD-AGENT-001`
+- canonical_law:
+  - Studio recovery protects local work; Web History protects accepted truth.
+- done_when:
+  - local checkpoints, crash recovery, unsynced warning, rebase/retry/discard paths, and canonical History attachment rules are documented
+  - opening package history boundary, Web recovery promise boundary, and close/crash/reopen/restore/discard behavior are documented
+- not_trueGreen:
+  - local recovery is treated as shared canonical history
+- verification:
+  - local session journal, local recovery checkpoint, canonical Product History, and recovery evidence attachment are separated
+  - no Desktop app, live checkpoint engine, restore engine, cloud History writer, or sync behavior is closed by this planning task
+- evidence:
+  - `docs/operating-system/nexus-studio-history-recovery-contract-2026-06-03.md`
+- write_back:
+  - closed as planning/history-recovery-contract only
+- next:
+  - `SURF-009A — Shell-to-engine and contract-anchor bridge`
+
+---
+
+## 11. Phase 5 — First Vertical Slice
+
+מטרה:
+- להוכיח שה־shell החדש אמיתי
+- דרך flow אחד שעובד מקצה לקצה
+
+### Tasks
+
+#### `SLICE-001 — First vertical slice execution lane`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - canonical doc `56.5`
+  - `docs/operating-system/first-vertical-slice-execution-lane-contract-2026-06-03.md`
+- depends_on:
+  - `SURF-002`
+  - `SURF-003`
+  - `SURF-009A`
+- canonical_law:
+  - `SLICE-001 closes the execution lane and entry proof only; it does not close the full eight-step first vertical slice.`
+  - `The first slice starts in Home/Create, enters Build, and must preserve explicit downstream live-agent tasks instead of faking them.`
+  - `QA motion proof is allowed only as entry proof, not as live Product Skeleton Agent, Visual Skeleton Agent, Build Loop Agent, Visual Build Agent, Mutation, or continuity proof.`
+- preserves:
+  - `project-service-truth-engine`
+  - `onboarding-intake-engine`
+  - `artifact-generation-engine`
+  - `continuity-memory-refresh-engine`
+- removes:
+  - `visible onboarding as standalone product route`
+  - `visible loop as orchestration-first route`
+  - `backend completion as build authority`
+  - `fallback copy as agent answer`
+  - `fake green from QA motion only`
+- builds:
+  - `src/core/first-vertical-slice-execution-lane-contract.js`
+  - `data-slice-contract="SLICE-001"` marker on the discovery-to-build QA entry proof path
+  - `entry-proof-not-live-agent-closure` boundary marker
+- done_when:
+  - `canonical first-slice lane is documented`
+  - `code contract defines preserve/remove/build truth and downstream boundaries`
+  - `entry proof is marked as SLICE-001 without claiming live downstream agent closure`
+  - `tests prove SLICE-001 depends on SURF-009A, not SURF-009B`
+- not_trueGreen:
+  - `SLICE-001 claims full eight-step slice completion`
+  - `QA motion proof is treated as live-agent proof`
+  - `Product Skeleton Agent, Visual Skeleton Agent, Build Loop Agent, Visual Build Agent, user mutation, or refresh continuity are claimed before their tasks close`
+- verification:
+  - `node --test test/first-vertical-slice-execution-lane-contract.test.js` passed
+  - `node --test test/build-surface-motion-flow-contract.test.js test/first-vertical-slice-execution-lane-contract.test.js` passed
+  - `node --test test/release-surface-canonical-structure-contract.test.js test/growth-surface-canonical-structure-contract.test.js test/history-surface-canonical-structure-contract.test.js test/share-surface-canonical-structure-contract.test.js test/studio-boundary-surface-contract.test.js test/nexus-sidebar-navigation-contract.test.js test/shell-to-engine-integration-contract.test.js test/first-vertical-slice-execution-lane-contract.test.js` passed `27/27`
+  - `Live browser verification on 127.0.0.1:4011/create?qa=1&qaReset=1&qaMotionFlow=discovery-to-build confirmed appScreen=loop, Build surface contract SURF-003, shell bridge marker SURF-009, create slice marker SLICE-001 at user-writes-idea, build slice marker SLICE-001 at first-skeleton-appears, and proof boundary entry-proof-not-live-agent-closure.`
+- canonical_write_back:
+  - `2026-06-03: SLICE-001 closed as execution-lane-contract-and-entry-proof only. The canonical lane from user entry to refresh continuity is defined, the current discovery-to-build QA path exposes a SLICE-001 marker, and the closure boundary explicitly keeps SKEL-001, VSKEL-001, BLD-AGT-001, VBUILD-001, MUT-001, user-change artifact update, refresh continuity, and SURF-009B open.`
+- next:
+  - `SLICE-002 — Entry to idea handoff on Home`
+
+#### `SLICE-002 — Entry to idea handoff on Home`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `docs/operating-system/home-idea-handoff-contract-2026-06-03.md`
+  - `src/core/home-idea-handoff-contract.js`
+  - `SURF-002` Home momentum gateway contract
+- depends_on:
+  - `SLICE-001`
+  - `AGT-001`
+  - `AGT-001A`
+  - `AGT-001C`
+- canonical_law:
+  - `Home is a momentum gateway that can start a new product idea handoff, not the Project Discovery Agent itself.`
+  - `The Project Discovery Agent owns idea understanding; the onboarding intake engine remains hidden persistence/session infrastructure.`
+  - `SLICE-002 proves handoff from Home to Create only, not enough-truth, skeleton generation, or build-loop closure.`
+- preserve:
+  - `SURF-002 Home as create-or-continue entry`
+  - `Project Discovery Agent as responsible agent for understanding the new idea`
+  - `onboarding-intake-engine as hidden engine for session/persistence`
+- remove:
+  - `dashboard-first Home interpretation`
+  - `any Home claim that a skeleton or build result already exists`
+  - `any visible treatment of the intake engine as the agent brain`
+- build:
+  - `Home hero region carries data-slice-contract="SLICE-002"`
+  - `new idea button carries source/target/agent/engine/boundary handoff markers`
+  - `Create surface carries SLICE-002 handoff metadata when entered from Home`
+- done_when:
+  - `Home exposes a clear new-product-idea handoff action`
+  - `Home delegates to Project Discovery Agent through Create`
+  - `the handoff survives the click from Home to Create`
+  - `tests prove this is handoff-only, not live downstream agent closure`
+- not_trueGreen:
+  - `SLICE-002 claims enough-truth gating`
+  - `SLICE-002 claims Product Skeleton Agent output`
+  - `SLICE-002 claims Build / Loop Agent execution`
+  - `Home becomes a dashboard or visible engine owner`
+- verification:
+  - `node --check web/app.js` passed
+  - `node --check src/core/home-idea-handoff-contract.js` passed
+  - `node --test test/home-surface-contract.test.js test/home-idea-handoff-contract.test.js` passed `5/5`
+  - `node --test test/home-surface-contract.test.js test/home-idea-handoff-contract.test.js test/project-discovery-agent-front-door.test.js test/first-vertical-slice-execution-lane-contract.test.js test/build-surface-motion-flow-contract.test.js` passed `20/20`
+  - `Live browser verification on 127.0.0.1:4011/home?qa=1&qaReset=1 confirmed appScreen=home, Home hero and button carry SLICE-002 handoff markers to project-discovery-agent/onboarding-intake-engine, clicking opens appScreen=create, Create carries handoffSource=home and handoffBoundary=handoff-only-not-agent-response, and no first-skeleton claim is visible.`
+- canonical_write_back:
+  - `2026-06-03: SLICE-002 closed as Home-to-Create idea handoff only. Home now exposes SLICE-002 markers, delegates new ideas to the Project Discovery Agent, names the hidden onboarding intake engine, and marks Create with handoff metadata after the Home click. The closure boundary remains handoff-only-not-agent-response and leaves SLICE-003, SLICE-004, SKEL-001, VSKEL-001, and BLD-AGT-001 open.`
+- next:
+  - `SLICE-003 — Enough-truth gate before build`
+
+#### `SLICE-003 — Enough-truth gate before build`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `docs/operating-system/enough-truth-before-build-contract-2026-06-03.md`
+  - `src/core/enough-truth-before-build-contract.js`
+  - `web/shared/project-discovery-agent.js`
+  - `web/app.js#canProjectDiscoveryAgentAdvanceToFirstSkeleton`
+- depends_on:
+  - `SLICE-002`
+  - `ENG-003`
+- canonical_law:
+  - `Build may not open from legacy intake completion, restored summary, or local readiness heuristics alone.`
+  - `The Project Discovery Agent decision is the enough-truth authority before first build.`
+  - `The preserved onboarding intake engine remains hidden infrastructure and must not become the agent brain.`
+  - `SLICE-003 proves the gate only; it does not generate a Product Skeleton Agent output.`
+- preserve:
+  - `onboarding-intake-engine for sessions, summaries, restore, and continuity`
+  - `Project Discovery Agent as enough-truth authority`
+  - `Product Skeleton Agent as downstream owner still open under SKEL-001`
+- remove:
+  - `advance from legacy intake completion alone`
+  - `advance from restored summary alone`
+  - `advance from local heuristic readiness alone`
+  - `first skeleton claim before agent-composed handoff`
+- build:
+  - `enoughTruthGate on Project Discovery Agent state`
+  - `Create surface data markers for SLICE-003 gate status`
+  - `build transition reads enoughTruthGate.buildAllowed before opening Loop`
+- done_when:
+  - `weak input stays in discovery`
+  - `strong local truth without agent-composed response is blocked`
+  - `agent-composed advance-to-skeleton decision with skeletonReady=true allows build`
+  - `visible Create route exposes gate proof markers without showing fake skeleton`
+- not_trueGreen:
+  - `legacy intake completion can still open build without agent decision`
+  - `restored summary can still claim enough truth as build authority`
+  - `SLICE-003 claims SKEL-001 skeleton generation`
+  - `the visible user path shows internal gate labels as product copy`
+- verification:
+  - `node --check web/shared/project-discovery-agent.js` passed
+  - `node --check web/nexus-ui/screens/ProjectCreateScreen.js` passed
+  - `node --check web/app.js` passed
+  - `node --check src/core/enough-truth-before-build-contract.js` passed
+  - `node --test test/enough-truth-before-build-contract.test.js test/project-discovery-agent-front-door.test.js` passed `13/13`
+  - `node --test test/enough-truth-before-build-contract.test.js test/project-discovery-agent-front-door.test.js test/home-idea-handoff-contract.test.js test/home-surface-contract.test.js test/first-vertical-slice-execution-lane-contract.test.js test/build-surface-motion-flow-contract.test.js` passed `24/24`
+  - `Live browser verification on 127.0.0.1:4011/create?qa=1&qaReset=1 confirmed appScreen=create, Create visible, enoughTruthTask=SLICE-003, enoughTruthStatus=needs-discovery, enoughTruthBuildAllowed=false, authority=project-discovery-agent-decision, engine=onboarding-intake-engine, hidden intake engine preserved, intakeAgentBrain=false, and no first-skeleton claim is visible.`
+- canonical_write_back:
+  - `2026-06-03: SLICE-003 closed as enough-truth gate only. Project Discovery Agent state now exposes enoughTruthGate, Create exposes internal gate proof markers, and the build transition reads the gate before opening Loop. The gate distinguishes weak discovery, strong local-only truth blocked for agent response, and agent-approved skeleton readiness. SKEL-001, VSKEL-001, BLD-AGT-001, and SLICE-004 remain open.`
+- next:
+  - `SLICE-004 — Ask-only-if-needed interaction`
+
+#### `SLICE-004 — Ask-only-if-needed interaction`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `docs/operating-system/ask-only-if-needed-interaction-contract-2026-06-03.md`
+  - `src/core/ask-only-if-needed-interaction-contract.js`
+  - `web/shared/project-discovery-agent.js`
+  - `web/nexus-ui/screens/ProjectCreateScreen.js`
+- depends_on:
+  - `SLICE-003`
+- canonical_law:
+  - `The Project Discovery Agent may ask only when a blocking product-truth gap exists.`
+  - `If a question is needed, the interaction asks exactly one visible user-facing question.`
+  - `If enough truth exists, Nexus advances without extra checklist questions.`
+  - `If no safe question is available, Nexus stops without a fake skeleton.`
+- preserve:
+  - `Project Discovery Agent as the ask/advance/stop authority`
+  - `SLICE-003 enough-truth gate as the build boundary`
+  - `onboarding-intake-engine as hidden support infrastructure`
+- remove:
+  - `multi-question checklist before first skeleton`
+  - `polish/detail questions after enough truth exists`
+  - `placeholders hiding missing understanding`
+  - `fake skeleton when the correct outcome is stop`
+- build:
+  - `askPolicy on Project Discovery Agent state`
+  - `Create surface data markers for SLICE-004 ask policy`
+  - `tests for ask-one, advance-without-question, and stop-without-fake-skeleton outcomes`
+- done_when:
+  - `weak or partial understanding can return one blocking question`
+  - `agent-approved enough truth advances without extra questions`
+  - `empty/no-safe-input state stops without fake skeleton`
+  - `Create surface carries internal ask-policy proof markers without visible system labels`
+- not_trueGreen:
+  - `Nexus asks multiple checklist questions before first skeleton`
+  - `Nexus asks another question after enough truth is approved`
+  - `missing understanding is hidden behind placeholders instead of one blocking question`
+  - `SLICE-004 claims Product Skeleton Agent generation`
+- verification:
+  - `node --check src/core/ask-only-if-needed-interaction-contract.js` passed
+  - `node --check web/shared/project-discovery-agent.js` passed
+  - `node --check web/nexus-ui/screens/ProjectCreateScreen.js` passed
+  - `node --check web/app.js` passed
+  - `node --test test/ask-only-if-needed-interaction-contract.test.js test/enough-truth-before-build-contract.test.js test/project-discovery-agent-front-door.test.js` passed `18/18`
+  - `node --test test/ask-only-if-needed-interaction-contract.test.js test/enough-truth-before-build-contract.test.js test/project-discovery-agent-front-door.test.js test/home-idea-handoff-contract.test.js test/home-surface-contract.test.js test/first-vertical-slice-execution-lane-contract.test.js test/build-surface-motion-flow-contract.test.js` passed `29/29`
+  - `Live browser verification on 127.0.0.1:4011/create?qa=1&qaReset=1 confirmed appScreen=create, askPolicyTask=SLICE-004, askPolicy=ask-only-if-needed, askPolicyOutcome=stop-without-fake-skeleton, askPolicyQuestionCount=0, enoughTruthStatus=needs-discovery, enoughTruthBuildAllowed=false, no visible ask-policy system label, and no first-skeleton claim.`
+- canonical_write_back:
+  - `2026-06-03: SLICE-004 closed as ask-only-if-needed interaction policy only. Project Discovery Agent state now exposes askPolicy, Create carries internal policy markers, weak/partial input can ask one blocking question, approved enough truth advances without extra question, and empty/no-safe-input state stops without fake skeleton. SKEL-001, VSKEL-001, and BLD-AGT-001 remain open.`
+- next:
+  - `SKEL-001 — Product Skeleton Agent handoff and first skeleton generation`
+
+#### `SKEL-001 — Product Skeleton Agent handoff and first skeleton generation`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `AGT-001A` required chain: `Project Discovery Agent -> Product Skeleton Agent -> Build / Loop Agent`
+  - `product-skeleton-agent-contract-2026-06-01.md`
+  - canonical product system sections `8-10`
+  - Wave 4 minimum believable core lane 2: automatic product bootstrap
+- depends_on:
+  - `SLICE-004`
+  - `SURF-003`
+  - `AGT-001A`
+  - `AGT-001D`
+  - `ENG-005`
+- canonical_law:
+  - `The Product Skeleton Agent is a real execution agent, not a label for a local template, static demo, or Build surface placeholder.`
+  - `It receives the Project Discovery Agent handoff: understanding, summarySnapshot, enough-truth decision, transcript context, and explicit unknowns.`
+  - `It produces the first product skeleton: product type, primary actor, first workflow, screens/regions, required data objects, first build slice, assumptions, unknowns, and non-goals.`
+  - `The first workflow is selected by useful product value, not by visual attractiveness, dashboard defaults, or generic SaaS structure.`
+  - `The Product Skeleton Agent may refine product type from the discovery handoff, but it may not invent a new product identity without evidence.`
+  - `Do-not-build-now is part of the skeleton truth and protects Nexus from scope inflation.`
+  - `Nexus may preserve compatibility read-models, but the active first skeleton must come from the Product Skeleton Agent output, not from old slot/question/domain heuristics.`
+  - `Build / Loop renders and continues the skeleton; it does not secretly invent the first product structure itself.`
+- preserve:
+  - Project Discovery Agent understanding and handoff truth
+  - existing persistence, restore, and compatibility read-models where needed
+  - SURF-001/SURF-003 build workspace law: persistent agent rail plus live build canvas
+- remove_from_active_path:
+  - static first-skeleton mocks pretending to be generated product structure
+  - local class/domain hardcoding as the active skeleton brain
+  - direct `Project Discovery Agent -> Build / Loop` jump that skips a Product Skeleton Agent decision
+- build:
+  - Product Skeleton Agent role/contract
+  - handoff payload from discovery to skeleton
+  - skeleton envelope/schema
+  - enough-truth gate: proceed, ask one blocking question, or stop without fake skeleton
+  - version-one boundary with build-now and do-not-build-now
+  - product-type refinement policy
+  - persistence of the skeleton output
+  - Build / Loop consumption of the skeleton output
+- done when:
+  - Product Skeleton Agent contract exists in docs and code
+  - Agent Reality Gate is passed for `SKEL-001`
+  - tests prove the agent consumes discovery handoff and returns a structured skeleton envelope
+  - tests prove insufficient handoff returns one blocking question instead of inventing a skeleton
+  - tests prove `doNotBuildNow` is persisted and not treated as optional copy
+  - tests prove the first visible Build skeleton is derived from that envelope
+  - live provider proof covers at least lead-management and premium embroidered gifts inputs with different skeleton structures
+  - live browser proof shows discovery conversation -> product understanding -> Product Skeleton Agent output -> Build surface opens with the first skeleton
+  - grep/test proof shows old slot/question/domain/template paths do not manage the active first skeleton
+- closure_evidence:
+  - `2026-06-03: SKEL-001 closed trueGreen. Product Skeleton Agent now has a provider-backed generateProductSkeleton path with strict nexus_product_skeleton_agent schema, no local skeleton fallback, and no failover fabrication.`
+  - `2026-06-03: src/core/onboarding-service.js now creates the discovery -> product-skeleton handoff, blocks before skeleton when Project Discovery Agent has not approved advance-to-skeleton, persists productSkeletonAgentOutput, and stores doNotBuildNow as envelope truth.`
+  - `2026-06-03: src/server.js exposes POST /api/onboarding/sessions/:sessionId/product-skeleton; web/app.js calls it before opening Loop and keeps Create blocked with an honest failure message if no provider-composed skeleton envelope exists.`
+  - `2026-06-03: Build / Loop now renders a visible SKEL-001 Product Skeleton Agent card from productSkeletonAgentOutput, including primary user, problem, first workflow, screens, build-now, and do-not-build-now.`
+  - `2026-06-03: Verification passed: node --check src/core/onboarding-provider-client.js; node --check src/core/onboarding-service.js; node --check src/core/project-service.js; node --check src/server.js; node --check web/app.js; node --check web/nexus-ui/adapters/loop-adapter.js; node --check web/nexus-ui/screens/LoopCoreScreen.js.`
+  - `2026-06-03: Focused regression passed 40/40: node --test test/onboarding-provider-client.test.js test/product-skeleton-agent-service.test.js test/loop-core-screen-render.test.js test/ask-only-if-needed-interaction-contract.test.js test/enough-truth-before-build-contract.test.js test/project-discovery-agent-front-door.test.js.`
+  - `2026-06-03: Live provider proof on 127.0.0.1:4013 showed lead-management and embroidered-gifts inputs produce different Product Skeleton Agent envelopes; lead-management returned a web internal lead tool with lead list/add/edit workflow and doNotBuildNow for WhatsApp integration, automations, permissions, external CRM sync, recurring reminders, and advanced reports; gifts returned an online embroidered gifts store with catalog, customization, preview, cart/order screens and explicitly excluded lead-management/admin dashboard.`
+  - `2026-06-03: Live browser proof on 127.0.0.1:4013/create?qa=1&qaReset=1&qaScreen=create submitted a lead-management idea through the Create surface, reached appScreen=loop, and rendered data-product-skeleton-task=SKEL-001, data-product-skeleton-agent=product-skeleton-agent, data-product-skeleton-source=provider-composed, first workflow, build-now, and do-not-build-now.`
+  - `2026-06-03: Detailed evidence recorded in product-skeleton-agent-implementation-evidence-2026-06-03.md.`
+- not trueGreen:
+  - `SLICE-005` shows any first skeleton without proving it came from Product Skeleton Agent output
+  - the skeleton is only a static demo, product-class mock, or local fallback
+  - Build / Loop invents the initial structure without a skeleton-agent envelope
+  - two different product understandings produce the same generic skeleton
+  - missing understanding is hidden behind placeholders instead of one blocking question
+- next:
+  - `VSKEL-001 — Visual Product Skeleton Agent first visible skeleton`
+
+#### `DESIGN-PLUG-001 — Design Plugin Registry Contract`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `design-plugin-layer-contract-2026-06-01.md`
+  - `visual-product-skeleton-agent-contract-2026-06-01.md`
+- depends_on:
+  - `SURF-003`
+  - `ENG-005`
+- canonical_law:
+  - `Nexus must have a canonical Design Plugin Registry before visual skeleton or visual build agents can claim product-specific visual output.`
+  - `A Design Plugin affects how the product looks and feels; it does not decide what the product is.`
+  - `The registry is not a marketplace in V1. It is a bounded source of known visual languages, fit rules, active/experimental status, and V1/post-release scope.`
+- build:
+  - registry contract
+  - plugin fields: id, name, when-to-use, when-not-to-use, product fit, audience fit, source, V1/post-release status
+  - required plugin output schema: colors, typography, spacing, cards, buttons, RTL, sample regions, anti-generic rules, wow level
+- done when:
+  - registry contract exists in docs and code
+  - tests prove a visual skeleton request can resolve a plugin by product type or explicit user preference
+  - tests prove plugin output cannot replace Product Graph or product skeleton truth
+- not trueGreen:
+  - design is hardcoded inside VSKEL/VBUILD without a registry
+  - plugin selection can invent product scope
+  - V1 behaves like a marketplace before built-in plugins are stable
+- closure_evidence:
+  - `2026-06-03: DESIGN-PLUG-001 closed trueGreen as registry-contract only. Code now exposes a bounded internal V1 Design Plugin Registry contract, required plugin fields/output schema, plugin selection for visual skeleton requests, and product-truth boundaries that prevent design selection from mutating Product Skeleton Agent output or replacing Product Graph truth.`
+  - `2026-06-03: Added web/shared/design-plugin-registry-contract.js and src/core/design-plugin-registry-contract.js. Added test/design-plugin-registry-contract.test.js.`
+  - `2026-06-03: Verification passed: node --check web/shared/design-plugin-registry-contract.js; node --check src/core/design-plugin-registry-contract.js; node --test test/design-plugin-registry-contract.test.js; node --test test/product-skeleton-agent-service.test.js test/loop-core-screen-render.test.js.`
+  - `Closure boundary: DESIGN-PLUG-002 still owns first built-in visual definitions, DESIGN-PLUG-003 still owns user design preference / brand input, DESIGN-PLUG-004 still owns live proof of visibly different product-appropriate outputs, and VSKEL-001 still owns the live Visual Product Skeleton Agent.`
+
+#### `DESIGN-PLUG-002 — First Built-In Design Plugins`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `design-plugin-layer-contract-2026-06-01.md`
+- depends_on:
+  - `DESIGN-PLUG-001`
+- canonical_law:
+  - `Nexus V1 must include enough built-in design plugins to avoid one robotic default visual language.`
+  - `Dashboard is allowed only when the product truly requires a dashboard.`
+- required_v1_plugins:
+  - `minimal-saas`
+  - `premium-brand`
+  - `startup-landing`
+  - `mobile-app`
+  - `internal-tool`
+  - `ecommerce`
+  - `israeli-smb`
+  - `logistics-map`
+  - `ai-product`
+- post_release_candidates:
+  - `creator-portfolio`
+  - `dark-pro-app`
+  - `playful-consumer`
+  - `luxury-editorial`
+  - `dashboard-only-when-needed`
+- done when:
+  - first built-in plugin definitions exist in docs and code
+  - tests prove lead-management and premium-gifts examples resolve to different plugins and different visual rules
+  - tests prove generic dashboard is not the default fallback
+- not trueGreen:
+  - all products resolve to the same style
+  - plugins are names only without visual rules
+- closure_evidence:
+  - `2026-06-03: DESIGN-PLUG-002 closed trueGreen as first built-in visual definitions. Code now defines the required V1 plugin set with real visual rules: colors, typography, spacing, card shape, button shape, light/dark guidance, RTL support, sample regions, anti-clutter rules, anti-generic-design rules, desired wow level, and dashboardDefault=false.`
+  - `2026-06-03: Added test/design-plugin-built-ins.test.js and design-plugin-built-in-definitions-implementation-evidence-2026-06-03.md.`
+  - `2026-06-03: Tests prove lead-management resolves to israeli-smb, premium gifts resolves to premium-brand, the two products receive different visual rules, and unknown products fall back to minimal-saas rather than a generic dashboard.`
+  - `2026-06-03: Verification passed: node --check web/shared/design-plugin-registry-contract.js; node --test test/design-plugin-registry-contract.test.js test/design-plugin-built-ins.test.js.`
+  - `Closure boundary: DESIGN-PLUG-003 still owns user design preference / brand input, DESIGN-PLUG-004 still owns live visual proof, and VSKEL-001 still owns the live Visual Product Skeleton Agent and first visible product screen.`
+
+#### `DESIGN-PLUG-003 — User Design Preference / Brand Input`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `design-plugin-layer-contract-2026-06-01.md`
+- depends_on:
+  - `DESIGN-PLUG-001`
+- canonical_law:
+  - `A user can influence the design direction without opening a heavy settings flow before first skeleton.`
+  - `User design preference, Figma input, inspiration, or brand kit must be treated as design source, not product truth.`
+- build:
+  - lightweight style preference input contract
+  - optional inspiration / Figma / brand-kit design source boundary
+  - visible selection/reason in the visual skeleton envelope
+- done when:
+  - tests prove explicit user style preference can select or override a recommended plugin
+  - tests prove design preference changes look/feel without changing Product Graph scope
+  - Figma/brand input is either supported as a design source or explicitly bounded for V1
+- not trueGreen:
+  - user preference is ignored
+  - design preference mutates product scope
+  - Figma is treated as required for every first skeleton
+- closure_evidence:
+  - `2026-06-03: DESIGN-PLUG-003 closed trueGreen as lightweight design-source contract. Code now normalizes user style preference, inspiration/reference text, bounded Figma metadata, bounded brand-kit metadata, and existing design-system hints as design sources before first skeleton.`
+  - `2026-06-03: The Design Plugin selection envelope now carries designSource with visible reason/boundary data, and user design preference can override a product-recommended plugin without changing Product Skeleton Agent output or Product Graph truth.`
+  - `2026-06-03: Added test/design-plugin-user-preference.test.js and design-plugin-user-preference-brand-input-evidence-2026-06-03.md.`
+  - `2026-06-03: Verification passed: node --check web/shared/design-plugin-registry-contract.js; node --check src/core/design-plugin-registry-contract.js; node --test test/design-plugin-registry-contract.test.js test/design-plugin-built-ins.test.js test/design-plugin-user-preference.test.js.`
+  - `Closure boundary: DESIGN-PLUG-004 still owns live visual proof, VSKEL-001 still owns the live Visual Product Skeleton Agent, and full Figma execution / deep brand-kit ingestion are not claimed here.`
+
+#### `DESIGN-PLUG-004 — Design Plugin Live Proof`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `design-plugin-layer-contract-2026-06-01.md`
+  - `visual-product-skeleton-agent-contract-2026-06-01.md`
+- depends_on:
+  - `DESIGN-PLUG-002`
+  - `DESIGN-PLUG-003`
+- canonical_law:
+  - `Design Plugin Layer is not real until live proof shows different products receive different product-appropriate visual systems.`
+- required_live_proofs:
+  - lead-management for a small business -> work-tool visual skeleton with leads, owner, status, reminder, next step, add lead action
+  - premium embroidered gifts brand -> warm premium commerce/brand skeleton with hero, personalized products, embroidery choice, examples, CTA
+- done when:
+  - live browser proof records selected plugin and reason for both products
+  - visible screens differ structurally and visually according to product needs
+  - no fixed template, generic dashboard, or local fallback impersonates plugin output
+- not trueGreen:
+  - both examples produce the same skeleton
+  - plugin selection is not visible in agent output
+  - plugin output is not reflected in the Build canvas
+- closure_evidence:
+  - `2026-06-03: DESIGN-PLUG-004 closed trueGreen as live Design Plugin Layer proof. Build / Loop now renders visible DESIGN-PLUG-004 plugin proof from provider-composed Product Skeleton Agent output without claiming VSKEL-001.`
+  - `2026-06-03: Live browser proof on 127.0.0.1:4013/loop?qa=1&qaScreen=loop verified lead-management selected israeli-smb with work-tool-lead-flow regions today, lead-list, owner, action.`
+  - `2026-06-03: Live browser proof on 127.0.0.1:4013/loop?qa=1&qaScreen=loop verified premium embroidered gifts selected premium-brand with premium-commerce-brand regions hero, products, embroidery, cta.`
+  - `2026-06-03: The live proof held boundary plugin-live-proof-not-visual-agent-closure and skeleton source provider-composed for both products.`
+  - `2026-06-03: Added design-plugin-live-proof-evidence-2026-06-03.md and focused render coverage in test/loop-core-screen-render.test.js.`
+  - `2026-06-03: Verification passed: node --check web/app.js; node --check web/nexus-ui/adapters/loop-adapter.js; node --check web/nexus-ui/screens/LoopCoreScreen.js; node --test test/loop-core-screen-render.test.js test/design-plugin-registry-contract.test.js test/design-plugin-built-ins.test.js test/design-plugin-user-preference.test.js.`
+  - `Closure boundary: VSKEL-001 still owns the live Visual Product Skeleton Agent and first visible product skeleton. DESIGN-PLUG-004 only proves the live product-specific plugin selection and visible plugin proof layer.`
+
+#### `VSKEL-001 — Visual Product Skeleton Agent first visible skeleton`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-01 live-agent gap audit`
+  - `visual-product-skeleton-agent-contract-2026-06-01.md`
+  - `SKEL-001`
+  - `SURF-003`
+  - visual capability rule: real visual product surface, not metadata/schema/regions only
+- depends_on:
+  - `SKEL-001`
+  - `DESIGN-PLUG-001`
+  - `DESIGN-PLUG-002`
+  - `SURF-003`
+  - `ENG-005`
+- canonical_law:
+  - `A Product Skeleton Agent output is not enough unless Nexus also produces a real first visual product skeleton from it.`
+  - `The Visual Product Skeleton Agent owns layout, hierarchy, primary regions, component intent, responsive/RTL behavior, visual placeholders, and first visible product-surface composition.`
+  - `It must translate the product skeleton envelope into a visible build canvas using the selected Design Plugin or design source, not a static demo, generic table, fake dashboard, or hardcoded class mock.`
+  - `It may consume deterministic class-aware skeleton contracts as constraints, but the active visual skeleton must be agent-owned and traceable to the discovery/skeleton handoff.`
+  - `The first skeleton is the first core workflow that proves the product started being built, not the whole product.`
+  - `If two different product ideas produce the same structure, the agent has failed.`
+- preserve:
+  - Product Skeleton Agent envelope
+  - selected Design Plugin and design-source boundary
+  - SURF-003 build surface: persistent agent rail plus live canvas
+  - accessibility, RTL, and responsive boundaries
+- remove_from_active_path:
+  - fallback visual skeletons pretending to be generated
+  - hardcoded demo product canvases without skeleton-agent trace
+  - first visible Build canvas that cannot explain which skeleton decision produced each major region
+- build:
+  - Visual Product Skeleton Agent role/contract
+  - visual skeleton envelope/schema
+  - mapping from product skeleton envelope to first build canvas regions/components
+  - trace from visual regions back to agent decisions
+  - Design Plugin selection and reason in the visual skeleton envelope
+  - weak-understanding behavior: partial skeleton with assumptions, one blocking question, or stop
+- done when:
+  - Visual Product Skeleton Agent contract exists in docs and code
+  - Agent Reality Gate is passed for `VSKEL-001`
+  - tests prove visual skeleton output is derived from Product Skeleton Agent output
+  - tests prove selected Design Plugin changes look/feel without changing product scope
+  - tests prove Build surface renders the first visible product skeleton from the visual skeleton envelope
+  - live browser proof shows discovery -> Product Skeleton Agent -> Visual Product Skeleton Agent -> selected Design Plugin -> Build canvas with a real first product surface
+  - live browser proof covers at least lead-management and premium embroidered gifts examples with different structures/styles
+- not trueGreen:
+  - `SLICE-005` renders a static/fallback/demo canvas
+  - visual regions exist only as metadata with no visible product surface
+  - first canvas is not traceable to Product Skeleton Agent and Visual Product Skeleton Agent decisions
+  - the Design Plugin choice is missing, ignored, or allowed to invent product scope
+- closure_evidence:
+  - `2026-06-03: VSKEL-001 closed trueGreen. Code has a dedicated Visual Product Skeleton Agent provider path, strict provider-composed output schema, malformed-output rejection without fallback screen, service orchestration, /api/onboarding/sessions/:sessionId/visual-product-skeleton, browser-state preservation, and a visible Build canvas surface for visualProductSkeletonAgentOutput.`
+  - `2026-06-03: Focused tests passed: node --check src/core/onboarding-provider-client.js; node --check src/core/onboarding-service.js; node --check src/server.js; node --check web/app.js; node --check web/nexus-ui/adapters/loop-adapter.js; node --check web/nexus-ui/screens/LoopCoreScreen.js.`
+  - `2026-06-03: Focused unit verification passed: node --test test/onboarding-provider-client.test.js test/product-skeleton-agent-service.test.js test/loop-core-screen-render.test.js test/design-plugin-registry-contract.test.js test/design-plugin-built-ins.test.js test/design-plugin-user-preference.test.js (39 passed / 0 failed).`
+  - `2026-06-03: Live API boundary proof on 127.0.0.1:4013 showed /visual-product-skeleton blocks before Product Skeleton Agent handoff and returns no visualProductSkeletonAgentOutput instead of fabricating a screen.`
+  - `2026-06-03: Field-test regression patch added a truthful Create-screen failure boundary for ready agent handoff when Product Skeleton Agent or Visual Product Skeleton Agent does not return a live envelope; automatic retry loops are blocked and retry is user-driven.`
+  - `2026-06-03: Focused regression verification passed: node --check web/app.js; node --test test/project-discovery-agent-front-door.test.js test/project-create-screen-render.test.js test/product-skeleton-agent-service.test.js test/loop-core-screen-render.test.js (21 passed / 0 failed).`
+  - `2026-06-03: Provider key loading blocker resolved. src/core/application-server-bootstrap.js now loads project .env from the configured project root, and test/application-server-bootstrap.test.js proves env loading still works when cwd is elsewhere.`
+  - `2026-06-03: Live provider chain proof passed for the lead-management case: Product Skeleton Agent returned provider-composed product-skeleton-agent output; Visual Product Skeleton Agent returned provider-composed visual-product-skeleton-agent output with plugin israeli-smb and first screen רשימת לידים.`
+  - `2026-06-03: Live browser proof with injected provider-composed envelopes showed data-visual-skeleton-task=VSKEL-001, visual-product-skeleton-agent, provider-composed, plugin israeli-smb, first screen מסך טיפול בלידים, two visual skeleton regions, plus preserved SKEL-001 and DESIGN-PLUG-004 anchors.`
+  - `2026-06-03: Live browser proof through visible Create -> Build passed for lead-management: Create showed live handoff progress, Build opened only after SKEL-001 and VSKEL-001 provider-composed envelopes were present, visual agent=visual-product-skeleton-agent, source=provider-composed, first screen רשימת לידים, transition motion discovery-chat-morphs-to-right-agent-rail.`
+  - `2026-06-03: Second canonical live browser proof passed on http://127.0.0.1:4011/create?qa=1&qaReset=1&qaScreen=create for the premium embroidered gifts case. The visible Create flow reached Loop / Build after live provider calls to /product-skeleton and /visual-product-skeleton, with data-product-skeleton-task=SKEL-001, data-product-skeleton-source=provider-composed, data-visual-skeleton-task=VSKEL-001, data-visual-skeleton-agent=visual-product-skeleton-agent, data-visual-skeleton-source=provider-composed, data-visual-skeleton-plugin-id=premium-brand, and DESIGN-PLUG-004 proof present. Screenshot: /private/tmp/nexus-vskel-premium-gifts-live.png.`
+  - `2026-06-03: Known visible copy quality issue remains outside VSKEL-001 closure: labels such as "שלד ראשון מסוכן מוצר" and "מסך ראשון חי מסוכן ויזואלי" are routed to W4-UPGRADE-002 first-skeleton trust quality and do not reopen the Visual Product Skeleton Agent reality gate.`
+- next:
+  - `SLICE-005 — First product-type runtime skeleton visible on Build`
+
+#### `SLICE-005 — First product-type runtime skeleton visible on Build`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `SURF-001` Build surface law: live artifact/build canvas, not detached preview
+  - `VSKEL-001` Visual Product Skeleton Agent first visible skeleton
+  - `wave4-automatic-product-skeleton-contract.md`
+  - `wave4-class-specific-skeleton-quality-baseline.md`
+  - `wave4-split-workspace-live-build-surface-model.md`
+  - `wave4-figma-backed-live-build-workspace-contract.md`
+  - `2026-06-03 user runtime-skeleton correction: skeleton must feel like the product starting to run, not only a plan or visual mock`
+- depends_on:
+  - `SLICE-004`
+  - `VSKEL-001`
+  - `ENG-005`
+- canonical_law:
+  - `A first skeleton is not truthful if it is only a product outline, visual design card, static mockup, or metadata region list.`
+  - `Build must open a product-type-appropriate runtime or simulator shell from the first skeleton.`
+  - `mobile-app must render in a simulator-like app frame with first screen, navigation direction, and primary action.`
+  - `landing-page must render as a live page preview with section order, hero, proof, and CTA visible in the canvas.`
+  - `internal-tool must render as a working workspace shell with table/list/form/state, ownership, reminder or next-action behavior when that is the product truth.`
+  - `commerce/product site must render as product/category/checkout or commerce workspace flow according to the requested class and V1 boundary.`
+  - `game must render as a playable or at least controllable scene shell with HUD and interaction anchor, not a concept card.`
+  - `software/tool must render real controls, state, and first workflow affordances rather than a descriptive panel.`
+  - `The Build canvas may show product and visual skeleton trace cards as secondary proof, but the dominant center surface must be the runtime skeleton itself.`
+  - `If the runtime skeleton cannot be produced, Nexus must show a truthful blocked state and must not claim that the product is built.`
+- preserve:
+  - Project Discovery Agent truth
+  - Product Skeleton Agent envelope
+  - Visual Product Skeleton Agent envelope
+  - Design Plugin selection and style constraints
+  - SURF-003 paired agent rail plus live canvas
+  - runtime / packaging / release family metadata
+  - restore identity from create -> build -> refresh
+- remove_from_active_path:
+  - Build canvas where the primary output is only `renderProductSkeletonAgentCard`
+  - Build canvas where the primary output is only `renderVisualProductSkeletonAgentSurface`
+  - generic fallback table pretending to be a product-type skeleton
+  - static preview cards that are not connected to product class, first workflow, state, and runtime frame
+  - QA / internal labels in the user-facing Build output
+- build:
+  - product-type runtime skeleton contract for Build
+  - mapping from `productClass` / `projectType` / skeleton contract to runtime shell family
+  - dominant runtime skeleton renderer inside the Build canvas
+  - mobile simulator-like frame for mobile app class
+  - web page preview frame for landing page class
+  - workspace/table/form/state shell for internal tool class
+  - commerce/product flow frame for commerce class
+  - playable scene shell for game class
+  - generic software/tool shell with real controls and state when the class is a tool but not one of the above
+  - restore-safe runtime skeleton state attached to the same project/session/skeleton ids
+  - visible distinction between product truth, visual skeleton trace, runtime skeleton, and future production implementation
+- done when:
+  - code defines the runtime skeleton contract and class-to-renderer mapping
+  - Build canvas renders the runtime skeleton as the dominant product surface, with trace/proof cards secondary
+  - tests prove mobile app, landing page, internal tool, and game or software/tool produce different runtime shell families
+  - tests prove fallback generic output cannot masquerade as a class-aware runtime skeleton
+  - tests prove refresh/restore keeps the same runtime skeleton and project identity
+  - tests prove blocked runtime skeleton creation shows a truthful failure state instead of fake success
+  - live browser proof shows a mobile app idea opening in a simulator-like Build view
+  - live browser proof shows a landing page or internal tool idea opening in its correct runtime preview/workspace
+  - visible Build output contains no QA/internal labels and no claim that production implementation, app-store deployment, payment, external publishing, or provider connection happened
+- not trueGreen:
+  - the first Build output is only a written product skeleton
+  - the first Build output is only a visual skeleton card
+  - the first Build output is a generic dashboard/table for every product class
+  - mobile app looks like a website or generic text panel instead of an app-like simulator
+  - game looks like a static concept summary without scene/HUD/interaction anchor
+  - landing page does not render as a page preview
+  - internal tool lacks working state/table/form/list affordances
+  - restore loses the selected runtime shell family
+  - Build says the product is being built while no runtime skeleton exists
+- canonical_note:
+  - `2026-06-03: Runtime-skeleton gap was found after VSKEL-001 closure. VSKEL-001 remains trueGreen only for Visual Product Skeleton Agent reality. SLICE-005 now owns the stronger runtime skeleton bar before Build can claim a real first product build.`
+  - `No separate SLICE-006 is added because the active lowest release-blocker already owns the first Build skeleton. The missing requirement is folded into SLICE-005 to avoid duplicate ownership and ensure it executes next.`
+  - `2026-06-04: Later live product review raised the bar again: SLICE-005 proved product-type runtime-looking surfaces and route/restore truth, but it did not prove an interactive runtime skeleton that behaves like a product. This does not reopen SLICE-005; it creates RUNTIME-SKEL-001 as the next quality blocker before Build continuation can rely on the skeleton as usable runtime.`
+- closure_evidence:
+  - `2026-06-04: SLICE-005 closed trueGreen. Build / Loop now renders a dominant product-type runtime skeleton before the Product Skeleton Agent, Visual Product Skeleton Agent, and Design Plugin trace cards.`
+  - `2026-06-04: web/nexus-ui/adapters/loop-adapter.js now resolves product class from product/skeleton truth before stale generation hints, builds runtimeSkeleton with taskId SLICE-005, and maps mobile-app -> mobile-simulator, landing-page -> web-page-preview, internal-tool/saas -> workspace or product workflow shell, commerce-ops -> commerce-flow-preview, game -> playable-preview, and generic/tool -> tool-control-shell.`
+  - `2026-06-04: web/nexus-ui/screens/LoopCoreScreen.js now renders data-runtime-skeleton-task=SLICE-005 as the dominant Build canvas surface, keeps Product Skeleton and Visual Skeleton cards as trace evidence, and removes the trust-breaking "מסוכן" labels from visible skeleton copy.`
+  - `2026-06-04: web/nexus-ui/styles/screens.css now styles class-aware runtime skeleton families, including mobile device frame, browser/page preview, workspace board, commerce board, game scene/HUD, and tool control shell.`
+  - `2026-06-04: Focused verification passed: node --check web/nexus-ui/adapters/loop-adapter.js; node --check web/nexus-ui/screens/LoopCoreScreen.js; node --test test/loop-core-screen-render.test.js.`
+  - `2026-06-04: Unit render coverage proves mobile app, landing page, internal tool, and game produce distinct runtime shell families; stale landing-page generation hints no longer override internal-tool product skeleton truth.`
+  - `2026-06-04: Live browser proof on http://127.0.0.1:4011/loop with qaState mobile app project showed data-runtime-product-class=mobile-app, data-runtime-shell-family=mobile-simulator, data-runtime-preview-family=simulator-preview, visible mobile device frame, no "מסוכן" copy, and screenshot /private/tmp/nexus-slice-005-mobile-live.png.`
+  - `2026-06-04: Live browser proof on http://127.0.0.1:4011/loop with qaState internal tool project showed data-runtime-product-class=internal-tool, data-runtime-shell-family=workspace-state-shell, data-runtime-preview-family=workspace-preview, visible workspace board, no stale landing-page text, no "מסוכן" copy, and screenshot /private/tmp/nexus-slice-005-internal-live.png.`
+  - `2026-06-04: Live refresh proof on http://127.0.0.1:4011/loop with qaState internal tool project preserved data-runtime-product-class=internal-tool and data-runtime-shell-family=workspace-state-shell after reload, with screenshot /private/tmp/nexus-slice-005-refresh-live.png.`
+- next:
+  - `RUNTIME-TRUTH-001 — Runtime skeleton backend truth binding`
+
+#### `RUNTIME-TRUTH-001 — Runtime skeleton backend truth binding`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `runtime-product-truth-binding-contract-2026-06-04.md`
+  - `2026-06-04 user clarification: frontend runtime skeleton is not enough unless Nexus persists canonical backend/project truth for it`
+  - `SLICE-005` closure boundary
+- depends_on:
+  - `SLICE-005`
+  - `ENG-001`
+  - `ENG-002`
+- blocks:
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `RUNTIME-SKEL-001`
+  - `BLD-AGT-001`
+  - `W4-UPGRADE-002`
+  - `W4-UPGRADE-003`
+- canonical_law:
+  - `A runtime skeleton shown in Build is not canonical truth unless it has a persisted Nexus project truth envelope.`
+  - `Frontend rendering, browser state, URL state, or QA state cannot be the sole owner of runtime skeleton truth.`
+  - `Runtime skeleton truth must include stable project id, runtime skeleton id, artifact/build id, product type, shell type, screens, sample data, visible state, interactions, and production-boundary claims.`
+  - `Refresh/restore must rebuild the Build surface from canonical project truth, not only from a giant serialized URL state blob.`
+- preserve:
+  - Project Service truth engine
+  - Product Skeleton Agent envelope
+  - Visual Product Skeleton Agent envelope
+  - SLICE-005 visible runtime shell renderer
+- remove_from_active_path:
+  - runtime skeletons that exist only as derived frontend view models
+  - restore paths that rely only on browser/URL/QA state for runtime skeleton identity
+  - visible Build output that cannot be traced to a project/runtime truth envelope
+- build:
+  - canonical runtime skeleton truth envelope
+  - stable runtime skeleton id and artifact/build id binding
+  - project-service persistence for runtime skeleton truth
+  - frontend rendering from the persisted runtime skeleton truth envelope
+  - restore proof from backend/project truth without URL-state dependency
+- done when:
+  - tests prove runtime skeleton creation writes canonical project truth
+  - tests prove Build renders from the runtime truth envelope
+  - tests prove refresh/restore rebuilds the same runtime skeleton without URL blob dependency
+  - live browser proof shows a runtime skeleton restoring from project/backend truth
+  - docs distinguish frontend runtime shell from canonical Nexus runtime truth
+- closure_evidence:
+  - `2026-06-04: Added shared runtime skeleton truth envelope builder with stable project id, runtime skeleton id, artifact/build id, product class, shell family, runtime family, packaging family, release family, visible state, and boundary truth.`
+  - `2026-06-04: Project Service now persists runtimeSkeletonTruth at project root, context.runtimeSkeletonTruth, and state.runtimeSkeletonTruth.`
+  - `2026-06-04: Build/Loop rendering now reads the runtime truth envelope and exposes data-runtime-truth-task, data-runtime-project-id, data-runtime-artifact-build-id, and data-runtime-skeleton-id on the visible runtime surface.`
+  - `2026-06-04: Route restore now supports /loop?projectId=<id> so Build can restore from backend project truth without a giant qaState/nexusState URL blob.`
+  - `2026-06-04: Verification passed: node --check web/shared/runtime-skeleton-truth.js, node --check src/core/runtime-skeleton-truth.js, node --check web/nexus-ui/adapters/loop-adapter.js, node --check web/nexus-ui/screens/LoopCoreScreen.js, node --check src/core/project-service.js, node --check web/app.js.`
+  - `2026-06-04: Verification passed: node --test test/loop-core-screen-render.test.js and node --test --test-name-pattern 'RUNTIME-TRUTH-001' test/project-service.test.js.`
+  - `2026-06-04: Live browser proof after server restart created runtime-truth-live-002 through /api/projects, confirmed runtimeSkeletonTruth in GET /api/projects/runtime-truth-live-002, opened http://127.0.0.1:4011/loop?projectId=runtime-truth-live-002&qaReset=1 with no qaState, and saw data-runtime-project-id=runtime-truth-live-002, data-runtime-truth-task=RUNTIME-TRUTH-001, data-runtime-artifact-build-id=runtime-build:runtime-truth-live-002:first-skeleton.`
+  - `2026-06-04: Live refresh on the same /loop?projectId=runtime-truth-live-002&qaReset=1 route preserved the same runtime truth dataset with no browser console errors.`
+- not trueGreen:
+  - runtime skeleton exists only in `web/nexus-ui/adapters/loop-adapter.js`
+  - runtime skeleton id is only product-class-derived and not project/artifact scoped
+  - refresh requires browser/URL/QA state to preserve runtime skeleton truth
+  - no project-service state object represents the runtime skeleton
+- next:
+  - `PRODUCT-BACKEND-SKEL-001 — Product backend/domain skeleton`
+
+#### `PRODUCT-BACKEND-SKEL-001 — Product backend/domain skeleton`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `runtime-product-truth-binding-contract-2026-06-04.md`
+  - `2026-06-04 user clarification: backend means the generated product's backend/domain skeleton, not only Nexus persistence`
+- depends_on:
+  - `RUNTIME-TRUTH-001`
+  - `SKEL-001`
+  - `VSKEL-001`
+- blocks:
+  - `RUNTIME-SKEL-001`
+  - `PRODUCT-KIND-001`
+  - `LEARNING-PRODUCT-INTELLIGENCE-001`
+  - `BUILD-MUTATION-TRUTH-001`
+  - `BLD-AGT-001`
+  - `MUT-001`
+- canonical_law:
+  - `A generated product skeleton is not real if it only has frontend screens.`
+  - `Every product class needs a matching generated product-domain skeleton: model, operations, state changes, local/mock persistence where appropriate, and UI-to-logic wiring.`
+  - `Mobile app skeletons need app state, data models, create/update/delete actions, and logic behind buttons.`
+  - `Landing page skeletons need lead capture model, validation, submit action, and saved/mock lead record.`
+  - `Internal tool skeletons need records, status updates, assignee changes, reminders/sample workflow, and CRUD-like operations.`
+  - `Commerce skeletons need products, cart, order draft, and truthful checkout/payment boundaries.`
+  - `Game skeletons need game state, score, rules, progression, and player state.`
+  - `Software/tool skeletons need tool logic, input/output processing, saved state, and operation results.`
+- preserve:
+  - Product Skeleton Agent data object and workflow truth
+  - Visual Product Skeleton Agent region and component truth
+  - runtime skeleton renderer
+- remove_from_active_path:
+  - UI-only buttons that change visuals without product logic
+  - sample data that is not represented as domain state
+  - claims that a mock/local domain skeleton is production backend infrastructure
+- build:
+  - generated product-domain skeleton contract
+  - product-class-to-domain-model mapping
+  - operation registry for first simulated actions
+  - local/mock persistence boundary where relevant
+  - project truth representation for generated product-domain state
+  - UI action binding to product-domain operations
+- done when:
+  - tests prove mobile task creation/update uses domain operations
+  - tests prove landing page lead submit uses validation and stored/mock lead record
+  - tests prove internal tool record/status update uses domain operations
+  - tests prove commerce cart/order draft or game state change uses product-domain logic where feasible
+  - refresh/restore preserves product-domain state
+  - UI explicitly distinguishes mock/local product backend from production backend infrastructure
+- evidence:
+  - `2026-06-04: web/shared/product-domain-skeleton.js added generated product-domain skeleton envelopes with models, operations, mock/local state, persistence boundary, and applyProductDomainOperation for mobile app, landing page, internal tool, commerce, game, and generic tool families.`
+  - `2026-06-04: web/shared/runtime-skeleton-truth.js embeds productDomainSkeleton and productDomainSkeletonId into runtime skeleton truth.`
+  - `2026-06-04: src/core/project-service.js persists productDomainSkeleton at project root, context, state, and serialized project output.`
+  - `2026-06-04: web/nexus-ui/screens/LoopCoreScreen.js renders product-domain truth attributes and data-product-domain-operation bindings on runtime controls.`
+  - `2026-06-04: Verification passed: node --test test/product-domain-skeleton.test.js; node --test --test-name-pattern 'PRODUCT-BACKEND-SKEL-001|RUNTIME-TRUTH-001' test/project-service.test.js; node --test --test-name-pattern 'SLICE-005|W4-FIX-007|SKEL-001|VSKEL-001' test/loop-core-screen-render.test.js.`
+  - `2026-06-04: Live browser proof rendered /loop with data-product-domain-task=PRODUCT-BACKEND-SKEL-001, product-domain:product-domain-live-proof:internal-tool, workflow-record-local-state, domain operation buttons, and domain state trace. Screenshot: /private/tmp/nexus-product-domain-skeleton-live.png.`
+- closure_boundary:
+  - `PRODUCT-BACKEND-SKEL-001 closes generated product-domain/backend skeleton truth only.`
+  - `It does not close interactive runtime quality, Build agent mutation truth, production backend deployment, real provider connections, payments, publishing, or release/export.`
+  - `It also does not close standalone releasable product artifact generation; that is owned by STANDALONE-ARTIFACT-001 before verification/release can claim user-ready product output.`
+  - `2026-06-08 reinterpretation: PRODUCT-BACKEND-SKEL-001 also does not close product-owned backend scaffolding at first skeleton time. It proved Nexus-internal mock/local domain truth only. PRODUCT-BACKEND-SKEL-002 now owns the stricter bar that the generated product skeleton itself must include its own backend scaffold and grow it with future changes.`
+- not trueGreen:
+  - product skeleton only lists data objects as prose
+  - UI buttons only mutate frontend state
+  - no generated product-domain state exists in canonical project truth
+  - no operation boundary exists between UI and product logic
+- next:
+  - `PRODUCT-BACKEND-SKEL-002 — Product-owned backend skeleton from first skeleton`
+
+#### `PRODUCT-BACKEND-SKEL-002 — Product-owned backend skeleton from first skeleton`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `2026-06-08 user clarification: when Nexus generates a skeleton for a user, the skeleton itself must include the generated product's own backend, not only Nexus backend/project truth and not only a Nexus-internal product-domain model`
+  - `product-owned-backend-skeleton-contract-2026-06-08.md`
+  - `PRODUCT-BACKEND-SKEL-001 closure reinterpretation`
+- depends_on:
+  - `RUNTIME-TRUTH-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `SKEL-001`
+  - `VSKEL-001`
+- blocks:
+  - `RUNTIME-SKEL-001`
+  - `PRO-SKEL-001`
+  - `PRO-SKEL-002`
+  - `PRO-SKEL-003`
+  - `BUILD-MUTATION-TRUTH-001`
+  - `BLD-AGT-001`
+  - `VBUILD-001`
+  - `SLICE-006`
+  - `SLICE-007`
+  - `SLICE-008`
+  - `MUT-001`
+  - `STANDALONE-ARTIFACT-001`
+- canonical_law:
+  - `When the first skeleton appears, Nexus must create both a frontend skeleton and a backend skeleton owned by the generated product.`
+  - `The generated product backend is not Nexus project persistence, not Nexus runtime truth, and not only a mock domain object stored inside Nexus.`
+  - `Every user-visible product skeleton must have product-owned data models, operations, local/mock persistence, and an API/service-like boundary appropriate to the product class.`
+  - `Future Build changes must grow the generated product backend together with the frontend whenever the requested change affects data, workflow, actions, rules, or persistence.`
+  - `Nexus may not call a skeleton healthy if the generated product would need a backend redesign before serious continuation.`
+- preserve:
+  - Nexus project truth
+  - runtime skeleton truth
+  - Nexus-internal product-domain skeleton from `PRODUCT-BACKEND-SKEL-001`
+  - selected skeleton direction truth
+  - mutation history
+- remove_from_active_path:
+  - frontend-only skeletons that look interactive but have no product-owned backend scaffold
+  - backend-looking text or metadata shown as if it were the generated product backend
+  - mutations that update only Nexus preview/domain state when the generated product backend also needs to change
+  - release/share/test language that treats Nexus-internal mock state as the user's product backend
+- build:
+  - generated product-owned backend scaffold envelope tied to project id, runtime skeleton id, product-domain skeleton id, and artifact build id
+  - product-class-aware backend skeleton templates for mobile, landing page, internal tool, commerce, game, and software/tool products
+  - product-owned schema/model definitions
+  - product-owned operation/action definitions
+  - product-owned local/mock persistence boundary
+  - UI-to-product-backend operation bindings
+  - mutation contract that records frontend-only, backend-only, and frontend-plus-backend changes
+  - restore contract that preserves the frontend/backend skeleton pair
+- done when:
+  - first skeleton creation produces a product-owned backend scaffold alongside the visible frontend/runtime skeleton
+  - tests prove an internal-tool lead skeleton has product-owned record schema, operations, local/mock persistence, and UI actions wired to product-owned operations
+  - tests prove a landing-page skeleton has product-owned lead model, submit validation, save operation, and local/mock lead storage
+  - tests prove a mobile/app/tool/game skeleton either has a class-appropriate product-owned backend scaffold or a precise unsupported-class blocker
+  - tests prove Build mutations that add fields, records, actions, or workflows update the product-owned backend scaffold as well as the visible frontend skeleton
+  - refresh/restore reloads the same frontend/backend skeleton pair from project truth
+  - live browser proof shows the backend scaffold identity and state growing after at least one user-visible change
+- not trueGreen:
+  - the backend exists only as Nexus project truth or a Nexus-internal mock object
+  - the product backend is only described in prose
+  - the first visible skeleton appears before a product-owned backend scaffold exists
+  - Build changes mutate only the visible runtime while backend-required truth remains unchanged
+  - refresh preserves the UI but loses the product-owned backend scaffold identity or state
+  - this task claims production hosting, external providers, payments, App Store builds, or real customer data
+- closure_evidence:
+  - `web/shared/product-owned-backend-skeleton.js creates a generated product-owned backend scaffold with artifact root, frontend/backend/data/shared/run directories, schema models, operation endpoints, local/mock persistence, API-like boundaries, and frontend/backend growth policy.`
+  - `web/shared/runtime-skeleton-truth.js attaches productOwnedBackendSkeleton and productOwnedBackendSkeletonId to the first runtime skeleton alongside the visible frontend/runtime shell and PRODUCT-BACKEND-SKEL-001 domain skeleton.`
+  - `src/core/build-mutation-truth.js now includes productOwnedBackendSkeletonId in mutation intents/history and updates productOwnedBackendSkeleton through the same safe mutation path that updates the visible runtime and domain skeleton.`
+  - `src/core/project-service.js persists productOwnedBackendSkeleton in project root, context, and state, and replays Build mutation intents back into the product-owned backend scaffold during rebuild/restore.`
+  - `web/nexus-ui/screens/LoopCoreScreen.js exposes live DOM truth anchors for PRODUCT-BACKEND-SKEL-002 without user-visible internal copy.`
+  - `test/product-owned-backend-skeleton.test.js proves first skeleton backend creation and backend growth on schema mutation.`
+  - `test/build-mutation-truth.test.js proves record.addField updates the visible runtime, PRODUCT-BACKEND-SKEL-001 domain skeleton, PRODUCT-BACKEND-SKEL-002 backend scaffold, mutation history, and restore path.`
+  - `test/project-service.test.js RUNTIME-TRUTH-001 pattern proves project serialization persists the product-owned backend scaffold.`
+  - `test/loop-core-screen-render.test.js proves the live Build surface carries product-owned backend truth anchors.`
+  - `scripts/verify-product-backend-skel-002-live-proof.mjs provides live browser proof on http://127.0.0.1:4011.`
+- verification:
+  - `node --check web/shared/product-owned-backend-skeleton.js`
+  - `node --check web/shared/runtime-skeleton-truth.js`
+  - `node --check src/core/build-mutation-truth.js`
+  - `node --check src/core/project-service.js`
+  - `node --test test/product-owned-backend-skeleton.test.js test/build-mutation-truth.test.js test/loop-core-screen-render.test.js`
+  - `node --test --test-name-pattern "RUNTIME-TRUTH-001" test/project-service.test.js`
+  - `node scripts/verify-product-backend-skel-002-live-proof.mjs`
+- closure_notes:
+  - `Live proof passed on http://127.0.0.1:4011/loop?projectId=product-backend-skel-002-live-1780927870928. The route stayed on a real projectId after refresh and restored productOwnedBackendTask=PRODUCT-BACKEND-SKEL-002, productOwnedBackendId=product-owned-backend:product-backend-skel-002-live-1780927870928:internal-tool, pairing=paired-from-first-skeleton, artifactRoot=nexus-projects/user-1/product-backend-skel-002-live-1780927870928/product, and mutationOperation=record.addField.`
+  - `This closes a product-owned local/mock backend scaffold generated with the first skeleton and grown with Build mutations. It does not claim production hosting, external providers, real payments, App Store build, or a standalone releasable artifact; STANDALONE-ARTIFACT-001 still owns that stricter release state.`
+- next:
+  - `RUNTIME-SKEL-001 — Interactive product runtime skeleton standard`
+
+#### `RUNTIME-SKEL-001 — Interactive product runtime skeleton standard`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-04 user live observation: phone frame is not enough; the skeleton must feel like a simulated product running inside the frame`
+  - `runtime-skeleton-interactive-standard-2026-06-04.md`
+  - `SLICE-005` closure boundary
+  - `wave4-class-specific-skeleton-quality-baseline.md`
+  - external simulator / interaction standards reviewed on `2026-06-04`
+- depends_on:
+  - `SLICE-005`
+  - `RUNTIME-TRUTH-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `VSKEL-001`
+  - `ENG-005`
+- blocks:
+  - `BUILD-MUTATION-TRUTH-001`
+  - `BLD-AGT-001`
+  - `W4-UPGRADE-002`
+  - `W4-UPGRADE-003`
+- canonical_law:
+  - `A runtime skeleton is not true because a frame exists.`
+  - `A runtime skeleton is true only when the user can interact with the simulated product and see product-specific state, screen, or workflow changes.`
+  - `mobile-app must feel like a simulated app inside a phone frame, with at least two screens, tappable navigation, local state changes, and list/form behavior where relevant.`
+  - `landing-page must feel like a live page preview with CTA, form, validation or confirmation behavior, and section/viewport states where relevant.`
+  - `internal-tool must feel like a working table/form/dashboard workspace with mutable sample data, selection, status, owner, reminder, or next-action behavior.`
+  - `game must feel controllable or playable, with input response, HUD/state, and start/pause/restart or equivalent behavior.`
+  - `software/tool must expose real controls that transform input/output or change modes/settings/state.`
+  - `commerce/product site must expose product selection, variant/quantity state, add-to-cart behavior, and truthful checkout/payment blocking.`
+  - `Runtime skeleton choice must consume relevant learning signals when those signals exist, so repeated known failures can change the chosen skeleton shape without overwriting product truth.`
+  - `No QA, Preview, or internal diagnostic text may be visible to normal users.`
+  - `The skeleton must truthfully distinguish simulated product behavior from production build, store publishing, provider connection, or payment execution.`
+- preserve:
+  - Project Discovery Agent truth
+  - Product Skeleton Agent envelope
+  - Visual Product Skeleton Agent envelope
+  - Design Plugin selection
+  - SLICE-005 product-type shell family mapping
+  - restore identity from create -> build -> refresh
+- remove_from_active_path:
+  - phone frame treated as sufficient proof of mobile runtime
+  - static page/card treated as sufficient proof of landing-page runtime
+  - dashboard-looking drawing treated as sufficient proof of internal-tool runtime
+  - scene/HUD image treated as sufficient proof of game runtime
+  - product card treated as sufficient proof of commerce runtime
+  - Build continuation relying on a non-interactive skeleton as if it were a usable product surface
+- build:
+  - canonical interactive runtime skeleton contract in docs and code
+  - product-class-to-interaction mapping for runtime shell families
+  - local state model for first simulated interactions
+  - mobile simulator interactions: navigation, add/change item, mark/done or equivalent state change
+  - landing-page interactions: CTA/form/validation or confirmation
+  - internal-tool interactions: table/list/form mutation, status/owner/next-action changes
+  - game interactions: control input, state/HUD update, start/pause/restart
+  - software/tool interactions: input/output transformation or mode/settings changes
+  - commerce interactions: variant/quantity/add-to-cart/cart-summary with checkout blocked truthfully
+  - refresh/restore behavior for the same runtime skeleton or starting simulator state
+- done when:
+  - tests prove mobile app, landing page, internal tool, game, software/tool, and commerce/product ideas render interactive runtime skeletons, not static frames
+  - tests prove at least one click/input changes visible state for each covered runtime family
+  - tests prove refresh restores the same runtime skeleton family and safe starting state
+  - tests prove unavailable production actions are blocked truthfully
+  - tests prove relevant learning signals can influence runtime skeleton selection or interaction emphasis without silently changing project truth
+  - live browser proof shows a mobile app idea changing screen/state inside the phone simulator
+  - live browser proof shows an internal tool or landing page changing visible state without manual route hacks
+  - visible Build output contains no QA/internal labels and does not claim production deployment, app-store build, payment, external publishing, or provider connection
+- evidence:
+  - `2026-06-04: web/nexus-ui/screens/LoopCoreScreen.js now renders data-runtime-live-state, mobile screen navigation targets, runtime score/state markers, and product-domain operation controls for mobile app, landing page, internal tool, game, commerce, and tool shells.`
+  - `2026-06-04: web/app.js now handles data-runtime-screen-nav and data-product-domain-operation clicks by updating visible runtime state, active mobile screen, interaction count, last operation, score/list state where relevant.`
+  - `2026-06-04: Verification passed: node --test --test-name-pattern 'RUNTIME-SKEL-001|SLICE-005|W4-FIX-007' test/loop-core-screen-render.test.js and node --test test/product-domain-skeleton.test.js.`
+  - `2026-06-04: Live mobile proof clicked task.create and screen nav inside /loop; DOM changed to interactionCount=2, lastOperation=task.create, activeTitle=סיכום, liveState=עבר למסך: סיכום. Screenshot: /private/tmp/nexus-runtime-skel-mobile-interaction.png.`
+  - `2026-06-04: Live internal-tool proof clicked record.create inside /loop; DOM changed to interactionCount=1, lastOperation=record.create, liveState=פעולה בוצעה: record.create (1), and list item עודכן דרך record.create. Screenshot: /private/tmp/nexus-runtime-skel-internal-interaction.png.`
+- closure_boundary:
+  - `RUNTIME-SKEL-001 closes first simulated runtime interaction quality only.`
+  - `It does not close professional-grade product skeleton quality, Build agent message routing, canonical Build mutation history, release/export, production backend deployment, real providers, payments, publishing, or App Store builds.`
+  - `2026-06-07 user clarification: the first skeleton is the health foundation of every future build. A merely interactive skeleton is not enough if it does not feel professionally product-grade for its class. PRO-SKEL-001 owns this higher bar and blocks Build continuation from treating the skeleton as healthy.`
+- not trueGreen:
+  - a phone frame exists but no simulated app behavior exists
+  - a page preview exists but CTA/form state does not work
+  - an internal tool surface exists but rows/status/forms cannot change visible state
+  - a game preview exists but there is no input response or state/HUD change
+  - a commerce preview exists but cart state does not change
+  - a tool preview exists but controls do not transform state
+  - refresh loses runtime family or exposes internal state payloads
+  - learning signals exist but skeleton selection still behaves as if no prior outcome was known
+- next:
+  - `PRO-SKEL-001 — Professional product-grade skeleton standard`
+
+#### `PRO-SKEL-001 — Professional product-grade skeleton standard`
+- status: `trueGreen`
+- closed_at: `2026-06-07`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - user clarification 2026-06-07: the skeleton is the health foundation of every future build and must be uncompromisingly professional
+  - `SLICE-005`
+  - `RUNTIME-TRUTH-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `RUNTIME-SKEL-001`
+  - `VSKEL-001`
+- depends_on:
+  - `SLICE-005`
+  - `RUNTIME-TRUTH-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `RUNTIME-SKEL-001`
+  - `VSKEL-001`
+  - `DESIGN-PLUG-004`
+- blocks:
+  - `BUILD-MUTATION-TRUTH-001`
+  - `BLD-AGT-001`
+  - `VBUILD-001`
+  - `MUT-001`
+- canonical_law:
+  - `The first skeleton is the health foundation for the entire product build. Nexus must not treat a weak, generic, shallow, or amateur skeleton as a healthy starting point.`
+  - `A skeleton must be product-class-professional: it must look, behave, and be structured like a credible first version of that class, not a demo card, placeholder, or minimal proof.`
+  - `Mobile app skeletons must be no less than an Xcode-like simulator experience inside Nexus: realistic device frame, multiple real app screens, app navigation, stateful controls, lists/forms where relevant, and behavior that feels like an app running, not a drawing.`
+  - `Landing page and website skeletons must be no less than a professional live site/page preview: strong hierarchy, real sections, credible copy, responsive layout, CTA/form behavior, trust/proof area where relevant, and no generic template feel.`
+  - `Internal tool skeletons must be no less than a professional working workspace: dense but clear table/list/form/dashboard structure, real records, ownership/status/reminder/next-step logic, and repeated-action ergonomics.`
+  - `Commerce skeletons must be no less than a credible product/shop flow: product detail/listing, variants or quantity where relevant, cart/order draft state, truthful checkout/payment boundary, and product-grade merchandising structure.`
+  - `Game skeletons must be no less than a controllable game prototype: input loop, HUD/state, rules, progression or start/pause/restart behavior, and immediate feedback.`
+  - `Software/tool skeletons must be no less than a usable tool prototype: controls, input/output, mode/state changes, saved/local state where relevant, and clear operation results.`
+  - `The skeleton must be intelligent: it must reflect the user idea, audience, problem, first workflow, product class, domain model, visual direction, and relevant learning signals.`
+  - `If Nexus cannot produce a professional-grade skeleton for the product class, it must show a truthful blocked state or ask a focused question; it must not continue with a weak skeleton and call it built.`
+- preserve:
+  - Product Skeleton Agent truth
+  - Visual Product Skeleton Agent truth
+  - runtime skeleton truth
+  - generated product-domain skeleton
+  - Design Plugin selection
+  - learning signals and product-class classification
+- remove_from_active_path:
+  - generic skeletons that could fit many unrelated products
+  - mobile phone frames without app-like behavior and polish
+  - landing pages that look like placeholder templates
+  - internal tools that look like decorative dashboards instead of working workspaces
+  - commerce, game, or tool shells with only concept-level visuals
+  - weak skeletons that are allowed to become the basis for Build mutation
+- build:
+  - professional product-class skeleton rubric
+  - quality gate before Build continuation treats the skeleton as healthy
+  - product-class-specific professional criteria for mobile app, landing page/site, internal tool, commerce, game, and software/tool
+  - skeleton health score or pass/fail envelope tied to project/runtime/domain truth
+  - blocked/ask-more state for weak skeletons
+  - live browser proof matrix across at least mobile app, landing page/site, and internal tool, with game/commerce/tool coverage where feasible
+- done when:
+  - tests prove every covered product class has professional-grade skeleton requirements beyond mere interaction
+  - tests prove weak/generic skeletons fail the professional skeleton gate
+  - tests prove Build continuation cannot claim a healthy skeleton when the professional gate fails
+  - tests prove learning and product-class truth influence skeleton shape without overwriting product truth
+  - live browser proof shows a mobile app skeleton that feels like an app running in a simulator, not only a phone frame
+  - live browser proof shows a website or landing page skeleton that feels like a professional real page, not a generic preview
+  - live browser proof shows an internal tool skeleton that feels like a usable professional workspace, not a decorative dashboard
+  - visible user copy uses Nexus voice and never exposes internal skeleton gates, task ids, or agent ownership
+- not trueGreen:
+  - the skeleton is interactive but still visibly generic or amateur
+  - mobile app output is only a phone frame with a static card
+  - website output is only a template-looking page without professional structure and credible behavior
+  - internal tool output lacks repeated-action ergonomics and domain workflow depth
+  - Build can continue as if the skeleton is healthy after the professional gate fails
+- closure_evidence:
+  - `web/shared/professional-skeleton-quality.js` defines the professional skeleton pass/fail gate, class labels, criteria, score, and Build-continuation boundary for product-class skeletons.
+  - `web/shared/runtime-skeleton-truth.js` now attaches `professionalSkeletonQuality` to runtime skeleton truth and enriches mobile, landing page, internal tool, game, commerce, and software/tool skeleton data beyond minimal interaction.
+  - `web/nexus-ui/screens/LoopCoreScreen.js` renders professional skeleton status and richer class-specific surfaces without exposing internal task ownership in visible copy.
+  - `web/nexus-ui/styles/screens.css` adds professional-quality surface styling for simulator tasks, landing form/proof/trust, workspace metrics/table, and quality state.
+  - `web/shared/product-class-model.js` and `web/shared/split-workspace-live-build-surface-model.js` now recognize `software-tool` as a first-class skeleton category instead of collapsing it into generic fallback.
+  - `test/professional-skeleton-quality.test.js` proves mobile, landing page, and internal tool pass the professional gate and generic skeletons are blocked.
+  - `test/loop-core-screen-render.test.js` proves the Build canvas exposes `data-professional-skeleton-task=PRO-SKEL-001`, pass status, allowed continuation, mobile app screens/tabs/task state, landing trust/form sections, and internal workspace metrics/table.
+  - `scripts/verify-pro-skel-001-live-proof.mjs` creates real project-backed live proof cases and verifies `/loop?projectId=<real-project-id>` renders professional mobile, landing, and internal-tool skeletons.
+  - `2026-06-07 live proof passed: /private/tmp/nexus-pro-skel-001-1780846302028-mobile.png showed mobile-app + mobile-simulator + PRO-SKEL-001 pass + allowed continuation + app tabs/task rows.`
+  - `2026-06-07 live proof passed: /private/tmp/nexus-pro-skel-001-1780846302028-landing.png showed landing-page + web-page-preview + PRO-SKEL-001 pass + professional form/trust/proof structure.`
+  - `2026-06-07 live proof passed: /private/tmp/nexus-pro-skel-001-1780846302028-internal.png showed internal-tool + workspace-state-shell + PRO-SKEL-001 pass + metrics/table/domain operation.`
+  - `2026-06-07 live proof report: /private/tmp/nexus-pro-skel-001-1780846302028-report.json.`
+- verification:
+  - `node --check web/shared/professional-skeleton-quality.js`
+  - `node --check web/shared/runtime-skeleton-truth.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --check web/shared/product-class-model.js`
+  - `node --check web/shared/split-workspace-live-build-surface-model.js`
+  - `node --check web/shared/product-domain-skeleton.js`
+  - `node --check scripts/verify-pro-skel-001-live-proof.mjs`
+  - `node --test test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js`
+  - `node --test test/product-domain-skeleton.test.js test/build-mutation-truth.test.js test/runtime-learning-events.test.js test/build-agent-learning-instructions.test.js`
+  - `node scripts/verify-pro-skel-001-live-proof.mjs`
+- residual_notes:
+  - `npm run build` is unavailable because package.json has no build script; closure uses syntax checks, targeted tests, dependency-layer tests, and live browser proof instead.
+  - `PRO-SKEL-001` does not claim production App Store builds, production backend deployment, real provider connections, publishing, payments, or full downstream Build Agent mutation closure.
+  - Nexus asks the user to understand internal skeleton tasks instead of showing one Nexus experience
+- next:
+  - `PRO-SKEL-002 — Market-calibrated Nexus skeleton standard`
+
+#### `PRO-SKEL-002 — Market-calibrated Nexus skeleton standard`
+- status: `trueGreen`
+- closed_at: `2026-06-07`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - user clarification 2026-06-07: Nexus must study current market leaders, extract quality standards, and inject the conclusions back into the skeleton layer without copying any competitor
+  - `PRO-SKEL-001`
+  - `docs/operating-system/market-calibrated-skeleton-standard-2026-06-07.md`
+- depends_on:
+  - `PRO-SKEL-001`
+  - `RUNTIME-TRUTH-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `RUNTIME-SKEL-001`
+  - `LEARNING-RUNTIME-001`
+- blocks:
+  - `PRO-SKEL-003`
+- canonical_law:
+  - `Nexus must learn the market quality bar from current builders without copying their visual identity, wording, or product surface.`
+  - `The first Build skeleton must meet or exceed the market expectation for a serious first product artifact: clear product recognition, dominant live product canvas, class-specific depth, stateful controls, premium hierarchy, context continuity, truthful boundaries, and learning uplift readiness.`
+  - `The user must see one Nexus experience, not internal agent ownership, competitor references, QA wording, or task decomposition.`
+  - `Learning signals must be ready to raise skeleton selection quality through a decision layer, without letting any agent overwrite product truth or fake changes.`
+- preserve:
+  - `PRO-SKEL-001` professional class-specific skeleton gate
+  - runtime skeleton truth
+  - generated product-domain skeleton
+  - Build mutation truth and learning event contracts
+- remove_from_active_path:
+  - skeletons that pass internal criteria but still look below current market quality
+  - visible competitor names, benchmark notes, or internal research copy in the user-facing Build surface
+  - static mockups that do not communicate live product state, continuity, or truthful boundaries
+- build:
+  - market-calibrated skeleton quality envelope
+  - official competitor research doc used as a quality reference only
+  - Build-surface data proof for market standard status, level, score, and learning readiness
+  - tests that prove Nexus-original market quality and no visible competitor-copy leakage
+- done when:
+  - code attaches `PRO-SKEL-002` market calibration to the professional skeleton envelope
+  - tests prove mobile, landing page, internal tool, commerce, and software/tool skeleton surfaces expose market calibration pass where appropriate
+  - tests prove generic weak skeletons fail the market-calibrated gate
+  - visible user copy remains Nexus-original and does not expose competitor names or internal research notes
+  - live browser proof shows project-backed `/loop?projectId=<real-project-id>` skeletons with `PRO-SKEL-002` pass evidence
+- not trueGreen:
+  - the skeleton only looks better but has no market quality contract
+  - the Build surface leaks competitor names or internal benchmark copy
+  - market quality is only documented and not enforced in code/tests
+  - learning readiness is claimed without stable project/runtime/domain ids
+- closure_evidence:
+  - `docs/operating-system/market-calibrated-skeleton-standard-2026-06-07.md` records official market signals and Nexus-original quality dimensions.
+  - `web/shared/professional-skeleton-quality.js` now attaches `marketCalibratedSkeletonQuality` with `PRO-SKEL-002`, market dimensions, pass/fail status, score, originality boundary, and learning boundary.
+  - `web/nexus-ui/screens/LoopCoreScreen.js` exposes market-calibrated skeleton proof through data attributes and Nexus-original visible copy.
+  - `web/nexus-ui/styles/screens.css` styles the market summary inside the existing professional skeleton quality surface.
+  - `test/professional-skeleton-quality.test.js` proves strong mobile, landing page, and internal tool skeletons pass market calibration and weak generic skeletons fail it.
+  - `test/loop-core-screen-render.test.js` proves mobile, landing, internal, commerce, and tool surfaces expose `PRO-SKEL-002` market pass evidence and do not visibly leak competitor names.
+  - `scripts/verify-pro-skel-001-live-proof.mjs` now verifies live `PRO-SKEL-002` evidence across mobile, landing, and internal tool project-backed Build skeletons.
+  - `2026-06-07 live proof passed: /private/tmp/nexus-pro-skel-002-1780847142664-mobile.png showed mobile-app + mobile-simulator + PRO-SKEL-002 pass + learning uplift ready.`
+  - `2026-06-07 live proof passed: /private/tmp/nexus-pro-skel-002-1780847142664-landing.png showed landing-page + web-page-preview + PRO-SKEL-002 pass.`
+  - `2026-06-07 live proof passed: /private/tmp/nexus-pro-skel-002-1780847142664-internal.png showed internal-tool + workspace-state-shell + PRO-SKEL-002 pass.`
+  - `2026-06-07 live proof report: /private/tmp/nexus-pro-skel-002-1780847142664-report.json.`
+- verification:
+  - `node --check web/shared/professional-skeleton-quality.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --check scripts/verify-pro-skel-001-live-proof.mjs`
+  - `node --test test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js`
+  - `node scripts/verify-pro-skel-001-live-proof.mjs`
+- residual_notes:
+  - `2026-06-07 revalidation: PRO-SKEL-002 remains closed only as a structured, live, market-calibrated skeleton envelope. It does not close product-realistic composition quality or prove that the first Build output feels like the beginning of a real product.`
+  - `PRO-SKEL-002` does not claim that Nexus has beaten every competitor in production depth; it closes the market-calibrated first skeleton quality contract for the current Build surface under a structural/live-envelope boundary.
+  - `PRO-SKEL-002` does not close Build Agent continuation, approval flows, production releases, external provider connections, payments, or App Store delivery.
+- next:
+  - `PRO-SKEL-003 — Product-realistic skeleton composition standard`
+
+#### `PRO-SKEL-003 — Product-realistic skeleton composition standard`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - user clarification 2026-06-07: `PRO-SKEL-002` closed a live structured skeleton, but the user-visible result still feels like a demo/template rather than the beginning of a serious real product
+  - `PRO-SKEL-002` revalidation
+- depends_on:
+  - `PRO-SKEL-002`
+  - `PRO-SKEL-001`
+  - `RUNTIME-SKEL-001`
+  - `RUNTIME-TRUTH-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+- blocks:
+  - `BLD-AGT-001`
+  - `VBUILD-001`
+  - `MUT-001`
+- canonical_law:
+  - `A healthy skeleton is not only a checklist of screens, actions, sections, state, or data attributes.`
+  - `The first Build output must feel like a credible first version of the requested product, not a demo, template, or assembled component preview.`
+  - `A skeleton is not healthy if serious continuation would require redesigning it from scratch before product work can continue.`
+  - `Nexus must show one coherent Nexus product-building experience; internal agent names, task ids, QA wording, benchmark notes, and ownership boundaries must stay hidden from normal users.`
+  - `External creative providers may raise skeleton realism through brand identity, screen composition, product imagery, motion, campaign-ready assets, and visual alternatives, but the resulting skeleton is healthy only if Nexus converts those outputs into product-specific structure, domain state, interaction, package direction, and continuation truth.`
+- preserve:
+  - `PRO-SKEL-002` structural/live market-calibrated skeleton envelope
+  - runtime skeleton truth
+  - generated product-domain skeleton
+  - restore-safe Build project truth
+- remove_from_active_path:
+  - mobile skeletons that look like web cards inside a phone frame
+  - landing page skeletons that look like generic generated blocks instead of a published page
+  - internal tool skeletons that look like decorative dashboards instead of repeated-use workspaces
+  - user-visible placeholder, internal, task, QA, benchmark, or meta copy
+  - tests that claim product quality from element existence alone
+- build:
+  - product-realism standard for mobile app, landing page, internal tool, commerce/product site, game, and software/tool skeletons
+  - stronger class-specific rendering composition for the first Build output
+  - product-specific content depth, hierarchy, and first-screen comprehension criteria
+  - visible evidence that the skeleton is a credible foundation for continuation, not only an evaluated envelope
+  - provider-assisted creative realism criteria for when external brand/image/video/screen generators are available, including product-fit, domain-fit, interaction-fit, source/usage boundary, and no detached mockup rule
+  - tests that cover realism signals and user-visible copy quality in addition to structural anchors
+- done when:
+  - mobile app skeletons feel like real apps running inside a simulator, with app information architecture, screen hierarchy, mobile-native rhythm, navigation, realistic controls, empty/data states, and stateful flow
+  - landing page skeletons feel like polished published pages, with strong hero, clear value proposition, credible section rhythm, CTA/form composition, trust/content blocks, visual hierarchy, and brand/product presence
+  - internal tool skeletons feel like real work surfaces, with operational density, filters/search/segmentation where relevant, status/state, row actions, realistic records, repeated-use ergonomics, and workflow pressure
+  - product-specific content replaces generic placeholders across supported product classes
+  - visible copy hides internal task names, agent names, QA wording, benchmark wording, and meta/system phrasing from normal users
+  - live browser screenshots for mobile, landing page, and internal tool pass a five-second comprehension and credibility review
+  - tests prove product-realism and copy-quality failure cases, not only element existence
+  - tests prove provider-assisted visual output cannot pass the realism gate if it lacks product-domain mapping, interaction meaning, or continuation/package alignment
+  - canonical docs define that a healthy skeleton must not require a full redesign before continuation
+- not trueGreen:
+  - a phone frame, section list, table, card, action, state object, or data attribute is treated as enough by itself
+  - the skeleton still feels like a demo/template or an assembled component preview
+  - visible copy exposes `first artifact`, task ids, internal QA, benchmark, provider, or meta language to normal users
+  - tests pass while live screenshots fail the product-realism bar
+  - a provider-generated video, image, brand board, or app screen is treated as a healthy skeleton while remaining disconnected from product operations, package truth, or future mutation path
+  - downstream Build Agent work can continue before this realism gate passes
+- closure_evidence:
+  - `web/shared/professional-skeleton-quality.js` now adds a `PRO-SKEL-003` product-realistic quality layer and blocks Build continuation unless the stronger realism gate passes.
+  - `web/shared/runtime-skeleton-truth.js` now enriches mobile app, landing page, and internal tool runtime skeletons with class-native product composition, product-specific data, and cleaner visible copy.
+  - `web/nexus-ui/screens/LoopCoreScreen.js` now renders product-realistic mobile, landing, and internal tool surfaces while hiding preserved internal skeleton engines from normal users.
+  - `web/nexus-ui/styles/screens.css` now gives the runtime surfaces stronger simulator/page/workspace composition instead of generic cards.
+  - `web/nexus-ui/copy/visible-shell-language.js` now strips user-visible task/internal preview language from shell copy.
+  - `test/professional-skeleton-quality.test.js` proves `PRO-SKEL-003` passes for strong mobile, landing, and internal tool skeletons and blocks generic skeletons.
+  - `test/loop-core-screen-render.test.js` proves the Build surface exposes `PRO-SKEL-003` pass anchors and does not render stale fallback preview surfaces when runtime truth exists.
+  - `scripts/verify-pro-skel-001-live-proof.mjs` now verifies live `PRO-SKEL-003` evidence for mobile app, landing page, and internal tool project-backed Build skeletons.
+  - `2026-06-07 live proof passed: /private/tmp/nexus-pro-skel-003-1780848998219-mobile.png showed mobile-app + mobile-simulator + PRO-SKEL-003 pass + no missing checks.`
+  - `2026-06-07 live proof passed: /private/tmp/nexus-pro-skel-003-1780848998219-landing.png showed landing-page + web-page-preview + PRO-SKEL-003 pass + no missing checks.`
+  - `2026-06-07 live proof passed: /private/tmp/nexus-pro-skel-003-1780848998219-internal.png showed internal-tool + workspace-state-shell + PRO-SKEL-003 pass + no missing checks.`
+  - `2026-06-07 live proof report: /private/tmp/nexus-pro-skel-003-1780848998219-report.json.`
+- verification:
+  - `node --check web/nexus-ui/copy/visible-shell-language.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --test test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js`
+  - `node --test test/product-domain-skeleton.test.js test/build-mutation-truth.test.js test/runtime-learning-events.test.js test/build-agent-learning-instructions.test.js`
+  - `curl -s -w '\n%{http_code}\n' http://127.0.0.1:4011/api/health`
+  - `node scripts/verify-pro-skel-001-live-proof.mjs`
+- closure_boundary:
+  - `PRO-SKEL-003` closes first-skeleton product realism and composition only.
+  - `PRO-SKEL-003` does not reopen already-closed backend truth, product-domain truth, mutation truth, or learning event contracts; it blocks the next user-visible Build Agent continuation path until the first skeleton is product-realistic enough to build on.
+  - `2026-06-07 scope clarification: PRO-SKEL-003 closed the realism bar for the currently proven class-specific skeleton path. It does not close unknown product-kind discovery, arbitrary product-pattern interpretation, or learning-driven product-kind intelligence. Those are now explicit blockers before the Build Agent can claim broad product-building continuation.`
+  - `2026-06-10 provider clarification: PRO-SKEL-003 may consume creative-provider outputs after PROV-001 provider gating, but it does not close provider connection, provider execution, creative asset licensing/usage, publishing, spending, or package realization. Provider-assisted visuals must still pass Nexus product-realism and continuation truth.`
+  - `PRO-SKEL-003` does not close Build Agent continuation, product-direction approval, full verification, release, publishing, external providers, payments, WhatsApp, deployment, production backend infrastructure, or App Store delivery.
+- next:
+  - `PRODUCT-KIND-001 — Unknown product-kind discovery and skeleton selection`
+
+#### `PRODUCT-KIND-001 — Unknown product-kind discovery and skeleton selection`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - user clarification 2026-06-07: Nexus must not assume the world is only mobile apps, landing pages, and internal tools
+  - user clarification 2026-06-07: Nexus must identify the product's shape of life before selecting the first skeleton
+  - `W4-MBN-001` product-class resolution closure review
+  - `PRO-SKEL-003` scope clarification
+- depends_on:
+  - `W4-MBN-001`
+  - `PRO-SKEL-003`
+  - `RUNTIME-SKEL-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+- blocks:
+  - `LEARNING-PRODUCT-INTELLIGENCE-001`
+  - `BLD-AGT-001`
+  - `VBUILD-001`
+  - `MUT-001`
+- canonical_law:
+  - `Nexus must not reduce every new idea to a small fixed category list.`
+  - `When the product is unfamiliar, Nexus must discover the product pattern before choosing a skeleton.`
+  - `The discovery target is the product shape of life: user, repeated action, state, inputs, outputs, loop, controls, records, scene, canvas, rules, and first working behavior.`
+  - `If the product kind is unclear, Nexus asks one or two decision-changing questions instead of guessing.`
+  - `Skeleton selection must be based on product pattern and first behavior, not only on a category label.`
+- preserve:
+  - existing canonical product-class model
+  - existing domain classifier
+  - existing runtime skeleton families
+  - existing product-realistic skeleton composition standard
+- remove_from_active_path:
+  - generic fallback skeletons for unfamiliar products when product pattern is unclear
+  - silent mapping of unknown ideas to SaaS, dashboard, landing page, or internal tool without evidence
+  - Build continuation that assumes product kind is solved when the idea is actually unknown
+- build:
+  - product-pattern discovery contract for game, editor, simulator, software/tool, management system, workflow, dashboard, app, site, commerce, AI tool, and unclear/custom products
+  - skeleton selection matrix that maps product pattern to first runtime shell, domain model, operations, state, and visible first behavior
+  - clarify-or-build policy that asks only decision-changing questions when product kind is ambiguous
+  - unknown-product evidence envelope preserved in project truth and consumed by skeleton selection
+- closure_evidence:
+  - `web/shared/product-kind-discovery.js` defines product-pattern discovery, confidence, clarification questions, and skeleton-selection envelopes for game, editor, simulator, tool, management, workflow, app, site, commerce, AI tool, content, and unclear ideas.
+  - `web/shared/runtime-skeleton-truth.js` consumes the product-kind envelope before choosing runtime shell family and stores product kind, pattern, confidence, clarification state, and selected skeleton family in runtime project truth.
+  - `web/shared/product-domain-skeleton.js` maps editor, simulator, AI tool, and tool patterns to product-domain models and local/mock operations.
+  - `src/core/runtime-skeleton-truth.js` exposes product-kind discovery through the backend runtime truth boundary.
+  - `web/nexus-ui/screens/LoopCoreScreen.js` exposes product-kind proof anchors on the Build surface without showing internal task names as normal copy.
+  - `test/product-kind-discovery.test.js` proves game, editor, simulator, software/tool, and unclear-product paths.
+  - `test/loop-core-screen-render.test.js` proves unfamiliar editor products render product-kind anchors and avoid generic shell fallback.
+  - `test/project-service.test.js` proves product-pattern truth is persisted on runtime truth, context, and state.
+  - `scripts/verify-product-kind-001-live-proof.mjs` runs live project-backed browser proof for game, editor, and simulator ideas.
+  - `2026-06-07 live proof passed: /private/tmp/nexus-product-kind-001-1780850270444-game.png showed game-loop + playable-preview + game-state-rules-local-state.`
+  - `2026-06-07 live proof passed: /private/tmp/nexus-product-kind-001-1780850270444-editor.png showed editor-canvas + editor-canvas-shell + editor-document-local-state.`
+  - `2026-06-07 live proof passed: /private/tmp/nexus-product-kind-001-1780850270444-simulator.png showed simulator-state + simulator-control-shell + simulator-state-control-local-state.`
+  - `2026-06-07 live proof report: /private/tmp/nexus-product-kind-001-1780850270444-report.json.`
+- verification:
+  - `node --check web/shared/product-kind-discovery.js`
+  - `node --check web/shared/runtime-skeleton-truth.js`
+  - `node --check web/shared/product-domain-skeleton.js`
+  - `node --check scripts/verify-product-kind-001-live-proof.mjs`
+  - `node --test test/product-kind-discovery.test.js test/product-class-model.test.js test/product-domain-skeleton.test.js`
+  - `node --test test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js`
+  - `node --test --test-name-pattern "RUNTIME-TRUTH-001" test/project-service.test.js`
+  - `node --test test/product-kind-discovery.test.js test/product-class-model.test.js test/product-domain-skeleton.test.js test/professional-skeleton-quality.test.js test/loop-core-screen-render.test.js --test-name-pattern "PRODUCT-KIND-001|PRODUCT-BACKEND-SKEL-001|PRO-SKEL-001|RUNTIME-SKEL-001|SLICE-005|W4-FIX-007"`
+  - `node scripts/verify-product-kind-001-live-proof.mjs`
+- done when:
+  - unfamiliar product ideas resolve to a product pattern before skeleton selection
+  - game-like ideas choose scene/state/rules/action/game-loop skeletons instead of app/dashboard shells
+  - editor-like ideas choose canvas/tools/selection/history skeletons instead of generic tool shells
+  - simulator-like ideas choose state/control/metrics/output skeletons
+  - software/tool ideas choose input/action/output/state/history skeletons
+  - management-system ideas choose records/status/filters/actions workflow skeletons
+  - unclear ideas produce one or two useful clarifying questions instead of a generic skeleton
+  - product kind, pattern, confidence, unknowns, chosen skeleton family, and reason are saved in project truth
+  - tests prove at least one unknown/custom idea, one game, one editor, one simulator, and one software/tool path
+  - live browser proof shows an unfamiliar idea does not fall into a generic dashboard or card shell
+- not trueGreen:
+  - unknown ideas fall back to generic/SaaS/dashboard without a pattern decision
+  - Nexus asks many generic questions instead of one or two decisive questions
+  - product kind exists only as frontend copy and is not saved in project truth
+  - skeleton choice is based only on keyword category rather than product behavior
+  - a user can ask for something unusual and receive a plausible-looking but wrong skeleton
+- closure_boundary:
+  - `PRODUCT-KIND-001` closes unknown product-kind discovery and skeleton selection only.
+  - It does not close full product realism for every possible product, downstream Build Agent mutation, release, provider connection, payment, publishing, or production deployment.
+  - `PRO-SKEL-003` remains trueGreen for the already-proven class-specific skeleton quality path; this task adds the missing generalization layer before broad Build continuation.
+  - `PRODUCT-KIND-001` does not close learning-driven improvement of product-pattern interpretation; that remains owned by `LEARNING-PRODUCT-INTELLIGENCE-001`.
+- next:
+  - `LEARNING-PRODUCT-INTELLIGENCE-001 — Learning-driven product pattern intelligence`
+
+#### `LEARNING-PRODUCT-INTELLIGENCE-001 — Learning-driven product pattern intelligence`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - user clarification 2026-06-07: learning must become product interpretation intelligence, not stored memory that stays in a warehouse
+  - `LEARNING-RUNTIME-001`
+  - `PRODUCT-KIND-001`
+- depends_on:
+  - `PRODUCT-KIND-001`
+  - `LEARNING-RUNTIME-001`
+  - `ENG-007`
+- blocks:
+  - `BLD-AGT-001`
+  - `VBUILD-001`
+  - `MUT-001`
+- canonical_law:
+  - `Learning must help Nexus understand what the user is trying to build before agents answer or choose skeletons.`
+  - `Learning must improve product-pattern interpretation, skeleton choice, domain shape, and next action selection without overwriting project truth.`
+  - `Learning must flow into the decision layer before the relevant agent responds; it must not remain only a stored event log.`
+  - `The user's experience remains one Nexus agent from zero to one hundred, even if internal engines are split.`
+- preserve:
+  - canonical learning events
+  - learning-before-reply boundary in `BLD-AGT-001`
+  - project truth and mutation truth ownership
+- remove_from_active_path:
+  - agents answering without relevant product learning
+  - skeleton selection that ignores known prior failures or successful product patterns
+  - learning that is stored but cannot affect discovery, skeleton choice, or Build routing
+- build:
+  - learning-to-product-pattern decision envelope
+  - learned pattern retrieval before product-kind resolution and Build agent replies
+  - safe influence rules that let learning recommend pattern/skeleton/clarification but not mutate truth silently
+  - evidence that learned product interpretation can improve future skeleton selection
+- closure_evidence:
+  - `web/shared/product-pattern-learning-intelligence.js` creates a bounded decision envelope for learned product-pattern recommendations before product-kind selection and agent reply.
+  - `web/shared/product-kind-discovery.js` consumes the learning decision as a recommendation layer, can use it for weak or unclear pattern choices, and prevents it from overriding explicit product class truth.
+  - `web/shared/runtime-skeleton-truth.js` creates and persists the learning decision on runtime skeleton truth before skeleton selection.
+  - `src/core/runtime-learning-events.js` now emits product pattern, product class, skeleton family, and domain kind into learning signals and converts them into recommended future patterns.
+  - `src/core/build-agent-learning-instructions.js` passes product-pattern learning to the Build agent before reply as bounded instructions.
+  - `src/core/project-service.js` preserves runtime learning truth from initial project state so clean project creation can restore learning-backed skeleton selection.
+  - `web/nexus-ui/screens/LoopCoreScreen.js` exposes hidden learning proof anchors without user-visible internal task language.
+  - `test/product-kind-discovery.test.js` proves learning can improve a weak product-pattern decision, cannot override explicit class truth, and remains recommendation-only.
+  - `test/build-agent-learning-instructions.test.js` proves the Build agent receives product-pattern learning before reply.
+  - `test/runtime-learning-events.test.js` proves runtime events produce future product-pattern recommendations.
+  - `test/project-service.test.js` proves project creation promotes runtime learning truth from initial state and persists the decision envelope.
+  - `test/loop-core-screen-render.test.js` proves the Build surface carries learning proof anchors without visible internal task text.
+  - `scripts/verify-learning-product-intelligence-001-live-proof.mjs` creates a project-backed live browser proof where learned editor-canvas guidance changes the Build skeleton to editor-canvas-shell.
+  - `2026-06-07 live proof passed: /private/tmp/nexus-learning-product-intelligence-001-1780851177559-learning-applied.png showed LEARNING-PRODUCT-INTELLIGENCE-001 live + applied + editor-canvas + editor-canvas-shell + editor-document-local-state.`
+  - `2026-06-07 live proof report: /private/tmp/nexus-learning-product-intelligence-001-1780851177559-report.json.`
+- verification:
+  - `node --check web/shared/product-pattern-learning-intelligence.js`
+  - `node --check web/shared/product-kind-discovery.js`
+  - `node --check web/shared/runtime-skeleton-truth.js`
+  - `node --check src/core/build-agent-learning-instructions.js`
+  - `node --check src/core/runtime-learning-events.js`
+  - `node --check src/core/project-service.js`
+  - `node --check scripts/verify-learning-product-intelligence-001-live-proof.mjs`
+  - `node --test test/product-kind-discovery.test.js test/build-agent-learning-instructions.test.js test/runtime-learning-events.test.js test/loop-core-screen-render.test.js`
+  - `node --test --test-name-pattern "LEARNING-PRODUCT-INTELLIGENCE-001|LEARNING-RUNTIME-001|PRODUCT-KIND-001|RUNTIME-TRUTH-001" test/product-kind-discovery.test.js test/build-agent-learning-instructions.test.js test/runtime-learning-events.test.js test/project-service.test.js test/loop-core-screen-render.test.js`
+  - `node scripts/verify-learning-product-intelligence-001-live-proof.mjs`
+- done when:
+  - product-kind discovery receives relevant learning before deciding or asking a question
+  - skeleton selection can use learning to avoid repeated wrong skeleton families
+  - Build Agent receives relevant product-pattern learning before replying
+  - learning can recommend a better product pattern, skeleton family, or clarification question without overwriting product truth
+  - tests prove learning changes a future product-kind or skeleton decision through a decision layer
+  - tests prove learning cannot be presented as product truth without an approved or real project state change
+- not trueGreen:
+  - learning events are stored but not consumed by product-kind or Build decisions
+  - agents receive generic memory instead of relevant product-pattern instructions
+  - learning can silently change project truth
+  - the user sees internal learning/task/specialist boundaries instead of one Nexus experience
+- closure_boundary:
+  - `LEARNING-PRODUCT-INTELLIGENCE-001` closes learning influence on product-pattern interpretation and skeleton choice only.
+  - It does not close full self-improving autonomous product design, production deployment, provider actions, or release.
+  - Learning remains recommendation-only and may not overwrite project truth without a real project-state or mutation result.
+- next:
+  - `BLD-AGT-001 — Build / Loop Agent active build continuation`
+
+#### `BUILD-MUTATION-TRUTH-001 — Build agent frontend/backend/domain mutation contract`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `runtime-product-truth-binding-contract-2026-06-04.md`
+  - `build-loop-agent-contract-2026-06-01.md`
+  - `mutation-change-agent-contract-2026-06-01.md`
+- depends_on:
+  - `PRO-SKEL-001`
+  - `PRO-SKEL-002`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `ENG-001`
+  - `ENG-002`
+- blocks:
+  - `BLD-AGT-001`
+  - `MUT-001`
+  - `LEARNING-RUNTIME-001`
+  - `W4-GEN-002`
+- canonical_law:
+  - `Build agent changes may not update only the visible frontend preview.`
+  - `A build mutation must have a mutation intent tied to project id, runtime skeleton id, and product-domain skeleton id before visible success is claimed.`
+  - `Visible runtime changes, Nexus project truth changes, generated product-domain changes, and history/timeline records must agree.`
+  - `Failed mutations must show visible failure and must not fake frontend-only success.`
+- preserve:
+  - Build / Loop Agent routing law
+  - Mutation / Change Agent impact analysis law
+  - History / Continuity Agent checkpoint and rollback law
+- remove_from_active_path:
+  - frontend-only build rail changes
+  - agent replies claiming a change without a truth mutation
+  - mutation paths that cannot survive refresh/restore
+- build:
+  - Build mutation intent envelope
+  - runtime skeleton mutation binding
+  - product-domain skeleton mutation binding
+  - project history/timeline mutation record
+  - restore-safe mutation application path
+  - failed-mutation visible error state
+- done when:
+  - tests prove a Build request creates a mutation intent tied to project, runtime skeleton, and product-domain skeleton
+  - tests prove visible skeleton changes only after truth mutation exists
+  - tests prove product-domain skeleton changes only through defined operations
+  - tests prove mutation is recorded in history/timeline and survives refresh
+  - live browser proof shows a Build mutation either truthfully applying or truthfully failing without silent frontend-only success
+- evidence:
+  - `2026-06-04: src/core/build-mutation-truth.js added canonical Build mutation intent and history envelopes tied to project id, runtime skeleton id, artifact build id, product-domain skeleton id, requested operation, payload, status, and safe failure reason.`
+  - `2026-06-04: src/core/project-service.js applies Build mutations through product-domain operations, persists runtimeSkeletonTruth, productDomainSkeleton, buildMutationTruth, buildMutationHistory, and buildMutationIntents at project root/context/state, and serializes them for restore.`
+  - `2026-06-04: src/server.js exposes POST /api/projects/:projectId/build-mutations as an edit-scoped project route that calls the project-service mutation path.`
+  - `2026-06-04: web/nexus-ui/adapters/loop-adapter.js and web/nexus-ui/screens/LoopCoreScreen.js expose build mutation truth anchors on the Build runtime surface.`
+  - `2026-06-04: Verification passed: node --test test/build-mutation-truth.test.js; node --test --test-name-pattern 'RUNTIME-TRUTH-001|PRODUCT-BACKEND-SKEL-001' test/project-service.test.js; node --test --test-name-pattern 'RUNTIME-SKEL-001|SLICE-005|W4-FIX-007' test/loop-core-screen-render.test.js; node --test test/product-domain-skeleton.test.js.`
+  - `2026-06-04: Live Build surface proof opened /loop in QA mode with mutation truth and found data-build-mutation-task=BUILD-MUTATION-TRUTH-001, data-build-mutation-status=applied, data-build-mutation-operation=record.updateStatus, data-build-mutation-history-count=1, and a non-empty mutation id. Screenshot: /private/tmp/nexus-build-mutation-truth-live.png.`
+- closure_boundary:
+  - `BUILD-MUTATION-TRUTH-001 closes the canonical mutation truth contract only.`
+  - `It does not close Build rail agent liveliness, natural-language mutation planning, visible agent response, approval UX, general mutation generation, learning events, release/export, rollback UI, or production backend deployment.`
+  - `2026-06-10 deep-review narrowing: BUILD-MUTATION-TRUTH-001 remains closed only for mutation truth envelopes and trained/proven mutation operations. It does not prove that arbitrary free-text requests such as adding an unknown field are translated into real product changes, and it must be consumed by BUILD-SPEECH-TRUTH-001 before Nexus can keep a visible success reply.`
+- not trueGreen:
+  - Build rail message only changes local transcript
+  - visible skeleton mutates without project truth mutation
+  - product-domain skeleton is not updated
+  - history/timeline does not record the mutation
+  - refresh loses the mutation
+- next:
+  - `BLD-AGT-001 — Build / Loop Agent active build continuation`
+
+#### `LEARNING-RUNTIME-001 — Connect learning layer to runtime skeleton and Build mutations`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `runtime-product-truth-binding-contract-2026-06-04.md`
+  - `canonical-learning-system-contract.js`
+  - `deep-adaptive-learning-decision-impact.js`
+  - `2026-06-04 investigation: learning is connected to onboarding/generation/release/continuation signals, not runtime skeleton, generated product-domain, or Build mutation events`
+- depends_on:
+  - `RUNTIME-TRUTH-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `BUILD-MUTATION-TRUTH-001`
+  - `ENG-007`
+- blocks:
+  - `W4-GEN-002`
+  - `W4-LEARN-002 runtime/build claims`
+- canonical_law:
+  - `Learning may not claim runtime/build intelligence unless runtime skeleton creation, product-domain skeleton creation, Build requests, mutation intents, mutation outcomes, runtime interactions, and product-domain operation outcomes emit learning-safe signals.`
+  - `Learning signals must be tied to project id, runtime skeleton id, product-domain skeleton id, mutation id, and outcome id.`
+  - `Learning may influence later decisions but must not overwrite active project truth.`
+- preserve:
+  - canonical learning system separation between project memory, user preference memory, and system learning
+  - privacy and consent boundaries for learning-safe signals
+- remove_from_active_path:
+  - onboarding-only signals presented as proof that Nexus learns from runtime/build behavior
+  - learning decisions that mutate project truth silently
+- build:
+  - runtime skeleton creation learning event
+  - generated product-domain skeleton creation learning event
+  - Build agent request learning event
+  - mutation intent and mutation outcome learning events
+  - runtime interaction and product-domain operation outcome hooks where relevant
+  - tests proving events are emitted and remain tied to the correct ids
+- done when:
+  - tests prove learning events are emitted from runtime skeleton creation
+  - tests prove learning events are emitted from generated product-domain skeleton creation
+  - tests prove learning events are emitted from Build mutation requests and outcomes
+  - tests prove learning can influence future decisions without silently overwriting product truth
+  - privacy/learning consent gates remain intact
+- closure_evidence:
+  - `src/core/runtime-learning-events.js`
+  - `src/core/project-service.js`
+  - `test/runtime-learning-events.test.js`
+  - `test/project-service.test.js`
+  - `2026-06-07: Runtime skeleton creation now emits learning-safe runtime_skeleton.created and product_domain_skeleton.created events tied to project id, runtime skeleton id, artifact build id, and product-domain skeleton id.`
+  - `2026-06-07: Build mutation application now emits build_agent_request.received, build_mutation_intent.created, build_mutation_outcome.applied/failed, and product_domain_operation outcome events tied to mutation and outcome ids.`
+  - `2026-06-07: runtimeLearningDecisionHints is serialized at project root/context/state and is explicitly bounded as learning hints only, with mayOverwriteProjectTruth=false.`
+- verification:
+  - `node --check src/core/runtime-learning-events.js`
+  - `node --check src/core/project-service.js`
+  - `node --test test/runtime-learning-events.test.js`
+  - `node --test --test-name-pattern "LEARNING-RUNTIME-001|BUILD-MUTATION-TRUTH-001|RUNTIME-TRUTH-001|PRODUCT-BACKEND-SKEL-001" test/project-service.test.js test/build-mutation-truth.test.js test/product-domain-skeleton.test.js`
+  - `2026-06-07 live API proof on http://127.0.0.1:4011 signed up runtime-learning-user-1780839167438, created runtime-learning-live-1780839167438, confirmed runtime creation learning events, applied record.updateStatus through /api/projects/:projectId/build-mutations, and confirmed restored project truth includes six LEARNING-RUNTIME-001 event types with mayOverwriteProjectTruth=false.`
+- closure_boundary:
+  - `LEARNING-RUNTIME-001 closes runtime/build learning event binding only.`
+  - `This does not close BLD-AGT-001 natural-language routing, Visual Build Agent routing, Mutation / Change Agent generation, Verification / QA Agent routing, Release Agent routing, visible approval flows, rollback UI, or production backend deployment.`
+- not trueGreen:
+  - learning only consumes onboarding/planning signals
+  - runtime skeleton and product-domain skeleton creation produce no learning event
+  - Build mutation outcomes do not produce learning events
+  - learning events are not tied to stable project/runtime/domain/mutation ids
+- next:
+  - `BLD-AGT-001 — Build / Loop Agent active build continuation`
+
+#### `BLD-AGT-001 — Build / Loop Agent active build continuation`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `AGT-001A` required chain: `Project Discovery Agent -> Product Skeleton Agent -> Build / Loop Agent`
+  - `build-loop-agent-contract-2026-06-01.md`
+  - `SURF-001` build surface law
+  - canonical product system section `8`
+- depends_on:
+  - `SKEL-001`
+  - `SLICE-005`
+  - `RUNTIME-TRUTH-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `RUNTIME-SKEL-001`
+  - `PRODUCT-KIND-001`
+  - `LEARNING-PRODUCT-INTELLIGENCE-001`
+  - `BUILD-MUTATION-TRUTH-001`
+  - `SURF-003`
+  - `ENG-004`
+  - `ENG-005`
+- canonical_law:
+  - `Before product mutation, the Build / Loop Agent must prove it is alive: send -> visible user message -> loading/thinking -> visible agent response or bounded failure.`
+  - `A right-side composer that accepts text but produces no visible response is a release-blocking failure for BLD-AGT-001.`
+  - `The Build / Loop Agent owns build continuation after the first skeleton appears.`
+  - `It classifies every build-rail user message as question, small safe change, visual change, product-truth change, continuation, verification request, release request, dissatisfaction, ambiguous request, or retry.`
+  - `It routes work to the correct owner: Visual Build Agent, Mutation / Change Agent, Verification / QA Agent, Release Agent, Product Skeleton Agent, Design Plugin path, or History / Continuity Agent.`
+  - `It keeps the persistent agent rail and live build canvas coherent while the product is being shaped.`
+  - `It explains what is being built, what changed, what remains open, and when a user instruction should become a mutation proposal.`
+  - `Nexus speech must match product state: every reply must map to applied change, approval pending, clarification required, or execution failed.`
+  - `Before each Build / Loop Agent reply, Nexus must resolve the relevant learning signals for the current project/runtime/domain/mutation context and pass them into the agent as bounded working instructions.`
+  - `The agent may use learning instructions to choose wording, routing, clarification, refusal, or mutation direction, but learning instructions may not silently overwrite product truth.`
+  - `It must not be replaced by a passive chat rail, static preview, timeline, proof dashboard, or local UI-only loop.`
+- preserve:
+  - Product Skeleton Agent output
+  - live build canvas truth
+  - artifact/proof engine
+  - conversation continuity from discovery
+- remove_from_active_path:
+  - Build surface inventing product structure without agent-owned continuation
+  - hidden orchestration/status copy pretending to be build-agent work
+  - disconnected preview updates without conversation/state ownership
+- build:
+  - Build Agent Alive Gate for the right-side rail
+  - message submission handler for the Build rail
+  - backend or bounded local blocked path for Build / Loop Agent turns
+  - visible user message, loading state, agent reply, and bounded failure rendering
+  - active project/runtime skeleton context attached to every Build rail message
+  - Build / Loop Agent role/contract
+  - message classification policy
+  - routing policy to Visual Build, Mutation, Verification, Release, Skeleton, Design Plugin, and History agents
+  - ask-or-proceed policy for small safe changes versus direction-changing changes
+  - active build continuation envelope
+  - link from skeleton envelope to build steps
+  - persisted build-agent state visible through the agent rail
+  - pending approval / pending clarification / pending retry state
+  - learning-instruction handoff into every Build / Loop Agent turn
+- done when:
+  - live proof 0: on an existing mobile runtime skeleton, sending `תוסיף לי דף סלאש סקרין עם שם האפליקציה` in the right-side rail visibly renders the user message, loading/thinking state, and either a Build agent response or clear bounded failure
+  - tests prove Build rail send cannot fail silently
+  - tests prove Build rail response/failure is tied to current project and runtime skeleton context
+  - Build / Loop Agent contract exists in docs and code
+  - Agent Reality Gate is passed for `BLD-AGT-001`
+  - tests prove the first skeleton is handed to the Build / Loop Agent
+  - tests prove user build instructions are routed to Build / Loop Agent before mutation flow
+  - tests prove visual requests route to Visual Build Agent and product-truth requests route to Mutation / Change Agent
+  - tests prove verification requests route to Verification / QA Agent and release requests route to Release Agent
+  - tests prove user-facing reply cannot claim a change unless a real downstream result occurred
+  - tests prove failures preserve pending retry and do not mutate product state
+  - tests prove the Build / Loop Agent receives relevant learning instructions before replying and uses them to avoid known bad behavior
+  - tests prove the agent cannot present stored learning as product truth unless a real project mutation or approved decision exists
+  - live browser proof shows the persistent rail continues after the skeleton appears and describes build progress without internal labels
+  - live proof 1a: a small safe product-domain request such as adding lead source routes through Build / Loop and applies only after a real project-truth mutation exists, then restores after refresh
+  - live proof 1b: a small safe visual request such as adding a splash screen routes through Build / Loop -> Visual Build and applies only after a real visual-build truth envelope exists, then restores after refresh
+  - live proof 2: a product-direction request such as `actually this is orders, not leads` is classified by Build / Loop as approval/impact-required, is not applied silently, and is handed to Mutation / Change ownership; the deeper approval, impact analysis, Product Graph update, history record, and rollback proof are owned by `MUT-001`
+  - live proof 3: a verification request such as `check that this screen works` is classified by Build / Loop as a verification request and returns a routed/pending/bounded result without a fake pass; real check execution and proof results are owned by `VER-AGT-001`
+  - live proof 4: a release/provider request such as publish, WhatsApp, payment, deploy, or provider connection is classified by Build / Loop as release/provider-scoped, is bounded or approval-gated, and does not claim external action; real release readiness, provider handling, publishing, payment, and external integration decisions are owned by `REL-AGT-001` and provider/security/release tasks
+- closure_boundary:
+  - `BLD-AGT-001 closes the basic Build Agent loop only: alive rail, learning-before-reply, message classification, truthful routing, safe visual change, safe product-domain change, visible bounded failure, persisted project truth, and refresh restore.`
+  - `BLD-AGT-001 must not be expanded into a do-everything agent. Product-direction approval and impact analysis are owned by MUT-001; screen/product verification is owned by VER-AGT-001; release, publishing, providers, WhatsApp, payments, and deployment are owned by REL-AGT-001 and the relevant provider/security/release tasks.`
+  - `BLD-AGT-001 may prove the handoff, pending state, approval boundary, refusal boundary, or bounded failure for those deeper engines, but it does not close those engines.`
+  - `BUILD-APPROVAL-001 owns the Build-facing product-direction approval flow after BLD classification; it consumes MUT-001 impact/approval truth and must not duplicate the Mutation / Change engine.`
+  - `BUILD-TEST-001 owns the Build-facing test/check request experience after BLD classification; it consumes VER-AGT-001 verification truth and must not duplicate the Verification / QA engine.`
+  - `BUILD-RELEASE-GATE-001 owns the Build-facing release/provider/payment/publish boundary after BLD classification; it consumes REL-AGT-001 and provider/security/release truth and must not duplicate release or provider engines.`
+- evidence:
+  - `2026-06-04: web/app.js changed submitLoopAgentRailMessage from transcript-only local render into an async Build rail alive path. It now renders the user message, sets pending=true, shows a loading state, attempts the project companion backend route when available, and falls back to a bounded visible Build reply/failure tied to current runtime skeleton and product-domain context.`
+  - `2026-06-04: web/nexus-ui/adapters/loop-adapter.js and web/nexus-ui/screens/LoopCoreScreen.js now carry pending/draft state into the right-side Build rail, render data-build-agent-loading=true, and disable the composer during pending turns.`
+  - `2026-06-04: Verification passed: node --test test/build-agent-alive-gate.test.js and node --test --test-name-pattern 'BLD-AGT-001|RUNTIME-SKEL-001|SLICE-005|W4-FIX-007' test/loop-core-screen-render.test.js.`
+  - `2026-06-04: Live browser proof on http://127.0.0.1:4013/loop with mobile runtime skeleton sent 'תוסיף לי דף סלאש סקרין עם שם האפליקציה' in the right-side Build rail; DOM showed hasUserRequest=true, hasAgentReply=true, messageCount=3, runtimeTask=SLICE-005, and domainTask=PRODUCT-BACKEND-SKEL-001.`
+  - `2026-06-04: Visible Chrome field test on http://127.0.0.1:4011/?qa=1&qaReset=1 proved the lead-management idea now auto-hands off from Create to /loop without manual navigation and renders an internal-tool runtime skeleton. The same live run proved the Build rail is alive for 'תוסיף שדה מקור ליד' and for the unsafe/out-of-scope request 'תחבר לי וואטסאפ אמיתי ותפרסם לי את זה': user messages and agent replies were visible.`
+  - `2026-06-04: The same visible run also proved BLD-AGT-001 is still not trueGreen: 'תוסיף שדה מקור ליד' produced only a generic reply saying the change would go through the mutation contract and did not visibly add the lead-source field; the unsafe WhatsApp/publish request was treated like a generic mutation request instead of being classified as provider/publishing out of scope with explicit approval/refusal; screenshot evidence: /private/tmp/nexus-live-visible-leads-refresh-regression.png.`
+  - `2026-06-07: learning-instruction gate implemented for Build / Loop companion turns. src/core/build-agent-learning-instructions.js converts LEARNING-RUNTIME-001 runtime/build signals into bounded working instructions; src/core/project-service.js attaches those instructions before every provider or fallback companion reply; src/core/onboarding-provider-client.js includes learningInstructions in the hidden provider payload. Verification passed: node --check src/core/build-agent-learning-instructions.js; node --check src/core/project-service.js; node --check src/core/onboarding-provider-client.js; node --test test/build-agent-learning-instructions.test.js test/build-agent-learning-bridge.test.js; node --test test/runtime-learning-events.test.js test/build-agent-alive-gate.test.js.`
+  - `2026-06-07: Build Agent turn routing contract added after the learning gate. src/core/build-agent-turn-router.js classifies Build rail turns before reply; src/core/project-service.js persists buildAgentTurnState on project state/context and returns it to the client; web/app.js carries buildAgentTurn into companionConversation; web/nexus-ui/adapters/loop-adapter.js exposes it to the Build rail; web/nexus-ui/screens/LoopCoreScreen.js renders a visible routing state with BLD-AGT-001 data anchors and speech boundary. Verification passed: node --check src/core/build-agent-turn-router.js; node --check src/core/project-service.js; node --check src/core/onboarding-provider-client.js; node --test test/build-agent-turn-router.test.js test/build-agent-learning-bridge.test.js; node --test test/loop-core-screen-render.test.js; node --test test/build-agent-alive-gate.test.js test/runtime-learning-events.test.js test/build-mutation-truth.test.js.`
+  - `2026-06-07: Safe Build rail mutation restore proof added. src/core/build-agent-downstream-action.js maps a safe "מקור ליד" request to record.addField; src/core/project-service.js applies that mutation before claiming success; src/core/build-mutation-truth.js can replay applied mutation intents during rebuildContext so refresh restores runtime/domain truth from project truth rather than browser state. Verification passed: node --check src/core/build-agent-downstream-action.js; node --check src/core/build-mutation-truth.js; node --check src/core/project-service.js; node --test test/build-mutation-truth.test.js test/build-agent-learning-bridge.test.js test/build-agent-turn-router.test.js test/loop-core-screen-render.test.js.`
+  - `2026-06-07: Visible live browser proof passed on http://127.0.0.1:4011/loop?projectId=bld-agent-live-proof-1780842294265 with no qaState/nexusState: sending "תוסיף שדה מקור ליד" through the Build rail produced buildMutationOperation=record.addField, buildAgentStatus=applied, visible "מקור ליד", and after refresh both DOM and GET /api/projects/:projectId restored runtimeFields/domainFields including "מקור ליד". Evidence: /private/tmp/nexus-bld-agt-001-live-1780842294265-summary.json and screenshots /private/tmp/nexus-bld-agt-001-live-1780842294265-before-message.png, -after-message.png, -after-refresh.png.`
+  - `2026-06-07: Visual Build bridge proof added without closing full VBUILD-001. src/core/visual-build-truth.js creates a traceable VBUILD-001 visual result envelope; src/core/project-service.js applies safe visual Build actions before claiming success and persists visualBuildTruth; web/nexus-ui/adapters/loop-adapter.js and web/nexus-ui/screens/LoopCoreScreen.js render the visible splash-screen result from project truth. Verification passed: node --check src/core/visual-build-truth.js; node --check src/core/project-service.js; node --check web/nexus-ui/screens/LoopCoreScreen.js; node --test test/build-agent-turn-router.test.js test/build-agent-learning-bridge.test.js test/build-mutation-truth.test.js test/loop-core-screen-render.test.js.`
+  - `2026-06-07: Visible live browser proof passed on http://127.0.0.1:4011/loop?projectId=bld-agent-visual-proof-1780843234635 with no qaState/nexusState: sending "תוסיף לי דף סלאש סקרין עם שם האפליקציה" through the Build rail produced buildAgentOwner=visual-build-agent, buildAgentStatus=applied, visualBuildTask=VBUILD-001, visualBuildOperation=visual.screen.addSplash, visible splash-screen, and after refresh both DOM and GET /api/projects/:projectId restored visualBuildTruth.screens including splash-screen. Evidence: /private/tmp/nexus-bld-agt-001-visual-1780843234635-summary.json and screenshots /private/tmp/nexus-bld-agt-001-visual-1780843234635-before-message.png, -after-message.png, -after-refresh.png. The run also repeated the known /live-events 401 cleanup debt owned by OBS-001.`
+  - `2026-06-07: BLD routing-boundary proof completed. src/core/project-service.js now keeps product-direction, verification, release, and provider-boundary requests on bounded Nexus shell replies instead of letting a provider fabricate success before downstream truth exists. web/nexus-ui/screens/LoopCoreScreen.js renders distinct boundary labels for approval, verification, and release/provider states. Verification passed: node --check src/core/project-service.js; node --check web/nexus-ui/screens/LoopCoreScreen.js; node --check scripts/verify-bld-agt-001-boundary-routing-live-proof.mjs; node --test test/build-agent-turn-router.test.js test/build-agent-learning-instructions.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js; node --test --test-name-pattern "BLD-AGT-001|BUILD-MUTATION-TRUTH|LEARNING-RUNTIME" test/build-agent-turn-router.test.js test/build-agent-learning-instructions.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js test/build-mutation-truth.test.js test/runtime-learning-events.test.js.`
+  - `2026-06-07: Visible live browser proof passed on http://127.0.0.1:4011/loop?projectId=bld-boundary-project-1780852361903 with no qaState/nexusState. The Build rail classified "תשנה את זה להזמנות במקום לידים" as product-truth-change / mutation-change-agent / approval-required with mayClaimChanged=false and no mutation, "תבדוק שהמסך עובד" as verification-request / verification-qa-agent / routed with no fake pass, and "תחבר לי וואטסאפ אמיתי ותפרסם לי את זה" as release-request / release-agent / blocked-or-approval-required with no external action. After each refresh the same project restored the same BLD turn state from project truth. Evidence: /private/tmp/nexus-bld-agt-001-boundary-1780852361903-report.json and screenshots /private/tmp/nexus-bld-agt-001-boundary-1780852361903-*-after-refresh.png. The run still observed the known /live-events 401 cleanup debt owned by OBS-001.`
+- closure_update:
+  - `BLD-AGT-001 is trueGreen as the basic Build Agent loop: alive rail, learning-before-reply, classification, truthful routing, safe product-domain change, safe visual change, bounded product-direction approval, bounded verification handoff, bounded release/provider handoff, persisted project truth, and refresh restore.`
+  - `The prior blocker is closed at the BLD boundary only. MUT-001 still owns deep product-direction mutation and approval impact; VER-AGT-001 still owns real verification execution; REL-AGT-001 and provider/security/release tasks still own publishing, provider connection, payment, WhatsApp, deployment, and release execution.`
+  - `The known /live-events 401 browser noise remains open under OBS-001 and does not block BLD-AGT-001 closure because the Build agent turn truth and restore proof passed.`
+  - `2026-06-10 deep-review narrowing: BLD-AGT-001 remains trueGreen only for the proven Build Agent loop and trained routing/mutation cases. It does not prove arbitrary free-text product changes. A visible reply that says a change was made when no artifact/product/domain mutation happened is now owned by BUILD-SPEECH-TRUTH-001 and blocks broad continuation.`
+- not trueGreen:
+  - Build surface is only a canvas plus generic chat
+  - build progress is local copy/status without Build / Loop Agent state
+  - mutation work starts before Build / Loop Agent ownership exists
+  - the agent replies without receiving the relevant learning instructions and routing decision for the current project and skeleton
+  - learning or routing exists but the agent still repeats a known failed behavior, such as claiming a failed change succeeded or treating provider/publishing requests as ordinary safe changes in live browser behavior
+  - Nexus says a change happened when the canvas/product truth did not change
+  - every request is routed to one generic agent without intent classification
+  - downstream agent failure is hidden behind a fake success reply
+- next:
+  - `BUILD-SPEECH-TRUTH-001 — No fake success speech and arbitrary-change truth gate`
+
+#### `BUILD-SPEECH-TRUTH-001 — No fake success speech and arbitrary-change truth gate`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `nexus-deep-system-review-2026-06-10.md`
+  - `BLD-AGT-001 closure narrowing`
+  - `BUILD-MUTATION-TRUTH-001 closure narrowing`
+  - `MUT-001 mutation ownership`
+- depends_on:
+  - `BLD-AGT-001`
+  - `BUILD-MUTATION-TRUTH-001`
+  - `MUT-001`
+  - `SLICE-006`
+- blocks:
+  - `PROV-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `GROW-AGT-001`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `STANDALONE-ARTIFACT-001`
+  - `VER-AGT-001`
+  - `REL-AGT-001`
+- canonical_law:
+  - `Nexus may not say a product change was applied unless a real project-truth, runtime-skeleton, product-domain, package, history, or approved downstream result actually changed.`
+  - `Provider or agent speech is not truth. Speech must be gated by the downstream result before it can claim success.`
+  - `If a requested change cannot be applied, Nexus must say that it could not apply it yet, ask a precise clarification, or route it to the correct pending owner.`
+  - `Free-text product changes must not be treated as successful merely because they resemble a known trained phrase.`
+- preserve:
+  - `BLD-AGT-001` alive Build rail and routing truth
+  - `MUT-001` mutation decision truth
+  - `SLICE-006` proven safe mutation path for known operations
+  - provider-composed language only when it is bounded by Nexus truth
+- remove_from_active_path:
+  - visible replies that claim an un-applied change
+  - transcript-only success where the canvas/domain/package did not change
+  - generic "I updated it" language after downstream failure, unknown operation, timeout, or provider drift
+  - free-text mutation tests that only check transcript text or intent metadata
+- build:
+  - speech boundary gate that forces visible replies into one of: applied, pending approval, clarification needed, unsupported/not yet, failed, or routed
+  - arbitrary free-text mutation resolver path for at least field-add, screen-add, action-add, copy-change, and product-direction request classes
+  - invariant that applied success requires a real mutation/result id and changed artifact/product/domain/package/history truth
+  - user-facing failure copy that is short, product-language, and does not expose internal operation names
+  - persisted history that distinguishes requested-but-not-applied from applied changes
+  - negative live proof for novel user wording, not only trained phrases
+- done_when:
+  - tests prove an arbitrary field request such as "תוסיף לכל ליד שדה תקציב משוער" either creates a visible/domain/schema/history change or returns a truthful not-applied state
+  - tests prove the transcript cannot preserve a success claim for an un-applied change after refresh
+  - tests prove provider speech is rewritten/bounded when downstream result status is failed, unsupported, unknown, or clarification-required
+  - tests prove safe known operations still apply and restore after refresh
+  - tests prove product-direction, provider, release, payment, WhatsApp, publish, deploy, and verification requests cannot be described as applied by the Build rail unless their owning task produces a real result
+  - live browser proof covers Create -> real project -> Build -> arbitrary free-text change -> refresh -> same truthful artifact/history state
+- not_trueGreen:
+  - Nexus says "done", "updated", "added", "changed", or equivalent while no product truth changed
+  - a provider reply can bypass downstream mutation status
+  - unknown user wording falls through to a confident success reply
+  - refresh keeps a false success memory in chat/history
+  - tests cover only trained phrases or runtime button clicks
+- closure_update:
+  - `2026-06-11: BUILD-SPEECH-TRUTH-001 implementation landed. src/core/build-speech-truth-gate.js adds the speech boundary gate (states: applied, pending-approval, clarification-needed, unsupported-not-yet, failed, routed, answer-only), a negation-aware success-claim detector, a generalized free-text mutation resolver for field-add (real record.addField with extracted field name), screen-add/action-add/copy-change (truthful unsupported-not-yet instead of fake routing), and product-direction (approval path), plus buildSpeechHistory that distinguishes requested-but-not-applied from applied. src/core/project-service.js wires the resolver after the trained BLD-AGT-001 downstream resolver, forces every visible Build reply through the gate before transcript persistence, and hardens the applied invariant to require a real mutation id. src/core/build-agent-turn-router.js generalizes product-direction wording to the approval path. web/nexus-ui/adapters/loop-adapter.js and web/nexus-ui/screens/LoopCoreScreen.js render the speech-truth state on the Build rail (data-build-speech-truth-task, data-build-speech-state); web/nexus-ui/styles/screens.css styles it. Nexus-authored shell replies remain authoritative bounded copy; only provider speech is claim-rewritten.`
+  - `Verification passed 2026-06-11: node --check on all touched files; node --test test/build-speech-truth-gate.test.js (12 tests incl. arbitrary field request applies real domain/schema/history change and restores after restart; unsupported request keeps no fake success in transcript after restart; provider fake-success speech bounded on clarification/failed states; known safe ops still apply; external/release/payment/WhatsApp/publish/verification/product-direction requests cannot claim applied; applied requires real mutation id); full related suite green: build-agent-learning-bridge, build-agent-turn-router, build-mutation-truth, canonical-mutation-flow-shell, build-approval-flow, loop-core-screen-render, visual-build-truth, skeleton-choice-candidates, mutation-change-agent, history-continuity-agent (71/71).`
+  - `Live route proof passed 2026-06-11 against a live server (signup -> create project -> Build companion-turn over HTTP): "תוסיף לכל ליד שדה תקציב משוער" returned speechState=applied with real mutationId and the field present in runtimeSkeletonTruth and productDomainSkeleton; "תוסיף מסך של דוחות חודשיים עם גרפים" returned unsupported-not-yet with replyWasRewritten=true; WhatsApp/publish returned bounded pending-approval; full server restart preserved the applied field, a buildSpeechHistory of [applied, not-applied, not-applied], a transcript with zero success claims for un-applied changes, and rendered surface markers data-build-speech-truth-task=BUILD-SPEECH-TRUTH-001 with no fake success text.`
+  - `2026-06-11 primary 4011 live browser proof passed after restarting 4011 with current code: NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-build-speech-truth-001-live-proof.mjs. Report: /private/tmp/nexus-build-speech-truth-001-1781186292694-report.json. Screenshots: /private/tmp/nexus-build-speech-truth-001-1781186292694-applied.png, /private/tmp/nexus-build-speech-truth-001-1781186292694-unsupported.png, /private/tmp/nexus-build-speech-truth-001-1781186292694-external-bounded.png, /private/tmp/nexus-build-speech-truth-001-1781186292694-after-refresh.png. The proof covered Create -> real projectId -> /loop?projectId=speechtruth-1781186292694 -> arbitrary free-text field add -> unsupported screen add -> external WhatsApp/publish request bounded -> refresh -> same truthful project/artifact/history state.`
+  - `Closure truth 2026-06-11: arbitrary field request "תוסיף לכל ליד שדה תקציב משוער" returned speechState=applied with real mutationId and visible/domain/runtime truth; unsupported screen request "תוסיף מסך של דוחות חודשיים עם גרפים" returned unsupported-not-yet with replyWasRewritten=true and no generated fake screen; WhatsApp/publish request returned pending-approval and did not execute an external action; refresh preserved the budget field and no fake success transcript.`
+  - `Non-blocking follow-up observed 2026-06-11: the external provider request still renders broad product-direction approval copy in the wider mutation/approval surface, but no external action or fake success occurred. Cleanup belongs to BUILD-RELEASE-GATE-001 / PROV-001 approval copy and provider-boundary work, not BUILD-SPEECH-TRUTH-001.`
+  - `Non-blocking diagnostics observed 2026-06-11: the live proof recorded one 404 console/network event outside the speech-truth flow; diagnostics cleanup belongs to OBS-001.`
+  - `Known pre-existing debt, not introduced by this task: test/project-service-companion-correction.test.js has 3 failing tests in the onboarding correction/comparable-intelligence path; verified failing with this task's changes fully reverted.`
+- next:
+  - `AUTH-TOKEN-001 — Server-verified session identity boundary`
+
+#### `BUILD-APPROVAL-001 — Build-facing product-direction approval flow`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- execution_order_note: `Defined next to BLD-AGT-001 because it was split out of the Build Agent boundary, but it is not executable until MUT-001 exists; it does not replace the next BLD follow-up chain SKELETON-CHOICE-001 -> VBUILD-001.`
+- source:
+  - `BLD-AGT-001` closure boundary
+  - `MUT-001`
+  - `mutation-change-agent-contract-2026-06-01.md`
+- depends_on:
+  - `BLD-AGT-001`
+  - `MUT-001`
+  - `BUILD-MUTATION-TRUTH-001`
+- canonical_law:
+  - `A Build rail request that changes product direction must not mutate product truth silently.`
+  - `The Build surface must show an approval/impact state that is backed by Mutation / Change Agent truth, not chat copy.`
+  - `User approval, rejection, or cancellation must preserve project truth and history boundaries.`
+- preserve:
+  - Build / Loop Agent classification state
+  - Mutation / Change Agent impact analysis
+  - product-domain truth and mutation history
+- remove_from_active_path:
+  - direction-changing Build replies that claim product change before approval
+  - local approval UI not backed by mutation truth
+- build:
+  - Build-facing approval state
+  - approve/reject/cancel decision handling
+  - visible impact summary from Mutation / Change truth
+  - refresh restore of pending approval and final decision
+- done when:
+  - tests prove a product-direction request from the Build rail cannot apply silently
+  - tests prove approval state is backed by Mutation / Change truth
+  - tests prove approve/reject/cancel restore after refresh
+  - live browser proof shows a direction change request creates a visible approval state, then applies only after approval or remains unchanged after rejection
+- not trueGreen:
+  - a direction change applies before approval
+  - approval is only local UI state
+  - rejection still changes product truth
+  - the agent claims a direction change happened before mutation truth exists
+- closure_update:
+  - `2026-06-09: BUILD-APPROVAL-001 closed trueGreen for the Build-facing product-direction approval bridge. src/core/build-approval-flow.js creates a mutation-backed approve/reject/cancel envelope; src/core/project-service.js routes approved product-direction changes through project truth, preserves approved direction truth across rebuildContext, and keeps rejection unchanged; src/core/canonical-mutation-flow-shell.js reflects approved-applied, rejected, and canceled states; src/server.js exposes the approval decision endpoint; web/nexus-ui/adapters/loop-adapter.js, web/nexus-ui/screens/LoopCoreScreen.js, web/nexus-ui/styles/screens.css, and web/app.js render and execute the visible Build approval controls.`
+  - `Verification passed: node --check src/core/build-approval-flow.js; node --check src/core/project-service.js; node --check src/core/canonical-mutation-flow-shell.js; node --check src/server.js; node --check web/nexus-ui/adapters/loop-adapter.js; node --check web/nexus-ui/screens/LoopCoreScreen.js; node --check web/app.js; node --check scripts/verify-build-approval-001-live-proof.mjs; node --test test/build-approval-flow.test.js test/build-agent-learning-bridge.test.js test/canonical-mutation-flow-shell.test.js; node --test --test-name-pattern "BUILD-APPROVAL-001|BLD-AGT-001|EXP-002" test/loop-core-screen-render.test.js; NEXUS_BASE_URL=http://127.0.0.1:4015 node scripts/verify-build-approval-001-live-proof.mjs.`
+  - `Visible live proof passed on http://127.0.0.1:4015 with report /private/tmp/nexus-build-approval-001-1781008927427-report.json and screenshots /private/tmp/nexus-build-approval-001-1781008927427-reject-pending.png, /private/tmp/nexus-build-approval-001-1781008927427-reject-reject.png, /private/tmp/nexus-build-approval-001-1781008927427-reject-reject-after-refresh.png, /private/tmp/nexus-build-approval-001-1781008927427-approve-pending.png, /private/tmp/nexus-build-approval-001-1781008927427-approve-approve.png, /private/tmp/nexus-build-approval-001-1781008927427-approve-approve-after-refresh.png. The proof showed pending approval backed by MUT-001 truth, rejection preserved lead product truth after refresh, approval applied order product truth after refresh, approvedDomainModel=הזמנה, approvedRuntimeTitle=ניהול הזמנות, and zero bad events.`
+  - `Boundary: closes only the Build-facing approval bridge for product-direction changes over MUT-001 truth. It does not close deep rollback execution, full history restore, real verification execution, release execution, providers, payments, publishing, production backend, or standalone generated product package output.`
+- next:
+  - `HIST-AGT-001 — History / Continuity Agent live continuity ownership, now unblocked for approved direction-change restore/rollback proof.`
+
+#### `BUILD-TEST-001 — Build-facing screen and product test request flow`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- execution_order_note: `Defined next to BLD-AGT-001 because it was split out of the Build Agent boundary, but it is not executable until VER-AGT-001 exists; it does not replace the next BLD follow-up chain SKELETON-CHOICE-001 -> VBUILD-001.`
+- source:
+  - `BLD-AGT-001` closure boundary
+  - `VER-AGT-001`
+- depends_on:
+  - `BLD-AGT-001`
+  - `VER-AGT-001`
+- canonical_law:
+  - `A Build rail test/check request must not return a fake pass.`
+  - `The Build surface must show verification pending, failure, or real verification truth produced by the Verification / QA Agent.`
+- preserve:
+  - Build / Loop Agent classification state
+  - Verification / QA Agent envelope
+  - artifact/runtime state being checked
+- remove_from_active_path:
+  - generic "looks good" replies without proof
+  - checklist-only verification as Build truth
+- build:
+  - Build-facing verification request state
+  - verification pending/result/failure rendering
+  - link from checked screen/product area to verification envelope
+  - refresh restore of verification request and result
+- done when:
+  - tests prove `check that this screen works` routes to verification state and cannot fake pass
+  - tests prove verification result/failure is restored from project truth
+  - live browser proof shows a Build rail test request produces a pending/result/failure state backed by Verification / QA truth
+- not trueGreen:
+  - Build says the screen works without a verification envelope
+  - verification result disappears after refresh
+  - failed verification is hidden behind a success reply
+
+#### `BUILD-RELEASE-GATE-001 — Build-facing release/provider/payment boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- execution_order_note: `Defined next to BLD-AGT-001 because it was split out of the Build Agent boundary, but it is not executable until REL-AGT-001 and provider/security readiness exist; it does not replace the next BLD follow-up chain SKELETON-CHOICE-001 -> VBUILD-001.`
+- source:
+  - `BLD-AGT-001` closure boundary
+  - `REL-AGT-001`
+  - `PROV-001`
+  - `SEC-001`
+- depends_on:
+  - `BLD-AGT-001`
+  - `REL-AGT-001`
+  - `PROV-001`
+  - `SEC-001`
+  - `USAGE-001`
+- canonical_law:
+  - `A Build rail request to publish, deploy, connect a provider, connect WhatsApp, take payment, or perform any external action must not execute silently.`
+  - `The Build surface must show a bounded refusal, approval-required state, or Release Agent handoff backed by release/provider/security truth.`
+  - `No external provider, publishing, payment, deployment, or app-store claim may be shown without the matching downstream engine truth.`
+- preserve:
+  - Build / Loop Agent classification state
+  - Release Agent readiness truth
+  - provider/security/legal/usage boundaries
+- remove_from_active_path:
+  - fake publish/share/deploy success from Build chat
+  - provider connection claims without provider truth
+  - payment or WhatsApp connection claims without external-action boundary
+- build:
+  - Build-facing release/provider boundary state
+  - refusal/approval-required/handoff rendering
+  - no-external-action guard
+  - refresh restore of pending release/provider boundary
+- done when:
+  - tests prove provider, payment, WhatsApp, publish, deploy, and release requests cannot execute silently from Build
+  - tests prove Build returns a bounded state tied to release/provider/security truth
+  - live browser proof shows a release/provider request is bounded or handed off without fake external success
+- not trueGreen:
+  - Build claims a provider, payment, publish, WhatsApp, or deployment action happened without downstream truth
+  - Build bypasses release/security/provider gates
+  - blocked external actions look like successful product changes
+
+#### `SKELETON-CHOICE-001 — Multi-provider skeleton candidates over Nexus truth`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- execution_order_note: `Inserted after BLD-AGT-001 and before VBUILD-001 because multi-provider skeleton choice must not be treated as basic Build Agent liveliness. This task does not replace the current active task BLD-AGT-001, but it blocks any future claim that Nexus can offer, select, or continue from multiple provider-backed skeleton directions.`
+- source:
+  - `2026-06-07 user-approved multi-provider skeleton candidate clarification`
+  - `PRO-SKEL-003 product-realistic skeleton quality bar`
+  - `PRODUCT-KIND-001 product pattern discovery`
+  - `LEARNING-PRODUCT-INTELLIGENCE-001 bounded learning-driven skeleton choice`
+  - `DESIGN-PLUG-001..004 provider/plugin preservation law`
+- depends_on:
+  - `BLD-AGT-001`
+  - `PRODUCT-KIND-001`
+  - `LEARNING-PRODUCT-INTELLIGENCE-001`
+  - `PRO-SKEL-003`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `RUNTIME-TRUTH-001`
+  - `DESIGN-PLUG-001`
+  - `DESIGN-PLUG-002`
+  - `DESIGN-PLUG-003`
+  - `DESIGN-PLUG-004`
+- blocks:
+  - `VBUILD-001`
+  - `PRODUCT-RUNTIME-PACKAGE-001` design-to-package alignment claims
+  - any user-visible multi-candidate skeleton selection
+  - any provider-backed skeleton direction choice
+  - any Build continuation that claims a selected provider direction without persisted selection truth
+- canonical_law:
+  - `Nexus remains the single product truth owner. Design providers and external composition engines may generate candidate directions, but they may not become the source of product truth.`
+  - `Every provider candidate must be generated from the same Nexus truth envelope: product kind, product pattern, product-domain skeleton, actions, state, runtime boundaries, learning hints, and non-production limits.`
+  - `A provider candidate is invalid if it is only a pretty mockup, static image, detached design, or visual card that cannot connect to product-domain operations and downstream Build continuation.`
+  - `The user must see one Nexus experience, not provider plumbing. Candidate labels must be product-direction labels such as clean/fast, premium, operational, playful, editorial, or focused; technical provider names stay hidden unless the user explicitly opens an advanced diagnostic view.`
+  - `If several candidate directions exist, Nexus must not continue building until the user selects one direction or explicitly approves Nexus recommended direction.`
+  - `After selection, the chosen direction becomes locked product continuation truth. Build, Visual Build, Mutation, Learning, Restore, History, Release, and Verification must use the selected candidate identity until the user approves a direction change.`
+  - `The selected design/provider direction is not only a visual preference. Downstream product package generation must translate the chosen direction into package structure, runtime tools, frontend/backend boundaries, dependencies, interaction patterns, and verification expectations where relevant.`
+  - `Creative providers may be used as candidate sources for brand identity, app screens, motion/video, image assets, campaign creative, or design imports, but every candidate must still be normalized into the same Nexus candidate contract and cannot become a vendor-owned direction.`
+  - `Provider unavailability must produce a visible bounded failure or a clearly marked internal fallback candidate; Nexus may not pretend that missing providers produced real provider-backed alternatives.`
+- preserve:
+  - Product Skeleton Agent truth
+  - Visual Product Skeleton Agent truth
+  - product-kind and product-pattern discovery truth
+  - product-domain skeleton and operation truth
+  - runtime skeleton truth and restore truth
+  - Build / Loop Agent classification and learning-before-reply contract
+  - Design Plugin provider contracts
+- remove_from_active_path:
+  - provider output that is detached from Nexus product truth
+  - visible provider names or implementation jargon in normal user flow
+  - multi-candidate cards that are only visual inspiration
+  - Build continuation from an unselected candidate set
+  - silent direction switches after the user selected a skeleton direction
+- build:
+  - provider availability and capability contract for skeleton candidates
+  - creative-provider capability matrix for brand identity, app/screen generation, motion/video, image generation/editing, campaign creative, design import/export, and creative MCP/CLI providers
+  - provider request envelope generated from Nexus product truth
+  - provider adapter matrix for internal and external candidate sources
+  - candidate normalization contract across providers
+  - candidate quality scoring against product realism and product-domain fit
+  - user-facing candidate choice surface with non-technical direction labels
+  - recommended-direction explanation that is grounded in product truth, not provider preference
+  - selected candidate state with stable ids: selectedSkeletonCandidateId, selectedDesignProvider, selectedCompositionStyle, selectedProductDirection
+  - handoff from selected candidate into Build, Visual Build, Mutation, Learning, Restore, History, Release, and Verification surfaces
+  - handoff from selected candidate into generated product package planning so package dependencies, templates, run/preview targets, and frontend/backend shape match the chosen product direction instead of a generic fallback
+  - asset normalization for provider-generated images, videos, brand assets, screen concepts, campaign creatives, and design files, including usage boundary, approval state, source/provider capability metadata, project link, selected-candidate link, and package link when applicable
+  - refresh restore for candidate list, selected candidate, and selected direction lock
+- done when:
+  - tests prove Nexus can request at least three skeleton candidates from configured provider/adaptor paths for the same product truth envelope
+  - tests prove each candidate includes visual direction, product-kind fit, product-domain fit, actions/state fit, boundaries, and provider capability metadata
+  - tests prove creative-provider candidates can be accepted only when brand/screen/video/image/campaign assets are mapped to product truth, selected direction truth, and downstream package/growth handoff truth
+  - tests prove a candidate without product-domain/action/state mapping is rejected
+  - tests prove provider unavailability returns a bounded failure or explicitly marked fallback, not fake provider success
+  - tests prove the user-visible candidate surface hides technical provider names and shows product-direction labels
+  - tests prove Nexus cannot continue from a multi-candidate state without selectedSkeletonCandidateId or explicit recommended-direction approval
+  - tests prove selectedSkeletonCandidateId, selectedDesignProvider, selectedCompositionStyle, and selectedProductDirection are persisted in project truth
+  - tests prove provider-generated assets are not exposed as provider-owned artifacts and normal user-facing candidate labels remain Nexus product-direction labels
+  - tests prove Build, Visual Build, Mutation, Learning, Restore, History, Release, and Verification receive the selected candidate identity before acting on the product
+  - tests prove the selected candidate identity is available to PRODUCT-RUNTIME-PACKAGE-001 as a required package-planning input before package generation can claim alignment with the chosen skeleton direction
+  - tests prove a later direction switch requires explicit approval and creates history/learning truth
+  - live browser proof shows a real project receiving multiple candidate skeleton directions, the user selecting one, refresh restoring the selection, and Build continuing only on the selected direction
+- not trueGreen:
+  - Nexus generates multiple pretty cards without real provider/adaptor integration
+  - Nexus generates or imports brand/video/screen/ad assets but cannot attach them to a selected product direction, package plan, growth plan, history event, or approval boundary
+  - provider output becomes product truth instead of a candidate over Nexus truth
+  - the selected direction is not persisted
+  - Build continues before user selection or recommended-direction approval
+  - downstream agents do not receive the selected direction identity
+  - generated package planning ignores the selected direction and falls back to a generic package, toolset, or dependency plan
+  - user-facing UI exposes provider plumbing instead of one Nexus agent experience
+  - provider failure is hidden behind fake generated alternatives
+- closure_boundary:
+  - `SKELETON-CHOICE-001 closes provider-backed multi-candidate skeleton choice and selected-direction truth only.`
+  - `It does not close product package realization of the selected direction; PRODUCT-RUNTIME-PACKAGE-001 owns proving that the chosen design direction changes the generated package, dependencies, run target, frontend/backend shape, and future mutation path.`
+  - `It does not close full production design generation, publishing, deployment, external app-store delivery, real payment/provider execution, or the full Visual Build Agent continuation engine.`
+- closure_evidence:
+  - `2026-06-08: Implemented provider/adaptor-backed skeleton choice truth over the same Nexus runtime/product-domain envelope. web/shared/skeleton-choice-candidates.js creates three valid internal adaptor candidates and bounded provider-failure truth for unavailable external provider paths; candidates without product-domain/action/state mapping are rejected.`
+  - `2026-06-08: Project truth now persists skeletonChoiceTruth through src/core/project-service.js, exposes POST /api/projects/:projectId/skeleton-choice/select, emits skeleton_choice.selected learning events, blocks unapproved direction switches, and carries selectedSkeletonCandidateId/selectedCompositionStyle/selectedProductDirection into Build Agent, Visual Build, and Build Mutation paths.`
+  - `2026-06-08: The Build surface renders a user-facing candidate choice panel with product-direction labels only, hides technical provider names, supports user selection, and restores the selected direction after refresh.`
+  - `Verification passed: node --check web/shared/skeleton-choice-candidates.js; node --check src/core/project-service.js; node --check web/nexus-ui/adapters/loop-adapter.js; node --check web/nexus-ui/screens/LoopCoreScreen.js; node --check scripts/verify-skeleton-choice-001-live-proof.mjs; node --test test/skeleton-choice-candidates.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js.`
+  - `Live browser proof passed on http://127.0.0.1:4011/loop?projectId=skeleton-choice-project-1780920824537: before selection the route had three candidate directions, providerFailureCount=1, no qaState, no visible provider leakage; after selection and refresh selectedSkeletonCandidateId restored; after Build rail message the Build Agent and Build Mutation truth both carried the selected candidate id. Evidence: /private/tmp/nexus-skeleton-choice-001-1780920824537-report.json and screenshots /private/tmp/nexus-skeleton-choice-001-1780920824537-before-selection.png, -after-selection.png, -after-refresh.png, -after-agent-mutation.png.`
+- residual_notes:
+  - `The external Figma/design-provider path is represented as unavailable bounded provider failure in this environment; this task closes configured provider/adaptor candidate integration and honest provider failure truth, not production external provider execution.`
+  - `VBUILD-001 still owns deeper visual build continuation once a selected direction exists.`
+- next:
+  - `VBUILD-001 — Visual Build Agent active visual build continuation`
+
+#### `VBUILD-001 — Visual Build Agent active visual build continuation`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-01 live-agent gap audit`
+  - `visual-build-agent-contract-2026-06-01.md`
+  - `BLD-AGT-001`
+  - `VSKEL-001`
+  - `design-plugin-layer-contract-2026-06-01.md`
+  - `SURF-003`
+- depends_on:
+  - `BLD-AGT-001`
+  - `SKELETON-CHOICE-001`
+  - `VSKEL-001`
+  - `DESIGN-PLUG-001`
+  - `SLICE-005`
+  - `ENG-004`
+  - `ENG-005`
+- canonical_law:
+  - `The Visual Build Agent owns visual continuation after the first skeleton, not just chat copy, task status, or proof cards.`
+  - `Every visible canvas change requested through the build rail must be interpreted by the Build / Loop Agent and expressed through the Visual Build Agent before mutation/commit applies it.`
+  - `The visual build path must keep the agent rail and live canvas coherent: what Nexus says it is building must match what appears on the product surface.`
+  - `Visual build output must be traceable to the active product graph, skeleton envelope, mutation proposal, and verification state.`
+  - `Visual Build Agent must preserve or intentionally switch the selected Design Plugin; it may not drift into a generic Nexus default style without user/agent decision.`
+  - `Small safe visual changes may be applied directly; meaning-changing changes require approval and canonical mutation ownership.`
+  - `Visual Build Agent does not own Product Graph truth. It proposes and performs visual change; Mutation / Change Agent decides what becomes product truth.`
+  - `Agent failure does not create fake change.`
+- preserve:
+  - Visual Product Skeleton Agent output
+  - selected Design Plugin and user design preference
+  - Build / Loop Agent state
+  - Mutation / Change Agent ownership for committed product changes
+  - live canvas and product graph traceability
+- remove_from_active_path:
+  - canvas updates caused only by local UI state
+  - agent rail messages that do not correspond to visual build state
+  - visual changes that bypass mutation/verification when they alter product truth
+- build:
+  - Visual Build Agent role/contract
+  - visual build continuation envelope
+  - route from build rail instruction -> Build / Loop Agent -> Visual Build Agent -> Mutation / Change Agent when needed
+  - traceable visual diff/state for the live canvas
+  - style-preservation and style-switching rules
+  - safe-change vs approval-required policy
+  - structured output fields: changeType, affectedScreen, affectedRegions, affectedComponents, operation, visualDiff, requiresApproval, requiresProductTruthMutation, requiresOtherAgent, assumptions, unknowns, userReply
+  - failure-safe pending retry path when provider/envelope fails
+- done when:
+  - Visual Build Agent contract exists in docs and code
+  - Agent Reality Gate is passed for `VBUILD-001`
+  - tests prove build rail instructions reach Visual Build Agent before visible canvas mutation
+  - tests prove visible canvas state matches build-agent/visual-build-agent state
+  - tests prove visual changes preserve selected Design Plugin unless style change is requested
+  - tests prove small safe changes can apply without heavy approval while meaning-changing changes require approval/mutation handoff
+  - tests prove invalid/unavailable agent output does not mutate canvas or product truth and preserves pending retry
+  - live browser proof shows a user instruction in the rail produces a visible product-surface update with no fake/static preview path
+  - live proof 1: CRM lead list becomes cards and gets a `follow up today` region while preserving design plugin and RTL
+  - live proof 2: `this feels dry, make it premium` is treated as significant style change and requires direction/approval before applying
+- not trueGreen:
+  - visual changes happen through direct DOM/local state only
+  - Build / Loop Agent exists but cannot change the visual product surface
+  - user sees build progress that is not backed by visual build state
+  - style silently resets to generic Nexus design
+  - the agent says it changed something but the screen did not change
+  - the visual change mutates product truth without Mutation / Change Agent path
+  - provider failure or malformed envelope triggers a local fallback that impersonates the agent
+- closure_evidence:
+  - `src/core/build-agent-turn-router.js routes safe visual requests and significant style changes to the Visual Build Agent with approval boundaries`
+  - `src/core/build-agent-downstream-action.js maps lead-card/follow-up visual requests to visual.leads.cardsFollowupToday`
+  - `src/core/visual-build-truth.js creates the VBUILD-001 visual build truth envelope with selected skeleton direction, structured visual diff, affected regions/components, approval flags, and failure-safe fields`
+  - `src/core/project-service.js applies safe visual build truth before claiming success and requires approval for significant style changes`
+  - `web/nexus-ui/screens/LoopCoreScreen.js renders the cards plus follow-up today region from visualBuildTruth, not local DOM state`
+  - `web/nexus-ui/styles/screens.css adds the visible lead-card/follow-up visual build surface`
+  - `test/build-agent-learning-bridge.test.js covers safe visual continuation and significant style approval`
+  - `test/loop-core-screen-render.test.js covers visualBuildTruth rendering for cards and follow-up today`
+  - `scripts/verify-vbuild-001-live-proof.mjs provides live browser proof`
+  - `/private/tmp/nexus-vbuild-001-1780921640537-report.json`
+- verification:
+  - `node --check src/core/visual-build-truth.js`
+  - `node --check src/core/build-agent-turn-router.js`
+  - `node --check src/core/build-agent-downstream-action.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --check src/core/build-agent-learning-instructions.js`
+  - `node --check scripts/verify-vbuild-001-live-proof.mjs`
+  - `node --test test/build-agent-turn-router.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js`
+  - `node scripts/verify-vbuild-001-live-proof.mjs`
+- closure_notes:
+  - `Live proof passed on http://127.0.0.1:4011/loop?projectId=vbuild-proof-1780921640537 with no qaState/nexusState. The selected skeleton candidate restored from project truth before the visual instruction.`
+  - `Sending "תהפוך את רשימת הלידים לכרטיסים ותוסיף אזור חזרה היום" produced buildAgentOwner=visual-build-agent, buildAgentStatus=applied, visualBuildTask=VBUILD-001, visualBuildOperation=visual.leads.cardsFollowupToday, data-visual-build-cards=lead-list, and data-visual-build-region-added=follow-up-today.`
+  - `After refresh, the same projectId route restored visual.leads.cardsFollowupToday, the lead-card surface, and the follow-up today region from project truth.`
+  - `Sending "זה נראה יבש, תהפוך את זה לפרימיום" produced intent=visual-style-change, requiresApproval=true, mayClaimChanged=false, and did not create a new fake visual mutation or overwrite the selected direction.`
+- residual_notes:
+  - `VBUILD-001 closes safe active visual continuation from the selected skeleton direction, not full product mutation, deep product-direction change, verification execution, provider connection, publishing, WhatsApp, payment, or release.`
+  - `MUT-001 / SLICE-006 still own deeper artifact mutation and product-truth change semantics after visual build continuation.`
+- next:
+  - `SLICE-006 — Conversation mutation updates artifact`
+
+#### `SLICE-006 — Conversation mutation updates artifact`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `post-VBUILD-001 canonical next task`
+  - `2026-06-08 live lead-management field test`
+- depends_on:
+  - `SLICE-005`
+  - `VBUILD-001`
+  - `ENG-004`
+- field_test_findings:
+  - `A real lead-management run understood the domain and produced a relevant skeleton, but user-visible actions such as add lead surfaced internal operation names like record.create instead of product language.`
+  - `After refresh, the project shell restored, but the Build conversation and demo/action transcript did not restore clearly enough for user trust.`
+  - `Some controls looked active but did not visibly filter or mutate the product surface, creating a fake-action risk.`
+  - `Provider/release/payment requests were not always framed with an unmistakable visible boundary in the user flow.`
+- canonical_law:
+  - `A conversation mutation is not closed when a reply appears; it is closed only when the requested change updates the artifact/product truth or is clearly bounded as temporary/not performed.`
+  - `User-visible mutation language must be product language, not internal operation ids, agent names, task ids, runtime labels, or debug/status strings.`
+  - `Every safe artifact mutation must create a persisted project-truth/history record that can survive refresh or explicitly disclose that the action is temporary demo state.`
+  - `A control that looks active must either change visible product state, open a real bounded flow, or explain why it is not available yet.`
+- build:
+  - `conversation mutation request classification from Build rail`
+  - `artifact update envelope tied to project id, selected skeleton direction, runtime skeleton, and product-domain state`
+  - `product-readable mutation/history event for every applied artifact change`
+  - `visible refresh restore of conversation mutation result and mutation transcript`
+  - `user-facing copy cleanup for mutation results, replacing internal operation ids such as record.create with product language`
+  - `blocked/bounded provider, payment, release, and external-publish requests with clear visible explanation`
+- closure_evidence:
+  - `src/core/build-agent-downstream-action.js routes safe add-lead requests to persisted record.create mutations instead of answer-only replies.`
+  - `src/core/build-agent-learning-instructions.js treats lead/record add requests as safe mutation requests before provider speech.`
+  - `src/core/build-mutation-truth.js updates product-domain records, runtime table rows, metrics, mutation history, and product-readable visibleSummary.`
+  - `src/core/project-service.js persists Build rail companion transcript and mutation result into project truth and restores it through serialize/rebuild paths.`
+  - `web/app.js posts runtime skeleton controls to /api/projects/:projectId/build-mutations on real projects and no longer shows user-visible operation ids for record.create.`
+  - `web/nexus-ui/adapters/loop-adapter.js and web/nexus-ui/screens/LoopCoreScreen.js expose the latest mutation summary from project truth.`
+  - `web/shared/product-domain-skeleton.js applies record.create against generated product-domain state.`
+  - `test/build-mutation-truth.test.js covers record.create artifact truth, product-language copy, transcript restore, and backend reload.`
+  - `2026-06-08 hardening: src/core/build-mutation-truth.js now normalizes record.create payloads from label/title/name so a requested lead name is preserved in product-domain state, runtime rows, and visible mutation history.`
+  - `2026-06-08 hardening: web/app.js now routes data-runtime-workspace-filter buttons through the runtime interaction gate, so lead filters visibly update aria-current, visible row counts, and live-state copy.`
+  - `2026-06-08 hardening: tests cover label-based lead creation, missing-owner metric normalization for לא משויך, and runtime filter click-gate wiring.`
+  - `scripts/verify-slice-006-live-proof.mjs proves the visible route /loop?projectId=<real-project-id>, Build rail mutation, refresh restore, runtime button mutation, second refresh restore, and provider/release boundary.`
+  - `Live proof passed on /loop?projectId=slice006-proof-1780922831912 with evidence at /private/tmp/nexus-slice-006-1780922831912-report.json and screenshots /private/tmp/nexus-slice-006-1780922831912-before.png, -after-mutation.png, -after-refresh.png, -after-button-mutation.png, -after-button-refresh.png, and -after-boundary.png.`
+  - `2026-06-08 live proof on updated port 4013 confirmed record.create with label מיכל לוי persisted through API reload, retained SLICE-006 mutation truth, restored after four browser refreshes, and runtime filters updated visible row counts.`
+- verification:
+  - `node --check test/build-mutation-truth.test.js`
+  - `node --check src/core/build-mutation-truth.js`
+  - `node --check web/shared/product-domain-skeleton.js`
+  - `node --check src/core/project-service.js`
+  - `node --check web/app.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --check web/nexus-ui/adapters/loop-adapter.js`
+  - `node --check scripts/verify-slice-006-live-proof.mjs`
+  - `node --test test/build-mutation-truth.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js`
+  - `node scripts/verify-slice-006-live-proof.mjs`
+  - `2026-06-08 hardening verification: node --check src/core/build-mutation-truth.js`
+  - `2026-06-08 hardening verification: node --check web/app.js`
+  - `2026-06-08 hardening verification: node --test test/build-mutation-truth.test.js test/loop-core-screen-render.test.js`
+  - `2026-06-08 hardening verification: live API and browser checks on http://127.0.0.1:4013/loop?projectId=qa-slice-006-live-4013`
+- closure_notes:
+  - `SLICE-006 closes safe conversation/runtime-control artifact mutations only when they produce project-truth mutation history, product-domain state, visible runtime change, product-readable summary, and refresh restore.`
+  - `The live proof also confirmed external WhatsApp/publish requests are visibly bounded and do not add mutation history.`
+  - `The live proof repeated the known /api/projects/:projectId/live-events 401 console noise; this remains a cleanup debt for the events/auth lane and is not claimed closed here.`
+  - `A diagnostic run showed a phrase containing בדיקה can be misclassified as verification instead of mutation. This is retained as a BLD-AGT-001 classification hardening follow-up, not as a blocker to the proven safe add-lead mutation path.`
+  - `2026-06-08 field-test note: the generated product-domain skeleton is backed by Nexus project-truth persistence and mock-local product-domain operations, but productionBackend remains false; a deployable standalone product backend is not claimed by SLICE-006.`
+- done_when:
+  - `a lead-management Build request such as add lead/source/filter/reminder updates the visible artifact and persisted project truth, or is explicitly blocked with a product-language reason`
+  - `refresh restores the mutation result, the relevant Build conversation event, and the product-readable mutation/history record`
+  - `no user-facing mutation result exposes record.create, runtime internals, internal operation ids, agent ids, task ids, or debug labels`
+  - `filter/action controls either perform an observable product mutation/filter or are visibly disabled/bounded with a reason`
+  - `publication, payment, provider connection, WhatsApp, and external-share requests show an explicit boundary and cannot appear completed without approval/provider/release truth`
+  - `live browser proof starts from a clean /loop?projectId=<real-project-id> route, performs a mutation through the Build rail or artifact controls, refreshes, and proves the same mutation truth is restored`
+- not_trueGreen:
+  - `mutation appears only in local DOM/client state`
+  - `conversation or mutation transcript disappears after refresh while the UI implies it was saved`
+  - `user sees internal operation names such as record.create`
+  - `buttons appear active but do not change state and do not explain why`
+  - `external publication, payment, or provider connection request is not visibly bounded`
+
+#### `SLICE-007 — Refresh / return preserves continuity`
+- status: `trueGreen`
+- type: `release-blocker`
+- agent_coverage:
+  - `Preserved continuity / memory / refresh engine`
+  - `History / Continuity Agent handoff boundary`
+- depends_on:
+  - `SLICE-006`
+  - `ENG-007`
+- dependency_correction:
+  - `2026-06-08: Removed HIST-AGT-001 as a hard dependency for SLICE-007 because it created a canonical cycle: SLICE-007 -> HIST-AGT-001 -> EXP-002 -> MUT-001 -> EXP-001 -> SLICE-008 -> SLICE-007.`
+  - `SLICE-007 now owns the first vertical-slice refresh/return continuity using the already preserved ENG-007 continuity engine and the project-truth mutations closed by SLICE-006.`
+  - `HIST-AGT-001 still owns deeper History / Continuity Agent behavior: checkpoint policy, rollback decisions, restore impact explanation, stale-state validation, return-after-time product memory, and visible History surface ownership.`
+- canonical_law:
+  - `The first vertical slice must survive refresh, route return, browser back/forward, and support-route detours from backend project truth, not from a giant URL blob or stale local preview state.`
+  - `Every restorable project route must keep a short projectId route identity and reload the current project truth when reached directly or through browser history.`
+  - `Live update continuity must not produce user-visible trust noise from avoidable authentication failures.`
+  - `SLICE-007 may not claim full History / Continuity Agent ownership; it only closes first-slice return continuity and leaves checkpoint/rollback/history-agent depth to HIST-AGT-001.`
+- build:
+  - `projectId-preserving route sync for Build and support detours`
+  - `browser back/forward route restore from backend project truth`
+  - `live-events authentication continuity for browser EventSource transport`
+  - `first-slice live proof across Build -> support route -> Build -> refresh -> browser return`
+- done_when:
+  - `a clean /loop?projectId=<real-project-id> route loads the current project truth without qaState/nexusState`
+  - `after a safe SLICE-006 mutation, refresh restores the same runtime skeleton, Build transcript, mutation summary, and product-domain records`
+  - `navigating away to a support route and returning to Build preserves projectId and restores the same project truth`
+  - `browser back/forward to a project-backed route reloads from backend truth when needed instead of showing stale create/preview state`
+  - `the live-events route does not emit avoidable 401 noise for an authenticated local project session`
+  - `live browser proof captures the full return path and screenshots`
+- not_trueGreen:
+  - `return to Build depends on localStorage-only project state`
+  - `route changes drop projectId and refresh opens Create or the wrong project`
+  - `browser back/forward changes URL but leaves the visible screen on stale state`
+  - `live-events repeatedly returns 401 in the normal authenticated project session`
+  - `SLICE-007 claims checkpoint, rollback, or full history-agent ownership`
+- closure_evidence:
+  - `2026-06-08: trueGreen. web/app.js now carries projectId through backend-restorable Build routes and support detours, strips qaState/nexusState/qaScreen/qaReset from live project route pushes, reloads /loop?projectId=<real-project-id> from backend project truth, and prevents an older route-restore load from overriding a newer support-route navigation.`
+  - `2026-06-08: Explicit return from /home?projectId=<real-project-id> back to /loop?projectId=<real-project-id> now persists the loop flow state and refreshes the visible shell chrome so the active rail matches the Build screen before and after refresh.`
+  - `2026-06-08: src/server.js accepts userId on /live-events query transport for browser EventSource sessions after x-user-id header fallback is unavailable, removing the normal authenticated local-session 401 noise for project live events.`
+  - `2026-06-08: test/slice-007-continuity-contract.test.js added contract coverage for cycle split, projectId-preserving support detours, stale route-restore override prevention, loop flow persistence, and live-events authenticated session continuity.`
+  - `2026-06-08: scripts/verify-slice-007-live-proof.mjs created a real authenticated project, applied a persisted add-lead mutation, opened a clean /loop?projectId=slice007-proof-1780925110507 route, refreshed, navigated to /home?projectId=slice007-proof-1780925110507, returned to Build, refreshed again, and verified browser back/forward never lost project truth or fell to Create/QA state.`
+  - `Live report: /private/tmp/nexus-slice-007-1780925110507-report.json. Screenshots: /private/tmp/nexus-slice-007-1780925110507-initial-loop.png, /private/tmp/nexus-slice-007-1780925110507-after-refresh.png, /private/tmp/nexus-slice-007-1780925110507-home-detour.png, /private/tmp/nexus-slice-007-1780925110507-after-return-to-build.png, /private/tmp/nexus-slice-007-1780925110507-after-return-refresh.png, /private/tmp/nexus-slice-007-1780925110507-after-browser-back.png, /private/tmp/nexus-slice-007-1780925110507-after-browser-forward.png.`
+- verification:
+  - `node --check src/server.js`
+  - `node --check web/app.js`
+  - `node --check scripts/verify-slice-007-live-proof.mjs`
+  - `node --test test/slice-007-continuity-contract.test.js test/build-mutation-truth.test.js test/loop-core-screen-render.test.js`
+  - `node scripts/verify-slice-007-live-proof.mjs`
+- residual_notes:
+  - `The live proof had zero bad API responses and no /live-events 401. It still observed one generic non-API 404 console resource load, likely a static browser resource; this remains cleanup debt for the events/static-noise lane and does not reopen SLICE-007.`
+  - `Browser back after a refreshed Build return may resolve to the project-scoped Build route rather than the intermediate Home detour, but it preserves projectId, runtime skeleton truth, mutation history, domain rows, and visible Build state. Exact deep browser-history replay remains HIST-AGT-001 scope.`
+  - `2026-06-08: Field-test truth for generated lead-management skeleton: Nexus creates runtimeSkeletonTruth and productDomainSkeleton inside Nexus project truth, but productDomainSkeleton.productionBackend.enabled is false and persistenceBoundary is local/mock product state stored inside Nexus project truth. This is not yet a standalone releasable product backend.`
+
+#### `SLICE-008 — Live verification of first slice`
+- status: `trueGreen`
+- type: `release-blocker`
+- depends_on:
+  - `SLICE-007`
+- closed_at: `2026-06-08`
+- closure_scope:
+  - `Closes first user-ready trust cleanup for the current internal Nexus runtime skeleton slice.`
+  - `Does not close generated product runtime package, standalone runnable artifact, production backend, release, publish, external providers, payments, or App Store / Play Store delivery.`
+- preserve_remove_build_truth:
+  - `preserve: SLICE-005 runtime skeleton truth, RUNTIME-TRUTH-001 project restore truth, PRODUCT-BACKEND-SKEL-002 local/mock product-owned backend scaffold, and SLICE-006/SLICE-007 mutation + refresh continuity.`
+  - `remove: visible premature readiness language such as "הפרויקט שלך מוכן" and visible release-copy that implied publish/rollback before standalone product truth exists.`
+  - `build: user-facing first-slice trust boundary showing "גבול שחרור", product-language action feedback, translated visible field labels, and live proof that refresh preserves the bounded truth.`
+- acceptance_evidence:
+  - `web/app.js now says the first skeleton is ready for continued build work, not that the full project is ready.`
+  - `Release route copy now describes preview, release blockers, evidence, standalone product package requirement, tests, and explicit approval before real publishing.`
+  - `web/nexus-ui/screens/LoopCoreScreen.js adds data-first-slice-trust-task="SLICE-008" on the Build canvas and changes the visible Build anchor from "שחרור" to "גבול שחרור".`
+  - `Runtime list rendering translates raw field keys such as name/status/owner/reminder/nextStep into user-facing Hebrew labels.`
+  - `Live proof on http://127.0.0.1:4011/loop?projectId=slice008-proof-1780930002538 verified project-scoped URL, SLICE-008 trust anchor, no premature ready/release claim, no raw operation text, no raw field-label text, product-language add-lead feedback, persisted action state after refresh, and zero bad API responses.`
+- verification:
+  - `node --check web/app.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --check scripts/verify-slice-008-live-proof.mjs`
+  - `node --test --test-name-pattern "SLICE-008" test/loop-core-screen-render.test.js`
+  - `node scripts/verify-slice-008-live-proof.mjs`
+- residual_notes:
+  - `The broad test/web-app-wave1-cockpit.test.js suite still has unrelated pre-existing failures around create/onboarding fake-DOM behavior; the SLICE-008 targeted contract and live proof passed.`
+  - `The first-slice copy still includes some English product terms such as workspace/onboarding/Nexus where they are part of existing brand/system language; removing all mixed-language copy remains visible-language hardening scope, not a blocker for this trust-cleanup closure.`
+  - `Generated product runtime package and standalone runnable artifact remain blocked by PRODUCT-RUNTIME-PACKAGE-001 and STANDALONE-ARTIFACT-001 before any release-ready claim.`
+
+---
+
+## 12. Phase 6 — Expand To Release-Capable Product
+
+מטרה:
+- להרחיב את ה־slice למוצר שאפשר באמת להוציא
+
+### Tasks
+
+#### `EXP-001 — Selection / direct editing on Build`
+- status: `trueGreen`
+- type: `release-blocker`
+- depends_on:
+  - `SLICE-008`
+- closure_scope:
+  - `Closes first Build-surface selection and direct editing for the runtime skeleton: select a visible record, apply bounded record edits from the same Build canvas, persist through project truth, and restore after refresh.`
+  - `Does not close full Mutation / Change Agent ownership, arbitrary inline text editing, direct Product Graph identity changes, production backend hosting, standalone runtime package, release, external providers, payments, or publishing.`
+- preserve_remove_build_truth:
+  - `preserve: SLICE-005 runtime skeleton truth, PRODUCT-BACKEND-SKEL-002 product-owned local/mock backend scaffold, SLICE-006 mutation persistence, SLICE-007 refresh continuity, and SLICE-008 release-boundary copy.`
+  - `remove: ambiguity where a selected row could change through buttons without a visible selected-record / direct-edit frame.`
+  - `build: visible EXP-001 direct-edit panel on Build, selected-record row highlight, product-language direct edit guidance, and live proof that select/assign-owner persists into project truth and the product-owned backend scaffold after refresh.`
+- closure_evidence:
+  - `web/nexus-ui/screens/LoopCoreScreen.js now renders data-exp-selection-direct-edit-task="EXP-001", selected record id, product-owned backend task, and visible direct-edit copy on workspace runtime skeletons.`
+  - `web/nexus-ui/styles/screens.css highlights the selected runtime table row and adds a compact direct-edit panel without changing the hidden engines.`
+  - `test/loop-core-screen-render.test.js proves Build exposes selected record and direct edit actions with PRODUCT-BACKEND-SKEL-002 truth.`
+  - `Existing build mutation coverage proves direct Build selection and edit update the selected record through project truth.`
+  - `scripts/verify-exp-001-live-proof.mjs created a real project, opened /loop?projectId=<real-project-id>, verified EXP-001 direct-edit anchors, clicked record.select, clicked record.assignOwner, refreshed, and confirmed selectedRecordId=rec-1, firstRecordOwner=נועה, productOwnedBackendTask=PRODUCT-BACKEND-SKEL-002, productionBackend=false, mutationHistoryCount=2, buildMutationHistoryCount=2, and zero bad events.`
+  - `Live report: /private/tmp/nexus-exp-001-1780930702514-report.json.`
+- verification:
+  - `node --check web/app.js`
+  - `node --check web/shared/product-domain-skeleton.js`
+  - `node --check src/core/build-mutation-truth.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --check scripts/verify-exp-001-live-proof.mjs`
+  - `node --test --test-name-pattern "EXP-001" test/product-domain-skeleton.test.js test/build-mutation-truth.test.js`
+  - `node --test test/product-domain-skeleton.test.js test/build-mutation-truth.test.js test/loop-core-screen-render.test.js`
+  - `node --test test/product-owned-backend-skeleton.test.js`
+  - `node --test --test-name-pattern "EXP-001|PRODUCT-BACKEND-SKEL-002|SLICE-008" test/loop-core-screen-render.test.js test/product-owned-backend-skeleton.test.js test/build-mutation-truth.test.js`
+  - `node scripts/verify-exp-001-live-proof.mjs`
+- residual_notes:
+  - `The generated skeleton now has product-owned local/mock backend scaffold truth, but productionBackend remains false. Releasable frontend/backend package output remains PRODUCT-RUNTIME-PACKAGE-001 and STANDALONE-ARTIFACT-001 scope.`
+  - `Direct editing is still bounded to generated product-domain operations such as record.select, record.assignOwner, and record.updateReminder. Arbitrary inline cell editing and product-identity changes must route through MUT-001 / EXP-002.`
+
+#### `MUT-001 — Mutation / Change Agent ownership`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `mutation-change-agent-contract-2026-06-01.md`
+  - canonical product system section `41`
+  - `EXP-002 — Canonical mutation flow in shell`
+- depends_on:
+  - `EXP-001`
+  - `VBUILD-001`
+  - `FND-002`
+  - `ENG-004`
+- canonical_law:
+  - `Every meaningful product change must pass through the Mutation / Change Agent before it is applied to Product Graph or artifacts.`
+  - `The agent distinguishes visual/form changes from product-truth changes; visual changes may affect appearance, but product-truth changes affect what the product is, who it serves, how it works, or what it promises.`
+  - `The agent owns interpretation, impact analysis, approval need, application plan, verification requirement, commit, and checkpoint/history update.`
+  - `If a change can alter product direction, target audience, core workflow, data model, release readiness, permissions, billing, providers, or prior decisions, it must not be applied silently.`
+  - `Every meaningful mutation must create a product-readable history record: before, after, why, requested by, affected areas, approval status, rollback availability, truth status, and verification need.`
+  - `Mutation may start from conversation, selection, direct edit, drag/reorder, import, screenshot/reference, collaborator feedback, release feedback, growth suggestion, branch compare, verification finding, or recovery action, but all sources converge into one mutation agent path.`
+  - `A direct edit UI or artifact patch is not the Mutation / Change Agent.`
+- preserve:
+  - canonical Product Graph truth
+  - artifact/proof engine
+  - rollback/history engine
+  - Build / Loop Agent context
+- remove_from_active_path:
+  - direct artifact mutation without impact analysis
+  - separate mutation pipelines per interaction type
+  - hidden state changes without checkpoint/history update
+- build:
+  - Mutation / Change Agent role/contract
+  - mutation proposal envelope
+  - visual-change versus product-truth-change classifier
+  - impact-analysis and approval-needed decision
+  - safe-apply versus approval-required policy
+  - product-readable mutation history record
+  - checkpoint/rollback requirement decision
+  - downstream handoff policy to Visual Build, Product Skeleton, Verification, Release, and History agents
+  - verification and commit handoff
+- done when:
+  - Mutation / Change Agent contract exists in docs and code
+  - Agent Reality Gate is passed for `MUT-001`
+  - tests prove every active mutation source goes through the same agent-owned mutation path
+  - tests prove high-impact changes require approval and safe changes can apply automatically with verification
+  - tests prove visual changes do not mutate Product Graph truth unless the mutation envelope says they should
+  - tests prove `actually this is orders, not leads` requires approval/impact handling before Product Graph mutation
+  - tests prove small title/label changes do not trigger a heavy product-truth mutation
+  - tests prove provider failure/malformed mutation output preserves pending retry and does not mutate Product Graph or artifacts
+  - history/checkpoint update is written after successful mutation
+  - live browser proof shows a product-truth change routes Build / Loop -> Mutation / Change -> approval -> Product Graph update -> visual update -> history record
+  - live browser proof shows a small safe change applies without changing product identity
+- not trueGreen:
+  - `EXP-002` shows a mutation flow but no agent-owned interpretation/impact/commit path
+  - direct edits mutate Product Graph or artifacts without mutation-agent envelope
+  - conversation changes bypass the mutation model
+  - product identity changes without approval/impact explanation
+  - all changes use the same path regardless of risk or product-truth impact
+  - history says product truth changed when only copy/layout changed
+- closure_evidence:
+  - `src/core/mutation-change-agent.js defines the MUT-001 agent-owned mutation decision envelope with change type, affected areas, approval rule, checkpoint/verification flags, product-truth boundary, user reply, and product-readable history record.`
+  - `src/core/project-service.js creates a mutation decision before applying Build downstream changes, finalizes it after downstream execution, persists mutationChangeDecision and mutationChangeHistory into project/context/state, and exposes them through serializeProject.`
+  - `web/nexus-ui/adapters/loop-adapter.js carries mutationChangeDecision and mutationChangeHistory into the Build view model.`
+  - `web/nexus-ui/screens/LoopCoreScreen.js renders data-mutation-change-task="MUT-001" on the Build rail with approval, product-truth, status, and history anchors.`
+  - `test/mutation-change-agent.test.js proves safe record changes can apply automatically, product-direction changes require approval, and applied downstream mutations finalize product-readable history.`
+  - `test/build-agent-learning-bridge.test.js proves safe lead-source changes route through MUT-001 before success and product-direction replacement remains pending approval without silent mutation.`
+  - `test/loop-core-screen-render.test.js proves the Build rail exposes MUT-001 decision ownership visibly.`
+  - `scripts/verify-mut-001-live-proof.mjs created a real project, opened /loop?projectId=<real-project-id>, applied "תוסיף שדה מקור ליד" as a safe small product-truth mutation, then handled "תשנה את זה להזמנות במקום לידים" as pending approval without changing product identity, refreshed, and confirmed the pending approval state restored from project truth.`
+  - `Live report: /private/tmp/nexus-mut-001-1780931764085-report.json.`
+- verification:
+  - `node --check src/core/mutation-change-agent.js`
+  - `node --check src/core/project-service.js`
+  - `node --check web/nexus-ui/adapters/loop-adapter.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --check scripts/verify-mut-001-live-proof.mjs`
+  - `node --test test/mutation-change-agent.test.js`
+  - `node --test --test-name-pattern "MUT-001|product direction|safe lead-source" test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js`
+  - `node --test test/build-agent-turn-router.test.js test/build-mutation-truth.test.js`
+  - `node --test test/mutation-change-agent.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js test/build-agent-turn-router.test.js test/build-mutation-truth.test.js`
+  - `NEXUS_BASE_URL=http://127.0.0.1:4014 node scripts/verify-mut-001-live-proof.mjs`
+- residual_notes:
+  - `MUT-001 now owns mutation interpretation, risk/approval decision, project-visible decision state, and history record for Build-originating meaningful changes.`
+  - `This does not close EXP-002 shell flow depth, BUILD-APPROVAL-001 approval execution UI, HIST-AGT-001 rollback/continuity depth, VER-AGT-001 verification execution, REL-AGT-001 release execution, provider connection, payments, publishing, or standalone generated product package output.`
+- next:
+  - `EXP-002 — Canonical mutation flow in shell`
+
+#### `EXP-002 — Canonical mutation flow in shell`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `existing reused task`
+- agent_coverage:
+  - `Mutation / Change Agent`
+- depends_on:
+  - `MUT-001`
+  - `FND-002`
+- canonical_write_back:
+  - `2026-06-08: EXP-002 closed as the visible canonical mutation flow shell that consumes MUT-001 decisions and exposes request -> decision -> approval -> apply -> history state on the Build rail.`
+  - `Added src/core/canonical-mutation-flow-shell.js to build the EXP-002 flow envelope from project truth, mutation decisions, mutation history, and Build mutation history.`
+  - `Project serialization now persists and restores canonicalMutationFlow, and the loop adapter/screen render data-canonical-mutation-flow-task="EXP-002" with step/status anchors for request, decision, approval, apply, and history.`
+  - `A live failure found that a previous applied mutation could make a new pending approval show apply=done. Fixed the flow law so pending approval always blocks application even when older Build mutation history exists.`
+  - `Safe change proof: תוסיף שדה מקור ליד produced EXP-002 status applied, approval skipped, apply done, history done, and MUT-001 status applied.`
+  - `Product-direction proof: תשנה את זה להזמנות במקום לידים produced EXP-002 status pending-approval, approval waiting, apply blocked, MUT-001 status pending-approval, and no silent domain switch.`
+  - `Refresh proof restored the same pending approval flow from project truth with apply still blocked.`
+- verification:
+  - `node --check src/core/canonical-mutation-flow-shell.js`
+  - `node --check src/core/project-service.js`
+  - `node --check web/nexus-ui/adapters/loop-adapter.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --check scripts/verify-exp-002-live-proof.mjs`
+  - `node --test test/canonical-mutation-flow-shell.test.js`
+  - `node --test test/canonical-mutation-flow-shell.test.js test/mutation-change-agent.test.js test/build-agent-learning-bridge.test.js test/loop-core-screen-render.test.js test/build-agent-turn-router.test.js test/build-mutation-truth.test.js`
+  - `NEXUS_BASE_URL=http://127.0.0.1:4014 node scripts/verify-exp-002-live-proof.mjs`
+- evidence:
+  - `/private/tmp/nexus-exp-002-1781006481898-report.json`
+  - `/private/tmp/nexus-exp-002-1781006481898-initial.png`
+  - `/private/tmp/nexus-exp-002-1781006481898-after-safe-change.png`
+  - `/private/tmp/nexus-exp-002-1781006481898-after-direction-request.png`
+  - `/private/tmp/nexus-exp-002-1781006481898-after-refresh.png`
+- residual_notes:
+  - `EXP-002 closes the visible shell flow for mutation truth. It does not close approval execution UI, rollback/checkpoint depth, verification execution, release execution, providers, payments, publishing, production backend, or standalone generated product package output.`
+- next:
+  - `HIST-AGT-001 — History / Continuity Agent live continuity ownership`
+
+#### `HIST-AGT-001 — History / Continuity Agent live continuity ownership`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-01 live-agent gap audit`
+  - `history-continuity-agent-contract-2026-06-01.md`
+  - `EXP-003`
+  - `SLICE-007`
+  - `SURF-006`
+- depends_on:
+  - `EXP-002`
+  - `BUILD-APPROVAL-001`
+  - `ENG-002`
+  - `ENG-007`
+  - `SURF-006`
+- dependency_correction:
+  - `2026-06-09: HIST-AGT-001 was selected after EXP-002, but implementation exposed a missing dependency: full restore after meaningful product-direction change cannot close before BUILD-APPROVAL-001 exists.`
+  - `HIST-AGT-001 can now record product-readable history, create checkpoint/restore-impact envelopes, persist restore-decision state, restore the History surface after refresh, and return to Build continuity.`
+  - `It cannot truthfully close the canonical live proof that applies an approved direction change and then restores Product Graph truth until BUILD-APPROVAL-001 provides approve/reject/cancel execution over MUT-001 truth.`
+  - `2026-06-09: BUILD-APPROVAL-001 is now trueGreen, and HIST-AGT-001 has been re-run over the approved direction-change path. The prior missing dependency is resolved for this task.`
+- canonical_write_back:
+  - `2026-06-09: Added src/core/history-continuity-agent.js as the History / Continuity Agent envelope builder.`
+  - `Project service now persists historyContinuityAgent after Build-originating mutation decisions and exposes a history-continuity/restore-decision endpoint that records restore impact without silently changing product truth.`
+  - `Timeline adapter and History surface now consume HIST-AGT-001 truth: product-readable change history, checkpoint candidates, restore-impact explanation, return-after-time summary, and return-to-Build continuity.`
+  - `Visible History proof shows small change history, pending direction-change checkpoint, restore-impact decision, refresh restore of that decision, and return to Build with the pending approval flow intact.`
+  - `2026-06-09: Added approved restore execution through HIST-AGT-001. Restore now uses product snapshots captured before meaningful changes, applies the selected checkpoint back into Product Graph truth, updates History state to restored, and preserves restored truth after refresh and return to Build.`
+  - `A live regression exposed two false closure risks: lead checkpoints were saved with a generic Record model, and rebuildContext could reapply an old approved direction after restore. Both were fixed before closure.`
+- verification:
+  - `node --check src/core/history-continuity-agent.js`
+  - `node --check src/core/project-service.js`
+  - `node --check src/server.js`
+  - `node --check web/nexus-ui/adapters/timeline-adapter.js`
+  - `node --check web/nexus-ui/screens/TimelineHistoryScreen.js`
+  - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+  - `node --check web/app.js`
+  - `node --check scripts/verify-hist-agt-001-live-proof.mjs`
+  - `node --test test/history-continuity-agent.test.js test/build-agent-learning-bridge.test.js test/timeline-adapter.test.js test/timeline-history-screen-render.test.js test/canonical-mutation-flow-shell.test.js test/mutation-change-agent.test.js test/loop-core-screen-render.test.js test/slice-007-continuity-contract.test.js test/nexus-sidebar-navigation-contract.test.js`
+  - `node --test test/slice-007-continuity-contract.test.js test/nexus-sidebar-navigation-contract.test.js`
+  - `NEXUS_BASE_URL=http://127.0.0.1:4014 node scripts/verify-hist-agt-001-live-proof.mjs`
+  - `NEXUS_BASE_URL=http://127.0.0.1:4016 node scripts/verify-hist-agt-001-live-proof.mjs`
+- evidence:
+  - `/private/tmp/nexus-hist-agt-001-1781007332744-report.json`
+  - `/private/tmp/nexus-hist-agt-001-1781007332744-initial.png`
+  - `/private/tmp/nexus-hist-agt-001-1781007332744-after-changes.png`
+  - `/private/tmp/nexus-hist-agt-001-1781007332744-history-before-restore.png`
+  - `/private/tmp/nexus-hist-agt-001-1781007332744-restore-decision.png`
+  - `/private/tmp/nexus-hist-agt-001-1781007332744-after-refresh.png`
+  - `/private/tmp/nexus-hist-agt-001-1781007332744-return-to-build.png`
+  - `/private/tmp/nexus-hist-agt-001-1781010552491-report.json`
+  - `/private/tmp/nexus-hist-agt-001-1781010552491-initial.png`
+  - `/private/tmp/nexus-hist-agt-001-1781010552491-after-changes.png`
+  - `/private/tmp/nexus-hist-agt-001-1781010552491-history-before-restore.png`
+  - `/private/tmp/nexus-hist-agt-001-1781010552491-restore-decision.png`
+  - `/private/tmp/nexus-hist-agt-001-1781010552491-restore-executed.png`
+  - `/private/tmp/nexus-hist-agt-001-1781010552491-after-refresh.png`
+  - `/private/tmp/nexus-hist-agt-001-1781010552491-return-to-build.png`
+- resolved_blocker:
+  - type: `missing dependency`
+  - id: `BUILD-APPROVAL-001`
+  - resolved_by: `BUILD-APPROVAL-001 trueGreen on 2026-06-09`
+  - reason: `Approved product-direction execution now exists, so HIST-AGT-001 could prove restore from an approved orders direction back to the lead product snapshot.`
+- residual_notes:
+  - `No restore is executed silently. The user first receives restore-impact framing and then explicitly confirms restore execution.`
+  - `This closes History / Continuity Agent ownership for product-readable history, checkpoint creation, restore-impact decision, approved restore execution, refresh persistence, and return-to-Build continuity. It does not close EXP-003 versioning UI depth, release rollback, production backend, generated product runtime package, standalone artifact, providers, payments, or publishing.`
+- next:
+  - `SHARE-AGT-001 — Share / Demo Agent live review ownership`
+- canonical_law:
+  - `The History / Continuity Agent owns product memory, checkpoints, restore decisions, and continuity explanation; the History surface is only the visible shell for that truth.`
+  - `It distinguishes conversation history, product history, and change history; conversation explains intent, product history explains evolution, and change history explains one exact change.`
+  - `Small changes may receive normal history records, but meaningful changes that can create user regret must create a checkpoint before application.`
+  - `User-visible history must explain what happened to the product, not expose system ids, file names, function names, provider details, raw logs, or internal agent labels.`
+  - `Restore, rollback, revisit, and “what changed” must be agent-owned continuity decisions, not passive lists or route-local snapshots.`
+  - `Restore must validate Product Graph truth, visible surface, conversation continuity, release state, and later dependent work before changing current truth.`
+  - `Return-after-time must summarize meaningful changes since last visit without dumping a technical log.`
+  - `The agent must protect against stale, broken, or incompatible state being restored as current truth.`
+- preserve:
+  - canonical product graph checkpoints
+  - mutation commit history
+  - release and artifact snapshots
+  - route restore continuity
+- remove_from_active_path:
+  - timeline-only history without restore decision ownership
+  - route/localStorage restore that bypasses continuity validation
+  - rollback UI that does not write a new continuity event
+- build:
+  - History / Continuity Agent role/contract
+  - conversation-history versus product-history versus change-history policy
+  - checkpoint-required policy
+  - continuity envelope for checkpoint, restore, rollback, and revisit
+  - stale-state validation and recovery decision
+  - user-visible product memory summary
+  - restore impact explanation and approval path
+  - return-after-time summary
+  - visible History surface consumption of agent continuity state
+- done when:
+  - History / Continuity Agent contract exists in docs and code
+  - Agent Reality Gate is passed for `HIST-AGT-001`
+  - tests prove small changes receive product-readable history records without heavy checkpoints
+  - tests prove meaningful changes create checkpoints before application
+  - tests prove restore/rollback/revisit decisions go through the agent-owned continuity path
+  - tests prove restore explains what returns, what is removed, what remains, and whether release state is affected
+  - tests prove stale state is rejected or repaired instead of silently restored
+  - tests prove user-visible History surface does not expose internal ids, file names, function names, provider details, or raw logs
+  - live browser proof shows History explains what changed and can return to Build from agent-owned continuity state
+  - live proof 1: lead-list-to-cards plus follow-up-today change appears as product-readable history
+  - live proof 2: `actually this is orders, not leads` creates checkpoint before approval/application
+  - live proof 3: restore from previous point updates Product Graph, visible Build surface, and history without creating two active truth states
+  - live proof 4: refresh/return shows a short what-changed-since-last-visit summary and one continuation action
+- not trueGreen:
+  - History is only a static timeline or local route restore
+  - rollback happens without checkpoint/continuity decision
+  - refresh/return restores state that the continuity agent did not validate
+  - user-visible history exposes technical logs or internal agent/provider labels
+  - meaningful product-truth change has no checkpoint or rollback framing
+  - restore changes the visible screen but not Product Graph truth, or Product Graph truth but not the visible screen
+  - return-after-time dumps raw history instead of product orientation
+
+#### `EXP-003 — Versioning / rollback visible through History`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `existing reused task`
+- agent_coverage:
+  - `History / Continuity Agent`
+- depends_on:
+  - `HIST-AGT-001`
+  - `ENG-002`
+  - `SURF-006`
+- canonical_law:
+  - `Versioning and rollback must be visible through the History surface, not hidden in raw timeline state or backend-only snapshots.`
+  - `History version cards must be derived from History / Continuity Agent checkpoints and product history, not from a parallel restore path.`
+  - `A user must be able to understand what version exists, what would return, what would be removed, and whether release state is affected before executing restore.`
+  - `Visible versioning may not expose raw restore states, technical ids, provider/debug labels, or internal agent implementation wording.`
+- preserve:
+  - `ENG-002 snapshots / rollback / continuity engine`
+  - `SURF-006 History surface`
+  - `HIST-AGT-001 checkpoint, restore-impact, restore execution, and refresh persistence truth`
+- remove_from_active_path:
+  - `version snapshots rendered as passive generic cards`
+  - `raw restore statuses such as possible-with-impact or safe in user-facing copy`
+  - `rollback UI not tied to History / Continuity Agent checkpoint truth`
+- build:
+  - `EXP-003 visible versioning layer in History`
+  - `version cards tied to restore checkpoint ids and product-domain model truth`
+  - `visible rollback boundary and release-impact text per version`
+  - `Hebrew product-language labels for restore availability`
+  - `live proof script for versioning and rollback through History`
+- done when:
+  - `History renders data-history-versioning-task="EXP-003" over SURF-006.`
+  - `Version cards are generated from HIST-AGT-001 checkpoints/product history and expose checkpoint identity for restore flow.`
+  - `Each version explains what returns, what is removed where applicable, and the release-impact boundary.`
+  - `Restore still flows through HIST-AGT-001 decision and execution buttons, not a new rollback bypass.`
+  - `Refresh after restore preserves the restored product truth and visible EXP-003 versioning layer.`
+  - `Visible History copy does not expose raw restore states or internal implementation terms.`
+  - `Tests and live browser proof pass.`
+- closure_evidence:
+  - `web/nexus-ui/adapters/timeline-adapter.js now maps HIST-AGT-001 checkpoints and product history into EXP-003 version snapshots with checkpoint ids, product-domain model labels, restore impact, and rollback boundary.`
+  - `web/nexus-ui/screens/TimelineHistoryScreen.js now renders data-history-versioning-task="EXP-003", version cards, checkpoint linkage, Hebrew restore-state labels, and release-impact boundary copy.`
+  - `test/timeline-adapter.test.js and test/timeline-history-screen-render.test.js now prove EXP-003 visible versioning over History.`
+  - `scripts/verify-exp-003-live-proof.mjs proves live Build change -> approved direction change -> History version cards -> restore decision -> restore execution -> refresh restore on a real project.`
+  - `Live browser proof passed on http://127.0.0.1:4011/timeline?projectId=exp003-live-1781016076984. Report: /private/tmp/nexus-exp-003-1781016076984-report.json. Screenshots: /private/tmp/nexus-exp-003-1781016076984-before-restore.png, /private/tmp/nexus-exp-003-1781016076984-impact-ready.png, /private/tmp/nexus-exp-003-1781016076984-restored.png, /private/tmp/nexus-exp-003-1781016076984-after-refresh.png.`
+- verification:
+  - `node --check web/nexus-ui/adapters/timeline-adapter.js`
+  - `node --check web/nexus-ui/screens/TimelineHistoryScreen.js`
+  - `node --check scripts/verify-exp-003-live-proof.mjs`
+  - `node --test test/timeline-history-screen-render.test.js test/timeline-adapter.test.js`
+  - `node scripts/verify-exp-003-live-proof.mjs`
+- closure_boundary:
+  - `EXP-003 closes visible versioning and rollback-through-History for current project truth only. It does not close EXP-004 release framing, release rollback, production backend, generated product runtime package, standalone artifact, providers, payments, public publishing, or deployment.`
+- next:
+  - `EXP-004 — Release framing connected to release engine`
+
+#### `EXP-004 — Release framing connected to release engine`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- depends_on:
+  - `EXP-003`
+  - `SURF-004`
+  - `ENG-006`
+- closure:
+  - `2026-06-09: EXP-004 closed as Release framing connected to preserved release-engine truth.`
+  - `The Release surface now renders data-release-framing-task="EXP-004", data-release-framing-boundary="release-framing-not-release-execution", and release-engine anchors for releaseWorkspace, releaseableProductStateContract, classAwareDeploymentReleasePath, deploymentStateFeedbackContract, and productOwnedBackendSkeleton.`
+  - `The visible Release screen shows product-facing blockers for missing product runtime package, missing standalone artifact, local/mock backend boundary, missing approved release provider, unresolved launch approval, production health, deployment result, and release workspace status.`
+  - `Publish remains disabled while releaseClaim is blocked-before-release-claim; the surface does not claim public release, production backend, provider publishing, payment, WhatsApp, App Store, or standalone artifact readiness.`
+  - `The Release surface now reads release truth from project root/context/state restore paths, so /release?projectId=<real-project-id> can reconnect after project load and refresh.`
+  - `User-visible raw provider/strategy labels and raw release blocker ids were removed from the Release screen.`
+- verification:
+  - `node --check web/nexus-ui/adapters/release-surface-adapter.js`
+  - `node --check web/nexus-ui/screens/ReleaseSurfaceScreen.js`
+  - `node --check scripts/verify-exp-004-live-proof.mjs`
+  - `node --test test/release-surface-canonical-structure-contract.test.js test/release-workspace.test.js test/release-readiness-evaluator.test.js test/release-validation-assembler.test.js test/pre-deploy-quality-gate.test.js test/deployment-state-feedback-contract.test.js test/release-timeline-builder.test.js test/releaseable-product-state-contract.test.js test/class-aware-deployment-release-path.test.js`
+  - `node scripts/verify-exp-004-live-proof.mjs`
+- live_evidence:
+  - `/private/tmp/nexus-exp-004-1781017028217-report.json`
+  - `/private/tmp/nexus-exp-004-1781017028217-initial.png`
+  - `/private/tmp/nexus-exp-004-1781017028217-after-refresh.png`
+- boundary:
+  - `EXP-004 closes only user-visible release framing over preserved release-engine truth.`
+  - `It does not close generated product runtime package, standalone releasable artifact, production backend, release execution, provider connection, payment, WhatsApp, App Store/Play Store submission, public publishing, or external deployment.`
+  - `PRODUCT-RUNTIME-PACKAGE-001, STANDALONE-ARTIFACT-001, VER-AGT-001 / BUILD-TEST-001, REL-AGT-001 / BUILD-RELEASE-GATE-001, and REL-001..006 remain responsible for those deeper release truths.`
+
+#### `SHARE-AGT-001 — Share / Demo Agent live review ownership`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-01 live-agent gap audit`
+  - `share-demo-agent-contract-2026-06-01.md`
+  - `EXP-005`
+  - `REL-004`
+  - `SURF-007`
+- depends_on:
+  - `HIST-AGT-001`
+  - `SURF-007`
+- dependency_correction:
+  - `2026-06-09: SHARE-AGT-001 was executed as the bounded Share / Demo Agent path after HIST-AGT-001, matching wave3 canonical selected-unblocked state. EXP-004 remains the later release-framing task and is not required for a private snapshot review/demo proposal that explicitly does not claim release readiness.`
+  - `SHARE-AGT-001 may prepare, approve, restore, and revoke a bounded local review/demo snapshot. It may not publish, deploy, open a real public link, connect a provider, or claim release without EXP-004 / REL-AGT-001 / release-gate truth.`
+- canonical_law:
+  - `The Share / Demo Agent owns review/demo framing, share-safe summary, visibility boundary, and demo readiness; a share screen or URL is not enough.`
+  - `Share, demo, review view, and public link are different modes with different risk and approval boundaries.`
+  - `Default share mode is a frozen snapshot; live share requires explicit user decision and approval.`
+  - `External viewers may see only selected and approved product surfaces, flows, releases, or explanations, never full Nexus project access by default.`
+  - `Public or external links require approval when they leave the account boundary, include real data, include unreleased work, allow comments/download/export, or have unclear sensitivity.`
+  - `Every share must be controllable: revoke, rotate, expire, restrict, remove content, and show active/inactive state where in scope.`
+  - `Shared output must not expose internal state, provider labels, private project truth, or unreleased artifacts outside the allowed review/demo boundary.`
+- preserve:
+  - release verification state
+  - product summary and artifact preview
+  - permissions/privacy boundaries
+- remove_from_active_path:
+  - static share links with no demo/review decision
+  - screenshots pretending to be shareable product truth
+  - shared views exposing internal orchestration or private state
+- build:
+  - Share / Demo Agent role/contract
+  - share/demo envelope
+  - share type classifier: demo, review, client-view, investor-view, internal-share, public-link, snapshot, live-share
+  - include/exclude policy for shared product content
+  - snapshot versus live-share approval policy
+  - approval policy for public/external sharing
+  - revoke/rotate/expire/scope controls
+  - visibility and expiration/revoke decisions where in scope
+  - visible Share surface consumption of share/demo agent state
+- done when:
+  - Share / Demo Agent contract exists in docs and code
+  - Agent Reality Gate is passed for `SHARE-AGT-001`
+  - tests prove share/demo output is produced by the agent path and respects privacy boundaries
+  - tests prove default share is snapshot and live share requires explicit approval
+  - tests prove public links are not created without approval
+  - tests prove private conversation, internal agents, Product Graph internals, private history, code, provider details, logs, errors, and unapproved content are excluded
+  - tests prove revoke/expire/inactive state blocks access where a real link exists
+  - live browser proof shows a review/demo state that explains what can be shared and what remains private
+  - live proof 1: `prepare a demo to send to a client` creates a snapshot-ready demo proposal with included/excluded content and no public link until approval
+  - live proof 2: `create a public link` requires explicit approval and suggests snapshot/expiration before link creation
+  - live proof 3: `revoke the link` marks the link inactive and prevents access
+  - live proof 4: shared demo inspection shows no private conversation, internal state, logs, code, provider labels, or unapproved content
+- not trueGreen:
+  - share is only a button, URL, screenshot, or static card
+  - share/demo state can bypass release/demo readiness truth
+  - public or external share is created silently
+  - shared view exposes internal conversation, agent labels, Product Graph internals, private history, logs, code, provider details, errors, or unapproved content
+  - live share is the default without explicit approval
+  - share cannot be revoked, scoped, or marked inactive where a real link exists
+- closure_evidence:
+  - `2026-06-09: Implemented src/core/share-demo-agent.js as the SHARE-AGT-001 envelope for bounded review/demo proposals, approval-required sharing, local snapshot approval, privacy include/exclude boundaries, and revoke state.`
+  - `src/core/project-service.js now persists shareDemoAgent in project truth, exposes prepareShareDemo, approveShareDemo, and revokeShareDemo, preserves share truth through rebuildContext, and serializes the agent state to the product surface.`
+  - `src/server.js exposes POST /api/projects/:projectId/share-demo/prepare, /approve, and /revoke.`
+  - `web/nexus-ui/adapters/share-surface-adapter.js and web/nexus-ui/screens/ShareSurfaceScreen.js now consume SHARE-AGT-001 truth, render approval/revoke state, avoid fake public links, hide provider plumbing, and expose data-share-agent anchors for live proof.`
+  - `Verification passed: node --check src/core/share-demo-agent.js; node --check src/core/project-service.js; node --check src/server.js; node --check web/nexus-ui/adapters/share-surface-adapter.js; node --check web/nexus-ui/screens/ShareSurfaceScreen.js; node --test test/share-demo-agent.test.js test/share-surface-canonical-structure-contract.test.js.`
+  - `Live browser proof passed on http://127.0.0.1:4011/share?projectId=share-agt-001-live-1781014819094. The proof created an authenticated test user, created a real project, prepared a client demo with no fabricated link, approved a bounded local snapshot, restored approved SHARE-AGT-001 truth after refresh, revoked the share, and restored revoked state in the Share surface. Report: /private/tmp/nexus-share-agt-001-share-agt-001-live-1781014819094-report.json. Screenshot: /private/tmp/nexus-share-agt-001-share-agt-001-live-1781014819094-approved.png.`
+- closure_boundary:
+  - `SHARE-AGT-001 closes bounded Share / Demo Agent review ownership only: safe proposal, approval-required snapshot, local review path, privacy include/exclude boundary, refresh restore, and revoke state.`
+  - `It does not close production release, public publishing, real external share provider execution, permissions admin, comments/downloads, production access control, release rollback, generated product package, standalone artifact, payments, WhatsApp, or deployment.`
+- next:
+  - `EXP-005 — Share review/demo path`
+
+#### `EXP-005 — Share review/demo path`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `existing reused task`
+- agent_coverage:
+  - `Share / Demo Agent`
+- depends_on:
+  - `SHARE-AGT-001`
+  - `SURF-007`
+- canonical_law:
+  - `Share must be a visible review/demo path over real project truth, not a passive page and not a fabricated public link.`
+  - `The first Share path must support prepare -> approval-required -> approve -> local review path -> refresh restore -> revoke.`
+  - `Share may not claim release, deployment, public publishing, provider execution, permissions admin, or production access control.`
+  - `User-visible copy must describe the review/demo boundary in product language and must not expose provider/debug plumbing or internal agent language.`
+- preserve:
+  - `SURF-007 experience-oriented Share surface`
+  - `SHARE-AGT-001 bounded review/demo proposal, approval, restore, and revoke truth`
+  - `release/provider/public-publish blockers`
+- remove_from_active_path:
+  - `passive Share surface with no prepare action`
+  - `fake public URL claims before approval`
+  - `visible internal provider/debug wording`
+  - `raw agent status wording in user-facing copy`
+- build:
+  - `visible prepare review action`
+  - `Share surface action wiring for prepare/approve/revoke`
+  - `local review link copy boundary after approval`
+  - `Hebrew product-language status labels for not prepared, waiting, approved, and revoked states`
+  - `live proof script for Share review/demo path`
+- done when:
+  - `A real project can open /share?projectId=<real-project-id> and render the Share surface.`
+  - `Prepare creates SHARE-AGT-001 approval-required truth without fabricating a link.`
+  - `Refresh after prepare restores the waiting approval state.`
+  - `Approve creates a bounded local review path and marks the Share state active.`
+  - `Refresh after approval restores the approved local review state.`
+  - `Revoke deactivates the Share state and persists the revoked truth.`
+  - `The visible surface uses product-language copy and does not expose provider/debug plumbing.`
+  - `Tests and live browser proof pass.`
+- closure_evidence:
+  - `web/app.js now handles data-share-demo-action="prepare" in addition to approve/revoke, calling the project-owned Share demo endpoint and re-rendering the Share route.`
+  - `web/nexus-ui/adapters/share-surface-adapter.js and web/nexus-ui/screens/ShareSurfaceScreen.js render the prepare/approve/revoke path with product-language labels and no fabricated public URL.`
+  - `test/share-surface-canonical-structure-contract.test.js now proves EXP-005 not-prepared, approval-required, and approved Share states.`
+  - `scripts/verify-exp-005-live-proof.mjs proves prepare -> refresh -> approve -> refresh -> revoke on a real project.`
+  - `Live browser proof passed on http://127.0.0.1:4011/share?projectId=exp005-live-1781015495859. Report: /private/tmp/nexus-exp-005-1781015495859-report.json. Screenshots: /private/tmp/nexus-exp-005-1781015495859-initial.png, /private/tmp/nexus-exp-005-1781015495859-after-prepare.png, /private/tmp/nexus-exp-005-1781015495859-after-approve.png, /private/tmp/nexus-exp-005-1781015495859-after-revoke.png.`
+- verification:
+  - `node --check web/app.js`
+  - `node --check web/nexus-ui/adapters/share-surface-adapter.js`
+  - `node --check web/nexus-ui/screens/ShareSurfaceScreen.js`
+  - `node --check scripts/verify-exp-005-live-proof.mjs`
+  - `node --test test/share-demo-agent.test.js test/share-surface-canonical-structure-contract.test.js`
+  - `node scripts/verify-exp-005-live-proof.mjs`
+- closure_boundary:
+  - `EXP-005 closes only the visible bounded Share review/demo path over real project truth. It does not close public publishing, release readiness, external providers, permissions admin, comments/downloads, production access control, production backend, generated product runtime package, standalone artifact, payments, WhatsApp, or deployment.`
+- next:
+  - `GROW-AGT-001 — Growth Agent bounded post-product opportunity ownership`
+
+#### `GROW-AGT-001 — Growth Agent bounded post-product opportunity ownership`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-01 live-agent gap audit`
+  - `growth-agent-contract-2026-06-01.md`
+  - `EXP-006`
+  - `SURF-005`
+- depends_on:
+  - `EXP-004`
+  - `SURF-005`
+- canonical_law:
+  - `The Growth Agent owns bounded growth opportunities after a product exists; the Growth surface is not allowed to fabricate campaigns, analytics, or autonomous company behavior.`
+  - `First release requires meaningful post-product growth signals and next moves, not full growth automation.`
+  - `Growth suggestions must be traceable to the built/released product state and must remain bounded by Wave 4 autonomy limits.`
+  - `Growth does not run before product truth; if there is no skeleton, demo, release, first screen, audience, problem, or core action, it must recommend closing product truth first.`
+  - `Growth recommendations must come from the actual product state, not from a generic marketing playbook.`
+  - `Growth proposes one focused next action at a time, not a full marketing plan.`
+  - `Growth must not claim users, revenue, conversions, virality, market fit, scalability, or campaign success without real data.`
+  - `Growth may propose product changes, but Mutation / Change Agent decides whether product truth changes.`
+  - `Growth may recommend demo/share, but Share / Demo Agent owns safe external visibility and public-link creation.`
+  - `Growth may prepare campaigns and drafts, but external publication, scheduling, replies, deletion, direct messages, or ad spend require explicit user approval and connected provider permissions.`
+- preserve:
+  - verified product state
+  - release/demo state
+  - user-facing bounded opportunity framing
+- remove_from_active_path:
+  - generic marketing dashboards
+  - fake analytics or campaign data
+  - growth suggestions before product truth exists
+- build:
+  - Growth Agent role/contract
+  - Agent Reality Gate for Growth
+  - product-readiness gate
+  - opportunity envelope
+  - product-signal input from release/build state
+  - one-next-move recommendation policy
+  - generic-marketing rejection policy
+  - no-unverified-outcome-claims policy
+  - campaign draft and campaign execution boundary
+  - provider permission model for social/email execution
+  - handoff policy to Mutation / Change, Share / Demo, Release, Verification, and Visual Build agents
+  - visible Growth surface consumption of agent-owned opportunities
+- done when:
+  - Growth Agent contract exists in docs and code
+  - Agent Reality Gate is passed for `GROW-AGT-001`
+  - tests prove Growth does not appear as product truth before a built/released product signal exists
+  - tests prove suggested opportunities are bounded and traceable to the current product state
+  - tests prove Growth returns one focused next action rather than a generic plan
+  - tests prove Growth does not claim users, revenue, conversion, virality, scalability, or campaign success without real data
+  - tests prove product-changing Growth recommendations route to `Mutation / Change Agent`
+  - tests prove demo/share recommendations route to `Share / Demo Agent` and cannot create public links directly
+  - tests prove campaign publication, scheduling, replies, deletion, direct messages, or spend cannot occur without explicit user approval and provider permissions
+  - live browser proof 1: vague idea with no skeleton asks to close product/demo truth first and does not suggest generic campaigns
+  - live browser proof 2: lead-management skeleton gets a small product-connected audience experiment with a truthful success metric, not generic TikTok/SEO/social advice
+  - live browser proof 3: Growth recommendation that adds `follow-up today` is marked as product-changing and routed to Mutation
+  - live browser proof 4: `prepare something to send to clients` routes to Share / Demo and does not create a public link directly
+  - live browser proof 5: campaign request produces drafts/proposal only and blocks external actions until approval and provider connection
+- not trueGreen:
+  - Growth is only a static dashboard
+  - Growth invents analytics/campaigns/users
+  - Growth can run before product/release truth exists
+  - Growth returns generic marketing ideas disconnected from the built product
+  - Growth proposes multiple unprioritized next moves instead of one bounded action
+  - Growth changes product truth without Mutation / Change Agent
+  - Growth creates public/demo/share links without Share / Demo Agent
+  - Growth publishes, schedules, replies, deletes, sends messages, or spends money without explicit approval and provider permissions
+  - Growth promises results without real evidence
+- closure:
+  - status: `trueGreen`
+  - closed_at: `2026-06-09`
+  - changed_files:
+    - `src/core/growth-agent.js`
+    - `src/core/project-service.js`
+    - `src/server.js`
+    - `web/nexus-ui/adapters/growth-surface-adapter.js`
+    - `web/nexus-ui/screens/GrowthSurfaceScreen.js`
+    - `test/growth-agent.test.js`
+    - `test/growth-surface-canonical-structure-contract.test.js`
+    - `scripts/verify-grow-agt-001-live-proof.mjs`
+  - verification:
+    - `node --check src/core/growth-agent.js`
+    - `node --check src/core/project-service.js`
+    - `node --check src/server.js`
+    - `node --check web/nexus-ui/adapters/growth-surface-adapter.js`
+    - `node --check web/nexus-ui/screens/GrowthSurfaceScreen.js`
+    - `node --check scripts/verify-grow-agt-001-live-proof.mjs`
+    - `node --test test/growth-agent.test.js test/growth-surface-canonical-structure-contract.test.js`
+    - `node scripts/verify-grow-agt-001-live-proof.mjs`
+  - live_evidence:
+    - `/private/tmp/nexus-grow-agt-001-1781018475840-report.json`
+    - `/private/tmp/nexus-grow-agt-001-1781018475840-no-product.png`
+    - `/private/tmp/nexus-grow-agt-001-1781018475840-audience-test.png`
+    - `/private/tmp/nexus-grow-agt-001-1781018475840-mutation.png`
+    - `/private/tmp/nexus-grow-agt-001-1781018475840-share.png`
+    - `/private/tmp/nexus-grow-agt-001-1781018475840-campaign.png`
+  - closure_truth:
+    - `Growth Agent now creates a project-owned growth envelope and the visible Growth surface consumes that agent truth.`
+    - `No-product state blocks Growth and asks to close product/demo truth first.`
+    - `A lead-management skeleton receives one product-connected audience test with a truthful small success metric.`
+    - `Product-changing growth routes to Mutation / Change Agent and does not mutate product truth directly.`
+    - `Client-send/share requests route to Share / Demo Agent and do not create public links directly.`
+    - `Campaign requests produce approval-gated drafts only; publication, scheduling, replies, deletion, direct messages, and spend remain locked behind provider and approval truth.`
+    - `Refresh restores the current Growth Agent decision from project truth.`
+  - boundary:
+    - `GROW-AGT-001 closes bounded post-product opportunity ownership only.`
+    - `It does not close Growth Plugin Layer, provider connection, social execution, SEO/SEM/email/landing experiments, measurement engine, public publishing, release execution, production backend, generated product runtime package, standalone artifact, payments, WhatsApp, or external deployment.`
+  - known_follow_up:
+    - `Continuity debt before broad continuation paths: a broader neighboring test run exposed a next-task adapter expectation mismatch where the expected route was onboarding but the actual route was create. GROW-AGT-001 direct tests and live proof passed, but broad continuity / next-task routing work must not be treated as clean until this debt is resolved or assigned to the correct continuity-routing task.`
+
+#### `GROW-AGT-002 — Social Campaign Execution Agent`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `growth-agent-contract-2026-06-01.md`
+  - `social-campaign-execution-agent-contract-2026-06-01.md`
+  - `GROW-AGT-001`
+- depends_on:
+  - `GROW-AGT-001`
+  - `GROW-PLUG-001`
+  - `GROW-PLUG-002`
+  - `GROW-MEASURE-001`
+  - `SHARE-AGT-001`
+  - `PROV-001`
+  - `SEC-001`
+- canonical_law:
+  - `GROW-AGT-002 owns the Social Campaign Plugin execution path; it is not the whole Growth Plugin Layer.`
+  - `Social Campaign Execution is part of the upcoming release, but only inside a strict approval and provider-permission boundary.`
+  - `V1 real social provider execution is limited to Instagram and Facebook unless another provider is explicitly promoted by a separate task.`
+  - `TikTok, LinkedIn, YouTube, and X / Twitter are draft-only in V1.`
+  - `Social Campaign Execution may prepare and package campaigns, and may schedule or publish only after explicit user approval, provider connection, scoped permissions, and audit history.`
+  - `Campaign-level approval only authorizes campaign preparation; each post requires separate approval before publication in V1.`
+  - `V1 social campaigns are small 2-4 post learning sequences with a clear narrative, not full marketing automation.`
+  - `Draft-only campaign preparation is not the same as external execution.`
+  - `Provider permissions must distinguish draft, schedule, publish, reply, delete/moderate, direct-message, and ad-spend scopes.`
+  - `First release blocks reply, moderation/deletion, direct messages, ad spend, and account/page edits even if a future provider could support them.`
+  - `No social provider, email provider, or ad platform can become the source of Nexus product truth.`
+- v1_allowed_if_scoped:
+  - prepare campaign plan
+  - prepare post drafts
+  - prepare copy variants
+  - prepare demo/image/video briefs from a real artifact
+  - propose schedule
+  - create drafts
+  - schedule with explicit approval and provider permission
+  - publish with explicit approval and provider permission
+  - read real provider results only with provider permission and no fabricated metrics
+  - manual copy fallback when provider is not connected
+  - suggested manual replies, without posting them
+- blocked_in_first_release:
+  - ad spend
+  - automatic replies as the user
+  - delete comments
+  - hide comments
+  - change page/account details
+  - send private messages
+  - guarantee outcomes
+- build:
+  - Social Campaign Execution Agent role/contract
+  - Agent Reality Gate for Social Campaign Execution
+  - Social Campaign Plugin adapter from Growth Plugin Layer
+  - provider permission contract
+  - external action approval envelope
+  - draft/schedule/publish state separation
+  - Instagram/Facebook real-provider boundary
+  - draft-only channel boundary for TikTok/LinkedIn/YouTube/X
+  - per-post approval model
+  - small narrative campaign model
+  - missing asset handoff to Visual Build or Share / Demo
+  - manual copy fallback
+  - comment summary and sensitive-comment protection
+  - campaign audit trail
+  - safe failure and revoke/stop controls
+  - Growth surface handoff from recommendation to campaign draft
+  - Share / Demo safety handoff when campaign includes a demo or shareable artifact
+- done when:
+  - Social Campaign Execution Agent contract exists in docs and code
+  - Agent Reality Gate is passed for `GROW-AGT-002`
+  - provider scope model exists for each supported provider
+  - tests prove only Instagram and Facebook can enter real provider execution in V1
+  - tests prove TikTok, LinkedIn, YouTube, and X stay draft-only unless explicitly promoted
+  - every external schedule/publish action requires explicit approval unless a narrower persistent permission was granted intentionally
+  - tests prove campaign-level approval cannot publish individual posts
+  - tests prove each post requires explicit approval before V1 publication
+  - tests prove draft preparation cannot publish
+  - tests prove schedule and publish fail closed without provider permission and user approval
+  - tests prove reply/delete/hide/moderate/direct-message/ad-spend/account-edit actions are blocked in first release
+  - tests prove missing assets route to Visual Build or Share / Demo, or stay text-only draft with missing asset marked
+  - tests prove real provider result intake cannot fabricate engagement, conversion, revenue, or user counts
+  - tests prove comments are summarized and sensitive examples are not exposed by default
+  - tests prove campaigns derive from product state and route to Share / Demo when a demo link or external preview is needed
+  - live browser proof 1: campaign request creates product-connected drafts and marks them ready for approval without provider action
+  - live browser proof 2: scheduling without provider connection returns `needs-provider`
+  - live browser proof 3: publishing with provider but without explicit approval returns `needs-approval`
+  - live browser proof 4: approved scheduling runs only with schedule scope and records history
+  - live browser proof 5: reply/moderate/direct-message/ad-spend request is blocked as out of first-release scope
+  - live browser proof 6: TikTok/LinkedIn/YouTube/X request creates draft-only output and manual copy fallback
+  - live browser proof 7: missing media asset is marked and routed to Visual Build or Share / Demo
+  - live browser proof 8: provider results are real, comments are summarized, and history records the learning summary
+- not trueGreen:
+  - a campaign button pretends to publish without provider integration
+  - drafts and external publication share the same state
+  - approval is ambiguous or implied
+  - campaign-level approval publishes posts without per-post approval
+  - non-Instagram/Facebook provider acts as real connected execution without explicit provider promotion task
+  - social execution can spend money, reply, delete, message, or publish silently
+  - campaign results are fabricated
+  - campaign content is disconnected from product truth
+  - provider connection is treated as blanket permission
+  - comments are exposed wholesale or sensitive content leaks
+  - missing media is treated as existing
+
+#### `GROW-PLUG-001 — External Growth Capability Layer contract`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `growth-plugin-layer-contract-2026-06-01.md`
+  - `GROW-AGT-001`
+- depends_on:
+  - `GROW-AGT-001`
+  - `PROV-001`
+  - `SEC-001`
+- canonical_law:
+  - `Nexus chooses the growth capability by product goal, not by provider availability.`
+  - `Nexus chooses one primary recommended Growth step by default; alternatives are shown only when there is a real tradeoff.`
+  - `Growth Plugin execution requires a clear product or skeleton, clear audience, clear core value, and a demo/screen/page/artifact that can be shown, tested, or improved.`
+  - `Channel names are secondary in the user experience; Nexus presents the growth move first and the tool second.`
+  - `Draft-only mode must work without provider connection, but no draft may be described as published, sent, scheduled, or measured.`
+  - `Plugin selection priority is product/audience fit, speed of learning, low risk, low cost, then likelihood of bringing users.`
+  - `Every plugin must return a small success metric.`
+  - `Every external growth capability must be represented as a plugin with when-to-use, when-not-to-use, allowed actions, blocked actions, provider requirements, approval requirements, output envelope, success metric, failure behavior, and handoff rules.`
+  - `Creative growth providers may generate ads, motion videos, product launch visuals, founder/story posts, brand assets, app-screen promos, and campaign variants, but Growth must select and constrain them by product goal, audience, core value, showable artifact, provider permission, approval, and measurement plan.`
+  - `Growth plugins can move the product toward the market, but they cannot replace Product Graph, Mutation, Share/Demo, Release, provider gateway, or user approval.`
+  - `No Growth plugin may promise traffic, ranking, revenue, conversions, virality, or market fit without real evidence.`
+  - `Every plugin result must be recorded in product-readable history without exposing internal technical noise.`
+- build:
+  - Growth Plugin Layer contract
+  - plugin selection criteria
+  - product-readiness gate
+  - one-primary-recommendation policy
+  - optional-alternatives-only-when-justified policy
+  - channel-as-secondary-detail presentation
+  - draft-only mode without provider connection
+  - small success metric requirement
+  - shared plugin output envelope
+  - approval/provider boundary
+  - product-history summary output
+  - no-fake-results law
+  - handoff rules to Social, SEO, SEM, Email, Landing Experiment, Measurement, Share, Mutation, Release, and Verification
+  - creative asset generation plugin capability that can route to provider-backed image/video/brand/ad generation only through `PROV-001`, product truth, approval, and history
+  - creative-to-growth normalization: every generated creative must include audience, claim, target channel, source product artifact, usage boundary, approval state, measurement hypothesis, and fallback/manual-copy path
+- done when:
+  - Growth Plugin Layer contract exists in docs and code
+  - tests prove plugin execution is blocked until product/skeleton, audience, core value, and showable artifact exist
+  - tests prove Growth chooses a plugin by product goal and readiness
+  - tests prove the user sees one primary recommendation by default
+  - tests prove alternatives appear only when a real tradeoff exists
+  - tests prove channel/tool label is secondary to the recommended move
+  - tests prove draft-only mode can prepare content without provider connection
+  - tests prove drafts cannot be called published, sent, scheduled, or measured
+  - tests prove selection follows product fit, learning speed, risk, cost, then acquisition potential
+  - tests prove every plugin output includes a small success metric
+  - tests prove provider availability alone cannot force plugin selection
+  - tests prove missing provider returns `needs-provider`
+  - tests prove missing approval returns `needs-approval`
+  - tests prove no plugin can publish, send, spend, or expose externally without explicit approval and provider scope
+  - tests prove creative-provider output is draft-only until approval and provider scope exist, and cannot be described as published, scheduled, running, viral, profitable, or revenue-driving without real evidence
+  - tests prove creative assets are grounded in the selected skeleton/product/package truth instead of generic brand text
+  - tests prove product-changing plugin recommendations route to `Mutation / Change Agent`
+  - tests prove plugin results are saved to product-readable history
+  - live proof shows Growth selecting different plugins for social, SEO, SEM, email, landing experiment, and measurement requests
+- closure_update:
+  - `2026-06-11: GROW-PLUG-001 implemented and verified. Added product-owned Growth Plugin Layer code, wired it into Growth Agent truth, surfaced it in the Growth screen, and verified product-readiness gating, one-primary-recommendation policy, provider/approval boundaries, product-change handoff, and no fake outcome claims.`
+  - `Evidence: node --check src/core/growth-plugin-layer.js; node --check src/core/growth-agent.js; node --check web/nexus-ui/adapters/growth-surface-adapter.js; node --check web/nexus-ui/screens/GrowthSurfaceScreen.js; node --check scripts/verify-grow-plug-001-live-proof.mjs.`
+  - `Evidence: node --test test/growth-plugin-layer.test.js test/growth-agent.test.js test/growth-surface-canonical-structure-contract.test.js test/provider-gateway-boundary.test.js test/mutation-change-agent.test.js passed 20/20.`
+  - `Live evidence: NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-grow-plug-001-live-proof.mjs passed against a restarted 4011 server. The proof created a real authenticated project, selected audience, SEO, SEM, email, landing, measurement, and social campaign plugin paths, verified visible Growth screen data attributes and user-facing copy, verified no fake outcome copy, refreshed the browser, and confirmed restored project truth preserved social-campaign-draft. Report: /private/tmp/nexus-grow-plug-001-1781192793899-report.json.`
+  - `Truth boundary: this closes the Growth capability selection layer only. It does not publish, send email, spend ad budget, connect providers, claim metrics, or close GROW-PLUG-002, GROW-MEASURE-001, GROW-AGT-002, GROW-SEO-001, GROW-SEM-001, GROW-EMAIL-001, or GROW-LAND-001.`
+- regression guards:
+  - external tools appear as standalone product surfaces without Growth ownership
+  - plugin runs from vague idea without showable product state
+  - user is shown a plugin marketplace instead of a recommended next move
+  - multiple unprioritized recommendations are shown by default
+  - plugin output is free text only
+  - plugin lacks a small success metric
+  - plugin can become product truth owner
+  - plugin changes product truth without Mutation
+  - plugin can bypass approval, provider scope, or Share/Mutation/Release handoff
+  - creative output is treated as growth success without measurement or real external evidence
+  - provider-generated ads/videos/posts are disconnected from product truth, selected skeleton direction, target audience, or package/demo artifact
+  - draft-only output is presented as external action or real result
+
+#### `GROW-PLUG-002 — First-release Growth Plugin registry`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `growth-plugin-layer-contract-2026-06-01.md`
+- depends_on:
+  - `GROW-PLUG-001`
+- canonical_law:
+  - `First release must include a bounded Growth Plugin registry for Social, SEO, SEM / Ads, Email Campaign, Landing Page Experiment, and Analytics / Measurement.`
+  - `The registry is not a marketplace. It is a canonical list of available growth capabilities, fit rules, provider requirements, risk limits, and V1 scope.`
+  - `The registry is mostly internal in V1; users may choose simple intent modes like social, search, email, demo, or landing page, not plugin internals.`
+- build:
+  - Social Campaign Plugin definition
+  - SEO Plugin definition
+  - SEM / Ads Plugin definition
+  - Email Campaign Plugin definition
+  - Landing Page Experiment Plugin definition
+  - Analytics / Measurement Plugin definition
+  - V1 scope and blocked scopes for each plugin
+  - internal registry with simple user-facing intent labels
+  - draft-only capability flags
+  - product-history summary rules
+- done when:
+  - registry exists in docs and code
+  - every V1 plugin declares when-to-use and when-not-to-use
+  - every V1 plugin declares provider/approval/result requirements
+  - every V1 plugin declares draft-only support and hard prohibitions
+  - every V1 plugin declares its product-history summary shape
+  - tests prove registry can return the correct plugin by goal
+  - tests prove user-facing labels are simple intents, not a marketplace
+  - tests prove unsupported future plugins are marked unavailable instead of faked
+- not trueGreen:
+  - registry is only a hardcoded UI menu
+  - registry exposes a marketplace in V1
+  - plugins have no action boundaries
+  - future plugins like retargeting or marketplaces appear as active without implementation
+
+#### `GROW-SEO-001 — SEO action path`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `growth-plugin-layer-contract-2026-06-01.md`
+- depends_on:
+  - `GROW-PLUG-002`
+  - `GROW-MEASURE-001`
+  - `MUT-001`
+  - `VBUILD-001`
+  - `PROV-001`
+  - `SHARE-AGT-001`
+- canonical_law:
+  - `SEO Plugin helps create search-understandable page structure and content, but it cannot guarantee ranking, traffic, indexing, or results.`
+  - `SEO V1 drafts first and applies page changes only after user approval.`
+  - `SEO may run only when there is a landing page, explainable demo, clear product screen, or sharp product description with audience and problem.`
+  - `SEO message, structure, or product-truth changes must pass through Mutation / Change Agent.`
+  - `SEO visible page updates must pass through Visual Build Agent.`
+  - `SEO changes that affect public pages must pass Share / Demo or Release boundaries before becoming externally visible.`
+  - `Google Search Console is optional / post-release for V1; Google Analytics belongs primarily to GROW-MEASURE-001.`
+  - `SEO must support Hebrew and RTL in V1.`
+- build:
+  - SEO Plugin implementation contract
+  - title/meta/headings/opening-copy/FAQ/content recommendation envelope
+  - search-intent input model
+  - initial keyword hypothesis model with approval
+  - draft-before-apply workflow
+  - existing-page-first workflow
+  - new-page proposal workflow with approval and clear reason
+  - Mutation handoff for product-message changes
+  - Visual Build handoff for visible page updates
+  - Search Console future/provider boundary
+  - Analytics-as-measurement boundary
+  - Hebrew/RTL SEO rules
+  - SEO product-history events
+  - release/share handoff for public visibility
+- done when:
+  - SEO action path exists in docs and code
+  - tests prove SEO does not run before page/demo/product-screen/sharp-description readiness exists
+  - tests prove SEO output is product-connected and not generic keyword stuffing
+  - tests prove SEO drafts title, meta description, headings, opening copy, FAQ, and keyword hypotheses before applying
+  - tests prove user approval is required before applying SEO changes to a page
+  - tests prove new page creation requires approval and clear growth reason
+  - tests prove product-message changes route to Mutation / Change Agent
+  - tests prove visible page changes route to Visual Build Agent
+  - tests prove Google Analytics data is consumed only through GROW-MEASURE-001 measurement truth
+  - tests prove Search Console absence results in draft/page-improvement mode, not fake provider data
+  - tests prove SEO cannot promise ranking, first-page placement, traffic, leads, sales, conversions, organic growth, or success
+  - tests prove search volume, competition, rankings, clicks, impressions, or queries are marked as real only when provider data exists
+  - tests prove Hebrew/RTL title, description, FAQ, and page structure are supported
+  - tests prove SEO history records keywords selected, title/meta/FAQ changes, approval state, Search Console missing, and applied changes in product-readable language
+  - tests prove public SEO changes cannot bypass Share / Demo or Release
+  - live proof 1: product page gets SEO draft recommendations without claiming Google results
+  - live proof 2: approved SEO change routes through Mutation/Visual Build as needed before visible page update
+  - live proof 3: missing Search Console keeps SEO in draft/page-improvement mode
+  - live proof 4: Hebrew RTL product page receives natural Hebrew SEO copy, not robotic translation
+- not trueGreen:
+  - SEO is only a text generator
+  - SEO runs before product/page readiness
+  - SEO publishes public pages directly
+  - SEO applies changes without approval
+  - SEO changes product message without Mutation
+  - SEO updates visible page without Visual Build
+  - SEO fabricates search volume, ranking, traffic, or Search Console data
+  - SEO treats Google Analytics as its own provider truth instead of Measurement
+  - SEO lacks Hebrew/RTL support
+
+#### `GROW-SEM-001 — SEM / paid ads action path`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `growth-plugin-layer-contract-2026-06-01.md`
+- depends_on:
+  - `GROW-PLUG-002`
+  - `GROW-MEASURE-001`
+  - `PROV-001`
+  - `SEC-001`
+- canonical_law:
+  - `SEM / Ads Plugin may prepare a paid test, but cannot launch, spend, change budget, or optimize campaigns without explicit approval, provider connection, scoped spend permission, and measurement plan.`
+  - `Paid acquisition is not allowed before a product-connected landing/demo path and success metric exist.`
+  - `V1 SEM defaults to full draft plus publishing preparation; real paid execution is limited to Google Ads only if the provider is connected and explicit spend execution is enabled.`
+  - `Organic social belongs to GROW-AGT-002; any action involving paid promotion, ad spend, or budget belongs to GROW-SEM-001.`
+  - `Every dangerous paid action requires separate explicit approval: campaign, each ad, budget, budget change, and activation.`
+  - `Provider connection is not spend permission, and a general chat yes is not enough for spend activation.`
+  - `SEM may recommend landing-page, message, or targeting changes, but visible changes route through Visual Build and product-truth changes route through Mutation.`
+  - `SEM may consume conversion and provider result truth, but measurement ownership belongs to GROW-MEASURE-001.`
+- build:
+  - SEM Plugin implementation contract
+  - ad copy and keyword/audience hypothesis envelope
+  - budget approval envelope
+  - provider scope gate
+  - measurement requirement
+  - draft-only paid campaign mode when provider is missing
+  - Google Ads first-provider boundary for V1 real execution
+  - hard first-campaign budget cap
+  - separate approvals for campaign, ad, budget, budget change, and activation
+  - paid-social routing boundary from Social Campaign Agent into SEM
+  - safe automatic stop rules for budget, provider, landing-page, and performance-risk failures
+  - product-readable paid campaign history events
+- done when:
+  - SEM action path exists in docs and code
+  - tests prove paid action cannot spend without approval and ad-spend scope
+  - tests prove campaign cannot launch without landing/demo path and metric
+  - tests prove SEM cannot guarantee traffic, leads, conversions, or revenue
+  - tests prove provider connection does not equal spend permission
+  - tests prove missing provider leaves SEM in draft-only mode without claiming publication
+  - tests prove paid social boosts route to SEM instead of organic Social Campaign execution
+  - tests prove each paid-risk step requires its own approval
+  - tests prove SEM cannot apply landing-page or product-message changes directly
+  - tests prove measurement values are read only from GROW-MEASURE-001 or connected provider truth
+  - tests prove predefined safe-stop rules can stop spend without modifying ads or budget
+  - live proof shows a paid-test proposal remains draft until approval and provider scope exist
+  - live proof shows a Google Ads V1 draft path with budget cap, landing/demo path, and one small success metric
+- not trueGreen:
+  - ad campaign launches from a suggestion
+  - budget is implied
+  - provider connection is treated as spend permission
+  - paid results are fabricated
+  - SEM spends money by default
+  - SEM runs before a landing page, demo, preview, release, or share link exists
+  - SEM changes a landing page or product message directly
+  - SEM raises budget, changes ads, or optimizes a running campaign without approval
+  - paid social is handled as organic social
+  - budget cap is missing
+  - campaign, ad, budget, budget-change, or activation approval is missing
+
+#### `GROW-EMAIL-001 — Email campaign action path`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `growth-plugin-layer-contract-2026-06-01.md`
+- depends_on:
+  - `GROW-PLUG-002`
+  - `GROW-MEASURE-001`
+  - `MUT-001`
+  - `VBUILD-001`
+  - `PROV-001`
+  - `SEC-001`
+- canonical_law:
+  - `Email Campaign Plugin may prepare product-connected outreach, but cannot send without explicit approval, email provider connection, lawful audience basis, and scoped send permission.`
+  - `Nexus must not scrape contacts, spam users, fabricate open/click/reply metrics, or guarantee replies.`
+  - `V1 Email defaults to drafts plus test send; full audience send is never the default.`
+  - `Mailchimp and SendGrid are the preferred V1 providers; Gmail is limited to test send or small personal email, and ConvertKit is optional/post-release unless promoted.`
+  - `A campaign-level approval may prepare a sequence, but every real email send requires separate explicit approval in V1.`
+  - `Audience send is blocked unless the audience source is clear and the user confirms the right to send.`
+  - `Email may recommend product-message or landing-page changes, but product truth routes through Mutation and visible page changes route through Visual Build.`
+  - `Email may display basic provider results, but measurement ownership belongs to GROW-MEASURE-001.`
+- build:
+  - Email Plugin implementation contract
+  - subject/body/sequence draft envelope
+  - audience source and consent boundary
+  - provider send approval gate
+  - result intake boundary
+  - test-send path to user
+  - one-email real send path with explicit approval
+  - staged sequence draft path with per-email approval for real sending
+  - Mailchimp/SendGrid provider boundary
+  - Gmail test/small-personal boundary
+  - two-variant subject/body draft limit for V1
+  - basic list cleanup: duplicate removal, invalid address detection, and basic field separation
+  - audience-source confirmation gate
+  - product-readable email history events
+- done when:
+  - Email action path exists in docs and code
+  - tests prove drafts cannot send
+  - tests prove sending fails closed without approval, provider, audience basis, and send scope
+  - tests prove email metrics cannot be fabricated
+  - tests prove default mode is draft plus test send
+  - tests prove audience send is blocked when audience source is unclear
+  - tests prove a campaign approval can prepare a sequence but cannot send every email
+  - tests prove each real email in a sequence requires separate approval
+  - tests prove Gmail cannot run broad marketing campaigns in V1
+  - tests prove cold lists without source are rejected
+  - tests prove Email cannot change product truth or landing page directly
+  - tests prove provider results are consumed through GROW-MEASURE-001 measurement truth
+  - tests prove safe failures preserve retry without claiming send success
+  - live proof shows email sequence draft separated from real sending
+  - live proof shows test send before audience send
+  - live proof shows missing audience permission leaves output in draft-only mode
+- not trueGreen:
+  - email sends from draft state
+  - contacts are invented or scraped
+  - consent/audience source is missing
+  - open/click/reply metrics are fabricated
+  - full audience send is default
+  - real send happens without provider, audience source, send scope, and explicit approval
+  - one approval silently sends a whole sequence
+  - broad campaign is sent through Gmail
+  - cold audience list is accepted without source
+  - Email changes product message or landing page directly
+  - provider result truth bypasses GROW-MEASURE-001
+
+#### `GROW-LAND-001 — Landing Page Experiment action path`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `growth-plugin-layer-contract-2026-06-01.md`
+- depends_on:
+  - `GROW-PLUG-002`
+  - `VBUILD-001`
+  - `MUT-001`
+  - `SHARE-AGT-001`
+  - `GROW-MEASURE-001`
+- canonical_law:
+  - `Landing Page Experiment Plugin may prepare or modify a growth landing experiment, but product-truth changes require Mutation and external/public visibility requires Share / Demo or Release.`
+  - `Landing experiments test messages; they do not rewrite the product silently.`
+  - `V1 landing pages default to internal draft or experiment, not public publication.`
+  - `A landing page is a growth asset connected to the product; it is not automatically part of the product and must never become the product-truth owner.`
+  - `New landing pages require at least target audience, problem, core value, and clear product direction; otherwise the flow returns to Discovery or Build.`
+  - `External visibility requires explicit user approval and a Share / Demo or Release gate.`
+  - `Landing page measurement belongs primarily to GROW-MEASURE-001; the page produces events but does not own result truth.`
+  - `Landing pages must support Hebrew and RTL in V1.`
+- build:
+  - Landing Experiment Plugin implementation contract
+  - hypothesis/action/CTA/copy variant envelope
+  - Visual Build handoff for visible changes
+  - Mutation handoff for product-truth changes
+  - Share/Release handoff for public visibility
+  - draft/preview/shared-demo/release state boundary
+  - two-version manual comparison limit for V1
+  - landing readiness gate for audience/problem/core value/product direction
+  - basic lead capture form with consent boundary
+  - basic Nexus experiment-leads storage when no lead system is connected
+  - measurement event envelope for views, clicks, CTA clicks, form submissions, time on page, and manual feedback
+  - product-readable landing experiment history events
+  - safe failure states for unclear product, missing approval, missing measurement, broken form, unsaved page, failed share, or unapproved claim
+- done when:
+  - Landing experiment path exists in docs and code
+  - tests prove landing changes route to Visual Build and Mutation where needed
+  - tests prove external visibility cannot bypass Share / Demo or Release
+  - tests prove conversion data is not fabricated
+  - tests prove a landing page cannot be created before audience, problem, core value, and product direction are clear
+  - tests prove a landing draft cannot be presented as public, shared, or released
+  - tests prove publication requires explicit user approval and Share / Demo or Release gate
+  - tests prove product-message, audience, promise, price, or capability changes route through Mutation
+  - tests prove visual-only landing changes route through Visual Build
+  - tests prove lead capture requires consent and defined storage
+  - tests prove fake customers, fake metrics, fake testimonials, and unapproved claims are blocked
+  - tests prove landing events feed GROW-MEASURE-001 instead of claiming success locally
+  - tests prove Hebrew and RTL landing output exists in V1
+  - live proof shows a landing experiment proposal tied to product state and metric
+  - live proof shows draft -> preview -> shared demo or release cannot skip approval gates
+  - live proof shows one landing draft with CTA and consent form remains internal until approved
+- not trueGreen:
+  - landing experiment publishes itself
+  - copy variants change product truth silently
+  - conversion metrics are invented
+  - landing page is created from unclear product/audience/value
+  - landing draft is treated as public page
+  - Share / Demo or Release gate is bypassed
+  - landing page becomes product-truth owner
+  - lead form collects details without consent or defined storage
+  - fake proof, customers, numbers, or testimonials appear
+  - landing experiment claims success without real measurement
+  - Hebrew/RTL is not supported
+
+#### `GROW-MEASURE-001 — Growth measurement and result truth`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `growth-plugin-layer-contract-2026-06-01.md`
+- depends_on:
+  - `GROW-PLUG-001`
+  - `PROV-001`
+  - `OBS-001`
+- canonical_law:
+  - `Growth measurement must separate real provider data, manual observations, and hypotheses.`
+  - `Nexus may summarize learning, but cannot fabricate analytics, imply significance from weak data, or present provider data outside the user's permission boundary.`
+  - `A measurement is real only when it has a clear source; source-less data is not truth.`
+  - `Manual user-entered results count only as manual measurement and must never be presented as connected-provider data.`
+  - `Every external growth action must define a small success metric before publishing, sending, sharing, or launching.`
+  - `Measurement must separate hypothesis, result, and insight.`
+  - `V1 defaults to initial signal / indication language, not proof.`
+  - `Every conclusion must include a simple confidence level: low, medium, or high.`
+  - `Measurement says what happened; Growth Agent decides the next growth action; Mutation decides product-truth changes.`
+  - `Measurement stays internal by default and may appear in Share / Demo only with explicit approval and non-sensitive data.`
+- build:
+  - measurement envelope
+  - manual observation model
+  - provider result intake boundary
+  - fake metric prevention
+  - learning summary contract
+  - Nexus internal measurement event model
+  - required V1 internal events: demo viewed, share link opened, primary action clicked, form submitted, lead created, action approved, landing page opened, test email sent, action failed, action completed
+  - measurement record schema with timestamp, source, source type, growth path, experiment id, metric, value, privacy classification, confidence level, and linked artifact/action
+  - hypothesis/result/insight separation
+  - manual measurement labeling
+  - pending measurement retry with bounded attempts
+  - multi-source aggregation that preserves source per datapoint
+  - conflict summary when sources disagree
+  - user-facing simple summary model
+  - sensitive data redaction/summarization boundary
+  - Growth handoff for next-step recommendations
+  - Mutation handoff for product-truth changes
+  - product-readable history plus internal measurement log
+- done when:
+  - Growth measurement path exists in docs and code
+  - tests prove provider metrics require provider connection and read scope
+  - tests prove manual observations are labeled as manual
+  - tests prove fabricated traffic, ranking, conversion, revenue, and user counts are rejected
+  - tests prove every measurement record stores source, timestamp, growth path, experiment id, and metric
+  - tests prove source-less data cannot be treated as truth
+  - tests prove external growth actions cannot execute without a defined success metric
+  - tests prove draft-only growth actions can exist without measurement while external actions cannot
+  - tests prove hypotheses, results, and insights are stored and shown separately
+  - tests prove one data point cannot produce "it worked" or "proof" language
+  - tests prove confidence level is present on every conclusion
+  - tests prove provider failure, missing permission, partial data, and conflicting sources fail safely
+  - tests prove multi-source summaries preserve each source
+  - tests prove sensitive measurement data is not exposed in Share / Demo without approval
+  - tests prove next-step recommendations route to Growth Agent
+  - tests prove product changes from measurement route to Mutation
+  - live proof shows a campaign/SEO/landing result summary that distinguishes real data from assumptions
+  - live proof shows an internal Nexus event and a manual user report stored with different source types
+  - live proof shows unavailable provider measurement produces "measurement not available yet" and no success inference
+- not trueGreen:
+  - metrics are hardcoded
+  - manual notes appear as provider data
+  - weak data is presented as proof
+  - provider data leaks beyond approved visibility
+  - data without source is treated as truth
+  - estimated data is presented as fact
+  - search volume, rankings, views, conversions, comments, or results appear without measured source
+  - uncertainty is hidden
+  - conflicting data is collapsed into one confident conclusion
+  - measurement changes the product directly
+  - small data produces large product or growth claims
+  - sensitive data is exposed in shared/demo surfaces without approval
+
+#### `EXP-006 — Growth surfaced after product, not before it`
+- status: `new-proposed`
+- type: `release-blocker`
+- agent_coverage:
+  - `Growth Agent`
+- depends_on:
+  - `GROW-AGT-001`
+  - `GROW-PLUG-001`
+  - `GROW-PLUG-002`
+  - `GROW-AGT-002`
+  - `GROW-SEO-001`
+  - `GROW-SEM-001`
+  - `GROW-EMAIL-001`
+  - `GROW-LAND-001`
+  - `GROW-MEASURE-001`
+  - `SURF-005`
+
+#### `STD-HANDOFF-AGT-001 — Studio handoff agent web-to-desktop boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-01 live-agent gap audit`
+  - `EXP-007`
+  - `SURF-008`
+  - `nexus-studio-canonical-product-system-2026-05-31.md`
+- depends_on:
+  - `EXP-004`
+  - `SURF-008`
+  - `STD-DOOR-001`
+  - `STD-DESIGN-001`
+- canonical_law:
+  - `The Studio handoff agent decides when Nexus Web should recommend, open, or defer Nexus Studio; the Studio boundary surface is not the agent.`
+  - `Studio is desktop-local deep mode. Web may explain/connect/open Studio, but must not pretend the full Studio app exists inside the browser.`
+  - `The handoff must be bidirectional: Web knows what requires Studio, and Studio can report accepted truth back to Web/cloud safely.`
+- preserve:
+  - Web/cloud canonical truth
+  - Studio desktop-local boundary
+  - Studio door/design contract
+- remove_from_active_path:
+  - fake `/studio` web IDE behavior
+  - Studio recommendations with no capability/status decision
+  - one-way handoff that cannot return accepted truth to Web
+- build:
+  - Studio handoff agent role/contract
+  - handoff decision envelope
+  - installed/connected/unavailable states
+  - bidirectional Web <-> Studio return contract
+- done when:
+  - Studio handoff agent contract exists in docs and code
+  - tests prove Web recommends Studio only through the handoff decision path
+  - tests prove unavailable Studio state has a truthful fallback
+  - live browser proof shows Studio boundary surface as a door/bridge, not a full web Studio
+- not trueGreen:
+  - `/studio` becomes a fake desktop app
+  - Studio handoff is only a button/link
+  - Web promises local capability without installed/connected Studio truth
+
+#### `EXP-007 — Studio decision gate and handoff path`
+- status: `new-proposed`
+- type: `release-blocker`
+- agent_coverage:
+  - `Studio handoff agent`
+- depends_on:
+  - `STD-HANDOFF-AGT-001`
+- note:
+  - `EXP-007` cannot define Studio itself. It consumes the Studio door/design contract and decides when Nexus should recommend handoff.
+
+#### `EXP-008 — Offline/sync truthful boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- depends_on:
+  - `EXP-007`
+  - `STD-SYNC-001`
+  - `STD-HIST-001`
+- note:
+  - `EXP-008` must consume the Studio sync/history contracts; it cannot invent a parallel offline truth model.
+
+#### `EXP-009 — First-release organization and team membership boundary`
+- status: `trueGreen`
+- type: `release-blocker`
+- depends_on:
+  - `EXP-005`
+  - `ID-001`
+  - `SEC-001`
+- note:
+  - first release must have a truthful organization/team boundary before Nexus can claim multi-user product readiness
+  - advanced enterprise governance remains later, but invitations, members, owners, roles, and project membership cannot remain undefined
+- canonical_law:
+  - `A project-building product cannot treat every user as a single anonymous owner once teams, sharing, providers, release, billing, or deletion are possible.`
+  - `Teams are product ownership truth, not a decorative settings screen.`
+- done_when:
+  - workspace/team identity exists and is tied to account identity
+  - owner, admin, editor/member, and viewer/guest meanings are explicit
+  - invitation, acceptance, removal, ownership transfer, and disabled-member states are implemented or precisely blocked for first release
+  - project membership is explicit, restored after refresh, and enforced through `SEC-001`
+  - user-facing team copy hides internal role/task/provider language
+  - tests prove users cannot see or mutate projects outside their team/project membership
+- not_trueGreen:
+  - teams are only visible labels with no ownership truth
+  - every signed-in user can access every project by URL
+  - provider, release, delete, or billing actions do not know who owns the workspace
+  - first release leaves invitations, role change, or member removal undefined
+- closure:
+  - status: `trueGreen`
+  - closed_at: `2026-06-10`
+  - changed_files:
+    - `src/core/workspace-membership-model.js`
+    - `src/core/project-role-capability-matrix.js`
+    - `src/core/project-service.js`
+    - `src/server.js`
+    - `web/nexus-ui/adapters/loop-adapter.js`
+    - `web/nexus-ui/screens/LoopCoreScreen.js`
+    - `web/nexus-ui/styles/screens.css`
+    - `test/exp-009-team-membership-boundary.test.js`
+    - `test/exp-009-server-team-membership.test.js`
+    - `test/project-role-capability-matrix.test.js`
+    - `test/loop-core-screen-render.test.js`
+    - `scripts/verify-exp-009-live-proof.mjs`
+  - verification:
+    - `node --check src/core/project-service.js`
+    - `node --check src/server.js`
+    - `node --check web/nexus-ui/adapters/loop-adapter.js`
+    - `node --check web/nexus-ui/screens/LoopCoreScreen.js`
+    - `node --check scripts/verify-exp-009-live-proof.mjs`
+    - `node --test test/exp-009-team-membership-boundary.test.js test/exp-009-server-team-membership.test.js test/loop-core-screen-render.test.js test/workspace-membership-model.test.js test/role-assignment-invitation-flow.test.js test/project-role-capability-matrix.test.js test/action-level-project-authorization-resolver.test.js test/workspace-isolation-guard.test.js`
+    - `node scripts/verify-exp-009-live-proof.mjs`
+  - live_evidence:
+    - `/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-exp-009-1781104789034-report.json`
+  - closure_truth:
+    - `Every newly created project now receives explicit team membership truth with owner, supported first-release roles, members, invitations, and a teamMembershipBoundary owned by EXP-009.`
+    - `Project membership survives context rebuild/runCycle through workspaceMetadata preservation instead of being erased by regenerated project context.`
+    - `Accepted invited members can read project/team truth; outsiders and removed members cannot read the project by URL.`
+    - `Owner/admin invite, invitation acceptance, owner-only member removal, and owner-only ownership transfer are implemented for first release.`
+    - `The Build surface shows a user-facing project team summary without exposing EXP-009, provider names, or raw internal role/task labels.`
+  - boundary:
+    - `EXP-009 closes first-release organization/team membership truth for project ownership, invited members, accepted membership, removal, ownership transfer, refresh/rebuild restore, and SEC-001-backed project access enforcement.`
+    - `It does not close ACCT-001 account management, PRIVACY-001 data rights/deletion/export, SSO-001 external identity, BILLING-001 paid billing/entitlements, PROV-001 provider connection governance, or post-release enterprise governance.`
+
+#### `ID-001 — First-release identity and session boundary`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `SURF-002`
+  - `ENG-001`
+  - `ENG-007`
+- canonical_law:
+  - `Nexus first release must define who is using the product, how session truth is created, how it survives refresh, and what a guest/local user can and cannot do.`
+  - `A local QA state, demo route, or browser localStorage state is not first-release identity truth.`
+- field_test_findings:
+  - `2026-06-08 live lead-management field test found that the visible root route behaves like direct project creation while /api/projects returns Authentication required, creating a trust contradiction between visible onboarding and backend identity truth.`
+- done_when:
+  - login, registration, logout, unauthenticated state, bounded loading/error states, session persistence, and refresh recovery have an explicit product path
+  - guest/local-user boundary is explicit
+  - root-entry users see either a clear guest/local mode or a clear registration/login requirement before relying on project persistence
+  - tests prove refresh does not lose valid session/project ownership
+- not_trueGreen:
+  - identity is inferred from QA state
+  - refresh restores a project without authenticated or explicitly guest-scoped ownership
+  - visible entry flow implies persistence while backend project APIs reject the same user as unauthenticated without explanation
+  - auth loading/error can silently fail
+- closure:
+  - status: `trueGreen`
+  - closed_at: `2026-06-09`
+  - changed_files:
+    - `web/app.js`
+    - `web/nexus-ui/adapters/project-adapter.js`
+    - `web/nexus-ui/screens/ProjectCreateScreen.js`
+    - `web/nexus-ui/styles/screens.css`
+    - `test/project-create-screen-render.test.js`
+    - `scripts/verify-id-001-live-proof.mjs`
+  - verification:
+    - `node --check web/app.js`
+    - `node --check web/nexus-ui/adapters/project-adapter.js`
+    - `node --check web/nexus-ui/screens/ProjectCreateScreen.js`
+    - `node --check scripts/verify-id-001-live-proof.mjs`
+    - `node --test test/project-create-screen-render.test.js test/auth-session-project-isolation.test.js`
+    - `node --test --test-name-pattern "signup|durable user|AUTH-SESSION|ID-001|auth flows" test/project-service.test.js test/auth-session-project-isolation.test.js test/project-create-screen-render.test.js`
+    - `node scripts/verify-id-001-live-proof.mjs`
+  - live_evidence:
+    - `/private/tmp/nexus-id-001-1781019344409-report.json`
+    - `/private/tmp/nexus-id-001-1781019344409-active.png`
+    - `/private/tmp/nexus-id-001-1781019344409-after-refresh.png`
+    - `/private/tmp/nexus-id-001-1781019344409-after-logout.png`
+  - closure_truth:
+    - `Create now exposes an ID-001 local-first identity boundary to the user instead of implying invisible persistence.`
+    - `A stored local user is shown as active and is used for project API ownership after refresh.`
+    - `The visible create screen keeps identity truth even when rerendered through route/bootstrap paths.`
+    - `Logout from local mode clears browser identity and the live proof confirms project access becomes 401 without a user identity.`
+    - `Existing signup/login/logout and durable user account flows remain preserved and tested.`
+  - boundary:
+    - `ID-001 closes the first-release local identity/session boundary needed for project ownership, refresh, and visible entry trust.`
+    - `It does not close ACCT-001 account/privacy controls, SEC-001 security isolation hardening, PROV-001 provider gateway, production SSO/OAuth, billing identity, team/org administration, or full privacy deletion/export flows.`
+
+#### `ACCT-001 — First-release account and privacy controls`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `ID-001`
+  - `SEC-001`
+- canonical_law:
+  - `A release user must have a real account boundary; a project-building shell without account controls is not a complete product shell.`
+  - `Account management must be user-owned product truth, not a hidden local identity token or a static settings page.`
+- done_when:
+  - profile/settings path exists for first-release account identity
+  - email, password, display name, active sessions, logout-all, account deletion request, and account security states are implemented or explicitly blocked with user-visible reason
+  - account activity history exists for sensitive account events such as sign in, password change, email change, deletion request, provider connection, billing action, release action, and permission change
+  - account settings link to privacy rights, data export, retention, consent, and deletion truth owned by `PRIVACY-001`
+  - account settings link to billing identity truth owned by `BILLING-001` when paid usage is enabled
+  - account settings link to team/org membership truth owned by `EXP-009` when team usage is enabled
+  - account settings do not expose internal/runtime/provider labels
+- not_trueGreen:
+  - account settings are only a visual screen
+  - changing email, password, deleting account, or viewing account activity is undefined
+  - privacy, billing, team, or provider identity states appear as disconnected screens
+  - user data deletion/export/privacy is claimed here without `PRIVACY-001` truth
+- closure:
+  - status: `trueGreen`
+  - closed_at: `2026-06-10`
+  - changed_files:
+    - `src/core/first-release-account-boundary.js`
+    - `src/core/project-service.js`
+    - `src/server.js`
+    - `web/app.js`
+    - `web/nexus-ui/adapters/settings-adapter.js`
+    - `web/nexus-ui/screens/SettingsScreen.js`
+    - `web/nexus-ui/styles/screens.css`
+    - `test/acct-001-account-boundary.test.js`
+    - `test/acct-001-server-account-boundary.test.js`
+    - `test/guided-task-and-settings-surfaces.test.js`
+    - `scripts/verify-acct-001-live-proof.mjs`
+  - verification:
+    - `node --check src/core/first-release-account-boundary.js`
+    - `node --check src/core/project-service.js`
+    - `node --check src/server.js`
+    - `node --check web/nexus-ui/adapters/settings-adapter.js`
+    - `node --check web/nexus-ui/screens/SettingsScreen.js`
+    - `node --check web/app.js`
+    - `node --check scripts/verify-acct-001-live-proof.mjs`
+    - `node --test test/acct-001-account-boundary.test.js test/acct-001-server-account-boundary.test.js test/guided-task-and-settings-surfaces.test.js test/auth-session-project-isolation.test.js test/exp-009-team-membership-boundary.test.js test/exp-009-server-team-membership.test.js test/action-level-project-authorization-resolver.test.js`
+    - `node scripts/verify-acct-001-live-proof.mjs`
+  - live_evidence:
+    - `/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-acct-001-1781105624394-report.json`
+  - closure_truth:
+    - `Settings now reads a persisted ACCT-001 account boundary from project service instead of rendering a static profile-only surface.`
+    - `Display name and email changes persist to durable user account truth and record account activity; email changes move verification status to pending verification.`
+    - `Password change, logout-all, and account deletion request are stateful first-release account actions with account activity history.`
+    - `Account deletion is recorded as a pending account request and explicitly routed to PRIVACY-001; ACCT-001 does not claim full erasure/export/retention completion.`
+    - `Account settings link to EXP-009 team truth, PRIVACY-001 privacy truth, BILLING-001 billing truth, PROV-001 provider identity, and SSO-001 external identity without exposing task ids or provider internals to the user-facing settings screen.`
+  - boundary:
+    - `ACCT-001 closes first-release local account controls: settings path, profile identity, email-change verification state, local password change boundary, local logout-all/session revoke, deletion request record, account security state, and account activity history.`
+    - `It does not close PRIVACY-001 full deletion/export/retention/consent, SSO-001 external identity, BILLING-001 paid billing/entitlements, PROV-001 provider connection governance, production enterprise account management, or provider-side data deletion.`
+
+#### `SEC-001 — First-release isolation and security boundary`
+- status: `trueGreen`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `ID-001`
+  - `ENG-001`
+  - `FND-002`
+- canonical_law:
+  - `One user must not see or mutate another user's projects, releases, files, provider state, or history.`
+  - `Secrets and provider credentials must never leak to the client or to user-visible agent speech.`
+  - `Authorization must protect actions, not only routes or buttons.`
+  - `Organization roles and project permissions decide who can view, edit, delete, release, connect providers, pay, export, or administer.`
+- done_when:
+  - user/project isolation is enforced and tested
+  - session/token/security-header/CSRF/CORS decisions are explicit for the release runtime
+  - sensitive actions have authorization checks
+  - owner/admin/member/viewer/guest boundaries are explicit and integrated with `EXP-009`
+  - per-project permissions cover view, comment/review, edit/build, mutate product truth, delete, export, release, share externally, connect providers, disconnect providers, pay, manage billing, invite/remove members, and change roles
+  - permission failures are visible, recoverable, and do not mutate hidden project truth
+  - audit records exist for release, provider, billing, deletion/export, role, and security-sensitive actions
+  - tests prove UI hiding alone is not the security boundary
+- not_trueGreen:
+  - isolation is assumed from UI routing
+  - provider/API secrets can reach client state
+  - destructive or release actions lack authorization checks
+  - a member can perform owner/admin actions by direct request
+  - billing, provider, release, or deletion permission is implicit or inherited accidentally
+- closure:
+  - status: `trueGreen`
+  - closed_at: `2026-06-10`
+  - changed_files:
+    - `src/server.js`
+    - `src/core/project-service.js`
+    - `test/server-health-endpoints.test.js`
+    - `scripts/verify-sec-001-live-proof.mjs`
+  - verification:
+    - `node --check src/server.js`
+    - `node --check src/core/project-service.js`
+    - `node --check scripts/verify-sec-001-live-proof.mjs`
+    - `node --test --test-name-pattern "actor-type spoofing|security envelope on newly created projects|project writes when action-level authorization is invalid|unauthenticated project reads|workspace isolation boundary" test/server-health-endpoints.test.js`
+    - `node --test test/action-level-project-authorization-resolver.test.js test/project-permission-schema.test.js test/project-role-capability-matrix.test.js test/workspace-isolation-guard.test.js test/auth-session-project-isolation.test.js`
+    - `node scripts/verify-sec-001-live-proof.mjs`
+  - live_evidence:
+    - `/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-sec-001-1781103596046-report.json`
+  - closure_truth:
+    - `Project role cannot be spoofed through x-actor-type; the server derives role from project/account truth and resolves non-owner spoof attempts as viewer.`
+    - `New projects created through /api/projects receive projectPermissionSchema, roleCapabilityMatrix, tenantIsolationSchema, projectAuthorizationDecision, and workspaceIsolationDecision.`
+    - `Project-scoped routes fail closed when project or security boundary truth is missing.`
+    - `Live proof covered real server create, unauthenticated read 401, owner read 200, outsider read 404, spoofed edit 403 as viewer, workspace mismatch 403, and owner live-events 200.`
+  - boundary:
+    - `SEC-001 closes first-release project isolation, action-level authorization, role-spoof blocking, workspace-isolation enforcement, and live-events authorization for project-backed routes.`
+    - `It does not close EXP-009 full team invitations/membership UX, ACCT-001 account management, PROV-001 provider gateway, PRIVACY-001 privacy rights execution, SSO-001 external identity, USAGE-001 usage/cost guard, BILLING-001 paid billing, LEGAL-001 legal/trust copy, AUTH-TOKEN-001 server-verified session identity, or production enterprise governance.`
+    - `2026-06-10 deep-review narrowing: SEC-001 remains trueGreen only for authorization and isolation after Nexus has resolved an actor identity. It does not prove that the actor identity itself is cryptographically/session verified; that is now owned by AUTH-TOKEN-001.`
+
+#### `AUTH-TOKEN-001 — Server-verified session identity boundary`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `nexus-deep-system-review-2026-06-10.md`
+  - `ID-001 local identity boundary`
+  - `SEC-001 isolation-given-identity boundary`
+- depends_on:
+  - `ID-001`
+  - `ACCT-001`
+  - `SEC-001`
+- blocks:
+  - `PROV-001`
+  - `PRIVACY-001`
+  - `SSO-001`
+  - `BILLING-001`
+  - `USAGE-001`
+  - `REL-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `REL-001`
+  - `REL-002`
+  - `REL-003`
+  - `REL-004`
+  - `REL-006`
+- canonical_law:
+  - `A user id supplied by the browser is not enough identity truth for provider connection, team governance, billing, privacy deletion/export, release, or external actions.`
+  - `Server routes must verify the session identity before applying project, team, provider, billing, privacy, release, or generated-package actions.`
+  - `SEC-001 authorizes actions after identity is established; AUTH-TOKEN-001 establishes that identity.`
+- preserve:
+  - `ID-001` local-first visible entry and account/session UX
+  - `ACCT-001` account controls and activity history
+  - `SEC-001` project isolation and action-level authorization
+  - `EXP-009` team membership truth under the narrower "given verified identity" boundary
+- remove_from_active_path:
+  - trusting arbitrary `x-user-id` or URL user id as release identity
+  - sequential guessable user identity as sufficient access proof
+  - live-events or long-lived streams carrying identity in query strings
+  - provider, billing, privacy, release, or team-admin actions that can run from unverified identity
+- build:
+  - server-verified session token or cookie boundary
+  - session creation, refresh, expiry, logout, revoke-all, and invalid-session states
+  - non-sequential public user identity or equivalent unguessable actor reference
+  - migration boundary from local-first identity to verified session where relevant
+  - live-events authorization that does not rely on user id in the URL
+  - audit entries for session creation, session failure, revocation, sensitive action authorization, and blocked spoof attempts
+  - user-facing recovery states for expired, revoked, wrong-account, and unauthenticated sessions
+- done_when:
+  - tests prove project read/write routes do not trust a forged user id header or query value
+  - tests prove owner/admin/member permissions still work after server session verification
+  - tests prove live-events uses the same verified identity boundary as project restore/read paths
+  - tests prove provider, billing, privacy, release, and team-admin actions fail closed without a verified session
+  - tests prove logout/revoke invalidates future sensitive actions
+  - live proof shows create project -> refresh -> same verified user/project, and forged identity access fails without exposing project data
+- not_trueGreen:
+  - API ownership depends only on a browser-provided user id
+  - user ids are sequential and sufficient for project access
+  - provider, billing, release, privacy, or team actions can be triggered without server-verified identity
+  - live-events identity is passed as a URL query parameter
+  - account settings imply secure session identity while server routes still trust local headers
+- closure_update:
+  - `2026-06-11: AUTH-TOKEN-001 implementation landed. src/core/project-service.js now verifies server-issued access tokens against persisted user auth payload, active session state, revocation state, and expiry. src/server.js now resolves project, settings, account, billing, live-events, project creation, and project-draft ownership through verified session identity instead of trusting x-user-id or userId query values; auth signup/login set a same-origin HttpOnly nexus_access_token cookie; logout clears the cookie. web/app.js stores the returned token bundle, sends Authorization: Bearer for API calls and stream fetches, and no longer appends userId to live-events URLs.`
+  - `Verification passed 2026-06-11: node --check src/server.js; node --check src/core/project-service.js; node --check web/app.js; node --check test/auth-token-001-server-verified-session.test.js; node --check scripts/verify-auth-token-001-live-proof.mjs; node --test test/auth-token-001-server-verified-session.test.js test/acct-001-server-account-boundary.test.js test/exp-009-server-team-membership.test.js test/auth-session-project-isolation.test.js; node --test --test-name-pattern "project writes when action-level authorization is invalid|unauthenticated project reads|workspace isolation boundary|actor-type spoofing|security envelope on newly created projects|live-events" test/server-health-endpoints.test.js.`
+  - `Live proof passed 2026-06-11 against http://127.0.0.1:4011 with NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-auth-token-001-live-proof.mjs. The proof created owner and outsider users, created auth-token-project-1781187325767 with the owner token, proved a forged x-user-id header alone returns 401, proved the owner token wins over a forged header, proved outsider token cannot read the owner project, proved live-events rejects userId query auth, proved live-events accepts the server session cookie, and proved logout-all revokes future project access.`
+  - `Boundary: closes server-verified local session identity for first-release sensitive routes and live-events. It does not close SSO-001 external identity providers, PRIVACY-001 full deletion/export/retention/consent, BILLING-001 paid billing, PROV-001 provider connection governance, production enterprise account management, production-grade cryptographic token rotation, or cross-device/session hardening beyond the first-release local boundary.`
+- next:
+  - `PROV-001 — First-release provider gateway and external capability boundary`
+
+#### `PROV-001 — First-release provider gateway and external capability boundary`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `AGT-001D`
+  - `ENG-006`
+  - `ID-001`
+  - `AUTH-TOKEN-001`
+  - `SEC-001`
+- canonical_law:
+  - `External providers are capabilities behind Nexus, not user-facing agents.`
+  - `OpenAI/Anthropic/Gemini/GitHub/GitLab/Figma/deploy/storage/email/payment/analytics/logging providers must each be release-owned, post-release, or explicitly out of scope.`
+  - `Creative generation providers such as video, image, brand, app-screen, marketing-asset, campaign-creative, design-import, and creative-MCP/CLI providers are first-class external capabilities, but they are never the product truth owner.`
+  - `Higgsfield-like creative providers, Runway-like video providers, Adobe/Canva-like creative production providers, Figma-like design providers, and future equivalent providers may be integrated only through the same Nexus provider gateway, capability registry, permission model, approval model, health state, and product-truth normalization layer.`
+  - `Provider connection is not provider permission, and provider permission is not user approval.`
+  - `Identity, team role, project permission, provider scope, and explicit user approval must all agree before WhatsApp, payment, publishing, deployment, email, analytics, social, creative asset generation, external design export/import, or marketing creative execution can happen.`
+- done_when:
+  - OpenAI first-release path, provider failure state, and retry boundary are live
+  - unavailable providers do not fabricate agent replies or product state
+  - each named provider has a release/post-release/out-of-scope decision
+  - creative provider classes are explicitly registered or explicitly deferred: brand identity, app/screen visual generation, image generation, video/motion generation, campaign creative, social/ad creative, design import/export, and creative MCP/CLI style providers
+  - provider capability metadata distinguishes concept, draft, generate, edit, import, export, publish, schedule, spend, delete, train/use reference, and brand-safe modes
+  - provider health state is available for owner/admin or explicitly deferred
+  - provider connection ownership is tied to account/team/project identity
+  - provider scopes distinguish draft, read, write, send, publish, deploy, spend, refund, delete, disconnect, and admin
+  - creative provider outputs are normalized into Nexus-owned assets with source, license/usage boundary, prompt/input trace, approval state, product link, package link when relevant, and user-facing boundary
+  - creative provider outputs can feed `PRO-SKEL-003`, `SKELETON-CHOICE-001`, `GROW-PLUG-001`, `GROW-AGT-002`, and `PRODUCT-RUNTIME-PACKAGE-001`, but cannot bypass those tasks or replace their truth contracts
+  - real WhatsApp, payment, publishing, deployment, email-send, ad-spend, and external-share actions require `SEC-001` authorization plus explicit approval
+  - off-pattern requests to connect, publish, pay, send, deploy, train, use provider assets, or spend must be classified as external/provider-scoped even if the wording does not match a trained phrase
+  - real creative generation that consumes paid credits, uses external user/provider data, publishes media, creates ads, or trains/uses reusable brand/person references requires provider scope, cost/usage boundary, permission, and explicit approval
+  - provider connection, revocation, failed permission, expired token, and wrong-account states are visible in product language
+  - tests prove a connected provider cannot bypass role/project permission or release/payment/provider gates
+  - tests prove untrained or mixed Hebrew/English requests for WhatsApp, payment, publish, deploy, email, social, creative generation, or provider connection are bounded as provider-scoped rather than treated as ordinary safe changes
+  - tests prove a creative provider cannot become product truth, cannot leak provider names into normal UX, cannot create fake marketing assets on provider failure, and cannot publish/schedule/spend without approval
+- not_trueGreen:
+  - provider exists only as an env var
+  - provider failure produces silent failure or endless thinking
+  - provider identity leaks into user-facing Nexus copy
+  - connecting a provider grants blanket permission
+  - creative providers are treated as a gallery of pretty outputs instead of product-connected capabilities
+  - brand/video/app-screen/ad outputs are stored as detached files with no product truth, package truth, history truth, approval truth, or usage boundary
+  - a non-owner can connect or spend through a provider without an explicit role decision
+  - WhatsApp, payment, publishing, deployment, creative generation with paid/provider cost, external media publishing, ad creative activation, or provider-side deletion can execute without permission and approval truth
+- closure_update:
+  - `2026-06-11: PROV-001 implementation landed. src/core/provider-gateway-boundary.js now owns the first-release provider gateway decision, provider-scoped request classification, creative-provider asset normalization, and provider release registry. Provider connection is evaluated separately from provider permission and explicit user approval. OpenAI/Anthropic/Gemini/GitHub/GitLab/Figma/Higgsfield-like creative providers/Runway-like video providers/Adobe/Canva-like creative providers/WhatsApp/Stripe/Vercel/Render/email/social/ad/analytics/storage/logging classes now have explicit first-release, deferred, or blocked decisions.`
+  - `2026-06-11 code path: provider connector schemas, provider capability descriptors, operation contracts, Build turn routing, Build speech truth, project-service persistence, server project routes, Loop adapter, and Build surface rendering now preserve the provider boundary as project truth and visible product language. Mixed Hebrew/English requests for WhatsApp, payment, publish, deploy, email, social, spend, creative generation, design import/export, provider connection, and reference training are routed as provider-scoped instead of safe ordinary changes.`
+  - `2026-06-11 UX truth: the Build rail renders a user-facing boundary that says the external capability is blocked until a suitable connection, permission, and explicit approval exist. The visible surface does not expose provider plumbing such as raw provider ids, provider sessions, or task ids to the user.`
+  - `2026-06-11 creative boundary: provider-assisted creative output is normalized as Nexus-owned draft asset truth with source trace, prompt/input trace, license/usage boundary, approval state, product link, optional package link, and canPublishWithoutApproval=false. Creative providers may feed product skeleton, skeleton-choice, growth, and product package work, but cannot become product truth owners or bypass those tasks.`
+  - `Verification passed 2026-06-11: node --check src/core/provider-gateway-boundary.js; node --check src/core/provider-capability-descriptor.js; node --check src/core/provider-operation-contract.js; node --check src/core/build-agent-turn-router.js; node --check src/core/build-speech-truth-gate.js; node --check src/core/project-service.js; node --check src/server.js; node --check web/nexus-ui/adapters/loop-adapter.js; node --check web/nexus-ui/screens/LoopCoreScreen.js; node --check scripts/verify-prov-001-live-proof.mjs; node --check scripts/verify-prov-001-browser-proof.mjs; node --test test/provider-gateway-boundary.test.js test/provider-connector-schema.test.js test/provider-capability-descriptor.test.js test/provider-operation-contract.test.js test/build-agent-turn-router.test.js test/loop-core-screen-render.test.js; node --test --test-name-pattern "external accounts|provider gateway|PROV-001" test/project-service.test.js test/server-health-endpoints.test.js.`
+  - `Live proof passed 2026-06-11 against http://127.0.0.1:4011 with node scripts/verify-prov-001-live-proof.mjs and node scripts/verify-prov-001-browser-proof.mjs. The API proof created a project, evaluated a Higgsfield-like creative/ad-spend request, proved canExecuteExternally=false, accepted a precise feature-disabled account-link blocker, normalized a creative draft asset, and restored the provider truth from project state. The browser proof created a project, opened /loop?projectId=..., rendered the provider boundary on the Build rail, and proved canExecute=false without leaking provider plumbing.`
+  - `Boundary: closes first-release provider gateway and external capability governance. It does not close real WhatsApp sending, real payments, real publishing, real deployment, real email sending, real social posting, real ad spend, real creative generation spend, provider-side deletion, provider production health dashboards, provider marketplace onboarding, or production-grade provider token rotation. Those remain under provider-specific release gates, BILLING-001, USAGE-001, REL-AGT-001, BUILD-RELEASE-GATE-001, and future provider implementation tasks.`
+- next:
+  - `SURFACE-OWNER-RUNTIME-001 — Visible surface ownership and runtime path truth gate`
+
+#### `SURFACE-OWNER-RUNTIME-001 — Visible surface ownership and runtime path truth gate`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-11 repository-truth and execution-integrity investigation`
+- depends_on:
+  - `PROV-001`
+  - `W4-FIX-005`
+  - `W4-FIX-007`
+  - `SLICE-007`
+  - `SURF-009B`
+- blocks:
+  - `LIVE-PROOF-INTEGRITY-001`
+  - `PRIVACY-001`
+  - `SSO-001`
+  - `RUNTIME-001`
+  - `FILE-001`
+  - `USAGE-001`
+  - `BILLING-001`
+  - `OBS-001`
+  - `ADMIN-001`
+  - `RESP-001`
+  - `LEGAL-001`
+  - `STATE-001`
+  - `DATA-001`
+  - `A11Y-001`
+  - `OPS-001`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `STANDALONE-ARTIFACT-001`
+  - `VER-AGT-001`
+  - `REL-AGT-001`
+- canonical_law:
+  - `A visible Nexus change is not true until the actual route, runtime mode, loaded static assets, screen owner, adapter owner, and restore owner are proven.`
+  - `web/nexus-ui screen components do not own visible truth alone when web/app.js can choose another route, QA state, blocked route, stored flow state, or fallback surface.`
+  - `web/app.js route/restore/bootstrap/runtime ownership must be explicit for create, onboarding, understanding, loop, release, share, growth, settings, files, help, and support detours.`
+  - `A QA URL, stale localStorage state, nexusState, qaState, qaScreen, project-draft state, wrong port, stale server process, or unloaded app.js/styles.css asset can invalidate a claimed visible fix.`
+  - `No later release-blocker may claim user-visible closure if it cannot identify and prove the real visible owner path for the user-facing surface it changed.`
+- done_when:
+  - every primary visible route has a documented and test-backed ownership map: route path, screen host, render function, adapter, source project/state, restore path, and fallback path
+  - the map distinguishes regular user runtime, QA runtime, project-backed runtime, route-blocked runtime, file/static runtime, and support-route detours
+  - tests prove that changes to create, onboarding, understanding, loop, release, share, growth, settings, files, and help land on the route that the user actually sees
+  - tests prove QA state cannot mask or replace a project-backed surface when the proof claims a live user route
+  - tests prove a change in a web/nexus-ui component is not considered visible unless web/app.js actually renders that component for the tested route
+  - tests prove stale localStorage, nexusState, qaState, qaScreen, project-draft, and stale currentProjectId cannot override the surface under test
+  - static asset loading for index.html, app.js, styles.css, nexus-ui modules, and shared modules is verified on the same port used for the live proof
+  - a stale server, wrong port, file:// preview, hidden fallback, or old browser tab causes a precise blocker instead of a successful proof
+  - visible screenshots or DOM proof include route, port, appScreen, loaded app.js identity, loaded stylesheet identity, surface owner, adapter owner, current project id, and QA mode state
+  - the task records which older trueGreen claims remain valid under narrower meaning and which require reproof before further release claims
+- not_trueGreen:
+  - a component unit test passes but the real route is not proven to render that component
+  - a route proof starts from qa=1 or qaState while claiming regular user runtime
+  - app.js or styles.css fails to load while the proof still claims visible closure
+  - a proof runs on a different port, stale server, or different browser tab than the user-visible target
+  - create/loop/understanding restore can be changed by localStorage or URL state after the proof starts
+  - screenshots are used without DOM evidence showing the actual route owner and loaded runtime assets
+  - later tasks close without naming their visible surface owner and restore path
+- boundary:
+  - `This task owns visible surface ownership, runtime-path truth, and route/restore masking prevention.`
+  - `It does not own the business capability of each downstream surface; those remain with their existing canonical tasks.`
+  - `It does not replace VER-AGT-001; it defines the minimum route/runtime truth that VER-AGT-001 and later proof agents must consume.`
+- next:
+  - `LIVE-PROOF-INTEGRITY-001 — Claim-to-visible-proof execution integrity gate`
+
+#### `LIVE-PROOF-INTEGRITY-001 — Claim-to-visible-proof execution integrity gate`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-11 repository-truth and execution-integrity investigation`
+- depends_on:
+  - `SURFACE-OWNER-RUNTIME-001`
+  - `PROV-001`
+  - `AUTH-TOKEN-001`
+  - `SLICE-007`
+- blocks:
+  - `PRIVACY-001`
+  - `SSO-001`
+  - `RUNTIME-001`
+  - `FILE-001`
+  - `USAGE-001`
+  - `BILLING-001`
+  - `OBS-001`
+  - `ADMIN-001`
+  - `RESP-001`
+  - `LEGAL-001`
+  - `STATE-001`
+  - `DATA-001`
+  - `A11Y-001`
+  - `OPS-001`
+  - `PRODUCT-PROMISE-GATE-001`
+  - `VER-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+- canonical_law:
+  - `An agent may not claim fixed, closed, trueGreen, or user-visible change unless claim text, repository diff, loaded runtime, live route, state restore, and product behavior all agree.`
+  - `The proof must test the same visible path that the user is using or explicitly state that it tested a different path and cannot close the user-visible claim.`
+  - `A passing targeted test is not enough when the user-visible failure can be caused by route ownership, stale runtime, QA state, static asset loading, restore drift, or wrong-surface editing.`
+  - `A closure write-back must include what changed, where it is loaded, which visible surface owns it, which stale/fallback paths were excluded, and what remains unverified.`
+- done_when:
+  - every future trueGreen write-back must include a claim-to-proof matrix: claimed behavior, files changed, actual route, visible owner, state owner, server/runtime id, asset-load proof, browser proof, refresh proof, and restore proof
+  - proof scripts fail if they cannot load app.js or styles.css from the same server and port used in the browser route
+  - proof scripts fail if they detect qa=1, qaState, nexusState, qaScreen, project-draft, file://, wrong port, wrong tab, or blocked route when the closure claims regular user runtime
+  - proof scripts fail if a changed file is not imported, rendered, or reachable from the tested route
+  - proof scripts compare repository truth to browser truth with a visible marker or version marker for the changed behavior
+  - closure write-back distinguishes code-shape proof, API proof, component proof, browser proof, and user-visible product proof
+  - a failed or partial proof records the exact canonical blocker instead of marking the task closed
+  - prior trueGreen entries that only had component/API proof get a documented narrower boundary or are reopened where the visible claim was stronger than evidence
+  - agent final reports must name any mismatch between claimed files changed and actual loaded surface before declaring task status
+  - live proof artifacts must be reproducible from the repo command and must not rely on manual screenshots alone
+- not_trueGreen:
+  - a task closes from code diff alone
+  - a task closes from a screenshot without route/runtime/asset/state evidence
+  - a task closes on a QA preview while claiming regular user behavior
+  - a task closes while app.js/styles.css cannot be fetched from the live target
+  - a task closes while the server process, browser tab, or port is ambiguous
+  - a task reports “fixed” without proving the user-visible failure no longer reproduces
+  - a task says previous failures are unrelated without proving the changed code was fully reverted or isolated
+- boundary:
+  - `This task owns execution-integrity reporting and proof discipline.`
+  - `It does not implement every product feature; it prevents future false closure of those features.`
+  - `It must remain in force for all later release-blockers, including privacy, SSO, billing, runtime package, standalone artifact, verification, and release gates.`
+- next:
+  - `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
+
+#### `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-09 user clarification: full privacy, deletion, export, retention, consent, and user rights must be covered deeply before release`
+- depends_on:
+  - `ID-001`
+  - `ACCT-001`
+  - `SEC-001`
+  - `FILE-001`
+  - `DATA-001`
+- blocks:
+  - `REL-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `REL-001`
+  - `REL-002`
+  - `REL-003`
+  - `REL-004`
+  - `REL-006`
+- canonical_law:
+  - `Privacy is product behavior, not legal text alone.`
+  - `Nexus must not promise deletion, export, retention, consent, or user rights unless the stored data path can honor the promise.`
+  - `Privacy rights must cover Nexus account data, project truth, generated product packages, files, history, provider metadata, billing data, and audit records according to their retention boundary.`
+- done_when:
+  - data inventory exists for account, project, history, files, generated product package, provider metadata, billing, logs, analytics, and audit records
+  - user-visible privacy center exposes deletion, export, consent, retention, and rights-request states
+  - delete account, delete project, delete files, delete generated package, and delete provider connection paths are implemented or precisely blocked with retention reason
+  - data export includes account/project/product truth in a readable format and excludes secrets or other users' data
+  - retention policy distinguishes active data, deleted data, backups, audit/security records, billing/legal records, and provider-side data
+  - consent is captured where needed for files, growth experiments, external sharing, provider connection, email/audience use, tracking, and generated-product data handling
+  - privacy actions are authorized by `SEC-001` and recorded in product-readable history/audit without exposing secrets
+  - tests prove deletion/export/retention behavior matches visible privacy promises
+  - live proof shows a normal user can find privacy controls and sees truthful status for what is implemented, retained, or blocked
+- not_trueGreen:
+  - privacy is only terms text
+  - export omits real project/package/provider data without saying so
+  - deletion leaves active user/project data reachable by normal routes
+  - retention promises contradict logs, files, backups, billing records, or audit records
+  - provider-side data deletion is implied without provider proof or clear boundary
+
+#### `SSO-001 — Enterprise and external identity provider boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-09 user clarification: SSO, Google, Microsoft, organization login, and external identity providers must be covered explicitly`
+- depends_on:
+  - `ID-001`
+  - `ACCT-001`
+  - `SEC-001`
+  - `EXP-009`
+  - `PROV-001`
+  - `PRIVACY-001`
+  - `BILLING-001`
+- blocks:
+  - `REL-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+- canonical_law:
+  - `External login is identity truth, not a convenience button.`
+  - `Nexus must not show Google, Microsoft, enterprise SSO, or organization login as available unless account linking, team ownership, session behavior, failure states, and permission mapping are real.`
+- done_when:
+  - first-release decision exists for local login, email/password, Google, Microsoft, enterprise SSO, and other external identity providers
+  - account linking and unlinking rules are explicit and protect against account takeover
+  - organization domain ownership, invited-user flow, join policy, and disabled-user behavior are explicit when organization login is enabled
+  - external identity sessions map to account, workspace/team, project permissions, provider permissions, and billing ownership
+  - logout, expired session, revoked identity provider access, wrong identity account, duplicate account, and provider outage states are visible and safe
+  - tests prove external identity cannot bypass `SEC-001`, `EXP-009`, `PROV-001`, `BILLING-001`, or `PRIVACY-001`
+- not_trueGreen:
+  - social/SSO login is only a button
+  - external identity creates duplicate or orphan accounts without recovery
+  - organization login grants access to projects without team/project membership
+  - SSO availability is implied while provider setup is missing
+
+#### `RUNTIME-001 — Build preview sandbox and failure-state boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `VBUILD-001`
+  - `ENG-006`
+- canonical_law:
+  - `Build, preview, sandbox, deploy, and artifact failure truth must be bounded; Nexus may not show infinite working states or a fake live product.`
+- done_when:
+  - build status, preview status, sandbox boundary, timeout, retry, and artifact-not-created fallback are explicit
+  - user-facing errors explain what failed and what can be retried
+  - build changes are traceable to agent/build/mutation state
+- not_trueGreen:
+  - preview is visual only
+  - build can hang forever in thinking/working
+  - artifact generation failure has no visible recovery path
+
+#### `FILE-001 — First-release file and asset intake boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `FND-002`
+  - `ENG-001`
+  - `AGT-001D`
+- canonical_law:
+  - `Uploaded files are product truth inputs only if they are stored, bounded, and routed into understanding/build state.`
+- done_when:
+  - image/PDF/requirements upload scope is explicit for first release
+  - storage, size/type limits, delete/replace behavior, and retention decision exist
+  - accepted files can enter product understanding or are explicitly marked reference-only
+- not_trueGreen:
+  - upload button exists without durable storage
+  - files do not affect product understanding despite being presented as inputs
+  - file safety/retention is undefined
+
+#### `USAGE-001 — First-release usage limits and provider cost guard`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `ID-001`
+  - `PROV-001`
+  - `SEC-001`
+- canonical_law:
+  - `First release cannot have unbounded provider spend or abusive usage paths.`
+  - `Usage truth feeds billing, provider gates, owner/admin controls, and release readiness; it is not only a rate-limit counter.`
+- done_when:
+  - first-release usage limits exist for user/workspace/provider where relevant
+  - provider-cost signals are captured for owner/admin
+  - quota/limit errors are user-visible and retry-safe
+  - usage dimensions are explicit for agent calls, generated product packages, provider actions, file/storage, previews/runs, builds, shares, growth actions, and release attempts
+  - soft limit, hard limit, exceeded quota, admin override, fraud/abuse lock, and recovery states are implemented or explicitly bounded
+  - usage records are tied to account/team/project identity and authorization truth
+  - usage records can feed `BILLING-001` without billing owning raw provider execution
+  - tests prove expensive actions fail closed or ask for approval when usage/cost boundaries are exceeded
+- not_trueGreen:
+  - no cap exists for expensive provider calls
+  - owner/admin cannot inspect cost/usage pressure
+  - usage limits exist only in UI copy
+  - paid actions, provider actions, preview/build loops, or growth sends can run indefinitely
+
+#### `BILLING-001 — First-release billing, entitlement, and payment boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-09 user clarification: plans, payment, invoices, usage limits, debt/overage blocking, and billing ownership must be covered deeply`
+- depends_on:
+  - `ID-001`
+  - `ACCT-001`
+  - `EXP-009`
+  - `SEC-001`
+  - `PROV-001`
+  - `USAGE-001`
+- blocks:
+  - `REL-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `REL-001`
+  - `REL-002`
+  - `REL-003`
+  - `REL-004`
+  - `REL-006`
+- canonical_law:
+  - `Billing is product entitlement truth, not a payment button.`
+  - `Nexus must not charge, block, upgrade, downgrade, invoice, or promise paid access unless billing ownership, authorization, usage, provider gateway, and legal boundaries agree.`
+  - `Payment provider connection is not permission to charge, and billing state is not provider truth alone.`
+- done_when:
+  - first-release decision exists for free mode, paid plans, trial, upgrade, downgrade, cancellation, invoice, tax/receipt, refund, and failed-payment states
+  - billing owner and billing admin roles are explicit and enforced through `SEC-001` and `EXP-009`
+  - plan entitlements are connected to usage limits from `USAGE-001`
+  - overage, debt, expired trial, payment failure, payment pending, suspended workspace, and recovery states are visible and safe
+  - payment provider actions require `PROV-001` provider scope, `SEC-001` permission, and explicit user approval
+  - invoices/receipts and billing history are tied to account/team identity and privacy/legal retention truth
+  - tests prove billing state can block paid/provider/release actions without hiding existing project data
+  - tests prove non-billing members cannot change plan, pay, refund, or view sensitive billing data
+  - live proof shows a normal user sees truthful billing/entitlement state without fake payment execution
+- not_trueGreen:
+  - billing is only a pricing page or settings card
+  - payment provider connection allows charges without billing permission and approval
+  - usage limits and plan entitlements are disconnected
+  - unpaid/over-limit state does not affect gated actions
+  - invoices, cancellation, refunds, or payment failure are undefined while paid plans are claimed
+
+#### `OBS-001 — First-release observability and diagnostics`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+  - `2026-06-07 BLD-AGT-001 live proof: /api/projects/:projectId/live-events returned 401 in the visible Build route while the project itself restored correctly.`
+  - `nexus-deep-system-review-2026-06-10.md finding: recurring live-events 401 noise and user identity in URL/query must be closed before release claims.`
+- depends_on:
+  - `ENG-001`
+  - `PROV-001`
+  - `SEC-001`
+- canonical_law:
+  - `A releaseable Nexus must explain failures to operators without exposing sensitive data to users.`
+  - `Live event streams must not create trust noise on a valid project-backed screen; authorization failures must be either fixed, hidden behind a bounded unavailable state, or surfaced as a clear non-blocking diagnostic.`
+- done_when:
+  - request/trace IDs exist for critical agent/build/release actions
+  - provider failures and runtime errors are diagnosable
+  - logs avoid exposing secrets and sensitive user data
+  - project-backed live event requests use the same user/project authorization boundary as restore/read paths or fail with a visible non-blocking diagnostic instead of silent browser-console 401 noise
+  - live event streams do not pass user identity through URL query parameters and consume `AUTH-TOKEN-001` verified identity when that task is closed
+  - live Build proof has no unexpected 401/404 console noise from first-party Nexus event/diagnostic routes
+- not_trueGreen:
+  - failure diagnosis requires guessing from UI state
+  - logs leak secrets or internal provider payloads to the client
+  - a valid restored project screen emits unactionable 401 errors for first-party live event routes
+
+#### `ADMIN-001 — First-release owner/admin health and controls`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `OBS-001`
+  - `USAGE-001`
+- canonical_law:
+  - `Owner/admin is operational control, not a decorative dashboard.`
+- done_when:
+  - owner/admin can inspect provider health, system state, errors, usage/cost pressure, and critical controls
+  - provider disable/kill-switch scope is explicit
+  - admin-only data is not visible to regular users
+- not_trueGreen:
+  - owner/admin is only static metrics
+  - no action exists when provider/runtime health is bad
+
+#### `RESP-001 — Desktop-first responsive and mobile scope boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `SURF-002`
+  - `SURF-003`
+  - `SURF-004`
+  - `SURF-006`
+- canonical_law:
+  - `First release may be desktop-first, but the supported viewport boundary must be explicit and truthful.`
+- done_when:
+  - desktop/web support is verified for primary surfaces
+  - mobile/tablet behavior is either supported, gated, or marked post-release
+  - Build surface does not collapse into an unusable layout
+- not_trueGreen:
+  - unsupported mobile silently renders a broken workspace
+  - no canonical statement defines first-release viewport support
+
+#### `LEGAL-001 — First-release legal, privacy, and trust boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `ID-001`
+  - `ACCT-001`
+  - `SEC-001`
+  - `FILE-001`
+  - `PRIVACY-001`
+  - `BILLING-001`
+- canonical_law:
+  - `Nexus must state what it stores, how user data is handled, and what consent/trust boundary applies before release.`
+  - `Legal/trust copy must follow implemented account, privacy, security, billing, provider, and data behavior; it cannot promise capabilities the product cannot honor.`
+- done_when:
+  - Terms/Privacy/Consent release decision exists
+  - data deletion/retention policy is coherent with account/files/project storage
+  - sensitive-information warning is present or explicitly scoped out
+  - billing, provider, external sharing, data export, deletion, consent, team ownership, and release/publishing boundaries are reflected truthfully
+- not_trueGreen:
+  - user data storage is real but trust/legal copy is undefined
+  - delete/privacy promises contradict persistence behavior
+  - legal text claims enterprise, billing, SSO, privacy, provider, or release rights that are not implemented or explicitly bounded
+
+#### `STATE-001 — Product shell empty, loading, error, and retry states`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `SURF-002`
+  - `SURF-003`
+  - `SURF-004`
+  - `SURF-006`
+  - `PROV-001`
+  - `RUNTIME-001`
+- canonical_law:
+  - `No first-release surface may fail silently or spin indefinitely.`
+- field_test_findings:
+  - `2026-06-08 live lead-management field test found empty submit feedback near the Create composer was not clearly announced near the field, and some active-looking controls gave no visible result.`
+- done_when:
+  - every critical async action has bounded loading, error, and retry behavior
+  - provider/server/build/release failures are visible in product language
+  - empty states match the actual source of truth
+  - validation, blocked actions, and unavailable controls are announced near the user action in product language
+- not_trueGreen:
+  - `Thinking` or `Working` can persist without timeout/truth
+  - server/provider failure leaves the user with no visible recovery
+  - an active-looking control does nothing without loading, success, blocked, or failure feedback
+
+#### `DATA-001 — Product shell persistence and data ownership boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+  - `nexus-deep-system-review-2026-06-10.md finding: runtime logs, test fixtures, audit records, snapshots, and live data must not remain mixed without explicit ownership and retention boundaries.`
+- depends_on:
+  - `FND-002`
+  - `ENG-001`
+  - `ENG-007`
+  - `FILE-001`
+- canonical_law:
+  - `Every first-release entity must have a declared source of truth: user, project, Product Graph, artifact, conversation, file, history, and release.`
+- field_test_findings:
+  - `2026-06-08 live lead-management field test found project shell restore did not clearly preserve Build conversation and action transcript truth after refresh.`
+- done_when:
+  - source-of-truth matrix exists and matches code paths
+  - QA/localStorage state is excluded from production persistence truth
+  - migration/restore behavior for stale state is explicit
+  - conversation events, skeleton choices, artifact mutations, demo/local actions, and history entries each declare whether they are persisted product truth or temporary demo state
+- not_trueGreen:
+  - project or conversation truth exists only in client state
+  - stale QA state can masquerade as production project truth
+  - UI copy implies a conversation/action was saved but refresh cannot restore it from the declared source of truth
+
+#### `A11Y-001 — First-release accessibility and keyboard minimum`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `SURF-002`
+  - `SURF-003`
+  - `SURF-004`
+  - `SURF-006`
+- canonical_law:
+  - `The first-release shell must be keyboard-usable and respect reduced motion, even if full accessibility certification is later.`
+- done_when:
+  - composer, navigation, primary actions, dialogs, and release gates are keyboard reachable
+  - focus states, accessible labels, contrast, and reduced-motion behavior pass the first-release bar
+- not_trueGreen:
+  - motion blocks reduced-motion users
+  - primary build/release actions are mouse-only
+
+#### `OPS-001 — Nexus app deployment and runtime config boundary`
+- status: `new-proposed`
+- type: `release-blocker`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- depends_on:
+  - `ENG-006`
+  - `OBS-001`
+- canonical_law:
+  - `Nexus itself must have a releaseable runtime contract, not only generated project release paths.`
+- done_when:
+  - build/start commands, required env, dev/qa/prod boundary, and missing-env behavior are documented and verified
+  - packaging/deployment path for Nexus shell is explicit
+  - runtime config failures are bounded and diagnosable
+- not_trueGreen:
+  - app can only be run through ad hoc local commands
+  - missing environment produces unclear runtime failure
+
+---
+
+## 13. Phase 7 — Release Readiness And Launch Gate
+
+מטרה:
+- לוודא שנקסוס לא רק “בנויה”
+- אלא באמת `ready for release`
+
+### Tasks
+
+#### `PRODUCT-RUNTIME-PACKAGE-001 — Generated product runtime package`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `2026-06-08 user clarification: generated product dependencies and runtime package scaffolding must belong to the generated product, not to Nexus itself`
+  - `generated-product-runtime-package-contract-2026-06-08.md`
+  - `PRODUCT-BACKEND-SKEL-002 closure boundary`
+  - `STANDALONE-ARTIFACT-001 dependency gap`
+- depends_on:
+  - `SLICE-008`
+  - `PRODUCT-BACKEND-SKEL-002`
+  - `BUILD-MUTATION-TRUTH-001`
+  - `SKELETON-CHOICE-001`
+  - `VBUILD-001`
+- blocks:
+  - `STANDALONE-ARTIFACT-001`
+  - `VER-AGT-001`
+  - `BUILD-TEST-001`
+  - `REL-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `REL-001`
+  - `REL-002`
+  - `REL-003`
+  - `REL-004`
+  - `REL-006`
+- canonical_law:
+  - `Generated product dependencies are not Nexus application dependencies.`
+  - `Every generated product skeleton must have a product-owned runtime package/workspace before Nexus can move toward standalone artifact or release claims.`
+  - `The package must include frontend, backend, shared schema/model, data, tests, dependencies, install plan, run command, preview target, restore identity, and mutation-growth truth.`
+  - `Dependency installation or listing is not closure; dependencies must improve the generated product as a working product, not only as visual polish.`
+  - `Dependency value must be proven through product behavior, domain operation wiring, persistence, run/preview capability, testability, accessibility/performance where relevant, and future Build mutation capacity.`
+  - `Selected skeleton direction must shape the generated product package. If SKELETON-CHOICE-001 selected a premium app, operational workspace, playful game, editorial landing page, focused tool, or another direction, PRODUCT-RUNTIME-PACKAGE-001 must reflect that choice in package template, dependencies, frontend/backend boundaries, interaction model, preview target, and mutation growth path.`
+  - `Design providers and dependency/package generation must work as one Nexus-owned product pipeline: provider output proposes a direction over Nexus truth; the package layer turns the selected direction into runnable product structure.`
+  - `Creative-provider assets such as generated brand systems, app-screen concepts, motion/video assets, campaign images, and design imports must enter the generated product package only as product-owned assets with manifest metadata, usage boundary, source trace, approval state, and product linkage.`
+  - `A dependency plan is invalid if it is generic for every product type, generic for every selected skeleton direction, or disconnected from the user's product class, product domain, selected candidate, and intended first workflow.`
+  - `Nexus may not install generated-product dependencies into Nexus itself as a shortcut.`
+  - `Package truth must be stored in canonical project truth and restored by project id, not browser state or URL state.`
+- preserve:
+  - Nexus application dependency boundary
+  - Nexus project truth
+  - runtime skeleton truth
+  - product-domain skeleton truth
+  - product-owned backend skeleton truth
+  - selected skeleton direction truth
+  - Build mutation history
+- remove_from_active_path:
+  - package/dependency claims based only on Nexus app dependencies
+  - generated product packages described only in prose
+  - file trees or package manifests disconnected from product truth
+  - install actions that write outside the generated product package
+  - release/share/test language that treats a Nexus internal simulator as a runnable product package
+- build:
+  - product-owned package envelope tied to project id, runtime skeleton id, product-domain skeleton id, product-owned backend skeleton id, artifact/build id, and selected skeleton direction where relevant
+  - stable artifact root under the Nexus projects directory
+  - frontend/backend/shared/data/tests/run directory model
+  - product-class-aware dependency plan
+  - selected-direction-aware dependency plan that changes when the chosen skeleton direction changes, with explicit approval and history if the direction changes after package creation
+  - package manager and lockfile strategy
+  - install plan with required/deferred dependency status, owner, reason, risk, and failure behavior
+  - dependency usage proof that maps each required dependency to product capability, model, operation, screen, route, control, state transition, or persistence path
+  - product improvement gate covering behavior, design composition, interaction quality, domain wiring, persistence, run/preview capability, testability, accessibility, performance/runtime fit where relevant, future mutation capacity, and selected skeleton direction fidelity
+  - product-class package templates for mobile app, landing page, internal tool, commerce, game, software/tool, editor/canvas, and simulator patterns
+  - product asset manifest for provider-generated/imported creative assets, including images, video, brand tokens, screen concepts, design files, campaign creatives, and channel-specific exports
+  - package-shape rules that translate selected design direction into concrete product files, controls, layouts, operations, state boundaries, and preview behavior rather than only colors, typography, or screenshots
+  - creative-asset-to-package rules that decide which provider assets become application assets, marketing assets, sample/demo assets, or excluded drafts
+  - run command and preview target separated from Nexus itself
+  - package mutation truth for fields, actions, screens, workflows, schemas, local/mock persistence, and frontend/backend pairing
+  - restore contract for package id, artifact root, dependency plan, run command, preview target, and last package mutation
+- done when:
+  - tests prove first skeleton creation produces a product-owned package envelope for an internal-tool lead manager
+  - tests prove first skeleton creation produces class-appropriate package envelopes for mobile app, landing page, and game or software/tool
+  - tests prove dependency plans differ by product type and are not installed into Nexus itself
+  - tests prove dependency plans differ by selected skeleton direction when the same product truth chooses a different direction, and the difference maps to product behavior, composition, or runtime capability rather than cosmetic naming
+  - tests prove package generation consumes selectedSkeletonCandidateId, selectedDesignProvider, selectedCompositionStyle, and selectedProductDirection when they exist, and blocks or marks a precise fallback if selected direction truth is missing after SKELETON-CHOICE-001
+  - tests prove required dependencies are actually used by generated package files or package truth, not only listed
+  - tests prove dependencies improve product behavior or product quality beyond visual styling alone
+  - tests prove provider/design candidate output is normalized into product package structure without provider identity leakage in normal user-facing package or preview surfaces
+  - tests prove provider-generated images/videos/brand assets are copied or referenced only inside the product-owned package boundary with manifest metadata and do not remain provider-owned loose files
+  - tests prove a package can exclude an approved-looking creative asset when usage rights, approval state, product fit, or package role is missing
+  - tests prove adding a field updates UI truth, package schema truth, backend operation truth, local/mock persistence truth, and package mutation history
+  - tests prove adding an action creates or updates a frontend control and backend/package operation truth
+  - tests prove adding a screen updates route/screen package truth and state boundaries
+  - tests prove refresh/reopen restores package identity, artifact root, dependency plan, run command, preview target, and last package mutation from project truth
+  - tests prove install failures are visible and recoverable without fake success
+  - live browser proof shows a project skeleton with package identity, dependency plan, run/preview boundary, and restore after refresh
+  - live browser proof shows the selected skeleton direction visible in product language and represented in package identity/dependency truth without exposing provider plumbing
+  - live browser proof or package verification shows the package uses selected dependencies to improve at least one real product capability such as navigation, table behavior, form validation, game loop, canvas interaction, persistence, or preview execution
+  - live browser proof or package verification shows at least one selected creative/provider asset represented truthfully in package identity, asset manifest, preview, or growth handoff without claiming external publication
+- not trueGreen:
+  - package dependencies are installed into Nexus instead of a generated product package
+  - dependencies are installed or listed but unused
+  - dependencies only make the preview look nicer while product behavior, operations, persistence, run/preview, and mutation capacity remain unchanged
+  - selected skeleton direction changes only styling while package structure, dependencies, frontend/backend shape, and mutation growth path remain generic
+  - provider/design candidate output is copied into package files as detached mockup content instead of normalized into Nexus-owned product structure
+  - the package exists only as prose, screenshot, internal simulator, or detached file tree
+  - no package manager, dependency plan, run command, or preview target is represented in project truth
+  - Build mutations update frontend/backend skeleton truth but not package truth
+  - refresh preserves the Nexus simulator but loses package identity or dependency plan
+  - this task claims deployment, publishing, real provider connection, real payment, App Store build, production database, or standalone verified release
+- next:
+  - `STANDALONE-ARTIFACT-001 — Standalone releasable product artifact`
+
+#### `STANDALONE-ARTIFACT-001 — Standalone releasable product artifact`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `new shell task`
+- source:
+  - `2026-06-08 user clarification: before Nexus says a user has a releasable product, there must be an independent product artifact with screens, actions, persistence, and run capability outside Nexus`
+  - `standalone-releasable-product-artifact-contract-2026-06-08.md`
+  - `PRODUCT-BACKEND-SKEL-001 closure boundary`
+- depends_on:
+  - `SLICE-008`
+  - `EXP-004`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `PRODUCT-BACKEND-SKEL-001`
+  - `PRODUCT-BACKEND-SKEL-002`
+  - `BUILD-MUTATION-TRUTH-001`
+- blocks:
+  - `PRODUCT-PROMISE-GATE-001`
+  - `VER-AGT-001`
+  - `REL-001`
+  - `REL-AGT-001`
+  - `REL-002`
+  - `REL-003`
+  - `REL-004`
+  - `REL-006`
+- canonical_law:
+  - `Before Nexus tells a user they have a product that can be released, Nexus must have a standalone artifact that can run outside the Nexus Build canvas.`
+  - `A Nexus-internal runtime skeleton, product-domain skeleton, or mock/local state is not enough to claim releasable product output.`
+  - `A generated product runtime package is a required input, but package existence alone is still not enough to claim releasable product output.`
+  - `The artifact must include product screens, actions, persistence, a backend/domain execution boundary, and a run/preview target outside Nexus.`
+  - `Release, publish, deploy, share-with-customers, and ready-to-launch language must be blocked until this artifact exists and is verified or a precise blocker is shown.`
+- preserve:
+  - Nexus project truth
+  - runtime skeleton truth
+  - generated product-domain skeleton
+  - mutation history
+  - release/provider/security boundaries
+- remove_from_active_path:
+  - release language based only on a Build canvas preview
+  - screenshots or internal demos pretending to be a standalone product
+  - prose-only backend descriptions presented as backend output
+  - fake deploy/share/customer-ready states without artifact verification
+- build:
+  - standalone product artifact envelope tied to project id, runtime skeleton id, product-domain skeleton id, and mutation history
+  - product-class-aware artifact scaffold with a frontend entry and backend/domain execution layer
+  - local/mock persistence at minimum, with clear non-production boundary
+  - runnable preview or run command outside the Nexus Build canvas
+  - artifact verification handoff for the Verification / QA Agent
+  - user-facing boundary copy that distinguishes preview, mock/local backend, standalone artifact, and production release
+- done when:
+  - tests prove a generated internal-tool artifact includes screens, actions, records, persistence, and a run target outside Nexus
+  - tests prove a landing-page artifact includes page, form, validation, stored/mock lead, and a run target outside Nexus
+  - tests prove a mobile/app/tool/game class gets a class-appropriate standalone artifact envelope or a precise unsupported-class blocker
+  - tests prove Release/Share/Deploy language cannot appear before standalone artifact verification
+  - live browser proof shows Nexus creating or opening a standalone artifact from a project and verifying that it runs or returns a precise blocker
+  - refresh/restore preserves the artifact identity and its relationship to project truth
+- not trueGreen:
+  - the product only exists inside the Nexus Build canvas
+  - the artifact has frontend screens but no product actions or persistence
+  - the backend/domain layer is only described in text
+  - Nexus claims ready-to-release before the artifact can run or fails with a precise blocker
+  - provider/payment/publishing claims are folded into this task instead of staying behind their release/provider gates
+
+#### `PRODUCT-PROMISE-GATE-001 — User-facing product promise and first-run trust gate`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-11 competitor/Atoms review: external products create stronger first-run trust by promising a clear path from idea to working product, code/export, hosting, growth, and revenue while Nexus must keep deeper product truth and avoid overclaiming`
+  - `2026-06-11 user clarification: add canonical coverage so Nexus looks and behaves like a product builder without claiming more than it can truthfully produce`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `STANDALONE-ARTIFACT-001`
+  - `GROW-AGT-001`
+  - `PROV-001`
+- depends_on:
+  - `ID-001`
+  - `AUTH-TOKEN-001`
+  - `NEXUS-FACADE-001`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `STANDALONE-ARTIFACT-001`
+  - `GROW-AGT-001`
+  - `PROV-001`
+- blocks:
+  - `VER-AGT-001`
+  - `BUILD-TEST-001`
+  - `REL-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `REL-001`
+  - `REL-002`
+  - `REL-003`
+  - `REL-004`
+  - `REL-006`
+- canonical_law:
+  - `Nexus must make the first-run promise clear before it asks the user to trust the build path.`
+  - `The first user-facing path must explain, in product language, whether Nexus will create a product package, local preview, standalone artifact, demo/share path, growth draft, or release-ready product.`
+  - `Nexus may not imply "product that sells", "ready to launch", "go live", "customers", "revenue", "production backend", "hosting", "payments", "provider connection", "code export", or "external publication" unless the responsible package, artifact, growth, provider, billing, and release gates are closed or a precise blocker is shown.`
+  - `A strong first impression is required, but it must be truthful: clean entry, clear start action, clear identity state, clear next step, clear package/artifact boundary, clear growth boundary, and no hidden internal task/provider language.`
+  - `Competitor-style promise language can inspire clarity, but Nexus must not copy a marketing promise that its product truth cannot honor.`
+  - `The visible user journey must distinguish four states: Nexus internal preview, generated product package, standalone runnable artifact, and production release.`
+  - `Growth and marketing may be introduced as bounded draft/learning paths connected to the product, not as guaranteed customers, virality, revenue, ads, SEO results, or external campaign execution.`
+- preserve:
+  - `NEXUS-FACADE-001` unified user-facing Nexus voice
+  - `PRODUCT-RUNTIME-PACKAGE-001` generated package truth
+  - `STANDALONE-ARTIFACT-001` standalone artifact truth
+  - `GROW-AGT-001` bounded growth truth
+  - `PROV-001` provider and external capability boundaries
+  - `REL-AGT-001` and `BUILD-RELEASE-GATE-001` release ownership
+- remove_from_active_path:
+  - first-run screens that feel like a generic prompt box with no product outcome explanation
+  - copy that implies product readiness before package/artifact/release truth exists
+  - copy that implies customers, revenue, paid growth, publication, hosting, deployment, payments, or provider connection before the relevant gate is closed
+  - visible internal terms such as task ids, raw provider names, raw operation names, QA labels, and engine labels in normal user mode
+  - split experiences where Create, Build, Growth, Share, and Release feel like unrelated products rather than one Nexus journey
+- build:
+  - first-run promise model that maps current project state to truthful user-facing promise level
+  - clear first-entry path: identify user/session state, capture idea, explain expected output, and show the next honest step
+  - product readiness ladder shown in simple product language: idea, skeleton, package, runnable artifact, verified artifact, release candidate, released product
+  - promise guard used by Create, Build, Share, Growth, Release, and Home surfaces
+  - user-facing language rules that prevent overclaiming against current package/artifact/provider/growth/release state
+  - clear "what exists now / what is next / what is blocked" status for generated product package, standalone artifact, local/mock backend, production backend, provider actions, payments, publishing, and growth actions
+  - growth promise boundary that can suggest acquisition paths only from product truth and only as drafts unless provider/release approval exists
+  - code/export/hosting promise boundary that consumes package/artifact/release truth and never claims export/hosting before those paths are real
+  - first-run and return-user continuity proof that recent product, last action, and next honest step restore after refresh
+- done_when:
+  - tests prove the first-run screen shows a clear product-builder promise without claiming release, hosting, production backend, provider connection, customers, revenue, payments, SEO success, ad activation, or code export before those gates exist
+  - tests prove user-visible language changes as a project moves from skeleton to package to standalone artifact to verified/release candidate
+  - tests prove Create, Build, Share, Growth, Release, and Home all consume the same promise guard and cannot overclaim independently
+  - tests prove Hebrew and English promise copy avoids internal task ids, provider plumbing, QA/debug labels, raw operation ids, and raw engine labels
+  - tests prove generated product package truth allows "local runnable package scaffold" language but not "ready to release" language
+  - tests prove standalone artifact truth allows "runnable artifact" language but still blocks production release, external publication, payments, provider actions, and customer-ready claims until release/provider gates close
+  - tests prove Growth can propose bounded drafts and learning experiments but cannot claim customers, sales, revenue, virality, paid campaigns, SEO ranking, or external execution without evidence and approval
+  - tests prove an unavailable provider, missing artifact, missing package, billing block, privacy block, or release block becomes a precise user-facing blocker instead of a vague failure or fake success
+  - live browser proof shows a fresh user entering through the root path, understanding what Nexus can create now, creating a real project, seeing the right package/artifact/release boundary, refreshing, and returning to the same next honest step
+  - live browser proof shows the same project after package/artifact availability uses stronger language only where the underlying truth exists
+- not_trueGreen:
+  - first-run entry is only a prompt box with no clear outcome and boundary
+  - Nexus claims "launch", "release", "sell", "customers", "revenue", "hosting", "production backend", "payments", "publish", "export code", or "connect provider" before the relevant gate is closed
+  - the product looks polished but still hides that the generated product only exists inside Nexus
+  - growth copy turns bounded suggestions into fake acquisition, revenue, or campaign success
+  - users must infer the difference between internal preview, generated package, standalone artifact, and production release
+  - changing the copy fixes trust language but does not consume real package/artifact/provider/growth/release state
+- next:
+  - `VER-AGT-001 — Verification / QA Agent live artifact gate`
+
+#### `VER-AGT-001 — Verification / QA Agent live artifact gate`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-01 live-agent gap audit`
+  - `REL-001`
+  - `SURF-004`
+- depends_on:
+  - `STANDALONE-ARTIFACT-001`
+  - `PRODUCT-PROMISE-GATE-001`
+  - `EXP-004`
+  - `STATE-001`
+  - `RUNTIME-001`
+  - `A11Y-001`
+  - `DATA-001`
+- canonical_law:
+  - `The Verification / QA Agent owns artifact verification truth before release; a checklist, proof card, or test result list is not enough.`
+  - `It must evaluate artifact reality, runtime/build implications, meaningful product integrity, accessibility/data/security-relevant blockers, and release risk.`
+  - `It must produce a verification envelope that downstream release readiness can trust or reopen precisely.`
+- preserve:
+  - artifact/proof engine
+  - build/runtime state
+  - mutation/history checkpoints
+  - user-facing release language boundaries
+- remove_from_active_path:
+  - static verified badges
+  - release readiness based only on visible screen state
+  - QA fallback routes as release truth
+- build:
+  - Verification / QA Agent role/contract
+  - verification envelope/schema
+  - blocker/reopen decision
+  - handoff to Release Agent
+- done when:
+  - Verification / QA Agent contract exists in docs and code
+  - tests prove release cannot proceed without verification-agent envelope
+  - tests prove failed verification produces precise blockers and does not mark artifact ready
+  - live browser proof shows release gate consumes agent-owned verification truth
+- not trueGreen:
+  - verification is only a passive checklist or hardcoded pass state
+  - release can bypass verification-agent output
+
+#### `REL-001 — Artifact verified gate`
+- status: `new-proposed`
+- type: `release-blocker`
+- agent_coverage:
+  - `Verification / QA Agent`
+- depends_on:
+  - `VER-AGT-001`
+- canonical_law:
+  - `Verification / QA Agent owns the artifact verified gate; this task must not close as a passive checklist or static proof screen.`
+  - `The agent must evaluate artifact truth, runtime/build implications, release risk, and meaningful product integrity before release readiness can proceed.`
+
+#### `REL-AGT-001 — Release Agent live readiness and release decision`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-01 live-agent gap audit`
+  - `REL-002`
+  - `REL-006`
+  - `SURF-004`
+- depends_on:
+  - `REL-001`
+  - `ENG-006`
+  - `ID-001`
+  - `SEC-001`
+  - `LEGAL-001`
+  - `OBS-001`
+  - `USAGE-001`
+  - `ADMIN-001`
+  - `OPS-001`
+- canonical_law:
+  - `The Release Agent owns release readiness and final release decision; a screen, deploy button, or status field cannot decide release.`
+  - `It consumes verification truth, runtime/provider/security/legal/usage/admin readiness, rollback/recovery framing, and share/demo state.`
+  - `If release truth is incoherent, it must reopen the exact blocking chain instead of claiming ready.`
+- preserve:
+  - Verification / QA Agent envelope
+  - release surface truth
+  - deployment/runtime boundary
+  - rollback/recovery continuity
+- remove_from_active_path:
+  - manual checklist closeout as release decision
+  - deploy/publish action before release-agent readiness
+  - release success state without verified artifact and recovery framing
+- build:
+  - Release Agent role/contract
+  - release readiness envelope
+  - release blocker/reopen envelope
+  - canonical final release decision path
+- done when:
+  - Release Agent contract exists in docs and code
+  - tests prove release readiness depends on release-agent envelope
+  - tests prove missing critical readiness reopens the exact chain
+  - live browser proof shows Release surface reflects agent-owned readiness, not static screen state
+- not trueGreen:
+  - Release surface can claim ready without release-agent envelope
+  - release decision is a manual/static status field
+
+#### `REL-002 — Release readiness gate`
+- status: `new-proposed`
+- type: `release-blocker`
+- agent_coverage:
+  - `Release Agent`
+- depends_on:
+  - `REL-AGT-001`
+- canonical_law:
+  - `Release Agent owns readiness; a release screen, deploy button, or status field is not enough.`
+  - `Release readiness must include gates, verification, rollback/recovery framing, release target clarity, and no unresolved critical blockers.`
+
+#### `REL-003 — Preview / sandbox / deploy plumbing wired to shell`
+- status: `new-proposed`
+- type: `release-blocker`
+- depends_on:
+  - `REL-002`
+
+#### `REL-004 — Shareable release/demo output`
+- status: `new-proposed`
+- type: `release-blocker`
+- agent_coverage:
+  - `Share / Demo Agent`
+- depends_on:
+  - `REL-003`
+  - `SHARE-AGT-001`
+- canonical_law:
+  - `Share / Demo Agent owns the shareable release/demo output; this task must not close as a URL, screenshot, or static share button alone.`
+  - `The share/demo output must reflect the verified release/demo state and explain the product in user-facing terms.`
+
+#### `REL-005 — Founder rerun on new shell`
+- status: `new-proposed`
+- type: `release-blocker`
+- depends_on:
+  - `REL-004`
+- done when:
+  - one real founder journey passes on the new shell
+
+#### `REL-006 — Canonical release decision`
+- status: `new-proposed`
+- type: `release-blocker`
+- agent_coverage:
+  - `Release Agent`
+- depends_on:
+  - `REL-005`
+  - `REL-AGT-001`
+- output:
+  - `Nexus ready for release`
+  - or explicit reopen chain
+- canonical_law:
+  - `The final release decision is agent-owned release truth, not a manual checklist closeout.`
+  - `If release truth is not coherent, this task must reopen the exact chain instead of claiming Nexus ready for release.`
+
+---
+
+## 14. Phase 8 — Post-Release Continuation
+
+מטרה:
+- לא לחסום יציאה ראשונה
+- אבל לשמור המשכיות קנונית לשלב הבא
+
+### Tasks
+
+#### `POST-001 — Deep learning decision impact`
+- status: `existing-partial`
+- type: `post-release`
+- source:
+  - `W4-LEARN-002`
+
+#### `POST-002 — Deep adaptive intake replacement`
+- status: `existing-partial`
+- type: `post-release`
+- source:
+  - `W4-INTAKE-* continuation chain`
+
+#### `POST-003 — Marketplace / ecosystem economy`
+- status: `new-proposed`
+- type: `post-release`
+
+#### `POST-004 — Advanced org layer`
+- status: `new-proposed`
+- type: `post-release`
+- depends_on:
+  - `EXP-009`
+  - `SEC-001`
+- note:
+  - first release is blocked by `EXP-009` and `SEC-001` for real team, role, and project-permission truth; this post-release task owns deeper enterprise governance beyond the first-release team boundary
+
+#### `POST-005 — Advanced extensibility / scripting`
+- status: `new-proposed`
+- type: `post-release`
+
+#### `POST-006 — Social login providers`
+- status: `new-proposed`
+- type: `post-release`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- scope:
+  - Google login
+  - Apple login
+  - GitHub login if product positioning requires it
+- note:
+  - first release is blocked by `ID-001` and `SSO-001` identity/session/provider truth; this post-release task owns additional social login expansion only after the external identity boundary exists
+
+#### `POST-007 — Paid billing plans and monetization`
+- status: `new-proposed`
+- type: `post-release`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- scope:
+  - paid plans
+  - invoices/subscriptions
+  - payment provider integration
+- note:
+  - first release is blocked by `USAGE-001` and `BILLING-001`; this post-release task owns broader monetization expansion only after first-release billing and entitlement truth exists
+
+#### `POST-008 — Full mobile and tablet product support`
+- status: `new-proposed`
+- type: `post-release`
+- source:
+  - `Product Shell Coverage Audit — 2026-05-30`
+- scope:
+  - full mobile build workspace
+  - tablet-specific workspace
+  - mobile-first editing affordances
+- note:
+  - first release is desktop/web bounded by `RESP-001`
+
+---
+
+## 15. Existing Task Chains That Stay Canonical
+
+השרשראות הקיימות שלא צריך להמציא מחדש:
+
+### `Wave 4 core`
+- `W4-MBN-001..022`
+
+### `Learning / Intake`
+- `W4-LEARN-001..002`
+- `W4-INTAKE-001..010`
+
+### `Generation`
+- `W4-GEN-001..003`
+
+### `Repair / Upgrade`
+- `W4-FIX-001..007`
+- `W4-UPGRADE-001..003`
+
+### `W4-FIX-001 — Fresh Project Identity Isolation`
+- status: `trueGreen`
+- closed_at: `2026-06-04`
+- type: `release-blocker`
+- classification: `existing reused task`
+- depends_on:
+  - `W4-AGENT-005C`
+  - `W4-AGENT-005D`
+- closed_when:
+  - a fresh Create route with explicit reset ignores stale URL-backed project identity
+  - a fresh Create route with explicit reset ignores stale storage-backed project identity
+  - stale project snapshot, assistant transcript, project id, copy, and artifact expectation are not restored into a new project composer
+  - live Chrome proof shows the Create screen returns to an empty new-project composer when loaded with stale courier-project state and `qaReset=1`
+- evidence:
+  - `web/app.js`
+  - `test/web-app-wave1-cockpit.test.js`
+  - `test/project-adapter.test.js`
+  - `test/project-create-screen-render.test.js`
+  - `test/loop-core-screen-render.test.js`
+  - `/private/tmp/nexus-w4-fix-001-visible-clean-create.png`
+- boundary:
+  - `W4-FIX-001` closes only the fresh-create stale identity leak.
+  - It does not close owner/session scoped restore, which remains owned by `AUTH-SESSION-PROJECT-ISO-001` and `W4-FIX-005`.
+  - It does not close full authentication, which remains owned by `ID-001`.
+
+### `Identity / Session Project Isolation Bridge`
+- `AUTH-SESSION-PROJECT-ISO-001`
+- canonical placement:
+  - after `W4-FIX-001`
+  - before `W4-FIX-005`
+- reason:
+  - `W4-FIX-001` owns fresh project identity isolation.
+  - `W4-FIX-005` owns short route identity and server-backed restore.
+  - A narrower bridge is required between them so project restore cannot keep relying on QA state, URL state, localStorage, or a process-global current project.
+  - `ID-001` remains the broader first-release login/session/account boundary, but it is too late and too broad to own the immediate project-leakage repair.
+- status: `trueGreen`
+- closed_at: `2026-06-04`
+- type: `release-blocker`
+- classification: `bridge task`
+- depends_on:
+  - `W4-FIX-001`
+  - `ENG-001`
+- blocks:
+  - `W4-FIX-005`
+  - `W4-FIX-007`
+  - `BLD-AGT-001`
+- canonical_law:
+  - `Every fresh project must be scoped to a stable actor identity: authenticated user, explicit guest session, or local workspace owner.`
+  - `A project id without a session/user boundary is not enough to prevent cross-project leakage.`
+  - `QA state, URL state, localStorage, and process-global currentProjectId must never be the authority for project ownership.`
+  - `Full first-release auth remains owned by ID-001; this task owns the minimum isolation bridge required before clean restore can be trusted.`
+- done_when:
+  - a fresh create flow gets a stable guest/auth session identity before project creation
+  - every new project is persisted with an owner/session scope
+  - project list and direct project restore check project id against the active owner/session scope
+  - a clean owner/session cannot list or directly restore another owner's project from a raw project id
+  - tests prove service-level owner isolation for project create, list, serialization, and direct restore
+  - live API proof shows unauthenticated project list fails and a fresh local user cannot see or restore an existing project
+  - full short-route browser refresh/restore remains owned by `W4-FIX-005`
+- evidence:
+  - `src/core/project-service.js`
+  - `src/server.js`
+  - `test/auth-session-project-isolation.test.js`
+  - live API proof on `http://127.0.0.1:4011` showed unauthenticated project list returns `401`, a fresh user sees zero existing projects, and direct restore of `onboarding-continuation-preview` returns `404` for that user.
+- not_trueGreen:
+  - isolation is inferred from UI route state
+  - project ownership is only stored in localStorage
+  - refresh accepts a project id without checking session/user scope
+  - QA/demo state can replace the active project after handoff
+  - login UI exists but project ownership is still not enforced
+
+### `W4-FIX-005 — Replace full-state URL serialization with short route identity and server-backed restore`
+- status: `trueGreen`
+- closed_at: `2026-06-04`
+- type: `release-blocker`
+- classification: `existing reused task`
+- depends_on:
+  - `W4-FIX-001`
+  - `AUTH-SESSION-PROJECT-ISO-001`
+  - `W4-AGENT-005D`
+- blocks:
+  - `W4-FIX-007`
+  - `BLD-AGT-001`
+- canonical_law:
+  - `Workspace routes must restore from a short project identity and backend project truth.`
+  - `Full conversation, summary, hidden brief, skeleton, runtime, or QA payloads must not remain in the browser URL after a project-backed Build route opens.`
+  - `QA/demo state must not replace an explicit projectId-backed restore.`
+- done_when:
+  - `/loop?projectId=<id>` restores the project from `/api/projects/<id>`
+  - workspace route persistence writes a short route with `projectId`
+  - `qaState`, `nexusState`, `qaScreen`, and stale `qaReset` are removed from the route after project-backed restore
+  - direct route restore prefers explicit `projectId` over stored browser or QA state
+  - bootstrap restore does not build a QA preview project when an explicit `projectId` is present
+  - tests and live browser proof show stale `qaState` no longer replaces the project with `qa-preview-project`
+- evidence:
+  - `web/app.js`
+  - `test/web-app-wave1-cockpit.test.js`
+  - live browser proof on `http://127.0.0.1:4011/loop?qa=1&projectId=<fresh-project>&qaState=<stale-qa-preview>` restored the fresh backend project, removed `qaState`/`nexusState`, did not render stale QA project text, and saved screenshot `/private/tmp/nexus-w4-fix-005-short-route-live.png`.
+- boundary:
+  - `W4-FIX-005` closes short route identity and server-backed workspace restore.
+  - It does not close companion truth, multi-actor modeling, or convergence guardrails; those remain owned by later W4-FIX tasks.
+- not_trueGreen:
+  - the URL still contains serialized project, conversation, or skeleton payloads after workspace restore
+  - a QA route can replace an explicit `projectId` with `qa-preview-project`
+  - restore uses a local snapshot as the source of truth instead of `/api/projects/<id>`
+
+### `W4-FIX-007 — Corrected Understanding To First On-Class Skeleton Handoff`
+- status: `trueGreen`
+- type: `release-blocker`
+- classification: `existing reused task`
+- depends_on:
+  - `W4-FIX-001`
+  - `AUTH-SESSION-PROJECT-ISO-001`
+  - `W4-FIX-005`
+- blocks:
+  - `BLD-AGT-001`
+  - `VBUILD-001`
+- canonical_law:
+  - `When the discovery agent reaches advance-to-skeleton / skeletonReady=true, Nexus must either create canonical project truth and open the first on-class Build skeleton automatically, or show a visible bounded failure.`
+  - `The Build route may not open from a non-restorable draft id or frontend-only preview state.`
+- partial_evidence:
+  - `2026-06-06: src/core/project-service.js now accepts discovery-agent skeleton-ready truth as sufficient for finishOnboardingSession to create canonical project truth instead of remaining blocked by the older completion evaluator.`
+  - `2026-06-06: web/app.js now refuses to route to /loop unless /finish returns a real backend project id, preventing /loop?projectId=project-draft from masquerading as a restorable Build handoff.`
+  - `2026-06-06: Verification passed: node --check web/app.js; node --check src/core/project-service.js; node --test --test-name-pattern "W4-FIX-007|W4-FIX-005" test/web-app-wave1-cockpit.test.js test/loop-core-screen-render.test.js test/project-service.test.js.`
+- closure_evidence:
+  - `2026-06-07: src/core/onboarding-service.js now prevents same-millisecond onboarding session id collisions by appending a monotonic session sequence.`
+  - `2026-06-07: src/core/project-service.js now converts generic project-draft finishes into stable real project ids derived from the onboarding session, while preserving explicit draft ids such as launch-app.`
+  - `2026-06-07: test/project-service.test.js covers two generic project-draft sessions finishing to distinct restorable project ids instead of shared project-draft truth.`
+  - `2026-06-07: Visible Chrome verification passed with scripts/verify-w4-fix-007-live-proof.mjs: the lead-management internal-tool idea moved automatically from Create / 'מכין שלד...' to http://127.0.0.1:4011/loop?qa=1&projectId=project-1780838528342-1 without manual navigation, removed qaState/nexusState/qaReset from the route, rendered runtimeTask=SLICE-005 with runtimeProjectId=project-1780838528342-1, and after refresh restored the same loop skeleton from /api/projects/project-1780838528342-1.`
+  - `2026-06-07: Verification passed: node --check web/app.js; node --check src/core/onboarding-service.js; node --check src/core/project-service.js; node --test --test-name-pattern "W4-FIX-007|W4-FIX-005" test/web-app-wave1-cockpit.test.js test/loop-core-screen-render.test.js test/project-service.test.js; node scripts/verify-w4-fix-007-live-proof.mjs.`
+- regression_reopen_evidence:
+  - `2026-06-09: Live field verification found a W4-FIX-007 / AUTH-SESSION-PROJECT-ISO-001 regression: Create could persist project-draft / nexusState in the visible URL, and Create could retain prior loop/backend anchors after navigating away from a project.`
+  - `2026-06-09: web/app.js now rejects project-draft, project-draft-* and onboarding-project-draft ids as real backend project ids before opening Build, removes fallback Loop openings from continuation preview/error paths, clears project-owned work surfaces when entering Create, and suppresses URL-backed create state when no real backend project id exists.`
+  - `2026-06-09: Verification passed: node --check web/app.js; node --test test/nexus-sidebar-navigation-contract.test.js; node --test --test-name-pattern "cockpit can return from workspace to a clean create-project screen" test/web-app-wave1-cockpit.test.js.`
+  - `2026-06-09: Live Chrome proof on http://127.0.0.1:4011/ passed the regression guard: during Create conversation the URL stayed http://127.0.0.1:4011/ with no project-draft/nexusState, Build did not open from draft truth, and returning to Create left #screen-loop empty with no data-runtime-project-id anchors.`
+  - `2026-06-09: Not re-closed trueGreen because this run did not reprove the full positive handoff to /loop?projectId=<real-project-id>; the existing full-path test is currently stale on a button-label assertion before it reaches project truth.`
+  - `2026-06-09: Follow-up positive proof attempted Create from UI -> finish -> real projectId -> /loop?projectId=... -> refresh -> same project -> clean Create. The proof is blocked before finish because /conversation-prime did not return a live provider response in the regular runtime.`
+  - `2026-06-09: web/app.js now wraps /conversation-prime with a bounded timeout and visible Create failure, so slow provider response no longer leaves the button disabled or opens a fake Build route.`
+  - `2026-06-09: Verification passed: node --check web/app.js; node --test test/nexus-sidebar-navigation-contract.test.js; node --test --test-name-pattern "cockpit can return from workspace to a clean create-project screen" test/web-app-wave1-cockpit.test.js. Live Chrome proof showed the regular runtime returns to Create with the message 'שיחת ההתחלה לא חזרה בזמן', button enabled, no /loop, no project-draft URL, and no nexusState. QA fault-mode proof showed provider outage remains bounded and visible without Build handoff.`
+  - `2026-06-09: Earlier provider/runtime blocker was isolated before closure: /conversation-prime needed local environment loading and a longer Create-side timeout before the positive proof could be rerun.`
+  - `2026-06-09: src/server.js now loads the local .env file before provider-backed onboarding services are constructed, without overriding externally supplied environment variables.`
+  - `2026-06-09: Direct API timing proof showed /conversation-prime returns a valid agent-composed response from the live provider path in ~9.2s once the local environment is loaded.`
+  - `2026-06-09: web/app.js increased the Create-side /conversation-prime timeout to 45s so normal live provider latency does not become a false handoff failure.`
+  - `2026-06-09: Full live Chrome proof passed on http://127.0.0.1:4011/: Create from UI answered discovery questions, opened http://127.0.0.1:4011/loop?projectId=project-1781012594617-2, rendered the lead-management Build skeleton with data-runtime-project-id=project-1781012594617-2, refresh restored the same /loop project and skeleton, and selecting Create returned to a clean front door with an empty #screen-loop and no draft/nexusState URL.`
+  - `2026-06-09: Verification passed: node --check src/server.js; node --check web/app.js; node --test test/nexus-sidebar-navigation-contract.test.js; node --test --test-name-pattern "cockpit can return from workspace to a clean create-project screen" test/web-app-wave1-cockpit.test.js; full live Chrome proof for Create -> real projectId -> /loop -> refresh -> same project -> clean Create.`
+- not_trueGreen:
+  - Create remains in a preparing/building state after skeletonReady=true
+  - /loop opens with a draft id such as project-draft
+  - refresh after automatic handoff shows no active loop
+  - the first skeleton is visible only from local/frontend state rather than /api/projects/<projectId>
+
+החוק:
+- לא זורקים אותן
+- לא משכפלים אותן
+- אלא ממפים אותן ל־new shell execution path
+
+---
+
+## 16. New Tasks Added By Canonical Assembly
+
+אלה המשימות החדשות שנולדו ישירות מהמסמך הקנוני ולא הופיעו כך קודם:
+
+- `SHL-001..005`
+- `AGT-001`
+- `AGT-001A`
+- `SURF-001..008`
+- `SURF-009A`
+- `SURF-009B`
+- `NEXUS-FACADE-001`
+- `NEXUS-ACTION-FACADE-001`
+- `SURF-CODE-001`
+- `SLICE-001..008`
+- `EXP-001..009`
+- `SKEL-001`
+- `DESIGN-PLUG-001..004`
+- `VSKEL-001`
+- `RUNTIME-TRUTH-001`
+- `PRODUCT-BACKEND-SKEL-001`
+- `RUNTIME-SKEL-001`
+- `PRO-SKEL-001`
+- `PRO-SKEL-002`
+- `PRO-SKEL-003`
+- `PRODUCT-KIND-001`
+- `LEARNING-PRODUCT-INTELLIGENCE-001`
+- `BUILD-MUTATION-TRUTH-001`
+- `LEARNING-RUNTIME-001`
+- `AUTH-SESSION-PROJECT-ISO-001`
+- `BLD-AGT-001`
+- `BUILD-SPEECH-TRUTH-001`
+- `BUILD-APPROVAL-001`
+- `BUILD-TEST-001`
+- `BUILD-RELEASE-GATE-001`
+- `SKELETON-CHOICE-001`
+- `VBUILD-001`
+- `MUT-001`
+- `HIST-AGT-001`
+- `SHARE-AGT-001`
+- `GROW-AGT-001`
+- `GROW-PLUG-001..002`
+- `GROW-AGT-002`
+- `GROW-SEO-001`
+- `GROW-SEM-001`
+- `GROW-EMAIL-001`
+- `GROW-LAND-001`
+- `GROW-MEASURE-001`
+- `STD-HANDOFF-AGT-001`
+- `ID-001`
+- `AUTH-TOKEN-001`
+- `ACCT-001`
+- `SEC-001`
+- `PROV-001`
+- `SURFACE-OWNER-RUNTIME-001`
+- `LIVE-PROOF-INTEGRITY-001`
+- `PRIVACY-001`
+- `SSO-001`
+- `RUNTIME-001`
+- `FILE-001`
+- `USAGE-001`
+- `BILLING-001`
+- `OBS-001`
+- `ADMIN-001`
+- `RESP-001`
+- `LEGAL-001`
+- `STATE-001`
+- `DATA-001`
+- `A11Y-001`
+- `OPS-001`
+- `PRODUCT-RUNTIME-PACKAGE-001`
+- `STANDALONE-ARTIFACT-001`
+- `PRODUCT-PROMISE-GATE-001`
+- `VER-AGT-001`
+- `REL-AGT-001`
+- `REL-001..006`
+
+אלה אינן “nice to have”.
+אלה משימות bridge הכרחיות בין:
+- המנועים הקיימים
+- לבין Nexus החדשה כ־product shell אמיתי
+
+---
+
+## 17. Critical Path To Release
+
+זה ה־critical path המצומצם:
+
+1. `FND-001..005`
+2. `ENG-001..007`
+3. `SHL-001..005`
+4. `AGT-001`
+5. `AGT-001A`
+6. `AGT-001C`
+7. `SURF-001..008 -> SURF-009A`
+8. `W4-FIX-001 -> AUTH-SESSION-PROJECT-ISO-001 -> W4-FIX-005 -> W4-FIX-007 -> SLICE-001..004 -> SKEL-001 -> DESIGN-PLUG-001..004 -> VSKEL-001 -> SLICE-005 -> RUNTIME-TRUTH-001 -> PRODUCT-BACKEND-SKEL-001 -> PRODUCT-BACKEND-SKEL-002 -> RUNTIME-SKEL-001 -> PRO-SKEL-001 -> PRO-SKEL-002 -> PRO-SKEL-003 -> BUILD-MUTATION-TRUTH-001 -> LEARNING-RUNTIME-001 -> PRODUCT-KIND-001 -> LEARNING-PRODUCT-INTELLIGENCE-001 -> BLD-AGT-001 -> BUILD-SPEECH-TRUTH-001 -> SKELETON-CHOICE-001 -> VBUILD-001`
+9. `SLICE-006..008`
+10. `MUT-001 -> BUILD-APPROVAL-001 -> HIST-AGT-001 -> SHARE-AGT-001 -> GROW-AGT-001 -> GROW-PLUG-001..002 -> GROW-MEASURE-001 -> GROW-AGT-002 -> GROW-SEO-001 -> GROW-SEM-001 -> GROW-EMAIL-001 -> GROW-LAND-001 -> STD-HANDOFF-AGT-001 -> SURF-009B -> NEXUS-FACADE-001 -> NEXUS-ACTION-FACADE-001 -> SURF-CODE-001`
+11. `EXP-001..008`
+12. `ID/AUTH-TOKEN/SEC/EXP-009/ACCT/PROV/SURFACE-OWNER-RUNTIME/LIVE-PROOF-INTEGRITY/PRIVACY/SSO/RUNTIME/FILE/USAGE/BILLING/OBS/ADMIN/RESP/STATE/DATA/LEGAL/A11Y/OPS product-shell blockers`
+13. `PRODUCT-RUNTIME-PACKAGE-001 -> STANDALONE-ARTIFACT-001 -> PRODUCT-PROMISE-GATE-001 -> VER-AGT-001 -> BUILD-TEST-001 -> REL-AGT-001 -> BUILD-RELEASE-GATE-001 -> REL-001..006`
+
+אם השרשרת הזאת נסגרת truthfully:
+
+```txt
+Nexus מוכנה לצאת לאור בגרסה חדשה אמינה.
+```
+
+---
+
+## 18. Answer To The Key Question
+
+### האם יש כאן את כל המשימות עד להוצאה של Nexus לאור?
+
+כן —
+**ברמת המפה הקנונית, כן.**
+
+כלומר:
+- לא כל תת־משימה טכנית זעירה
+- לא כל implementation detail
+- ולא כל משימת polish
+
+אבל כן:
+- כל ה־phases
+- כל ה־release blockers
+- כל ה־bridge tasks
+- וכל המשימות העיקריות שנדרשות כדי להגיע ל־`Nexus ready for release`
+
+### מה זה לא?
+
+זה לא:
+- detailed sprint board
+- issue tracker
+- subtask breakdown per file
+
+זה:
+
+```txt
+ה־canonical execution map המלא עד release.
+```
+
+---
+
+## 19. Next Canonical Step
+
+הצעד הקנוני הבא:
+
+1. להתחיל `SURF-001 — Canonical Surface Pass`.
+2. לשמר את `AGT-001`, `AGT-001A`, `AGT-001B`, `AGT-001C`, ו־`AGT-001D` כ־closed release-blocker chain.
+3. לא לפתוח מחדש את שרשרת ה־AGT אלא אם live front-door behavior חוזר להציג תשובה שבלונית, copy קשיח בשם הסוכן, דליפת שפה פנימית, או מסלול פעיל שבו ה־old intake/question/repair engine מנהל את השיחה במקום `generateAgentTurn`.
+
+`SURF-001` כבר אינו חסום על שרשרת ה־AGT לפי הראיות של `2026-05-29`.
