@@ -67,6 +67,7 @@ import {
   resolveOnboardingAgentProvider,
   resolveOnboardingModelFamily,
 } from "./shared/onboarding-provider-runtime.js";
+import { appendLiveUpdateDiagnosticEvent } from "./shared/live-update-diagnostics.js";
 
 function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
@@ -14633,6 +14634,10 @@ async function runSnapshotWorkerTickFromUi() {
       if (liveEventSource === eventSource) {
         eventSource.close?.();
         liveEventSource = null;
+        currentProject = appendLiveUpdateDiagnosticEvent(currentProject, {
+          projectId: currentProjectId,
+        });
+        renderEvents(elements, currentProject);
         scheduleLiveRefresh();
       }
     };

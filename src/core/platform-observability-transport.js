@@ -10,6 +10,25 @@ function cloneEntry(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+const SENSITIVE_KEY_PATTERN = /authorization|cookie|token|secret|password|api[-_]?key|credential|providerpayload/i;
+
+function redactSensitiveValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => redactSensitiveValue(entry));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [
+        key,
+        SENSITIVE_KEY_PATTERN.test(key) ? "[redacted]" : redactSensitiveValue(entry),
+      ]),
+    );
+  }
+
+  return value;
+}
+
 function buildTraceRecord(platformTrace = {}) {
   const normalizedTrace = normalizeObject(platformTrace);
 
@@ -45,7 +64,7 @@ function buildLogRecord(platformLog = {}, traceId, index = 0) {
     source: normalizedLog.source ?? "runtime",
     message: normalizedLog.message ?? "Runtime event observed",
     timestamp: normalizedLog.timestamp ?? new Date().toISOString(),
-    metadata: normalizeObject(normalizedLog.metadata),
+    metadata: redactSensitiveValue(normalizeObject(normalizedLog.metadata)),
   };
 }
 

@@ -5784,7 +5784,7 @@ Write-back:
   - invoices, cancellation, refunds, or payment failure are undefined while paid plans are claimed
 
 #### `OBS-001 — First-release observability and diagnostics`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - source:
   - `Product Shell Coverage Audit — 2026-05-30`
@@ -5808,6 +5808,27 @@ Write-back:
   - failure diagnosis requires guessing from UI state
   - logs leak secrets or internal provider payloads to the client
   - a valid restored project screen emits unactionable 401 errors for first-party live event routes
+- closure_update_2026-06-11:
+  - implemented:
+    - `platform-observability-transport` now redacts sensitive diagnostic metadata keys before logs enter the observability snapshot
+    - Build/live update fallback now appends an `OBS-001` non-blocking diagnostic event when the first-party live event stream fails and falls back to scheduled refresh
+    - live update diagnostics are isolated in `web/shared/live-update-diagnostics.js` so the visible surface and tests share the same event contract
+    - `scripts/verify-obs-001-live-proof.mjs` proves live-event authorization and observability behavior against a real local server
+  - verification:
+    - `node --check src/core/platform-observability-transport.js`
+    - `node --check web/shared/live-update-diagnostics.js`
+    - `node --check web/app.js`
+    - `node --check scripts/verify-obs-001-live-proof.mjs`
+    - `node --test test/platform-observability-transport.test.js test/platform-logging-tracing-layer.test.js test/security-audit-event-logger.test.js test/auth-token-001-server-verified-session.test.js test/live-update-diagnostics.test.js`
+    - `PORT=4021 node scripts/verify-obs-001-live-proof.mjs`
+  - evidence:
+    - live proof created project `obs-proof-1781205784785`
+    - authenticated `/api/projects/:projectId/live-events` returned `200`
+    - query-user-id-only `/api/projects/:projectId/live-events?userId=...` returned bounded `401 authentication-required`
+    - observability snapshot contained seven traces and did not expose the proof token string
+  - boundary:
+    - this closes first-release observability/diagnostic truth for live-events and sensitive log redaction
+    - this does not implement admin controls, billing observability, provider analytics, or growth measurement; those remain owned by downstream tasks
 
 #### `ADMIN-001 — First-release owner/admin health and controls`
 - status: `new-proposed`
