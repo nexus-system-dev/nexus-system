@@ -71,6 +71,24 @@ function labelSemBlockedPromise(item) {
   return labels[item] ?? item;
 }
 
+function labelEmailBlockedPromise(item) {
+  const labels = {
+    "guarantee-opens": "לא להבטיח פתיחות",
+    "guarantee-clicks": "לא להבטיח קליקים",
+    "guarantee-replies": "לא להבטיח תגובות",
+    "guarantee-leads": "לא להבטיח לידים",
+    "guarantee-sales": "לא להבטיח מכירות",
+    "guarantee-conversions": "לא להבטיח המרות",
+    "guarantee-revenue": "לא להבטיח הכנסות",
+    "fabricate-open-rate": "לא להמציא אחוזי פתיחה",
+    "fabricate-click-rate": "לא להמציא אחוזי הקלקה",
+    "fabricate-replies": "לא להמציא תגובות",
+    "send-without-approval": "לא לשלוח בלי אישור",
+    "scrape-contacts": "לא לגרד אנשי קשר",
+  };
+  return labels[item] ?? item;
+}
+
 function renderGrowthPluginLayer(pluginLayer = {}) {
   const primary = pluginLayer.primaryPlugin ?? {};
   const registry = pluginLayer.registry ?? {};
@@ -358,6 +376,77 @@ function renderSemActionPath(sem = {}) {
   `;
 }
 
+function renderEmailActionPath(email = {}) {
+  if (!email || email.status === "not-created") {
+    return "";
+  }
+  return `
+    <section
+      class="nexus-growth-surface__panel"
+      data-email-action-task="${escapeHtml(email.taskId ?? "GROW-EMAIL-001")}"
+      data-email-action-status="${escapeHtml(email.status ?? "not-created")}"
+      data-email-action-requested="${escapeHtml(email.requestedAction ?? "draft")}"
+      data-email-action-provider="${escapeHtml(email.selectedProvider ?? "mailchimp")}"
+      data-email-action-provider-connected="${escapeHtml(email.providerConnected ? "true" : "false")}"
+      data-email-action-provider-supported="${escapeHtml(email.providerSupportedForRealSend ? "true" : "false")}"
+      data-email-action-gmail-limited="${escapeHtml(email.gmailLimited ? "true" : "false")}"
+      data-email-action-source-confirmed="${escapeHtml(email.audienceSourceConfirmed ? "true" : "false")}"
+      data-email-action-lawful-basis="${escapeHtml(email.lawfulBasisConfirmed ? "true" : "false")}"
+      data-email-action-cold-list-rejected="${escapeHtml(email.coldListRejected ? "true" : "false")}"
+      data-email-action-draft-only="${escapeHtml(email.draftOnlyByDefault === false ? "false" : "true")}"
+      data-email-action-full-audience-default="${escapeHtml(email.fullAudienceSendDefault ? "true" : "false")}"
+      data-email-action-test-send-prepared="${escapeHtml(email.testSendPrepared ? "true" : "false")}"
+      data-email-action-one-email-ready="${escapeHtml(email.oneEmailSendPrepared ? "true" : "false")}"
+      data-email-action-external-send="${escapeHtml(email.externalSendPerformed ? "true" : "false")}"
+      data-email-action-per-email-approval="${escapeHtml(email.perEmailApprovalRequired === false ? "false" : "true")}"
+      data-email-action-fabricated-metrics-blocked="${escapeHtml(email.fabricatedResultsBlocked === false ? "false" : "true")}"
+      data-email-action-metrics-fabricated="${escapeHtml(email.metricsFabricated ? "true" : "false")}"
+      data-growth-region="email-action-path"
+    >
+      <span class="nexus-growth-surface__tag">אימייל</span>
+      <h2>${escapeHtml(email.status === "one-email-send-ready" ? "אימייל אחד מוכן לשליחה מאושרת" : email.status === "test-send-ready" ? "שליחת בדיקה מוכנה לאישור" : "טיוטת אימייל לפני שליחה")}</h2>
+      <p>${escapeHtml(email.userMessage ?? "מסלול אימייל עדיין לא נוצר.")}</p>
+      <div class="nexus-growth-surface__signal-grid">
+        <article>
+          <span>ספק</span>
+          <strong>${escapeHtml(email.selectedProvider ?? "mailchimp")}</strong>
+        </article>
+        <article>
+          <span>קהל נקי</span>
+          <strong>${escapeHtml(`${email.cleanedCount ?? 0} כתובות`)}</strong>
+        </article>
+        <article>
+          <span>נשלח בפועל</span>
+          <strong>${escapeHtml(email.externalSendPerformed ? "כן" : "לא")}</strong>
+        </article>
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>אישורים נפרדים</strong>
+        ${renderList([
+          `קמפיין: ${email.campaignApproved ? "מאושר" : "לא מאושר"}`,
+          `תוכן: ${email.contentApproved ? "מאושר" : "לא מאושר"}`,
+          `מקור קהל: ${email.audienceSourceApproved ? "מאושר" : "לא מאושר"}`,
+          `בדיקה: ${email.testSendApproved ? "מאושרת" : "לא מאושרת"}`,
+          `שליחה: ${email.sendApproved ? "מאושרת" : "לא מאושרת"}`,
+        ], "אין אישורים להצגה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>טיוטות לאישור</strong>
+        ${renderList(email.subjectVariants ?? [], "אין נושאים להצגה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>ספקים שמתאימים לשליחה בשחרור הראשון</strong>
+        ${renderList(email.preferredProviders ?? [], "אין ספקים זמינים לשליחה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>מה חסום</strong>
+        ${renderList((email.forbiddenPromises ?? []).map(labelEmailBlockedPromise), "אין חסימות להצגה.")}
+      </div>
+      <p class="nexus-growth-surface__empty">אישור קמפיין מכין רצף, אבל כל אימייל אמיתי דורש אישור נפרד. נתוני פתיחה או קליקים מגיעים רק ממדידה אמיתית.</p>
+    </section>
+  `;
+}
+
 export function renderGrowthSurfaceScreen(viewModel = {}) {
   const contract = viewModel.contract ?? {};
   const growth = viewModel.growth ?? {};
@@ -451,6 +540,8 @@ export function renderGrowthSurfaceScreen(viewModel = {}) {
           ${renderSeoActionPath(growth.seoAction ?? {})}
 
           ${renderSemActionPath(growth.semAction ?? {})}
+
+          ${renderEmailActionPath(growth.emailAction ?? {})}
 
           <section class="nexus-growth-surface__panel" data-growth-region="growth-metric-baseline">
             <span class="nexus-growth-surface__tag">Baseline</span>

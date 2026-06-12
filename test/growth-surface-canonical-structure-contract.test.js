@@ -269,6 +269,65 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
         activationPrepared: false,
         userMessage: "הטיוטה מוכנה, אבל אין ספק מחובר ולכן אין הפעלה או הוצאה.",
       },
+      emailActionPath: {
+        taskId: "GROW-EMAIL-001",
+        agentId: "email-action-path",
+        status: "sequence-draft-ready",
+        requestedAction: "prepare-sequence",
+        draft: {
+          sequence: [{
+            subjectVariants: ["מערכת לידים: בדיקה קצרה", "שאלה קצרה על לידים"],
+            bodyVariants: ["טיוטה אחת", "טיוטה שתיים"],
+          }],
+        },
+        providerTruth: {
+          selectedProvider: "mailchimp",
+          providerConnected: false,
+          providerSupportedForRealSend: true,
+          gmailLimited: false,
+          hasEmailDraftScope: false,
+          hasTestSendScope: false,
+          hasSendScope: false,
+          providerConnectionIsNotSendPermission: true,
+          preferredProviders: ["mailchimp", "sendgrid"],
+          limitedProviders: ["gmail"],
+        },
+        audienceTruth: {
+          audienceSourceConfirmed: false,
+          lawfulBasisConfirmed: false,
+          coldListRejected: false,
+          cleanedCount: 0,
+          duplicateCount: 0,
+          invalidCount: 0,
+          fieldsSeparated: true,
+        },
+        approval: {
+          campaignApproved: false,
+          contentApproved: false,
+          audienceSourceApproved: false,
+          testSendApproved: false,
+          sendApproved: false,
+          campaignApprovalDoesNotSendSequence: true,
+          perEmailApprovalRequired: true,
+        },
+        sendTruth: {
+          draftOnlyByDefault: true,
+          fullAudienceSendDefault: false,
+          testSendPrepared: false,
+          oneEmailSendPrepared: false,
+          sequenceDraftPrepared: true,
+          sequenceSendReadyCount: 0,
+          externalSendPerformed: false,
+        },
+        resultTruth: {
+          providerResultsAvailable: false,
+          fabricatedResultsBlocked: true,
+          metricsFabricated: false,
+          measurementOwner: "GROW-MEASURE-001",
+        },
+        forbiddenPromises: ["guarantee-opens", "guarantee-replies", "send-without-approval"],
+        userMessage: "הכנתי רצף אימיילים כטיוטה. אישור קמפיין לא שולח את כל הרצף.",
+      },
     },
   });
   const html = renderGrowthSurfaceScreen(viewModel);
@@ -316,6 +375,17 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
   assert.match(html, /data-sem-action-measurement-ready="true"/);
   assert.match(html, /data-sem-action-external-spend="false"/);
   assert.match(html, /טיוטת ניסוי ממומן לפני הוצאה/);
+  assert.match(html, /data-email-action-task="GROW-EMAIL-001"/);
+  assert.match(html, /data-email-action-status="sequence-draft-ready"/);
+  assert.match(html, /data-email-action-provider="mailchimp"/);
+  assert.match(html, /data-email-action-provider-connected="false"/);
+  assert.match(html, /data-email-action-source-confirmed="false"/);
+  assert.match(html, /data-email-action-draft-only="true"/);
+  assert.match(html, /data-email-action-full-audience-default="false"/);
+  assert.match(html, /data-email-action-external-send="false"/);
+  assert.match(html, /data-email-action-per-email-approval="true"/);
+  assert.match(html, /data-email-action-fabricated-metrics-blocked="true"/);
+  assert.match(html, /טיוטת אימייל לפני שליחה/);
   assert.match(html, /סימן ראשוני בלבד/);
   assert.match(html, /data-growth-plugin-primary="audience-understanding-test"/);
   assert.match(html, /data-growth-plugin-provider-required="false"/);

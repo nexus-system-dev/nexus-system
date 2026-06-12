@@ -4902,7 +4902,7 @@ Write-back:
     - It does not connect real ad accounts, spend money, launch live campaigns, optimize campaigns, raise budgets, generate creative assets, alter landing pages/product message, guarantee clicks/leads/conversions/revenue, or close email/landing experiment/growth measurement/provider execution beyond the bounded SEM contract.
 
 #### `GROW-EMAIL-001 — Email campaign action path`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `new shell task`
 - source:
@@ -4967,6 +4967,12 @@ Write-back:
   - cold audience list is accepted without source
   - Email changes product message or landing page directly
   - provider result truth bypasses GROW-MEASURE-001
+- closure_update:
+  - `2026-06-12: GROW-EMAIL-001 implemented and verified. src/core/email-action-path.js now owns the bounded email action path: subject/body/sequence draft envelope, draft-plus-test-send default, Mailchimp/SendGrid provider boundary, Gmail broad-campaign block, ConvertKit draft/post-release boundary, audience source and lawful basis gate, duplicate/invalid address cleanup, provider scope gate, separate content/audience/send approvals, one-email send preparation, per-email sequence approval, product/page handoff, provider result intake through GROW-MEASURE-001, and no fabricated open/click/reply metrics.`
+  - `Code path: growth-agent plugin envelope carries emailActionPath, ProjectService persists/restores emailActionPath across project/context/state, server exposes /api/projects/:projectId/email-action-path, and Growth surface renders the email action panel with visible provider/audience/approval/send/measurement truth.`
+  - `Verification: node --check src/core/email-action-path.js; node --check src/core/growth-agent.js; node --check src/core/project-service.js; node --check src/server.js; node --check web/nexus-ui/adapters/growth-surface-adapter.js; node --check web/nexus-ui/screens/GrowthSurfaceScreen.js; node --check scripts/verify-grow-email-001-live-proof.mjs; node --test --test-name-pattern "GROW-EMAIL-001|GROW-SEM-001|GROW-PLUG|GROW-MEASURE|SURF-005" test/email-action-path.test.js test/email-action-project-service.test.js test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-measurement-truth.test.js test/growth-surface-canonical-structure-contract.test.js test/sem-action-path.test.js test/sem-action-project-service.test.js passed with 31/31 tests.`
+  - `Live evidence: node scripts/verify-grow-email-001-live-proof.mjs passed against a real local server and browser. The proof created an authenticated project, created measurement truth, generated an email sequence draft, blocked missing audience source, prepared Gmail test send without external send, blocked broad Gmail campaign, prepared one SendGrid email with explicit approvals/source/scopes while sending nothing externally, consumed real provider results without fabricated metrics, rendered the Growth screen email panel, and restored emailActionPath across project/context/state. Report: /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-email-001-A17OJa/report.json. Screenshot: /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-email-001-A17OJa/growth-email.png.`
+  - `Truth boundary: this closes the first-release email campaign action path only. It does not connect a real email provider account, actually send external email, run broad audience campaigns, verify production deliverability, manage unsubscribes in production, or close GROW-LAND-001, REL-AGT-001, STD-HANDOFF-AGT-001, or production provider operations.`
 
 #### `GROW-LAND-001 — Landing Page Experiment action path`
 - status: `new-proposed`

@@ -135,6 +135,7 @@ function summarizeGrowthAgentForSurface(value) {
     socialCampaignExecutionAgent: normalizeObject(agent.socialCampaignExecutionAgent),
     seoActionPath: normalizeObject(agent.seoActionPath),
     semActionPath: normalizeObject(agent.semActionPath),
+    emailActionPath: normalizeObject(agent.emailActionPath),
     visibleBoundary: {
       oneNextMoveOnly: visibleBoundary.oneNextMoveOnly !== false,
       noGenericMarketing: visibleBoundary.noGenericMarketing !== false,
@@ -331,6 +332,64 @@ function summarizeSemActionForSurface(value) {
   };
 }
 
+function summarizeEmailActionForSurface(value) {
+  const email = normalizeObject(value);
+  const providerTruth = normalizeObject(email.providerTruth);
+  const audienceTruth = normalizeObject(email.audienceTruth);
+  const approval = normalizeObject(email.approval);
+  const sendTruth = normalizeObject(email.sendTruth);
+  const resultTruth = normalizeObject(email.resultTruth);
+  const draft = normalizeObject(email.draft);
+  return {
+    taskId: normalizeString(email.taskId, "GROW-EMAIL-001"),
+    agentId: normalizeString(email.agentId, "email-action-path"),
+    status: normalizeString(email.status, "not-created"),
+    requestedAction: normalizeString(email.requestedAction, "draft"),
+    selectedProvider: normalizeString(providerTruth.selectedProvider, "mailchimp"),
+    providerConnected: providerTruth.providerConnected === true,
+    providerSupportedForRealSend: providerTruth.providerSupportedForRealSend === true,
+    gmailLimited: providerTruth.gmailLimited === true,
+    optionalProvider: providerTruth.optionalProvider === true,
+    hasEmailDraftScope: providerTruth.hasEmailDraftScope === true,
+    hasTestSendScope: providerTruth.hasTestSendScope === true,
+    hasSendScope: providerTruth.hasSendScope === true,
+    providerConnectionIsNotSendPermission: providerTruth.providerConnectionIsNotSendPermission !== false,
+    preferredProviders: normalizeArray(providerTruth.preferredProviders).map((item) => normalizeString(item)).filter(Boolean),
+    limitedProviders: normalizeArray(providerTruth.limitedProviders).map((item) => normalizeString(item)).filter(Boolean),
+    optionalProviders: normalizeArray(providerTruth.optionalProviders).map((item) => normalizeString(item)).filter(Boolean),
+    audienceSourceConfirmed: audienceTruth.audienceSourceConfirmed === true,
+    lawfulBasisConfirmed: audienceTruth.lawfulBasisConfirmed === true,
+    coldListRejected: audienceTruth.coldListRejected === true,
+    cleanedCount: Number.isFinite(Number(audienceTruth.cleanedCount)) ? Number(audienceTruth.cleanedCount) : 0,
+    duplicateCount: Number.isFinite(Number(audienceTruth.duplicateCount)) ? Number(audienceTruth.duplicateCount) : 0,
+    invalidCount: Number.isFinite(Number(audienceTruth.invalidCount)) ? Number(audienceTruth.invalidCount) : 0,
+    fieldsSeparated: audienceTruth.fieldsSeparated !== false,
+    campaignApproved: approval.campaignApproved === true,
+    contentApproved: approval.contentApproved === true,
+    audienceSourceApproved: approval.audienceSourceApproved === true,
+    testSendApproved: approval.testSendApproved === true,
+    sendApproved: approval.sendApproved === true,
+    campaignApprovalDoesNotSendSequence: approval.campaignApprovalDoesNotSendSequence !== false,
+    perEmailApprovalRequired: approval.perEmailApprovalRequired !== false,
+    draftOnlyByDefault: sendTruth.draftOnlyByDefault !== false,
+    fullAudienceSendDefault: sendTruth.fullAudienceSendDefault === true,
+    testSendPrepared: sendTruth.testSendPrepared === true,
+    oneEmailSendPrepared: sendTruth.oneEmailSendPrepared === true,
+    sequenceDraftPrepared: sendTruth.sequenceDraftPrepared === true,
+    sequenceSendReadyCount: Number.isFinite(Number(sendTruth.sequenceSendReadyCount)) ? Number(sendTruth.sequenceSendReadyCount) : 0,
+    externalSendPerformed: sendTruth.externalSendPerformed === true,
+    providerResultsAvailable: resultTruth.providerResultsAvailable === true,
+    fabricatedResultsBlocked: resultTruth.fabricatedResultsBlocked !== false,
+    metricsFabricated: resultTruth.metricsFabricated === true,
+    measurementOwner: normalizeString(resultTruth.measurementOwner, "GROW-MEASURE-001"),
+    subjectVariants: normalizeArray(draft.sequence?.[0]?.subjectVariants).map((item) => normalizeString(item)).filter(Boolean).slice(0, 2),
+    bodyVariants: normalizeArray(draft.sequence?.[0]?.bodyVariants).map((item) => normalizeString(item)).filter(Boolean).slice(0, 2),
+    forbiddenPromises: normalizeArray(email.forbiddenPromises).map((item) => normalizeString(item)).filter(Boolean),
+    userMessage: normalizeString(email.userMessage, "מסלול אימייל עדיין לא נוצר."),
+    historyCount: normalizeArray(email.history).length,
+  };
+}
+
 function createGrowthSurfaceViewContract() {
   return {
     contractId: "SURF-005",
@@ -458,6 +517,12 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       ?? state.semActionPath
       ?? growthAgent.semActionPath,
   );
+  const emailAction = summarizeEmailActionForSurface(
+    safeProject.emailActionPath
+      ?? safeProject.context?.emailActionPath
+      ?? state.emailActionPath
+      ?? growthAgent.emailActionPath,
+  );
   const growthMeasurement = summarizeGrowthMeasurementForSurface(
     safeProject.growthMeasurementTruth
       ?? safeProject.context?.growthMeasurementTruth
@@ -560,6 +625,7 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       socialCampaign,
       seoAction,
       semAction,
+      emailAction,
     },
   };
 }
