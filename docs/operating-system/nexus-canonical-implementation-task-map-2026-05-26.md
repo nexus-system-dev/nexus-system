@@ -764,6 +764,7 @@ Write-back:
 - `2026-06-02: GROW-LAND-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. Landing Page Experiment V1 defaults to internal draft/experiment, creates a new landing page only from clear audience, problem, core value, and product direction, treats the page as a growth asset connected to the product rather than product truth, limits V1 to up to two manual-comparison versions, requires Mutation for product-message/audience/promise/value changes, requires Visual Build for visible changes, requires Share / Demo or Release plus explicit approval for external visibility, supports basic lead capture with consent and defined storage, routes privacy/data concerns through LEGAL / DATA / SEC, routes measurement through GROW-MEASURE-001, supports Hebrew/RTL, records product-readable history, and blocks fake proof, fake success, unapproved claims, unapproved publication, and release impersonation.`
 - `2026-06-12: GROW-LAND-BACKEND-001 added after GROW-LAND-001 trueGreen exposed a backend gap: landing pages can draft and measure bounded experiments, but a publishable landing page must have its own product-owned backend surface, a real lead intake/write path, and a synchronization contract with the user's generated product backend. The task must distinguish Nexus experiment fallback, product-owned local/mock backend, and future production backend; preserve consent/source/timestamp/product linkage; block external data collection without storage/privacy/release truth; and avoid claiming that Nexus experiment leads are already the user's standalone product backend.`
 - `2026-06-12: DESIGN-PROVIDER-ORCH-001 and PUBLISH-DESIGN-GATE-001 added after user clarified that publish-quality design must be more than technical styling. Nexus must be able to route publishable outputs through external or internal design tools/providers, normalize the outputs into Nexus-owned asset truth, evaluate them against product/audience/channel/release needs, and block publication/package/release if the result is not publish-grade. This covers landing pages, shared demos, websites, apps, campaign creative, email visuals, social/ad creative, release pages, and any generated product artifact that can be shown outside Nexus.`
+- `2026-06-12: GROW-LAND-DESIGN-001 added after user clarified that the landing page path needs its own publish-grade design task, not only backend sync and not only a generic release gate. A landing page must be judged as a real market-facing product page with product-specific hero, CTA, trust, proof, responsive layout, lead form, consent, copy clarity, and visual quality before PUBLISH-DESIGN-GATE-001 can approve it for any external use.`
 - `2026-06-02: GROW-MEASURE-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. Growth measurement is the truth guard for Growth: every real measurement requires a clear source, manual user reports are valid only when labeled manual, internal Nexus measurement is sufficient for V1, Google Analytics and Search Console are optional, required V1 internal events include demo view, share-link open, CTA click, form submit, lead created, action approved, landing opened, test email sent, failed action, and completed action. Every external growth action requires a small success metric, draft-only actions may exist without measurement, measurement separates hypothesis/result/insight, V1 defaults to indication language rather than proof, every conclusion has low/medium/high confidence, source/time/path/experiment are stored for each datapoint, users see a simple summary by default, sensitive data stays internal unless approved, provider failures and conflicting data fail safely, Growth owns next-action decisions, and Mutation owns product-truth changes from measurement.`
 - `2026-06-02: Growth consistency audit completed before returning to execution. Fixed dependency drift so SEO, Email, and Landing paths explicitly depend on GROW-MEASURE-001 where they consume or produce measurement truth; SEO and Email now explicitly depend on MUT-001 and VBUILD-001 where they can route product-message or visible page changes. Updated the Growth Plugin shared output envelope so handoffRequired includes Growth Agent, Visual Build Agent, and Analytics / Measurement Plugin, not only Share/Mutation/Release/Verification/Social. No Growth task was marked trueGreen by this audit.`
 - `2026-06-01: Growth Plugin Layer canonical definition added in growth-plugin-layer-contract-2026-06-01.md. Added first-release release-blockers GROW-PLUG-001, GROW-PLUG-002, GROW-SEO-001, GROW-SEM-001, GROW-EMAIL-001, GROW-LAND-001, and GROW-MEASURE-001 so Growth can choose Social, SEO, SEM, Email, Landing Experiment, and Measurement capabilities by product goal instead of exposing provider tools as the product.`
@@ -6262,6 +6263,70 @@ Write-back:
   - provider names or internals become the user-facing agent model
   - design assets can bypass PROV-001, VBUILD-001, package, or release gates
 
+#### `GROW-LAND-DESIGN-001 — Publish-grade landing page design path`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-12 user clarification: landing pages need publish-grade design, not only technical implementation`
+  - `GROW-LAND-001`
+  - `GROW-LAND-BACKEND-001`
+  - `DESIGN-PROVIDER-ORCH-001`
+- depends_on:
+  - `GROW-LAND-001`
+  - `GROW-LAND-BACKEND-001`
+  - `VBUILD-001`
+  - `SKELETON-CHOICE-001`
+  - `DESIGN-PROVIDER-ORCH-001`
+- blocks:
+  - `PUBLISH-DESIGN-GATE-001`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `STANDALONE-ARTIFACT-001`
+  - `REL-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+- canonical_law:
+  - `A landing page is not publishable just because it has copy, a CTA, a form, and a backend; it must look and read like a market-facing page for the specific product, audience, language, and promise.`
+  - `Landing page design must combine product direction, growth intent, lead backend truth, consent, measurement, CTA hierarchy, trust/proof sections, mobile layout, desktop layout, and brand/visual treatment into one product-owned surface.`
+  - `Nexus may use internal design templates or external design providers through DESIGN-PROVIDER-ORCH-001, but the accepted landing design must be normalized into Nexus-owned landing asset truth with source, prompt/input, usage boundary, approval state, product link, backend link, and history link.`
+  - `The landing page must avoid internal task ids, provider names, raw operation names, QA language, fake metrics, fake testimonials, fake proof, and claims that exceed product/backend/release truth.`
+  - `No landing page may be shared, packaged, released, published, or used as a campaign destination until rendered desktop and mobile proof pass PUBLISH-DESIGN-GATE-001.`
+- preserve:
+  - `GROW-LAND-001 growth intent and landing experiment truth`
+  - `GROW-LAND-BACKEND-001 lead backend and product sync truth`
+  - `DESIGN-PROVIDER-ORCH-001 design provider asset truth`
+  - `VBUILD-001 visible build/change ownership`
+  - `SKELETON-CHOICE-001 selected design direction`
+- remove_from_active_path:
+  - generic landing pages that look like templates detached from the product
+  - landing pages whose form/backend truth is hidden or misleading
+  - landing pages that rely on fake proof, fake success, fake scarcity, or unsupported claims
+  - desktop-only or mobile-only landing page approval
+  - publish approval based only on code existence, route existence, provider success, or screenshot presence
+- build:
+  - publish-grade landing design brief model
+  - landing page visual structure for hero, product promise, audience fit, CTA, form, consent, proof/trust, objections/FAQ, and next action
+  - channel-aware landing variants for product launch, waitlist, lead capture, demo request, internal beta, and campaign destination
+  - product-specific visual style, typography, spacing, imagery, iconography, and responsive layout checks
+  - landing design asset manifest linked to product, landing backend, measurement, selected skeleton direction, and history
+  - provider/local-template selection through DESIGN-PROVIDER-ORCH-001 without exposing provider plumbing to the user
+  - failed-design routing back to Visual Build, Growth, Design Provider Orchestration, Mutation, or backend/privacy tasks
+  - user-facing explanation for why a landing page is ready, needs work, or cannot be published yet
+- done when:
+  - docs and code define a landing-specific publish design contract consumed by the publish design gate
+  - tests prove a landing page cannot pass with generic layout, unclear copy, missing CTA hierarchy, missing trust/proof framing, broken responsive layout, hidden backend truth, missing consent, or internal language
+  - tests prove provider-assisted landing designs are normalized into Nexus-owned landing asset truth before approval
+  - tests prove landing design consumes GROW-LAND-BACKEND-001 lead storage/sync truth and does not imply unsupported production backend or external publication
+  - tests prove rendered desktop and mobile proof is required before PUBLISH-DESIGN-GATE-001 can approve a landing page
+  - tests prove failed landing design blocks PRODUCT-RUNTIME-PACKAGE-001, STANDALONE-ARTIFACT-001, REL-AGT-001, and BUILD-RELEASE-GATE-001 publish-ready claims
+  - live proof shows one landing page design pass or fail based on rendered desktop/mobile output and a user-facing explanation that avoids internal language
+- not trueGreen:
+  - landing quality is only a CSS checklist or static template
+  - a provider success response is treated as landing approval
+  - landing page backend, consent, or product-sync truth is not visible in the approval model
+  - mobile or desktop proof is missing
+  - copy remains generic, unclear, internal, misleading, or disconnected from the user's product
+  - the publish gate can approve a landing page without this task's landing-specific verdict
+
 #### `PUBLISH-DESIGN-GATE-001 — Publish-grade design quality and release asset gate`
 - status: `new-proposed`
 - type: `release-blocker`
@@ -6277,6 +6342,7 @@ Write-back:
   - `SKELETON-CHOICE-001`
   - `GROW-LAND-001`
   - `GROW-LAND-BACKEND-001`
+  - `GROW-LAND-DESIGN-001`
 - blocks:
   - `PRODUCT-RUNTIME-PACKAGE-001`
   - `STANDALONE-ARTIFACT-001`
@@ -6284,9 +6350,11 @@ Write-back:
   - `BUILD-RELEASE-GATE-001`
 - canonical_law:
   - `Nothing Nexus shows, shares, packages, or releases externally may be treated as publishable until it passes a publish-grade design gate.`
-  - `The gate applies to landing pages, websites, apps, internal tools, games, simulators, editors, email visuals, social/ad creative, release pages, product imagery, share/demo snapshots, and any generated artifact that can leave Nexus.`
-  - `Publish-grade means product-specific, audience-specific, channel-specific, responsive, accessible enough for the release target, visually coherent, text-clean, non-internal, and honest about capability boundaries.`
+  - `The gate applies to landing pages, shared demos, websites, apps, internal tools, games, simulators, editors, email visuals, posts/campaigns, social/ad creative, release pages, standalone product artifacts, product imagery, share/demo snapshots, and any generated artifact that can leave Nexus.`
+  - `Publish-grade means professional, product-specific, audience-specific, channel-specific, responsive, accessible enough for the release target, visually coherent, text-clean, non-internal, and honest about capability boundaries.`
+  - `The output must look like a real product or real market asset, not like a Nexus demo, QA preview, internal panel, generic template, or provider sample.`
   - `The gate must evaluate actual rendered output or provider artifact output, not only code structure or task status.`
+  - `A live screenshot or equivalent rendered artifact proof is required before approval for every externally visible artifact.`
   - `Provider-assisted output must be judged by Nexus product truth and design quality, not by provider success alone.`
   - `A failed design gate blocks publish/package/release but may route back to Visual Build, provider orchestration, Growth, Mutation, or product package planning.`
 - preserve:
@@ -6303,12 +6371,13 @@ Write-back:
   - mobile/desktop layouts that overlap, hide content, or fail the first viewport
 - build:
   - publish design gate envelope
-  - channel/product-type quality rubric for landing pages, websites, apps, internal tools, games, simulators, editors, email visuals, social/ad creative, release pages, and share/demo snapshots
-  - rendered screenshot/artifact inspection requirement
+  - channel/product-type quality rubric for landing pages, shared demos, websites, apps, internal tools, games, simulators, editors, email visuals, posts/campaigns, social/ad creative, release pages, standalone product artifacts, and share/demo snapshots
+  - rendered live screenshot/artifact inspection requirement before approval
   - responsive desktop/mobile checks
   - language and tone check for user-facing text
   - internal-language and provider-plumbing leak check
   - product-specificity and selected-skeleton-direction fidelity check
+  - professional-versus-demo verdict
   - conversion/action clarity check for landing and growth assets
   - trust/consent/boundary check for external data collection
   - asset manifest handoff into PRODUCT-RUNTIME-PACKAGE-001
@@ -6317,7 +6386,9 @@ Write-back:
   - docs and code define a publish design gate consumed before product package/release claims
   - tests prove every externally showable artifact type receives a publish design gate status
   - tests prove a generic/demo/internal-looking artifact cannot be marked publish-ready
+  - tests prove landing pages consume GROW-LAND-DESIGN-001 before the gate can approve them
   - tests prove provider success alone is insufficient without rendered/artifact quality proof
+  - tests prove live screenshot or equivalent rendered artifact proof is required before approval
   - tests prove landing pages require publish-grade hero, CTA, responsive layout, lead form, consent framing, and no internal language
   - tests prove apps/internal tools require product-specific layout, workflow clarity, responsive/screen-fit checks, and no decorative fake dashboard claims
   - tests prove campaign/email/social/ad/release assets require channel-specific framing, asset source/usage truth, and approval state
@@ -7141,6 +7212,7 @@ Write-back:
 - `A11Y-001`
 - `OPS-001`
 - `DESIGN-PROVIDER-ORCH-001`
+- `GROW-LAND-DESIGN-001`
 - `PUBLISH-DESIGN-GATE-001`
 - `PRODUCT-RUNTIME-PACKAGE-001`
 - `STANDALONE-ARTIFACT-001`
@@ -7172,8 +7244,8 @@ Write-back:
 9. `SLICE-006..008`
 10. `MUT-001 -> BUILD-APPROVAL-001 -> HIST-AGT-001 -> SHARE-AGT-001 -> GROW-AGT-001 -> GROW-PLUG-001..002 -> GROW-MEASURE-001 -> GROW-AGT-002 -> GROW-SEO-001 -> GROW-SEM-001 -> GROW-EMAIL-001 -> GROW-LAND-001 -> GROW-LAND-BACKEND-001 -> STD-HANDOFF-AGT-001 -> SURF-009B -> NEXUS-FACADE-001 -> NEXUS-ACTION-FACADE-001 -> SURF-CODE-001`
 11. `EXP-001..008`
-12. `ID/AUTH-TOKEN/SEC/EXP-009/ACCT/PROV/SURFACE-OWNER-RUNTIME/LIVE-PROOF-INTEGRITY/PRIVACY/SSO/RUNTIME/FILE/USAGE/BILLING/OBS/ADMIN/RESP/STATE/DATA/LEGAL/A11Y/OPS/DESIGN-PROVIDER-ORCH/PUBLISH-DESIGN-GATE product-shell blockers`
-13. `DESIGN-PROVIDER-ORCH-001 -> PUBLISH-DESIGN-GATE-001 -> PRODUCT-RUNTIME-PACKAGE-001 -> STANDALONE-ARTIFACT-001 -> PRODUCT-PROMISE-GATE-001 -> CAPABILITY-ACTION-UX-001 -> VER-AGT-001 -> BUILD-TEST-001 -> REL-AGT-001 -> BUILD-RELEASE-GATE-001 -> REL-001..006`
+12. `ID/AUTH-TOKEN/SEC/EXP-009/ACCT/PROV/SURFACE-OWNER-RUNTIME/LIVE-PROOF-INTEGRITY/PRIVACY/SSO/RUNTIME/FILE/USAGE/BILLING/OBS/ADMIN/RESP/STATE/DATA/LEGAL/A11Y/OPS/DESIGN-PROVIDER-ORCH/GROW-LAND-DESIGN-001/PUBLISH-DESIGN-GATE product-shell blockers`
+13. `DESIGN-PROVIDER-ORCH-001 -> GROW-LAND-DESIGN-001 -> PUBLISH-DESIGN-GATE-001 -> PRODUCT-RUNTIME-PACKAGE-001 -> STANDALONE-ARTIFACT-001 -> PRODUCT-PROMISE-GATE-001 -> CAPABILITY-ACTION-UX-001 -> VER-AGT-001 -> BUILD-TEST-001 -> REL-AGT-001 -> BUILD-RELEASE-GATE-001 -> REL-001..006`
 
 אם השרשרת הזאת נסגרת truthfully:
 
