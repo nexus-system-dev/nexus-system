@@ -1229,6 +1229,7 @@ Write-back:
   - `GROW-AGT-001`
   - `REL-AGT-001`
 - blocks:
+  - `CAPABILITY-ACTION-UX-001`
   - `SURF-CODE-001`
   - `PRODUCT-RUNTIME-PACKAGE-001`
   - `STANDALONE-ARTIFACT-001`
@@ -6269,6 +6270,7 @@ Write-back:
   - `GROW-AGT-001`
   - `PROV-001`
 - blocks:
+  - `CAPABILITY-ACTION-UX-001`
   - `VER-AGT-001`
   - `BUILD-TEST-001`
   - `REL-AGT-001`
@@ -6328,6 +6330,90 @@ Write-back:
   - users must infer the difference between internal preview, generated package, standalone artifact, and production release
   - changing the copy fixes trust language but does not consume real package/artifact/provider/growth/release state
 - next:
+  - `CAPABILITY-ACTION-UX-001 — Human capability activation and approval surface`
+
+#### `CAPABILITY-ACTION-UX-001 — Human capability activation and approval surface`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-12 user clarification: capability truth panels are not enough; Nexus must expose capabilities through a clear, beautiful, human action surface with obvious buttons and approval flow`
+  - `PRODUCT-PROMISE-GATE-001`
+  - `NEXUS-ACTION-FACADE-001`
+  - `GROW-AGT-001`
+  - `GROW-SEO-001`
+  - `GROW-SEM-001`
+  - `PROV-001`
+- depends_on:
+  - `PRODUCT-PROMISE-GATE-001`
+  - `NEXUS-FACADE-001`
+  - `NEXUS-ACTION-FACADE-001`
+  - `GROW-AGT-001`
+  - `GROW-PLUG-002`
+  - `GROW-MEASURE-001`
+  - `GROW-AGT-002`
+  - `GROW-SEO-001`
+  - `GROW-SEM-001`
+  - `PROV-001`
+  - `SEC-001`
+- blocks:
+  - `VER-AGT-001`
+  - `BUILD-TEST-001`
+  - `REL-AGT-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `REL-001`
+  - `REL-002`
+  - `REL-003`
+  - `REL-004`
+  - `REL-006`
+- canonical_law:
+  - `Capability truth is not enough. If Nexus can prepare or unlock a capability, the user must see a clear human action surface that explains what is ready, what is missing, what will happen, what will not happen, and which single next action is available.`
+  - `The user must not need prior knowledge of agents, plugins, providers, task ids, approval schemas, scopes, or internal status names to understand or operate a capability.`
+  - `Every high-impact capability action must be represented as an intentional product decision, not as a raw technical panel: prepare draft, review, approve, connect, test, activate, stop, release, or show blocker.`
+  - `A button that can unlock publishing, provider execution, spend, sending, release, package generation, deployment, payment, or external sharing must show the exact consequence in plain language before activation.`
+  - `Nexus must keep one voice and one action model across Build, Share, Growth, Release, Provider, Package, and Verification surfaces. Internal capability boundaries remain hidden but preserved in project truth.`
+  - `The action surface must be calm, readable, visually polished, and designed for a non-technical user: few choices, clear primary action, visible blocker, secondary safe actions, and no internal labels.`
+  - `A capability can be shown as ready only when the underlying truth says it is ready. Otherwise it must show a precise blocker and the smallest next step to unblock it.`
+- preserve:
+  - `PRODUCT-PROMISE-GATE-001` truth-aware promise guard
+  - `NEXUS-ACTION-FACADE-001` unified action routing
+  - Growth, Share, Provider, Release, Package, Verification, History, and Mutation truth engines
+  - approval, provider, billing, privacy, security, and release gates
+  - project-readable history and restore continuity
+- remove_from_active_path:
+  - capability cards that read like internal diagnostic panels rather than user actions
+  - visible task ids, raw provider ids, raw scope names, raw operation names, engine names, or status enums in normal user mode
+  - ambiguous buttons such as "activate", "run", "publish", "connect", or "release" without a plain-language consequence and blocker state
+  - multi-button clutter where the user cannot tell the recommended next action
+  - fake readiness where a button appears enabled but provider, approval, billing, package, artifact, release, or verification truth is missing
+  - success states that do not produce visible change, saved truth, or a precise blocker
+- build:
+  - unified capability action model with these user-facing states: ready to prepare, draft ready, needs review, needs approval, needs provider, needs permission, needs package/artifact, needs verification, blocked, safe-stopped, complete
+  - action card / action bar component used by Growth, Share, Release, Provider, Package, and Build handoff surfaces
+  - plain-language button labels for each capability family, such as "Prepare draft", "Review before sending", "Connect safely", "Approve budget", "Run test", "Stop safely", "Create package", "Verify", and "Release when ready"
+  - consequence preview before high-impact actions: what Nexus will do, what it will not do, what may cost money, what becomes public, and what remains local/mock
+  - blocker-to-next-step resolver that turns missing provider, missing approval, missing budget, missing package, missing artifact, missing verification, billing block, privacy block, or release block into one clear next action
+  - visual hierarchy rules for capability surfaces: one primary action, secondary safe actions, blocker explanation, short evidence summary, and hidden technical detail in normal mode
+  - shared copy guard that consumes package/artifact/provider/growth/release/billing/security truth and removes internal labels from normal user view
+  - restore proof so a partially approved capability returns to the same human-readable action state after refresh
+- done_when:
+  - tests prove Growth SEM/SEO/Social capability surfaces render human action labels and no task ids, raw provider ids, raw scope names, or raw status enums in normal user mode
+  - tests prove a paid action shows one primary next step and cannot show an enabled spend/activate button before provider, permission, budget, approval, landing/demo, and measurement truth exist
+  - tests prove provider connection, package creation, share, release, payment, deployment, and external publishing actions all show consequence preview before any high-impact action
+  - tests prove each blocker becomes a clear user-facing next step instead of a vague error or internal state dump
+  - tests prove disabled or blocked buttons explain why and how to proceed
+  - tests prove action completion updates visible state, project truth, history, and restore path, or returns a precise blocker
+  - tests prove Hebrew and English action surfaces stay readable, avoid internal labels, and keep one Nexus voice
+  - live browser proof shows a non-technical user can understand what capability is ready, what is blocked, and which button to press next on at least Build, Growth, Share, and Release surfaces
+  - live browser proof shows refresh restores the same action state and does not revert to diagnostic panels
+- not_trueGreen:
+  - the surface is only prettier text around internal truth panels
+  - users still see task ids, provider ids, approval schema labels, internal scope names, or engine names in normal mode
+  - buttons appear available before the underlying truth is ready
+  - a capability can complete without visible state, saved truth, history, and restore proof
+  - high-impact actions do not show consequence preview
+  - each surface invents its own action pattern instead of sharing one Nexus action model
+- next:
   - `VER-AGT-001 — Verification / QA Agent live artifact gate`
 
 #### `VER-AGT-001 — Verification / QA Agent live artifact gate`
@@ -6341,6 +6427,7 @@ Write-back:
 - depends_on:
   - `STANDALONE-ARTIFACT-001`
   - `PRODUCT-PROMISE-GATE-001`
+  - `CAPABILITY-ACTION-UX-001`
   - `EXP-004`
   - `STATE-001`
   - `RUNTIME-001`
@@ -6807,6 +6894,7 @@ Write-back:
 - `PRODUCT-RUNTIME-PACKAGE-001`
 - `STANDALONE-ARTIFACT-001`
 - `PRODUCT-PROMISE-GATE-001`
+- `CAPABILITY-ACTION-UX-001`
 - `VER-AGT-001`
 - `REL-AGT-001`
 - `REL-001..006`
@@ -6834,7 +6922,7 @@ Write-back:
 10. `MUT-001 -> BUILD-APPROVAL-001 -> HIST-AGT-001 -> SHARE-AGT-001 -> GROW-AGT-001 -> GROW-PLUG-001..002 -> GROW-MEASURE-001 -> GROW-AGT-002 -> GROW-SEO-001 -> GROW-SEM-001 -> GROW-EMAIL-001 -> GROW-LAND-001 -> STD-HANDOFF-AGT-001 -> SURF-009B -> NEXUS-FACADE-001 -> NEXUS-ACTION-FACADE-001 -> SURF-CODE-001`
 11. `EXP-001..008`
 12. `ID/AUTH-TOKEN/SEC/EXP-009/ACCT/PROV/SURFACE-OWNER-RUNTIME/LIVE-PROOF-INTEGRITY/PRIVACY/SSO/RUNTIME/FILE/USAGE/BILLING/OBS/ADMIN/RESP/STATE/DATA/LEGAL/A11Y/OPS product-shell blockers`
-13. `PRODUCT-RUNTIME-PACKAGE-001 -> STANDALONE-ARTIFACT-001 -> PRODUCT-PROMISE-GATE-001 -> VER-AGT-001 -> BUILD-TEST-001 -> REL-AGT-001 -> BUILD-RELEASE-GATE-001 -> REL-001..006`
+13. `PRODUCT-RUNTIME-PACKAGE-001 -> STANDALONE-ARTIFACT-001 -> PRODUCT-PROMISE-GATE-001 -> CAPABILITY-ACTION-UX-001 -> VER-AGT-001 -> BUILD-TEST-001 -> REL-AGT-001 -> BUILD-RELEASE-GATE-001 -> REL-001..006`
 
 אם השרשרת הזאת נסגרת truthfully:
 
