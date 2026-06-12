@@ -54,6 +54,23 @@ function labelExternalAction(action) {
   return labels[action] ?? action;
 }
 
+function labelSemBlockedPromise(item) {
+  const labels = {
+    "guarantee-traffic": "לא להבטיח תנועה",
+    "guarantee-leads": "לא להבטיח לידים",
+    "guarantee-sales": "לא להבטיח מכירות",
+    "guarantee-conversions": "לא להבטיח המרות",
+    "guarantee-revenue": "לא להבטיח הכנסות",
+    "guarantee-roas": "לא להבטיח החזר על פרסום",
+    "guarantee-profitability": "לא להבטיח רווחיות",
+    "fabricate-clicks": "לא להמציא קליקים",
+    "fabricate-cpc": "לא להמציא עלות לקליק",
+    "fabricate-conversions": "לא להמציא המרות",
+    "spend-without-approval": "לא להוציא כסף בלי אישור",
+  };
+  return labels[item] ?? item;
+}
+
 function renderGrowthPluginLayer(pluginLayer = {}) {
   const primary = pluginLayer.primaryPlugin ?? {};
   const registry = pluginLayer.registry ?? {};
@@ -270,6 +287,77 @@ function renderSeoActionPath(seo = {}) {
   `;
 }
 
+function renderSemActionPath(sem = {}) {
+  if (!sem || sem.status === "not-created") {
+    return "";
+  }
+  return `
+    <section
+      class="nexus-growth-surface__panel"
+      data-sem-action-task="${escapeHtml(sem.taskId ?? "GROW-SEM-001")}"
+      data-sem-action-status="${escapeHtml(sem.status ?? "not-created")}"
+      data-sem-action-requested="${escapeHtml(sem.requestedAction ?? "draft")}"
+      data-sem-action-provider="${escapeHtml(sem.selectedProvider ?? "google-ads")}"
+      data-sem-action-provider-connected="${escapeHtml(sem.providerConnected ? "true" : "false")}"
+      data-sem-action-provider-supported="${escapeHtml(sem.providerSupportedForRealExecution ? "true" : "false")}"
+      data-sem-action-draft-only-provider="${escapeHtml(sem.draftOnlyProvider ? "true" : "false")}"
+      data-sem-action-spend-scope="${escapeHtml(sem.hasSpendPermissionScope ? "true" : "false")}"
+      data-sem-action-provider-not-spend-permission="${escapeHtml(sem.providerConnectionIsNotSpendPermission === false ? "false" : "true")}"
+      data-sem-action-separate-approvals="${escapeHtml(sem.separateApprovalRequired === false ? "false" : "true")}"
+      data-sem-action-budget-cap-enforced="${escapeHtml(sem.budgetCapEnforced === false ? "false" : "true")}"
+      data-sem-action-hard-cap-usd="${escapeHtml(sem.hardCapUsd ?? 50)}"
+      data-sem-action-landing-ready="${escapeHtml(sem.landingOrDemoReady ? "true" : "false")}"
+      data-sem-action-measurement-ready="${escapeHtml(sem.measurementPlanReady ? "true" : "false")}"
+      data-sem-action-can-prepare-activation="${escapeHtml(sem.canPrepareActivation ? "true" : "false")}"
+      data-sem-action-external-spend="${escapeHtml(sem.externalSpendPerformed ? "true" : "false")}"
+      data-sem-action-safe-stop="${escapeHtml(sem.safeStopStopped ? "true" : "false")}"
+      data-sem-action-safe-stop-ads-modified="${escapeHtml(sem.safeStopAdsModified ? "true" : "false")}"
+      data-sem-action-safe-stop-budget-modified="${escapeHtml(sem.safeStopBudgetModified ? "true" : "false")}"
+      data-growth-region="sem-action-path"
+    >
+      <span class="nexus-growth-surface__tag">פרסום ממומן</span>
+      <h2>${escapeHtml(sem.status === "ready-for-provider-activation" ? "הניסוי מוכן להפעלה מאושרת" : sem.status === "stopped-safely" ? "קמפיין נעצר לפי כלל בטיחות" : "טיוטת ניסוי ממומן לפני הוצאה")}</h2>
+      <p>${escapeHtml(sem.userMessage ?? "SEM עדיין לא נוצר.")}</p>
+      <div class="nexus-growth-surface__signal-grid">
+        <article>
+          <span>ספק</span>
+          <strong>${escapeHtml(sem.selectedProvider ?? "google-ads")}</strong>
+        </article>
+        <article>
+          <span>תקרת תקציב</span>
+          <strong>${escapeHtml(`${sem.hardCapUsd ?? 50} ${sem.budgetCurrency ?? "USD"}`)}</strong>
+        </article>
+        <article>
+          <span>הוצאה בפועל</span>
+          <strong>${escapeHtml(sem.externalSpendPerformed ? "בוצעה" : "לא בוצעה")}</strong>
+        </article>
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>אישורים נפרדים</strong>
+        ${renderList([
+          `קמפיין: ${sem.campaignApproved ? "מאושר" : "לא מאושר"}`,
+          `מודעה: ${sem.adApproved ? "מאושרת" : "לא מאושרת"}`,
+          `תקציב: ${sem.budgetApproved ? "מאושר" : "לא מאושר"}`,
+          `הפעלה: ${sem.activationApproved ? "מאושרת" : "לא מאושרת"}`,
+        ], "אין אישורים להצגה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>ספקים שמותרים לביצוע בשחרור הראשון</strong>
+        ${renderList(sem.firstReleaseRealProviders ?? [], "אין ספקים שמותרים לביצוע.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>ערוצים שנשארים טיוטה בלבד</strong>
+        ${renderList(sem.draftOnlyProviders ?? [], "אין ערוצים בטיוטה בלבד.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>מה חסום</strong>
+        ${renderList((sem.forbiddenPromises ?? []).map(labelSemBlockedPromise), "אין חסימות להצגה.")}
+      </div>
+      <p class="nexus-growth-surface__empty">חיבור ספק אינו הרשאת הוצאה. שינוי מסר או דף עובר למסלולי הבנייה והשינוי.</p>
+    </section>
+  `;
+}
+
 export function renderGrowthSurfaceScreen(viewModel = {}) {
   const contract = viewModel.contract ?? {};
   const growth = viewModel.growth ?? {};
@@ -361,6 +449,8 @@ export function renderGrowthSurfaceScreen(viewModel = {}) {
           ${renderSocialCampaignExecution(growth.socialCampaign ?? {})}
 
           ${renderSeoActionPath(growth.seoAction ?? {})}
+
+          ${renderSemActionPath(growth.semAction ?? {})}
 
           <section class="nexus-growth-surface__panel" data-growth-region="growth-metric-baseline">
             <span class="nexus-growth-surface__tag">Baseline</span>

@@ -4830,7 +4830,7 @@ Write-back:
     - It does not connect real Search Console accounts, publish public pages, guarantee rankings, create long-form article systems, or bypass Mutation / Visual Build / Share / Release gates.
 
 #### `GROW-SEM-001 — SEM / paid ads action path`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `new shell task`
 - source:
@@ -4888,6 +4888,17 @@ Write-back:
   - paid social is handled as organic social
   - budget cap is missing
   - campaign, ad, budget, budget-change, or activation approval is missing
+- closure_update:
+  - `2026-06-12: trueGreen. GROW-SEM-001 now has a real SEM / paid ads action path envelope in src/core/sem-action-path.js, Growth Agent and Growth Plugin routing, ProjectService persistence/restore, /sem-action-path API route, visible Growth surface rendering, focused tests, and live proof.`
+  - `Implemented behavior: Google Ads is the only V1 real-execution provider boundary; Meta/Facebook/Instagram/TikTok/LinkedIn paid social remains draft-only and routes to SEM, not organic social. Missing provider stays draft-only. Provider connection does not equal spend permission. Spend-like activation requires provider connection, ad-draft scope, spend/ad-spend scope, landing/demo truth, GROW-MEASURE-001 measurement truth, and separate campaign/ad/budget/activation approvals. Budget-change requires separate budget-change approval. Safe stop can stop without modifying ads or budget. Page/message changes are handed off and not applied by SEM. Result reads require connected provider truth and never fabricate paid results.`
+  - `Files changed: src/core/sem-action-path.js; src/core/growth-plugin-layer.js; src/core/growth-agent.js; src/core/project-service.js; src/server.js; web/nexus-ui/adapters/growth-surface-adapter.js; web/nexus-ui/screens/GrowthSurfaceScreen.js; test/sem-action-path.test.js; test/sem-action-project-service.test.js; test/growth-agent.test.js; test/growth-surface-canonical-structure-contract.test.js; scripts/verify-grow-sem-001-live-proof.mjs.`
+  - `Verification: node --check src/core/sem-action-path.js src/core/growth-plugin-layer.js src/core/growth-agent.js src/core/project-service.js src/server.js web/nexus-ui/adapters/growth-surface-adapter.js web/nexus-ui/screens/GrowthSurfaceScreen.js scripts/verify-grow-sem-001-live-proof.mjs passed.`
+  - `Verification: node --test --test-name-pattern "GROW-SEM-001|GROW-SEO-001|GROW-AGT-002|GROW-PLUG|SURF-005" test/sem-action-path.test.js test/sem-action-project-service.test.js test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-surface-canonical-structure-contract.test.js test/seo-action-project-service.test.js test/social-campaign-project-service.test.js passed 21/21.`
+  - `Live proof: node scripts/verify-grow-sem-001-live-proof.mjs passed with project grow-sem-leads-1781259773932. Proven states: draft-only-provider-missing, needs-provider-scope, needs-separate-approvals, ready-for-provider-activation, draft-only-provider, and stopped-safely. DOM proof showed provider google-ads, providerConnected=true, spendScope=true, budgetCap=true, hardCap=50, externalSpend=false, safeStop=true, adsModified=false, budgetModified=false, no fake paid-result claim, and visible provider/spend boundary.`
+  - `Live proof artifacts: report /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-sem-001-3R00RJ/report.json; screenshot /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-sem-001-3R00RJ/growth-sem.png.`
+  - closure_boundary:
+    - This task closes the Nexus SEM / paid ads draft, provider/scope/approval gate, budget cap, paid-social routing, result-read boundary, visible Growth surface, safe-stop, and restore continuity.
+    - It does not connect real ad accounts, spend money, launch live campaigns, optimize campaigns, raise budgets, generate creative assets, alter landing pages/product message, guarantee clicks/leads/conversions/revenue, or close email/landing experiment/growth measurement/provider execution beyond the bounded SEM contract.
 
 #### `GROW-EMAIL-001 — Email campaign action path`
 - status: `new-proposed`

@@ -134,6 +134,7 @@ function summarizeGrowthAgentForSurface(value) {
     },
     socialCampaignExecutionAgent: normalizeObject(agent.socialCampaignExecutionAgent),
     seoActionPath: normalizeObject(agent.seoActionPath),
+    semActionPath: normalizeObject(agent.semActionPath),
     visibleBoundary: {
       oneNextMoveOnly: visibleBoundary.oneNextMoveOnly !== false,
       noGenericMarketing: visibleBoundary.noGenericMarketing !== false,
@@ -275,6 +276,61 @@ function summarizeSeoActionForSurface(value) {
   };
 }
 
+function summarizeSemActionForSurface(value) {
+  const sem = normalizeObject(value);
+  const providerTruth = normalizeObject(sem.providerTruth);
+  const approval = normalizeObject(sem.approval);
+  const readiness = normalizeObject(sem.readiness);
+  const handoffs = normalizeObject(sem.handoffs);
+  const budget = normalizeObject(sem.budget);
+  const resultTruth = normalizeObject(sem.resultTruth);
+  const safeStop = normalizeObject(sem.safeStop);
+  return {
+    taskId: normalizeString(sem.taskId, "GROW-SEM-001"),
+    agentId: normalizeString(sem.agentId, "sem-action-path"),
+    status: normalizeString(sem.status, "not-created"),
+    requestedAction: normalizeString(sem.requestedAction, "draft"),
+    selectedProvider: normalizeString(providerTruth.selectedProvider, "google-ads"),
+    providerConnected: providerTruth.providerConnected === true,
+    providerSupportedForRealExecution: providerTruth.providerSupportedForRealExecution === true,
+    draftOnlyProvider: providerTruth.draftOnlyProvider === true,
+    hasAdDraftScope: providerTruth.hasAdDraftScope === true,
+    hasSpendPermissionScope: providerTruth.hasSpendPermissionScope === true,
+    providerConnectionIsNotSpendPermission: providerTruth.providerConnectionIsNotSpendPermission !== false,
+    firstReleaseRealProviders: normalizeArray(providerTruth.firstReleaseRealProviders).map((item) => normalizeString(item)).filter(Boolean),
+    draftOnlyProviders: normalizeArray(providerTruth.draftOnlyProviders).map((item) => normalizeString(item)).filter(Boolean),
+    campaignApproved: approval.campaignApproved === true,
+    adApproved: approval.adApproved === true,
+    budgetApproved: approval.budgetApproved === true,
+    budgetChangeApproved: approval.budgetChangeApproved === true,
+    activationApproved: approval.activationApproved === true,
+    separateApprovalRequired: approval.separateApprovalRequired !== false,
+    productReady: readiness.productReady === true,
+    landingOrDemoReady: readiness.landingOrDemoReady === true,
+    measurementPlanReady: readiness.measurementPlanReady === true,
+    canPrepareActivation: readiness.canPrepareActivation === true,
+    budgetCurrency: normalizeString(budget.currency, "USD"),
+    suggestedBudget: Number.isFinite(Number(budget.suggestedAmount)) ? Number(budget.suggestedAmount) : 50,
+    hardCapUsd: Number.isFinite(Number(budget.hardCapUsd)) ? Number(budget.hardCapUsd) : 50,
+    budgetCapEnforced: budget.capEnforced !== false,
+    activationPrepared: sem.activationPrepared === true,
+    externalSpendPerformed: sem.externalSpendPerformed === true,
+    safeStopAllowed: safeStop.allowedWithoutChangingAdsOrBudget !== false,
+    safeStopStopped: safeStop.stopped === true,
+    safeStopAdsModified: safeStop.adsModified === true,
+    safeStopBudgetModified: safeStop.budgetModified === true,
+    visualBuildRequiredForLandingChanges: handoffs.visualBuildRequiredForLandingChanges !== false,
+    mutationRequiredForMessageChanges: handoffs.mutationRequiredForMessageChanges !== false,
+    measurementOwner: normalizeString(handoffs.measurementOwner, "GROW-MEASURE-001"),
+    paidSocialRoutedToSem: handoffs.paidSocialRoutedToSem === true,
+    providerResultsAvailable: resultTruth.providerResultsAvailable === true,
+    fabricatedResultsBlocked: resultTruth.fabricatedResultsBlocked !== false,
+    forbiddenPromises: normalizeArray(sem.forbiddenPromises).map((item) => normalizeString(item)).filter(Boolean),
+    userMessage: normalizeString(sem.userMessage, "SEM עדיין לא נוצר."),
+    historyCount: normalizeArray(sem.history).length,
+  };
+}
+
 function createGrowthSurfaceViewContract() {
   return {
     contractId: "SURF-005",
@@ -396,6 +452,12 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       ?? state.seoActionPath
       ?? growthAgent.seoActionPath,
   );
+  const semAction = summarizeSemActionForSurface(
+    safeProject.semActionPath
+      ?? safeProject.context?.semActionPath
+      ?? state.semActionPath
+      ?? growthAgent.semActionPath,
+  );
   const growthMeasurement = summarizeGrowthMeasurementForSurface(
     safeProject.growthMeasurementTruth
       ?? safeProject.context?.growthMeasurementTruth
@@ -497,6 +559,7 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       measurement: growthMeasurement,
       socialCampaign,
       seoAction,
+      semAction,
     },
   };
 }

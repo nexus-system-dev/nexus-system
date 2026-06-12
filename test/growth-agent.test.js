@@ -145,6 +145,29 @@ test("GROW-SEO-001 is carried by Growth Agent as a bounded SEO action path", () 
   assert.equal(envelope.seoActionPath.externalPublicationPerformed, false);
 });
 
+test("GROW-SEM-001 is carried by Growth Agent as a bounded paid action path", () => {
+  const envelope = buildGrowthAgentEnvelope({
+    project: {
+      ...leadProject,
+      growthMeasurementTruth: {
+        taskId: "GROW-MEASURE-001",
+        status: "has-initial-signal",
+        records: [{ sourceType: "manual", accepted: true }],
+      },
+    },
+    userInput: "תכין Google Ads בתקציב קטן",
+  });
+
+  assert.equal(envelope.status, "needs-provider");
+  assert.equal(envelope.opportunityType, "paid-test-draft");
+  assert.equal(envelope.growthPluginLayer.primaryPlugin.pluginId, "paid-test-draft");
+  assert.equal(envelope.semActionPath.taskId, "GROW-SEM-001");
+  assert.equal(envelope.semActionPath.status, "draft-only-provider-missing");
+  assert.equal(envelope.semActionPath.budget.capEnforced, true);
+  assert.equal(envelope.semActionPath.externalSpendPerformed, false);
+  assert.equal(envelope.semActionPath.providerTruth.providerConnectionIsNotSpendPermission, true);
+});
+
 test("GROW-MEASURE-001 is carried by the Growth Agent without fake results", () => {
   const envelope = buildGrowthAgentEnvelope({
     project: leadProject,

@@ -213,6 +213,62 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
         visiblePageUpdated: false,
         userMessage: "נוצרה טיוטת שיפור חיפוש שמחוברת לתוצר.",
       },
+      semActionPath: {
+        taskId: "GROW-SEM-001",
+        agentId: "sem-action-path",
+        status: "draft-only-provider-missing",
+        requestedAction: "draft",
+        budget: {
+          currency: "USD",
+          suggestedAmount: 50,
+          hardCapUsd: 50,
+          capEnforced: true,
+        },
+        approval: {
+          separateApprovalRequired: true,
+          campaignApproved: false,
+          adApproved: false,
+          budgetApproved: false,
+          activationApproved: false,
+          providerConnectionIsNotSpendPermission: true,
+        },
+        readiness: {
+          productReady: true,
+          landingOrDemoReady: true,
+          measurementPlanReady: true,
+          canPrepareActivation: false,
+        },
+        providerTruth: {
+          selectedProvider: "google-ads",
+          firstReleaseRealProviders: ["google-ads"],
+          draftOnlyProviders: ["meta-ads", "facebook-ads", "instagram-ads", "tiktok-ads", "linkedin-ads"],
+          providerConnected: false,
+          providerSupportedForRealExecution: true,
+          draftOnlyProvider: false,
+          hasAdDraftScope: false,
+          hasSpendPermissionScope: false,
+          providerConnectionIsNotSpendPermission: true,
+        },
+        handoffs: {
+          visualBuildRequiredForLandingChanges: true,
+          mutationRequiredForMessageChanges: true,
+          measurementOwner: "GROW-MEASURE-001",
+        },
+        resultTruth: {
+          providerResultsAvailable: false,
+          fabricatedResultsBlocked: true,
+        },
+        safeStop: {
+          allowedWithoutChangingAdsOrBudget: true,
+          stopped: false,
+          adsModified: false,
+          budgetModified: false,
+        },
+        forbiddenPromises: ["guarantee-traffic", "guarantee-leads", "spend-without-approval"],
+        externalSpendPerformed: false,
+        activationPrepared: false,
+        userMessage: "הטיוטה מוכנה, אבל אין ספק מחובר ולכן אין הפעלה או הוצאה.",
+      },
     },
   });
   const html = renderGrowthSurfaceScreen(viewModel);
@@ -249,6 +305,17 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
   assert.match(html, /data-seo-action-real-provider-data="false"/);
   assert.match(html, /data-seo-action-search-volume-hypothesis="true"/);
   assert.match(html, /טיוטת SEO לפני החלה/);
+  assert.match(html, /data-sem-action-task="GROW-SEM-001"/);
+  assert.match(html, /data-sem-action-status="draft-only-provider-missing"/);
+  assert.match(html, /data-sem-action-provider="google-ads"/);
+  assert.match(html, /data-sem-action-provider-connected="false"/);
+  assert.match(html, /data-sem-action-provider-not-spend-permission="true"/);
+  assert.match(html, /data-sem-action-separate-approvals="true"/);
+  assert.match(html, /data-sem-action-budget-cap-enforced="true"/);
+  assert.match(html, /data-sem-action-hard-cap-usd="50"/);
+  assert.match(html, /data-sem-action-measurement-ready="true"/);
+  assert.match(html, /data-sem-action-external-spend="false"/);
+  assert.match(html, /טיוטת ניסוי ממומן לפני הוצאה/);
   assert.match(html, /סימן ראשוני בלבד/);
   assert.match(html, /data-growth-plugin-primary="audience-understanding-test"/);
   assert.match(html, /data-growth-plugin-provider-required="false"/);

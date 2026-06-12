@@ -96,6 +96,7 @@ import { buildGrowthAgentEnvelope } from "./growth-agent.js";
 import { buildGrowthMeasurementTruth } from "./growth-measurement-truth.js";
 import { buildSocialCampaignExecutionAgentEnvelope } from "./social-campaign-execution-agent.js";
 import { buildSeoActionPathEnvelope } from "./seo-action-path.js";
+import { buildSemActionPathEnvelope } from "./sem-action-path.js";
 import {
   buildApprovedProductDirectionPatch,
   buildBuildApprovalFlow,
@@ -1185,6 +1186,7 @@ export class ProjectService {
       growthAgent: normalizedState.growthAgent ?? null,
       growthMeasurementTruth: normalizedState.growthMeasurementTruth ?? null,
       seoActionPath: normalizedState.seoActionPath ?? null,
+      semActionPath: normalizedState.semActionPath ?? null,
       socialCampaignExecutionAgent: normalizedState.socialCampaignExecutionAgent ?? null,
       cycle: null,
       runtimeResults: [],
@@ -2299,6 +2301,19 @@ export class ProjectService {
       });
       growthAgent.seoActionPath = seoActionPath;
     }
+    let semActionPath = project.semActionPath
+      ?? project.context?.semActionPath
+      ?? project.state?.semActionPath
+      ?? null;
+    if (growthAgent.growthPluginLayer?.primaryPlugin?.pluginId === "paid-test-draft" || growthAgent.opportunityType === "paid-test-draft") {
+      semActionPath = buildSemActionPathEnvelope({
+        project,
+        userInput,
+        growthAgent,
+        measurementTruth: project.growthMeasurementTruth ?? project.context?.growthMeasurementTruth ?? project.state?.growthMeasurementTruth ?? growthAgent.growthMeasurementTruth ?? null,
+      });
+      growthAgent.semActionPath = semActionPath;
+    }
     project.growthAgent = growthAgent;
     const growthMeasurementTruth = growthAgent.growthMeasurementTruth ?? buildGrowthMeasurementTruth({
       project,
@@ -2312,6 +2327,7 @@ export class ProjectService {
       growthMeasurementTruth,
       socialCampaignExecutionAgent,
       seoActionPath,
+      semActionPath,
     };
     project.state = {
       ...(project.state ?? {}),
@@ -2319,9 +2335,58 @@ export class ProjectService {
       growthMeasurementTruth,
       socialCampaignExecutionAgent,
       seoActionPath,
+      semActionPath,
     };
     project.socialCampaignExecutionAgent = socialCampaignExecutionAgent;
     project.seoActionPath = seoActionPath;
+    project.semActionPath = semActionPath;
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  runSemActionPath({
+    projectId,
+    userInput = "",
+    approvalDecisions = {},
+    providerConnection = {},
+    providerResults = null,
+    safeStopSignal = null,
+    requestedBudget = null,
+  } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const growthAgent = project.growthAgent
+      ?? project.context?.growthAgent
+      ?? project.state?.growthAgent
+      ?? buildGrowthAgentEnvelope({ project, userInput });
+    const semActionPath = buildSemActionPathEnvelope({
+      project,
+      userInput,
+      growthAgent,
+      approvalDecisions,
+      providerConnection,
+      providerResults,
+      safeStopSignal,
+      requestedBudget,
+      measurementTruth: project.growthMeasurementTruth ?? project.context?.growthMeasurementTruth ?? project.state?.growthMeasurementTruth ?? null,
+    });
+    project.growthAgent = {
+      ...growthAgent,
+      semActionPath,
+    };
+    project.semActionPath = semActionPath;
+    project.context = {
+      ...(project.context ?? {}),
+      growthAgent: project.growthAgent,
+      semActionPath,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      growthAgent: project.growthAgent,
+      semActionPath,
+    };
     this.persistProjectRecord(project);
     return this.serializeProject(project);
   }
@@ -5063,6 +5128,11 @@ export class ProjectService {
       ?? project.context?.seoActionPath
       ?? project.state?.seoActionPath
       ?? null;
+    const preservedSemActionPath =
+      project.semActionPath
+      ?? project.context?.semActionPath
+      ?? project.state?.semActionPath
+      ?? null;
     const preservedProviderGatewayBoundary =
       project.providerGatewayBoundary
       ?? project.context?.providerGatewayBoundary
@@ -5143,6 +5213,7 @@ export class ProjectService {
       growthMeasurementTruth: preservedGrowthMeasurementTruth,
       socialCampaignExecutionAgent: preservedSocialCampaignExecutionAgent,
       seoActionPath: preservedSeoActionPath,
+      semActionPath: preservedSemActionPath,
       providerGatewayBoundary: preservedProviderGatewayBoundary,
       providerReleaseRegistry: preservedProviderReleaseRegistry,
       creativeProviderAssets: preservedCreativeProviderAssets,
@@ -5244,6 +5315,7 @@ export class ProjectService {
     project.growthMeasurementTruth = preservedGrowthMeasurementTruth;
     project.socialCampaignExecutionAgent = preservedSocialCampaignExecutionAgent;
     project.seoActionPath = preservedSeoActionPath;
+    project.semActionPath = preservedSemActionPath;
     project.context = {
       ...project.context,
       runtimeSkeletonTruth,
@@ -5265,6 +5337,7 @@ export class ProjectService {
       growthMeasurementTruth: preservedGrowthMeasurementTruth,
       socialCampaignExecutionAgent: preservedSocialCampaignExecutionAgent,
       seoActionPath: preservedSeoActionPath,
+      semActionPath: preservedSemActionPath,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -5291,6 +5364,7 @@ export class ProjectService {
       growthMeasurementTruth: preservedGrowthMeasurementTruth,
       socialCampaignExecutionAgent: preservedSocialCampaignExecutionAgent,
       seoActionPath: preservedSeoActionPath,
+      semActionPath: preservedSemActionPath,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -7277,6 +7351,10 @@ export class ProjectService {
       seoActionPath: project.context?.seoActionPath
         ?? project.seoActionPath
         ?? project.state?.seoActionPath
+        ?? null,
+      semActionPath: project.context?.semActionPath
+        ?? project.semActionPath
+        ?? project.state?.semActionPath
         ?? null,
       companionConversation: project.context?.companionConversation
         ?? project.companionConversation

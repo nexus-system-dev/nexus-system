@@ -1532,6 +1532,24 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/sem-action-path")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.runSemActionPath === "function"
+        ? projectService.runSemActionPath({
+            projectId,
+            userInput: body.userInput ?? body.requestText ?? "",
+            approvalDecisions: body.approvalDecisions ?? {},
+            providerConnection: body.providerConnection ?? {},
+            providerResults: body.providerResults ?? null,
+            safeStopSignal: body.safeStopSignal ?? null,
+            requestedBudget: body.requestedBudget ?? null,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/history-continuity/restore-execution")) {
       const projectId = segments[3];
       const body = await parseBody(request).catch(() => ({}));

@@ -372,23 +372,7 @@ function resolvePrimaryPlugin({ input, readiness }) {
     });
   }
 
-  if (includesAny(input, [/seo|search|google|חיפוש|קידום אורגני/u])) {
-    return pluginDefinition("seo-page-draft", {
-      label: "טיוטת שיפור חיפוש",
-      userIntentLabel: "חיפוש אורגני",
-      channelSecondaryLabel: "מבנה עמוד ותוכן",
-      status: "needs-approval",
-      providerRequired: false,
-      approvalRequired: true,
-      smallSuccessMetric: "בודק מבין מה העמוד מציע מתוך הכותרת והפתיחה.",
-      handoffRequired: "visual-build-agent",
-      allowedActions: ["draft-title", "draft-meta", "draft-faq", "propose-page-structure"],
-      blockedActions: ["promise-ranking", "fabricate-search-volume", "publish-public-page"],
-      whyThisPlugin: "הצעד משפר עמוד קיים או דמו, אבל לא מבטיח דירוג או תנועה.",
-    });
-  }
-
-  if (includesAny(input, [/\bads?\b|\bsem\b|\bpaid\b|\bbudget\b|תקציב|מודעה|ממומן/u])) {
+  if (includesAny(input, [/\bads?\b|\bsem\b|\bpaid\b|\bbudget\b|google ads|boost|תקציב|מודעה|ממומן/u])) {
     return pluginDefinition("paid-test-draft", {
       label: "טיוטת ניסוי ממומן",
       userIntentLabel: "פרסום ממומן",
@@ -402,6 +386,22 @@ function resolvePrimaryPlugin({ input, readiness }) {
       allowedActions: ["draft-ad-copy", "draft-audience", "draft-budget-request"],
       blockedActions: ["spend", "activate-campaign", "raise-budget", "claim-leads"],
       whyThisPlugin: "פרסום ממומן מסוכן בלי אישור, ספק, תקציב ומדידה.",
+    });
+  }
+
+  if (includesAny(input, [/seo|search|google|חיפוש|קידום אורגני/u])) {
+    return pluginDefinition("seo-page-draft", {
+      label: "טיוטת שיפור חיפוש",
+      userIntentLabel: "חיפוש אורגני",
+      channelSecondaryLabel: "מבנה עמוד ותוכן",
+      status: "needs-approval",
+      providerRequired: false,
+      approvalRequired: true,
+      smallSuccessMetric: "בודק מבין מה העמוד מציע מתוך הכותרת והפתיחה.",
+      handoffRequired: "visual-build-agent",
+      allowedActions: ["draft-title", "draft-meta", "draft-faq", "propose-page-structure"],
+      blockedActions: ["promise-ranking", "fabricate-search-volume", "publish-public-page"],
+      whyThisPlugin: "הצעד משפר עמוד קיים או דמו, אבל לא מבטיח דירוג או תנועה.",
     });
   }
 
