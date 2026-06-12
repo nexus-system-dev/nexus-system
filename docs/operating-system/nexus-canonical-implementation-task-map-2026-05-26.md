@@ -5250,7 +5250,7 @@ Write-back:
     - does not execute SEO, SEM, email, landing experiments, public publishing, provider connection, budget spend, or product mutation from measurement
 
 #### `EXP-006 — Growth surfaced after product, not before it`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - agent_coverage:
   - `Growth Agent`
@@ -5266,6 +5266,27 @@ Write-back:
   - `GROW-LAND-BACKEND-001`
   - `GROW-MEASURE-001`
   - `SURF-005`
+- closure_update_2026-06-12:
+  - implemented:
+    - `scripts/verify-exp-006-live-proof.mjs` proves the integrated Growth surfacing path after the dependent Growth tasks closed.
+    - Growth remains blocked before product truth exists, even when a project record exists.
+    - Growth after product truth routes to the first-release plugin registry and preserves Social, SEO, SEM, Email, Landing, Landing Backend, and Measurement truth in the visible Growth surface.
+  - verification:
+    - `node --check scripts/verify-exp-006-live-proof.mjs`
+    - `node --check web/nexus-ui/adapters/growth-surface-adapter.js`
+    - `node --check web/nexus-ui/screens/GrowthSurfaceScreen.js`
+    - `node --test test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-measurement-truth.test.js test/growth-surface-canonical-structure-contract.test.js test/landing-backend-sync.test.js test/landing-action-project-service.test.js`
+    - `node scripts/verify-exp-006-live-proof.mjs`
+  - evidence:
+    - live proof report: `/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-exp-006-Huol1B/report.json`
+    - no-product project: `exp006-no-product-1781291788380` returned `GROW-AGT-001` with `needs-product-first`, `canRunGrowth=false`, and `productTruthAvailable=false`
+    - product project: `exp006-product-1781291788380` routed to `GROW-AGT-002`, `GROW-SEO-001`, `GROW-SEM-001`, `GROW-EMAIL-001`, `GROW-LAND-001`, `GROW-LAND-BACKEND-001`, and `GROW-MEASURE-001`
+    - live Growth DOM exposed `SURF-005`, `GROW-AGT-001`, `GROW-PLUG-001`, `GROW-PLUG-002`, registry count `6`, all six canonical Growth regions, and no fake outcome or plugin-marketplace leak
+    - refresh preserved the same project id and the same Growth, plugin, registry, measurement, social, SEO, SEM, email, landing, and landing-backend truth
+  - boundary:
+    - `EXP-006 closes Growth surfacing after product truth and the integrated first-release Growth surface envelope.`
+    - `It does not close public publishing, provider connection, ad spend, email sending, social publishing, production analytics, production landing backend, standalone product package, or publish-grade design gates.`
+    - `No screenshot artifact was produced in this closure run because local Chrome screenshot capture was the unstable part of the proof; DOM route verification, refresh verification, API state, and persisted project truth passed.`
 
 #### `STD-HANDOFF-AGT-001 — Studio handoff agent web-to-desktop boundary`
 - status: `new-proposed`
