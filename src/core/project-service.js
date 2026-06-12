@@ -99,6 +99,7 @@ import { buildSeoActionPathEnvelope } from "./seo-action-path.js";
 import { buildSemActionPathEnvelope } from "./sem-action-path.js";
 import { buildEmailActionPathEnvelope } from "./email-action-path.js";
 import { buildLandingActionPathEnvelope } from "./landing-action-path.js";
+import { buildLandingBackendSyncEnvelope } from "./landing-backend-sync.js";
 import {
   buildApprovedProductDirectionPatch,
   buildBuildApprovalFlow,
@@ -1191,6 +1192,7 @@ export class ProjectService {
       semActionPath: normalizedState.semActionPath ?? null,
       emailActionPath: normalizedState.emailActionPath ?? null,
       landingActionPath: normalizedState.landingActionPath ?? null,
+      landingBackendSync: normalizedState.landingBackendSync ?? null,
       socialCampaignExecutionAgent: normalizedState.socialCampaignExecutionAgent ?? null,
       cycle: null,
       runtimeResults: [],
@@ -2335,6 +2337,10 @@ export class ProjectService {
       ?? project.context?.landingActionPath
       ?? project.state?.landingActionPath
       ?? null;
+    let landingBackendSync = project.landingBackendSync
+      ?? project.context?.landingBackendSync
+      ?? project.state?.landingBackendSync
+      ?? null;
     if (growthAgent.growthPluginLayer?.primaryPlugin?.pluginId === "landing-experiment-draft" || growthAgent.opportunityType === "landing-experiment") {
       landingActionPath = buildLandingActionPathEnvelope({
         project,
@@ -2342,7 +2348,14 @@ export class ProjectService {
         growthAgent,
         measurementTruth: project.growthMeasurementTruth ?? project.context?.growthMeasurementTruth ?? project.state?.growthMeasurementTruth ?? growthAgent.growthMeasurementTruth ?? null,
       });
+      landingBackendSync = buildLandingBackendSyncEnvelope({
+        project,
+        landingActionPath,
+        leadCapture: landingActionPath.leadCapture ?? {},
+        previousEnvelope: landingBackendSync,
+      });
       growthAgent.landingActionPath = landingActionPath;
+      growthAgent.landingBackendSync = landingBackendSync;
     }
     project.growthAgent = growthAgent;
     const growthMeasurementTruth = growthAgent.growthMeasurementTruth ?? buildGrowthMeasurementTruth({
@@ -2360,6 +2373,7 @@ export class ProjectService {
       semActionPath,
       emailActionPath,
       landingActionPath,
+      landingBackendSync,
     };
     project.state = {
       ...(project.state ?? {}),
@@ -2370,12 +2384,14 @@ export class ProjectService {
       semActionPath,
       emailActionPath,
       landingActionPath,
+      landingBackendSync,
     };
     project.socialCampaignExecutionAgent = socialCampaignExecutionAgent;
     project.seoActionPath = seoActionPath;
     project.semActionPath = semActionPath;
     project.emailActionPath = emailActionPath;
     project.landingActionPath = landingActionPath;
+    project.landingBackendSync = landingBackendSync;
     this.persistProjectRecord(project);
     return this.serializeProject(project);
   }
@@ -2387,6 +2403,7 @@ export class ProjectService {
     shareDemoAgent = null,
     releaseGate = null,
     leadCapture = {},
+    leadSubmission = null,
     providerResults = null,
   } = {}) {
     const project = this.projects.get(projectId);
@@ -2408,20 +2425,45 @@ export class ProjectService {
       providerResults,
       measurementTruth: project.growthMeasurementTruth ?? project.context?.growthMeasurementTruth ?? project.state?.growthMeasurementTruth ?? null,
     });
+    const previousLandingBackendSync = project.landingBackendSync
+      ?? project.context?.landingBackendSync
+      ?? project.state?.landingBackendSync
+      ?? null;
+    const landingBackendSync = buildLandingBackendSyncEnvelope({
+      project,
+      landingActionPath,
+      leadCapture: landingActionPath.leadCapture ?? leadCapture,
+      leadSubmission,
+      previousEnvelope: previousLandingBackendSync,
+    });
+    const productOwnedBackendSkeletonAfterSync = landingBackendSync.productOwnedBackendSkeletonAfterSync
+      ?? project.productOwnedBackendSkeleton
+      ?? project.context?.productOwnedBackendSkeleton
+      ?? project.state?.productOwnedBackendSkeleton
+      ?? null;
+    if (productOwnedBackendSkeletonAfterSync?.productOwnedBackendSkeletonId) {
+      project.productOwnedBackendSkeleton = productOwnedBackendSkeletonAfterSync;
+    }
     project.growthAgent = {
       ...growthAgent,
       landingActionPath,
+      landingBackendSync,
     };
     project.landingActionPath = landingActionPath;
+    project.landingBackendSync = landingBackendSync;
     project.context = {
       ...(project.context ?? {}),
       growthAgent: project.growthAgent,
       landingActionPath,
+      landingBackendSync,
+      productOwnedBackendSkeleton: project.productOwnedBackendSkeleton ?? project.context?.productOwnedBackendSkeleton ?? null,
     };
     project.state = {
       ...(project.state ?? {}),
       growthAgent: project.growthAgent,
       landingActionPath,
+      landingBackendSync,
+      productOwnedBackendSkeleton: project.productOwnedBackendSkeleton ?? project.state?.productOwnedBackendSkeleton ?? null,
     };
     this.persistProjectRecord(project);
     return this.serializeProject(project);
@@ -5271,6 +5313,11 @@ export class ProjectService {
       ?? project.context?.landingActionPath
       ?? project.state?.landingActionPath
       ?? null;
+    const preservedLandingBackendSync =
+      project.landingBackendSync
+      ?? project.context?.landingBackendSync
+      ?? project.state?.landingBackendSync
+      ?? null;
     const preservedProviderGatewayBoundary =
       project.providerGatewayBoundary
       ?? project.context?.providerGatewayBoundary
@@ -5354,6 +5401,7 @@ export class ProjectService {
       semActionPath: preservedSemActionPath,
       emailActionPath: preservedEmailActionPath,
       landingActionPath: preservedLandingActionPath,
+      landingBackendSync: preservedLandingBackendSync,
       providerGatewayBoundary: preservedProviderGatewayBoundary,
       providerReleaseRegistry: preservedProviderReleaseRegistry,
       creativeProviderAssets: preservedCreativeProviderAssets,
@@ -5444,6 +5492,17 @@ export class ProjectService {
       previousSkeletonChoiceTruth: preservedSkeletonChoiceTruth,
     });
     const runtimeLearningDecisionHints = buildRuntimeLearningDecisionHints(runtimeLearningEvents);
+    const preservedLandingLeads = preservedProductOwnedBackendSkeleton?.persistence?.state?.landingLeads;
+    if (Array.isArray(preservedLandingLeads) && preservedLandingLeads.length > 0) {
+      productOwnedBackendSkeleton = preservedProductOwnedBackendSkeleton;
+      if (runtimeSkeletonTruth?.productOwnedBackendSkeleton) {
+        runtimeSkeletonTruth = {
+          ...runtimeSkeletonTruth,
+          productOwnedBackendSkeleton,
+          productOwnedBackendSkeletonId: productOwnedBackendSkeleton.productOwnedBackendSkeletonId,
+        };
+      }
+    }
     project.runtimeSkeletonTruth = runtimeSkeletonTruth;
     project.productDomainSkeleton = productDomainSkeleton;
     project.productOwnedBackendSkeleton = productOwnedBackendSkeleton;
@@ -5458,6 +5517,7 @@ export class ProjectService {
     project.semActionPath = preservedSemActionPath;
     project.emailActionPath = preservedEmailActionPath;
     project.landingActionPath = preservedLandingActionPath;
+    project.landingBackendSync = preservedLandingBackendSync;
     project.context = {
       ...project.context,
       runtimeSkeletonTruth,
@@ -5482,6 +5542,7 @@ export class ProjectService {
       semActionPath: preservedSemActionPath,
       emailActionPath: preservedEmailActionPath,
       landingActionPath: preservedLandingActionPath,
+      landingBackendSync: preservedLandingBackendSync,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -5511,6 +5572,7 @@ export class ProjectService {
       semActionPath: preservedSemActionPath,
       emailActionPath: preservedEmailActionPath,
       landingActionPath: preservedLandingActionPath,
+      landingBackendSync: preservedLandingBackendSync,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -7509,6 +7571,10 @@ export class ProjectService {
       landingActionPath: project.context?.landingActionPath
         ?? project.landingActionPath
         ?? project.state?.landingActionPath
+        ?? null,
+      landingBackendSync: project.context?.landingBackendSync
+        ?? project.landingBackendSync
+        ?? project.state?.landingBackendSync
         ?? null,
       companionConversation: project.context?.companionConversation
         ?? project.companionConversation

@@ -448,6 +448,40 @@ function summarizeLandingActionForSurface(value) {
   };
 }
 
+function summarizeLandingBackendForSurface(value) {
+  const backend = normalizeObject(value);
+  const packageContract = normalizeObject(backend.packageContract);
+  const syncContract = normalizeObject(backend.syncContract);
+  return {
+    taskId: normalizeString(backend.taskId, "GROW-LAND-BACKEND-001"),
+    status: normalizeString(backend.status, "not-created"),
+    projectId: normalizeString(backend.projectId),
+    landingDraftId: normalizeString(backend.landingDraftId),
+    landingBackendId: normalizeString(backend.landingBackendId),
+    productBackendId: normalizeString(backend.productBackendId),
+    storageStatus: normalizeString(backend.storageStatus, "nexus-experiment-leads"),
+    productionBackend: backend.productionBackend === true,
+    standaloneReady: backend.standaloneReady === true,
+    externalCaptureAllowed: backend.externalCaptureAllowed === true,
+    artifactBoundaryStatus: normalizeString(backend.artifactBoundaryStatus, "draft-only"),
+    packageContractReady: packageContract.status === "package-contract-ready",
+    packageConsumedBy: normalizeArray(packageContract.environment?.consumedBy).map((item) => normalizeString(item)).filter(Boolean),
+    syncDirection: normalizeString(syncContract.direction, "landing-to-product"),
+    syncFieldCount: normalizeArray(syncContract.fields).length,
+    leadCount: normalizeArray(backend.leads).length,
+    productBackendLeadCount: normalizeArray(backend.productBackendLeadMirror).length,
+    syncEventCount: normalizeArray(backend.syncEvents).length,
+    lastLeadStatus: normalizeString(backend.lastLead?.status, "none"),
+    lastSyncReason: normalizeString(backend.lastSyncReason),
+    nexusExperimentFallbackUsed: backend.nexusExperimentFallbackUsed === true,
+    productTruthOwner: normalizeString(backend.productTruthOwner, "source-product-not-landing"),
+    measurementEventCount: normalizeArray(backend.measurementEvents).length,
+    externalCaptureBlocked: backend.releaseGate?.externalCaptureBlocked !== false,
+    releaseBlockReason: normalizeString(backend.releaseGate?.reason),
+    userMessage: normalizeString(backend.userMessage, "בקאנד דף נחיתה עדיין לא נוצר."),
+  };
+}
+
 function createGrowthSurfaceViewContract() {
   return {
     contractId: "SURF-005",
@@ -587,6 +621,12 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       ?? state.landingActionPath
       ?? growthAgent.landingActionPath,
   );
+  const landingBackend = summarizeLandingBackendForSurface(
+    safeProject.landingBackendSync
+      ?? safeProject.context?.landingBackendSync
+      ?? state.landingBackendSync
+      ?? growthAgent.landingBackendSync,
+  );
   const growthMeasurement = summarizeGrowthMeasurementForSurface(
     safeProject.growthMeasurementTruth
       ?? safeProject.context?.growthMeasurementTruth
@@ -691,6 +731,7 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       semAction,
       emailAction,
       landingAction,
+      landingBackend,
     },
   };
 }

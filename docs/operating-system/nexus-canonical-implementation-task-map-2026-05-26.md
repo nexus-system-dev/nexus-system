@@ -5049,7 +5049,7 @@ Write-back:
   - `Truth boundary: this closes the first-release Landing Page Experiment action path only. It does not publicly publish landing pages, run production split tests, provide a full landing page builder, connect production analytics, manage product-owned lead backend storage, process payments/orders, or close GROW-LAND-BACKEND-001, REL-AGT-001, STD-HANDOFF-AGT-001, production provider operations, or standalone release packaging.`
 
 #### `GROW-LAND-BACKEND-001 — Landing page standalone backend and product sync`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -5138,6 +5138,14 @@ Write-back:
   - external/public capture proceeds without standalone backend, production storage, privacy approval, and release gate truth
   - landing page owns product truth or mutates product schema silently
   - fake lead/result claims appear without measurement truth
+- closure_update:
+  - `2026-06-12: GROW-LAND-BACKEND-001 implemented and verified trueGreen. src/core/landing-backend-sync.js now owns the product-owned Landing Page Backend Sync envelope: packageable landing frontend/backend contract, product-owned local/mock storage boundary, landing-to-product sync contract, lead schema, consent/source/timestamp/product/landing/measurement linkage, duplicate/rejected lead failure states, measurement events, and external capture release gate.`
+  - `Code wiring: src/core/project-service.js now creates/restores landingBackendSync during growth/landing runs, persists it in project/context/state, updates productOwnedBackendSkeleton.persistence.state.landingLeads after accepted submissions, preserves landing lead backend truth through rebuild, and exposes it through serialization. src/server.js accepts leadSubmission on POST /api/projects/:projectId/landing-action-path. web/nexus-ui/adapters/growth-surface-adapter.js and web/nexus-ui/screens/GrowthSurfaceScreen.js expose user-visible backend/storage/sync/publication truth.`
+  - `Tests added/updated: test/landing-backend-sync.test.js, test/landing-action-project-service.test.js, and test/growth-surface-canonical-structure-contract.test.js.`
+  - `Verification run: node --check src/core/landing-backend-sync.js; node --check src/core/project-service.js; node --check src/server.js; node --check web/nexus-ui/adapters/growth-surface-adapter.js; node --check web/nexus-ui/screens/GrowthSurfaceScreen.js; node --check scripts/verify-grow-land-backend-001-live-proof.mjs; node --test test/landing-backend-sync.test.js test/landing-action-project-service.test.js test/landing-action-path.test.js test/growth-surface-canonical-structure-contract.test.js; node --test --test-name-pattern "GROW-LAND-BACKEND-001|GROW-LAND-001|GROW-EMAIL-001|GROW-SEM-001|GROW-PLUG|GROW-MEASURE|SURF-005" test/landing-backend-sync.test.js test/landing-action-path.test.js test/landing-action-project-service.test.js test/email-action-path.test.js test/email-action-project-service.test.js test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-measurement-truth.test.js test/growth-surface-canonical-structure-contract.test.js test/sem-action-path.test.js test/sem-action-project-service.test.js; node scripts/verify-grow-land-backend-001-live-proof.mjs.`
+  - `Verification result: syntax checks passed; focused backend/surface tests passed 12/12; wider growth regression sweep passed 41/41; live proof passed with status=synced, storageStatus=product-owned-local-mock, artifactBoundaryStatus=package-contract-ready, productionBackend=false, standaloneReady=false, externalCaptureAllowed=false, leadCount=1, productBackendLeadCount=1, productBackendStateLeadCount=1, DOM storage/product/sync/publication anchors visible, and refresh/restore preserving both landing backend and product backend lead truth.`
+  - `Live proof artifacts: report /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-land-backend-001-YX6Xti/report.json; screenshot /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-land-backend-001-YX6Xti/growth-land-backend.png.`
+  - `Truth boundary: this closes the first-release local/mock product-owned landing backend and product sync contract. It does not close production backend hosting, standalone runnable artifact generation, public publication, privacy/legal approval, production lead management, or release packaging. PRODUCT-RUNTIME-PACKAGE-001 and STANDALONE-ARTIFACT-001 still own converting this contract into a standalone releasable product artifact.`
 
 #### `GROW-MEASURE-001 — Growth measurement and result truth`
 - status: `trueGreen`
@@ -5253,6 +5261,7 @@ Write-back:
   - `GROW-SEM-001`
   - `GROW-EMAIL-001`
   - `GROW-LAND-001`
+  - `GROW-LAND-BACKEND-001`
   - `GROW-MEASURE-001`
   - `SURF-005`
 

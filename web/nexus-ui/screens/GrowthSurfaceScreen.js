@@ -533,6 +533,65 @@ function renderLandingActionPath(landing = {}) {
   `;
 }
 
+function renderLandingBackendSync(backend = {}) {
+  if (!backend || backend.status === "not-created") {
+    return "";
+  }
+  return `
+    <section
+      class="nexus-growth-surface__panel"
+      dir="rtl"
+      data-landing-backend-task="${escapeHtml(backend.taskId ?? "GROW-LAND-BACKEND-001")}"
+      data-landing-backend-status="${escapeHtml(backend.status ?? "not-created")}"
+      data-landing-backend-storage="${escapeHtml(backend.storageStatus ?? "nexus-experiment-leads")}"
+      data-landing-backend-artifact-boundary="${escapeHtml(backend.artifactBoundaryStatus ?? "draft-only")}"
+      data-landing-backend-production="${escapeHtml(backend.productionBackend ? "true" : "false")}"
+      data-landing-backend-standalone-ready="${escapeHtml(backend.standaloneReady ? "true" : "false")}"
+      data-landing-backend-external-capture-allowed="${escapeHtml(backend.externalCaptureAllowed ? "true" : "false")}"
+      data-landing-backend-external-capture-blocked="${escapeHtml(backend.externalCaptureBlocked === false ? "false" : "true")}"
+      data-landing-backend-lead-count="${escapeHtml(String(backend.leadCount ?? 0))}"
+      data-landing-backend-product-lead-count="${escapeHtml(String(backend.productBackendLeadCount ?? 0))}"
+      data-landing-backend-sync-direction="${escapeHtml(backend.syncDirection ?? "landing-to-product")}"
+      data-landing-backend-product-owner="${escapeHtml(backend.productTruthOwner ?? "source-product-not-landing")}"
+      data-growth-region="landing-backend-sync"
+    >
+      <span class="nexus-growth-surface__tag">בקאנד דף נחיתה</span>
+      <h2>${escapeHtml(backend.status === "synced" ? "ליד נשמר וסונכרן למוצר" : backend.packageContractReady ? "בקאנד עצמאי מוכן כחוזה חבילה" : "בקאנד דף נחיתה עדיין לא מוכן")}</h2>
+      <p>${escapeHtml(backend.userMessage ?? "בקאנד דף נחיתה עדיין לא נוצר.")}</p>
+      <div class="nexus-growth-surface__signal-grid">
+        <article>
+          <span>אחסון</span>
+          <strong>${escapeHtml(backend.storageStatus ?? "nexus-experiment-leads")}</strong>
+        </article>
+        <article>
+          <span>סנכרון למוצר</span>
+          <strong>${escapeHtml(`${backend.productBackendLeadCount ?? 0} לידים`)}</strong>
+        </article>
+        <article>
+          <span>מצב פרסום</span>
+          <strong>${escapeHtml(backend.externalCaptureAllowed ? "מותר בשער שחרור" : "חסום לשימוש חיצוני")}</strong>
+        </article>
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>חוזה עצמאי</strong>
+        ${renderList([
+          backend.packageContractReady ? "יש חוזה פרונטד ובקאנד לדף הנחיתה" : "אין עדיין חוזה חבילה",
+          `מצב חבילה: ${backend.artifactBoundaryStatus ?? "draft-only"}`,
+          `כיוון סנכרון: ${backend.syncDirection ?? "landing-to-product"}`,
+        ], "אין חוזה בקאנד להצגה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>מה עדיין חסום</strong>
+        ${renderList([
+          backend.productionBackend ? "" : "זה עדיין לא בקאנד ייצור",
+          backend.standaloneReady ? "" : "זה עדיין לא חבילת מוצר עצמאית",
+          backend.externalCaptureBlocked === false ? "" : (backend.releaseBlockReason ?? "איסוף חיצוני חסום עד שחרור מלא"),
+        ].filter(Boolean), "אין חסימות להצגה.")}
+      </div>
+    </section>
+  `;
+}
+
 export function renderGrowthSurfaceScreen(viewModel = {}) {
   const contract = viewModel.contract ?? {};
   const growth = viewModel.growth ?? {};
@@ -630,6 +689,8 @@ export function renderGrowthSurfaceScreen(viewModel = {}) {
           ${renderEmailActionPath(growth.emailAction ?? {})}
 
           ${renderLandingActionPath(growth.landingAction ?? {})}
+
+          ${renderLandingBackendSync(growth.landingBackend ?? {})}
 
           <section class="nexus-growth-surface__panel" data-growth-region="growth-metric-baseline">
             <span class="nexus-growth-surface__tag">Baseline</span>

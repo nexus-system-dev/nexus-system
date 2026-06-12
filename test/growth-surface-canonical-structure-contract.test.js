@@ -387,6 +387,41 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
         productTruthOwner: "source-product-not-landing",
         userMessage: "התצוגה המקדימה מוכנה לבדיקה פנימית, אבל עדיין לא ציבורית.",
       },
+      landingBackendSync: {
+        taskId: "GROW-LAND-BACKEND-001",
+        status: "synced",
+        projectId: "surf-005-proof",
+        landingDraftId: "landing-draft:surf-005-proof",
+        landingBackendId: "landing-backend:surf-005-proof:landing-draft:surf-005-proof",
+        productBackendId: "backend-surf-proof",
+        storageStatus: "product-owned-local-mock",
+        productionBackend: false,
+        standaloneReady: false,
+        externalCaptureAllowed: false,
+        artifactBoundaryStatus: "package-contract-ready",
+        packageContract: {
+          status: "package-contract-ready",
+          environment: {
+            consumedBy: ["PRODUCT-RUNTIME-PACKAGE-001", "STANDALONE-ARTIFACT-001"],
+          },
+        },
+        syncContract: {
+          direction: "landing-to-product",
+          fields: ["name", "email", "consent", "source", "createdAt"],
+        },
+        leads: [{ leadId: "lead-1" }],
+        productBackendLeadMirror: [{ leadId: "lead-1" }],
+        syncEvents: [{ eventId: "sync-1" }],
+        lastLead: { status: "accepted" },
+        lastSyncReason: "הליד נשמר בבקאנד דף הנחיתה וסונכרן לבקאנד המוצר.",
+        productTruthOwner: "source-product-not-landing",
+        measurementEvents: [{ eventName: "lead.created" }],
+        releaseGate: {
+          externalCaptureBlocked: true,
+          reason: "איסוף חיצוני חסום עד שיש בקאנד עצמאי, חבילת מוצר עצמאית, פרטיות ושער שחרור.",
+        },
+        userMessage: "הליד נשמר בבקאנד דף הנחיתה וסונכרן לבקאנד המוצר.",
+      },
     },
   });
   const html = renderGrowthSurfaceScreen(viewModel);
@@ -458,6 +493,18 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
   assert.match(html, /data-landing-action-lead-consent="true"/);
   assert.match(html, /data-landing-action-rtl="true"/);
   assert.match(html, /data-landing-action-fabricated-results-blocked="true"/);
+  assert.match(html, /data-landing-backend-task="GROW-LAND-BACKEND-001"/);
+  assert.match(html, /data-landing-backend-status="synced"/);
+  assert.match(html, /data-landing-backend-storage="product-owned-local-mock"/);
+  assert.match(html, /data-landing-backend-artifact-boundary="package-contract-ready"/);
+  assert.match(html, /data-landing-backend-production="false"/);
+  assert.match(html, /data-landing-backend-standalone-ready="false"/);
+  assert.match(html, /data-landing-backend-external-capture-allowed="false"/);
+  assert.match(html, /data-landing-backend-external-capture-blocked="true"/);
+  assert.match(html, /data-landing-backend-lead-count="1"/);
+  assert.match(html, /data-landing-backend-product-lead-count="1"/);
+  assert.match(html, /data-landing-backend-sync-direction="landing-to-product"/);
+  assert.match(html, /ליד נשמר וסונכרן למוצר/);
   assert.match(html, /תצוגה פנימית מוכנה/);
   assert.match(html, /סימן ראשוני בלבד/);
   assert.match(html, /data-growth-plugin-primary="audience-understanding-test"/);

@@ -1866,6 +1866,7 @@ export function createServer(projectService, runtimeStatus = {}) {
             shareDemoAgent: body.shareDemoAgent ?? null,
             releaseGate: body.releaseGate ?? null,
             leadCapture: body.leadCapture ?? {},
+            leadSubmission: body.leadSubmission ?? null,
             providerResults: body.providerResults ?? null,
           })
         : null;

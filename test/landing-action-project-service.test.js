@@ -39,6 +39,10 @@ function createProject(service) {
       productOwnedBackendSkeleton: {
         productOwnedBackendSkeletonId: "backend-landing-action-service",
         productionBackend: false,
+        artifactRoot: "nexus-projects/test/landing-action-service/product",
+        models: [],
+        persistence: { state: { records: [] } },
+        apiBoundary: { endpoints: [] },
       },
       growthMeasurementTruth: {
         taskId: "GROW-MEASURE-001",
@@ -83,6 +87,27 @@ test("ProjectService stores GROW-LAND-001 truth through growth and explicit land
   assert.equal(preview.landingActionPath.status, "preview-ready");
   assert.equal(preview.landingActionPath.visibility.publicVisible, false);
   assert.equal(preview.landingActionPath.leadCapture.consentConfigured, true);
+  assert.equal(preview.landingBackendSync.taskId, "GROW-LAND-BACKEND-001");
+  assert.equal(preview.landingBackendSync.storageStatus, "product-owned-local-mock");
+  assert.equal(preview.landingBackendSync.packageContract.status, "package-contract-ready");
+
+  const submitted = service.runLandingActionPath({
+    projectId: created.id,
+    userInput: "שלח ליד מדף הנחיתה",
+    leadSubmission: {
+      leadId: "landing-service-lead-1",
+      name: "נועה",
+      email: "noa@example.test",
+      need: "מעקב אחרי לידים",
+      consent: true,
+    },
+  });
+  assert.equal(submitted.landingBackendSync.status, "synced");
+  assert.equal(submitted.landingBackendSync.leads.length, 1);
+  assert.equal(submitted.landingBackendSync.productBackendLeadMirror.length, 1);
+  assert.equal(submitted.productOwnedBackendSkeleton.persistence.state.landingLeads.length, 1);
+  assert.equal(submitted.context.landingBackendSync.status, "synced");
+  assert.equal(submitted.state.landingBackendSync.status, "synced");
 
   const shared = service.runLandingActionPath({
     projectId: created.id,
@@ -100,4 +125,6 @@ test("ProjectService stores GROW-LAND-001 truth through growth and explicit land
   assert.equal(restored.landingActionPath.status, "shared-demo-ready");
   assert.equal(restored.context.landingActionPath.status, "shared-demo-ready");
   assert.equal(restored.state.landingActionPath.status, "shared-demo-ready");
+  assert.equal(restored.landingBackendSync.status, "synced");
+  assert.equal(restored.productOwnedBackendSkeleton.persistence.state.landingLeads.length, 1);
 });
