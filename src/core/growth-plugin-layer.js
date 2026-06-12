@@ -388,7 +388,7 @@ function resolvePrimaryPlugin({ input, readiness }) {
     });
   }
 
-  if (includesAny(input, [/ad|ads|sem|paid|budget|תקציב|מודעה|ממומן/u])) {
+  if (includesAny(input, [/\bads?\b|\bsem\b|\bpaid\b|\bbudget\b|תקציב|מודעה|ממומן/u])) {
     return pluginDefinition("paid-test-draft", {
       label: "טיוטת ניסוי ממומן",
       userIntentLabel: "פרסום ממומן",
@@ -418,23 +418,6 @@ function resolvePrimaryPlugin({ input, readiness }) {
       allowedActions: ["draft-subject", "draft-body", "prepare-test-send"],
       blockedActions: ["send-audience", "scrape-contacts", "fabricate-open-rate"],
       whyThisPlugin: "מייל יכול להתחיל כטיוטה, אבל שליחה אמיתית דורשת אישור וספק.",
-    });
-  }
-
-  if (includesAny(input, [/send|client|demo|share|לשלוח|לקוחות|סקירה|דמו/u])) {
-    return pluginDefinition("share-demo-handoff", {
-      label: "הכנת דמו בטוח לשליחה",
-      userIntentLabel: "שיתוף ודמו",
-      channelSecondaryLabel: "סקירה פרטית",
-      status: "handoff-required",
-      draftOnly: true,
-      providerRequired: false,
-      approvalRequired: true,
-      smallSuccessMetric: "3 מתוך 5 צופים מבינים את הערך המרכזי בתוך דקה.",
-      handoffRequired: "share-demo-agent",
-      allowedActions: ["prepare-safe-demo-brief"],
-      blockedActions: ["public-link-without-approval", "expose-private-project", "claim-release"],
-      whyThisPlugin: "הכוונה היא לקבל תגובה על תוצר קיים, לא לפרסם צמיחה רחבה.",
     });
   }
 
@@ -484,6 +467,23 @@ function resolvePrimaryPlugin({ input, readiness }) {
       allowedActions: ["prepare-post-drafts", "prepare-creative-brief", "propose-schedule"],
       blockedActions: ["publish", "schedule", "reply", "delete", "direct-message", "spend", "claim-virality"],
       whyThisPlugin: "אפשר להכין קמפיין קטן, אבל שום פעולה חיצונית לא קורית בלי אישור וספק.",
+    });
+  }
+
+  if (includesAny(input, [/send|client|demo|share|לשלוח|לקוחות|סקירה|דמו/u])) {
+    return pluginDefinition("share-demo-handoff", {
+      label: "הכנת דמו בטוח לשליחה",
+      userIntentLabel: "שיתוף ודמו",
+      channelSecondaryLabel: "סקירה פרטית",
+      status: "handoff-required",
+      draftOnly: true,
+      providerRequired: false,
+      approvalRequired: true,
+      smallSuccessMetric: "3 מתוך 5 צופים מבינים את הערך המרכזי בתוך דקה.",
+      handoffRequired: "share-demo-agent",
+      allowedActions: ["prepare-safe-demo-brief"],
+      blockedActions: ["public-link-without-approval", "expose-private-project", "claim-release"],
+      whyThisPlugin: "הכוונה היא לקבל תגובה על תוצר קיים, לא לפרסם צמיחה רחבה.",
     });
   }
 

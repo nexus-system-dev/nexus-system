@@ -140,6 +140,43 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
           insight: "זה סימן ראשוני בלבד, לא הוכחה.",
         },
       },
+      socialCampaignExecutionAgent: {
+        taskId: "GROW-AGT-002",
+        agentId: "social-campaign-execution-agent",
+        status: "ready-for-approval",
+        campaignType: "launch-sequence",
+        selectedProvider: "instagram",
+        requestedAction: "draft",
+        sequence: [
+          { postId: "post-1", purpose: "problem" },
+          { postId: "post-2", purpose: "solution" },
+          { postId: "post-3", purpose: "demo" },
+        ],
+        permissions: {
+          providerConnected: false,
+          scopes: [],
+          firstReleaseRealProviders: ["instagram", "facebook"],
+          draftOnlyProviders: ["tiktok", "linkedin", "youtube", "x"],
+        },
+        approval: {
+          perPostApprovalRequired: true,
+          campaignApprovalCannotPublishPosts: true,
+        },
+        fallback: {
+          manualCopyAvailable: true,
+          draftOnlyBecauseProviderMissing: true,
+        },
+        blockedActions: ["reply", "moderate", "direct-message", "ad-spend", "account-edit"],
+        resultIntake: {
+          fabricatedMetricsBlocked: true,
+          commentsSummary: {
+            summary: "אין תגובות אמיתיות זמינות לקריאה.",
+            sensitiveExamplesHidden: true,
+          },
+        },
+        externalExecutionPerformed: false,
+        userMessage: "הקמפיין הוכן כטיוטה קטנה.",
+      },
     },
   });
   const html = renderGrowthSurfaceScreen(viewModel);
@@ -159,6 +196,14 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
   assert.match(html, /data-growth-measurement-task="GROW-MEASURE-001"/);
   assert.match(html, /data-growth-measurement-status="has-initial-signal"/);
   assert.match(html, /data-growth-measurement-confidence="low"/);
+  assert.match(html, /data-social-campaign-agent-task="GROW-AGT-002"/);
+  assert.match(html, /data-social-campaign-agent-status="ready-for-approval"/);
+  assert.match(html, /data-social-campaign-provider="instagram"/);
+  assert.match(html, /data-social-campaign-provider-connected="false"/);
+  assert.match(html, /data-social-campaign-external-executed="false"/);
+  assert.match(html, /data-social-campaign-per-post-approval="true"/);
+  assert.match(html, /data-social-campaign-fabricated-metrics-blocked="true"/);
+  assert.match(html, /טיוטת קמפיין לפני פעולה חיצונית/);
   assert.match(html, /סימן ראשוני בלבד/);
   assert.match(html, /data-growth-plugin-primary="audience-understanding-test"/);
   assert.match(html, /data-growth-plugin-provider-required="false"/);
@@ -188,6 +233,6 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
   assert.doesNotMatch(html, /Advanced lane/);
   assert.doesNotMatch(html, /Growth Workspace/);
   assert.doesNotMatch(html, /KPI ותוכניות שיווק משניות/);
-  assert.doesNotMatch(html, /TikTok|SEO|conversion|revenue|virality/i);
+  assert.doesNotMatch(html, /conversion|revenue|virality/i);
   assert.doesNotMatch(html, /nexus-ui-sidebar/);
 });

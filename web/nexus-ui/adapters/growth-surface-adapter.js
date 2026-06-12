@@ -61,6 +61,7 @@ function labelAgent(value) {
     "release-agent": "לעבור למסלול שחרור",
     "verification-agent": "לעבור לבדיקות",
     "visual-build-agent": "לעבור לבנייה חזותית",
+    "social-campaign-execution-agent": "לעבור לביצוע קמפיין חברתי",
   };
   return labels[agent] ?? agent;
 }
@@ -131,6 +132,7 @@ function summarizeGrowthAgentForSurface(value) {
       requiresExplicitApprovalBeforeExternalAction: campaignExecution.requiresExplicitApprovalBeforeExternalAction !== false,
       forbiddenWithoutApproval: normalizeArray(campaignExecution.forbiddenWithoutApproval).map((item) => normalizeString(item)).filter(Boolean),
     },
+    socialCampaignExecutionAgent: normalizeObject(agent.socialCampaignExecutionAgent),
     visibleBoundary: {
       oneNextMoveOnly: visibleBoundary.oneNextMoveOnly !== false,
       noGenericMarketing: visibleBoundary.noGenericMarketing !== false,
@@ -193,6 +195,45 @@ function summarizeGrowthAgentForSurface(value) {
         .filter((item) => item.label),
     },
     growthMeasurementTruth: summarizeGrowthMeasurementForSurface(agent.growthMeasurementTruth),
+  };
+}
+
+function summarizeSocialCampaignForSurface(value) {
+  const campaign = normalizeObject(value);
+  const permissions = normalizeObject(campaign.permissions);
+  const approval = normalizeObject(campaign.approval);
+  const fallback = normalizeObject(campaign.fallback);
+  const resultIntake = normalizeObject(campaign.resultIntake);
+  const commentsSummary = normalizeObject(resultIntake.commentsSummary);
+  return {
+    taskId: normalizeString(campaign.taskId, "GROW-AGT-002"),
+    agentId: normalizeString(campaign.agentId, "social-campaign-execution-agent"),
+    status: normalizeString(campaign.status, "not-created"),
+    campaignType: normalizeString(campaign.campaignType, "learning-experiment"),
+    selectedProvider: normalizeString(campaign.selectedProvider, "instagram"),
+    requestedAction: normalizeString(campaign.requestedAction, "draft"),
+    sequenceCount: normalizeArray(campaign.sequence).length,
+    firstReleaseRealProviders: normalizeArray(permissions.firstReleaseRealProviders).map((item) => normalizeString(item)).filter(Boolean),
+    draftOnlyProviders: normalizeArray(permissions.draftOnlyProviders).map((item) => normalizeString(item)).filter(Boolean),
+    providerConnected: permissions.providerConnected === true,
+    account: normalizeString(permissions.account),
+    scopes: normalizeArray(permissions.scopes).map((item) => normalizeString(item)).filter(Boolean),
+    perPostApprovalRequired: approval.perPostApprovalRequired !== false,
+    campaignApprovalCannotPublishPosts: approval.campaignApprovalCannotPublishPosts !== false,
+    manualCopyAvailable: fallback.manualCopyAvailable !== false,
+    draftOnlyBecauseProviderMissing: fallback.draftOnlyBecauseProviderMissing === true,
+    missingAsset: normalizeString(fallback.missingAsset),
+    blockedActions: normalizeArray(campaign.blockedActions).map((item) => normalizeString(item)).filter(Boolean),
+    requiresAgent: normalizeString(campaign.requiresAgent, "none"),
+    externalExecutionPerformed: campaign.externalExecutionPerformed === true,
+    fabricatedMetricsBlocked: resultIntake.fabricatedMetricsBlocked !== false,
+    commentsSummary: {
+      available: commentsSummary.available === true,
+      summary: normalizeString(commentsSummary.summary, "אין תגובות אמיתיות זמינות לקריאה."),
+      sensitiveExamplesHidden: commentsSummary.sensitiveExamplesHidden !== false,
+    },
+    userMessage: normalizeString(campaign.userMessage, "קמפיין חברתי עדיין לא נוצר."),
+    historyCount: normalizeArray(campaign.history).length,
   };
 }
 
@@ -305,6 +346,12 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       ?? safeProject.context?.growthAgent
       ?? state.growthAgent,
   );
+  const socialCampaign = summarizeSocialCampaignForSurface(
+    safeProject.socialCampaignExecutionAgent
+      ?? safeProject.context?.socialCampaignExecutionAgent
+      ?? state.socialCampaignExecutionAgent
+      ?? growthAgent.socialCampaignExecutionAgent,
+  );
   const growthMeasurement = summarizeGrowthMeasurementForSurface(
     safeProject.growthMeasurementTruth
       ?? safeProject.context?.growthMeasurementTruth
@@ -404,6 +451,7 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
         requiresAgentLabel: labelAgent(growthAgent.requiresAgent),
       },
       measurement: growthMeasurement,
+      socialCampaign,
     },
   };
 }

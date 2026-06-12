@@ -80,6 +80,12 @@ test("GROW-PLUG-001 routes growth goals to bounded plugin capabilities", () => {
   assert.equal(campaign.primaryPlugin.handoffRequired, "social-campaign-execution-agent");
   assert.equal(campaign.primaryPlugin.blockedActions.includes("publish"), true);
 
+  const leadManagementCampaign = buildGrowthPluginLayer({
+    project: leadProject,
+    userInput: "Create a three-day campaign for the lead management demo.",
+  });
+  assert.equal(leadManagementCampaign.primaryPlugin.pluginId, "social-campaign-draft");
+
   const followup = buildGrowthPluginLayer({
     project: leadProject,
     userInput: "תוסיף מעקב היום למוצר",

@@ -94,6 +94,7 @@ import {
 } from "./share-demo-agent.js";
 import { buildGrowthAgentEnvelope } from "./growth-agent.js";
 import { buildGrowthMeasurementTruth } from "./growth-measurement-truth.js";
+import { buildSocialCampaignExecutionAgentEnvelope } from "./social-campaign-execution-agent.js";
 import {
   buildApprovedProductDirectionPatch,
   buildBuildApprovalFlow,
@@ -2270,6 +2271,18 @@ export class ProjectService {
       project,
       userInput,
     });
+    let socialCampaignExecutionAgent = project.socialCampaignExecutionAgent
+      ?? project.context?.socialCampaignExecutionAgent
+      ?? project.state?.socialCampaignExecutionAgent
+      ?? null;
+    if (growthAgent.growthPluginLayer?.primaryPlugin?.pluginId === "social-campaign-draft" || growthAgent.opportunityType === "campaign-draft") {
+      socialCampaignExecutionAgent = buildSocialCampaignExecutionAgentEnvelope({
+        project,
+        userInput,
+        growthAgent,
+      });
+      growthAgent.socialCampaignExecutionAgent = socialCampaignExecutionAgent;
+    }
     project.growthAgent = growthAgent;
     const growthMeasurementTruth = growthAgent.growthMeasurementTruth ?? buildGrowthMeasurementTruth({
       project,
@@ -2281,11 +2294,58 @@ export class ProjectService {
       ...(project.context ?? {}),
       growthAgent,
       growthMeasurementTruth,
+      socialCampaignExecutionAgent,
     };
     project.state = {
       ...(project.state ?? {}),
       growthAgent,
       growthMeasurementTruth,
+      socialCampaignExecutionAgent,
+    };
+    project.socialCampaignExecutionAgent = socialCampaignExecutionAgent;
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  runSocialCampaignExecutionAgent({
+    projectId,
+    userInput = "",
+    providerConnection = {},
+    approvalDecisions = {},
+    creativeAssets = [],
+    providerResults = null,
+  } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const growthAgent = project.growthAgent
+      ?? project.context?.growthAgent
+      ?? project.state?.growthAgent
+      ?? buildGrowthAgentEnvelope({ project, userInput });
+    const socialCampaignExecutionAgent = buildSocialCampaignExecutionAgentEnvelope({
+      project,
+      userInput,
+      growthAgent,
+      providerConnection,
+      approvalDecisions,
+      creativeAssets,
+      providerResults,
+    });
+    project.growthAgent = {
+      ...growthAgent,
+      socialCampaignExecutionAgent,
+    };
+    project.socialCampaignExecutionAgent = socialCampaignExecutionAgent;
+    project.context = {
+      ...(project.context ?? {}),
+      growthAgent: project.growthAgent,
+      socialCampaignExecutionAgent,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      growthAgent: project.growthAgent,
+      socialCampaignExecutionAgent,
     };
     this.persistProjectRecord(project);
     return this.serializeProject(project);
@@ -4933,6 +4993,11 @@ export class ProjectService {
       ?? project.context?.growthMeasurementTruth
       ?? project.state?.growthMeasurementTruth
       ?? null;
+    const preservedSocialCampaignExecutionAgent =
+      project.socialCampaignExecutionAgent
+      ?? project.context?.socialCampaignExecutionAgent
+      ?? project.state?.socialCampaignExecutionAgent
+      ?? null;
     const preservedProviderGatewayBoundary =
       project.providerGatewayBoundary
       ?? project.context?.providerGatewayBoundary
@@ -5011,6 +5076,7 @@ export class ProjectService {
       repeatedLoopContinuation: preservedRepeatedLoopContinuation,
       growthAgent: preservedGrowthAgent,
       growthMeasurementTruth: preservedGrowthMeasurementTruth,
+      socialCampaignExecutionAgent: preservedSocialCampaignExecutionAgent,
       providerGatewayBoundary: preservedProviderGatewayBoundary,
       providerReleaseRegistry: preservedProviderReleaseRegistry,
       creativeProviderAssets: preservedCreativeProviderAssets,
@@ -5110,6 +5176,7 @@ export class ProjectService {
     project.shareDemoAgent = preservedShareDemoAgent;
     project.growthAgent = preservedGrowthAgent;
     project.growthMeasurementTruth = preservedGrowthMeasurementTruth;
+    project.socialCampaignExecutionAgent = preservedSocialCampaignExecutionAgent;
     project.context = {
       ...project.context,
       runtimeSkeletonTruth,
@@ -5129,6 +5196,7 @@ export class ProjectService {
       shareDemoAgent: preservedShareDemoAgent,
       growthAgent: preservedGrowthAgent,
       growthMeasurementTruth: preservedGrowthMeasurementTruth,
+      socialCampaignExecutionAgent: preservedSocialCampaignExecutionAgent,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -5153,6 +5221,7 @@ export class ProjectService {
       shareDemoAgent: preservedShareDemoAgent,
       growthAgent: preservedGrowthAgent,
       growthMeasurementTruth: preservedGrowthMeasurementTruth,
+      socialCampaignExecutionAgent: preservedSocialCampaignExecutionAgent,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -7131,6 +7200,10 @@ export class ProjectService {
       growthMeasurementTruth: project.context?.growthMeasurementTruth
         ?? project.growthMeasurementTruth
         ?? project.state?.growthMeasurementTruth
+        ?? null,
+      socialCampaignExecutionAgent: project.context?.socialCampaignExecutionAgent
+        ?? project.socialCampaignExecutionAgent
+        ?? project.state?.socialCampaignExecutionAgent
         ?? null,
       companionConversation: project.context?.companionConversation
         ?? project.companionConversation

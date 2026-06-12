@@ -1,5 +1,6 @@
 import { buildGrowthPluginLayer, summarizeGrowthPluginLayer } from "./growth-plugin-layer.js";
 import { buildGrowthMeasurementTruth, summarizeGrowthMeasurementTruth } from "./growth-measurement-truth.js";
+import { buildSocialCampaignExecutionAgentEnvelope, summarizeSocialCampaignExecutionAgent } from "./social-campaign-execution-agent.js";
 
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
@@ -212,6 +213,20 @@ function shareDemoEnvelope(base) {
 }
 
 function campaignDraftEnvelope(base) {
+  const socialCampaignExecutionAgent = buildSocialCampaignExecutionAgentEnvelope({
+    project: {
+      id: base.projectId,
+      goal: base.input,
+      runtimeSkeletonTruth: {
+        title: base.originArtifactTitle,
+        productClass: base.productClass,
+      },
+      targetAudience: base.targetAudience,
+      valueProposition: base.recommendedAction,
+    },
+    userInput: base.input,
+    growthAgent: base,
+  });
   return {
     ...base,
     opportunityType: "campaign-draft",
@@ -223,7 +238,7 @@ function campaignDraftEnvelope(base) {
     whyNow: "אפשר לבדוק מסר סביב הערך הקיים בלי להפעיל פרסום אמיתי.",
     recommendedAction: "להכין רצף קצר של שלושה מסרים לאישור, בלי פרסום או תזמון.",
     preparationNeeded: ["מסר פתיחה", "דוגמת שימוש אחת", "שאלת משוב אחת"],
-    requiresAgent: "none",
+    requiresAgent: "social-campaign-execution-agent",
     requiresApproval: true,
     approvalReason: "כל פעולה חיצונית דורשת אישור וספק מחובר.",
     successMetric: "לפחות 3 תגובות איכותיות מתוך 10 פניות מאושרות.",
@@ -234,6 +249,7 @@ function campaignDraftEnvelope(base) {
       requiresExplicitApprovalBeforeExternalAction: true,
       forbiddenWithoutApproval: ["publish", "schedule", "reply", "delete", "direct-message", "spend"],
     },
+    socialCampaignExecutionAgent,
     userMessage: "אפשר להכין טיוטת קמפיין קטנה, אבל שום דבר לא יפורסם, יתוזמן או יישלח בלי אישור וספק מחובר.",
     status: "needs-approval",
   };
@@ -326,12 +342,12 @@ export function buildGrowthAgentEnvelope({ project = null, userInput = "" } = {}
     return pluginLayerEnvelope(base);
   }
 
-  if (includesAny(normalizedInput, [/send|client|demo|share|לשלוח|לקוחות|סקירה|דמו/u])) {
-    return shareDemoEnvelope(base);
-  }
-
   if (includesAny(normalizedInput, [/campaign|launch|קמפיין|השקה|פרסום/u])) {
     return campaignDraftEnvelope(base);
+  }
+
+  if (includesAny(normalizedInput, [/send|client|demo|share|לשלוח|לקוחות|סקירה|דמו/u])) {
+    return shareDemoEnvelope(base);
   }
 
   return experimentEnvelope(base);
@@ -354,6 +370,7 @@ export function summarizeGrowthAgentForSurface(envelope = {}) {
     preparationNeeded: normalizeArray(safeEnvelope.preparationNeeded),
     doNotPromise: normalizeArray(safeEnvelope.doNotPromise),
     campaignExecution: normalizeObject(safeEnvelope.campaignExecution),
+    socialCampaignExecutionAgent: summarizeSocialCampaignExecutionAgent(safeEnvelope.socialCampaignExecutionAgent),
     growthPluginLayer: summarizeGrowthPluginLayer(safeEnvelope.growthPluginLayer),
     growthMeasurementTruth: summarizeGrowthMeasurementTruth(safeEnvelope.growthMeasurementTruth),
   };

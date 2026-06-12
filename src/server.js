@@ -1500,6 +1500,23 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/social-campaign-agent")) {
+      const projectId = segments[3];
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.runSocialCampaignExecutionAgent === "function"
+        ? projectService.runSocialCampaignExecutionAgent({
+            projectId,
+            userInput: body.userInput ?? body.requestText ?? "",
+            providerConnection: body.providerConnection ?? {},
+            approvalDecisions: body.approvalDecisions ?? {},
+            creativeAssets: body.creativeAssets ?? [],
+            providerResults: body.providerResults ?? null,
+          })
+        : null;
+      sendJson(response, result ? 200 : 404, result ?? { error: "Project not found" });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname.startsWith("/api/projects/") && url.pathname.endsWith("/history-continuity/restore-execution")) {
       const projectId = segments[3];
       const body = await parseBody(request).catch(() => ({}));

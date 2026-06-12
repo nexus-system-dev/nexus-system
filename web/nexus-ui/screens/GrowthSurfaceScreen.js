@@ -159,6 +159,61 @@ function renderGrowthMeasurement(measurement = {}) {
   `;
 }
 
+function renderSocialCampaignExecution(campaign = {}) {
+  if (!campaign || campaign.status === "not-created") {
+    return "";
+  }
+  return `
+    <section
+      class="nexus-growth-surface__panel"
+      data-social-campaign-agent-task="${escapeHtml(campaign.taskId ?? "GROW-AGT-002")}"
+      data-social-campaign-agent-status="${escapeHtml(campaign.status ?? "not-created")}"
+      data-social-campaign-provider="${escapeHtml(campaign.selectedProvider ?? "instagram")}"
+      data-social-campaign-action="${escapeHtml(campaign.requestedAction ?? "draft")}"
+      data-social-campaign-provider-connected="${escapeHtml(campaign.providerConnected ? "true" : "false")}"
+      data-social-campaign-external-executed="${escapeHtml(campaign.externalExecutionPerformed ? "true" : "false")}"
+      data-social-campaign-per-post-approval="${escapeHtml(campaign.perPostApprovalRequired === false ? "false" : "true")}"
+      data-social-campaign-manual-copy="${escapeHtml(campaign.manualCopyAvailable === false ? "false" : "true")}"
+      data-social-campaign-fabricated-metrics-blocked="${escapeHtml(campaign.fabricatedMetricsBlocked === false ? "false" : "true")}"
+      data-growth-region="social-campaign-execution-agent"
+    >
+      <span class="nexus-growth-surface__tag">קמפיין חברתי</span>
+      <h2>${escapeHtml(campaign.status === "scheduled" ? "תזמון אושר ונרשם" : campaign.status === "published" ? "פרסום אושר ונרשם" : "טיוטת קמפיין לפני פעולה חיצונית")}</h2>
+      <p>${escapeHtml(campaign.userMessage ?? "קמפיין חברתי עדיין לא נוצר.")}</p>
+      <div class="nexus-growth-surface__signal-grid">
+        <article>
+          <span>ספק</span>
+          <strong>${escapeHtml(campaign.selectedProvider ?? "instagram")}</strong>
+        </article>
+        <article>
+          <span>פוסטים</span>
+          <strong>${escapeHtml(campaign.sequenceCount ?? 0)}</strong>
+        </article>
+        <article>
+          <span>פעולה</span>
+          <strong>${escapeHtml(campaign.requestedAction ?? "draft")}</strong>
+        </article>
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>ספקים שמותרים לביצוע בשחרור הראשון</strong>
+        ${renderList(campaign.firstReleaseRealProviders ?? [], "אין ספקים שמותרים לביצוע.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>ערוצים שנשארים טיוטה בלבד</strong>
+        ${renderList(campaign.draftOnlyProviders ?? [], "אין ערוצים בטיוטה בלבד.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>חסום בשחרור הראשון</strong>
+        ${renderList(campaign.blockedActions ?? [], "אין חסימות נוספות.")}
+      </div>
+      ${campaign.missingAsset ? `
+        <p class="nexus-growth-surface__empty">חסר נכס מאושר: ${escapeHtml(campaign.missingAsset)}. עוברים לשיתוף או דמו לפני שימוש במדיה.</p>
+      ` : ""}
+      <p class="nexus-growth-surface__empty">${escapeHtml(campaign.commentsSummary?.summary ?? "אין תגובות אמיתיות זמינות לקריאה.")}</p>
+    </section>
+  `;
+}
+
 export function renderGrowthSurfaceScreen(viewModel = {}) {
   const contract = viewModel.contract ?? {};
   const growth = viewModel.growth ?? {};
@@ -246,6 +301,8 @@ export function renderGrowthSurfaceScreen(viewModel = {}) {
           ${renderGrowthPluginLayer(pluginLayer)}
 
           ${renderGrowthMeasurement(growth.measurement ?? {})}
+
+          ${renderSocialCampaignExecution(growth.socialCampaign ?? {})}
 
           <section class="nexus-growth-surface__panel" data-growth-region="growth-metric-baseline">
             <span class="nexus-growth-surface__tag">Baseline</span>

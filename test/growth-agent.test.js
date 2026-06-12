@@ -101,6 +101,7 @@ test("GROW-AGT-001 routes client sending to Share Demo and campaign drafts stay 
   });
   assert.equal(campaign.status, "needs-approval");
   assert.equal(campaign.opportunityType, "campaign-draft");
+  assert.equal(campaign.requiresAgent, "social-campaign-execution-agent");
   assert.equal(campaign.campaignExecution.isCampaign, true);
   assert.deepEqual(campaign.campaignExecution.allowedNow, ["prepare-drafts"]);
   assert.equal(campaign.campaignExecution.requiresExplicitApprovalBeforeExternalAction, true);
@@ -108,6 +109,9 @@ test("GROW-AGT-001 routes client sending to Share Demo and campaign drafts stay 
   assert.equal(campaign.campaignExecution.forbiddenWithoutApproval.includes("spend"), true);
   assert.equal(campaign.growthPluginLayer.primaryPlugin.pluginId, "social-campaign-draft");
   assert.equal(campaign.growthPluginLayer.primaryPlugin.providerRequired, true);
+  assert.equal(campaign.socialCampaignExecutionAgent.taskId, "GROW-AGT-002");
+  assert.equal(campaign.socialCampaignExecutionAgent.status, "ready-for-approval");
+  assert.equal(campaign.socialCampaignExecutionAgent.externalExecutionPerformed, false);
 });
 
 test("GROW-AGT-001 keeps email draft requests aligned with GROW-PLUG-001", () => {

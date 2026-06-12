@@ -4477,7 +4477,7 @@ Write-back:
     - `Continuity debt before broad continuation paths: a broader neighboring test run exposed a next-task adapter expectation mismatch where the expected route was onboarding but the actual route was create. GROW-AGT-001 direct tests and live proof passed, but broad continuity / next-task routing work must not be treated as clean until this debt is resolved or assigned to the correct continuity-routing task.`
 
 #### `GROW-AGT-002 — Social Campaign Execution Agent`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `new shell task`
 - source:
@@ -4566,6 +4566,35 @@ Write-back:
   - live browser proof 6: TikTok/LinkedIn/YouTube/X request creates draft-only output and manual copy fallback
   - live browser proof 7: missing media asset is marked and routed to Visual Build or Share / Demo
   - live browser proof 8: provider results are real, comments are summarized, and history records the learning summary
+- closure_update_2026-06-11:
+  - status: `trueGreen`
+  - implementation:
+    - `src/core/social-campaign-execution-agent.js` adds the `GROW-AGT-002` execution envelope, provider scope model, per-post approval gate, draft/schedule/publish separation, draft-only provider boundary, blocked action gate, missing-asset handoff, result intake gate, comment summary, and audit events.
+    - `src/core/growth-agent.js` now hands campaign requests to `social-campaign-execution-agent` and keeps social campaign truth attached to the Growth Agent envelope.
+    - `src/core/growth-plugin-layer.js` routes campaign requests before demo/share fallback and avoids false paid-ad detection from words such as `lead management`.
+    - `src/core/project-service.js` persists `socialCampaignExecutionAgent` under project, context, and state truth, restores it across rebuilds, and exposes `runSocialCampaignExecutionAgent`.
+    - `src/server.js` exposes `POST /api/projects/:projectId/social-campaign-agent`.
+    - `web/nexus-ui/adapters/growth-surface-adapter.js` and `web/nexus-ui/screens/GrowthSurfaceScreen.js` render the social campaign execution state on the Growth surface.
+  - verification:
+    - `node --check src/core/social-campaign-execution-agent.js`
+    - `node --check src/core/growth-agent.js`
+    - `node --check src/core/project-service.js`
+    - `node --check web/nexus-ui/adapters/growth-surface-adapter.js`
+    - `node --check web/nexus-ui/screens/GrowthSurfaceScreen.js`
+    - `node --check src/server.js`
+    - `node --check scripts/verify-grow-agt-002-live-proof.mjs`
+    - `node --test test/social-campaign-execution-agent.test.js test/social-campaign-project-service.test.js test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-surface-canonical-structure-contract.test.js test/growth-measurement-project-service.test.js`
+    - `node --test --test-name-pattern "GROW-AGT-002|GROW-AGT-001|GROW-PLUG|GROW-MEASURE|SURF-005" test/social-campaign-execution-agent.test.js test/social-campaign-project-service.test.js test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-surface-canonical-structure-contract.test.js test/growth-measurement-project-service.test.js test/project-service.test.js`
+    - `node scripts/verify-grow-agt-002-live-proof.mjs`
+    - `git diff --check`
+  - live_proof:
+    - report: `/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-agt-002-GkUhR6/report.json`
+    - screenshot: `/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-agt-002-GkUhR6/growth-social-campaign.png`
+    - proven states: `ready-for-approval`, `needs-provider`, `needs-approval`, `scheduled`, `failed-safely`, draft-only TikTok, and `results-received`.
+  - closure_boundary:
+    - Real external provider APIs are still not connected here; this task closes the Nexus execution envelope, approval/scope gates, local provider-state simulation, visible Growth surface truth, and safe result intake boundary.
+    - Instagram/Facebook are the only V1 providers allowed to enter real execution state; all other social providers remain draft-only until promoted by a later provider task.
+    - Paid social, ads, replies, moderation, direct messages, account edits, and provider publishing integrations remain outside this task.
 - not trueGreen:
   - a campaign button pretends to publish without provider integration
   - drafts and external publication share the same state
