@@ -130,6 +130,21 @@ test("GROW-AGT-001 keeps email draft requests aligned with GROW-PLUG-001", () =>
   assert.doesNotMatch(email.userMessage, /דמו|קישור ציבורי/);
 });
 
+test("GROW-SEO-001 is carried by Growth Agent as a bounded SEO action path", () => {
+  const envelope = buildGrowthAgentEnvelope({
+    project: leadProject,
+    userInput: "תכין SEO לעמוד הזה",
+  });
+
+  assert.equal(envelope.status, "needs-approval");
+  assert.equal(envelope.opportunityType, "seo-draft");
+  assert.equal(envelope.requiresAgent, "visual-build-agent");
+  assert.equal(envelope.seoActionPath.taskId, "GROW-SEO-001");
+  assert.equal(envelope.seoActionPath.status, "draft-ready");
+  assert.equal(envelope.seoActionPath.providerTruth.searchVolumeIsHypothesis, true);
+  assert.equal(envelope.seoActionPath.externalPublicationPerformed, false);
+});
+
 test("GROW-MEASURE-001 is carried by the Growth Agent without fake results", () => {
   const envelope = buildGrowthAgentEnvelope({
     project: leadProject,

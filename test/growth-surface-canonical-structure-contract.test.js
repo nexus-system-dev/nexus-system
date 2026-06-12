@@ -177,6 +177,42 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
         externalExecutionPerformed: false,
         userMessage: "הקמפיין הוכן כטיוטה קטנה.",
       },
+      seoActionPath: {
+        taskId: "GROW-SEO-001",
+        agentId: "seo-action-path",
+        status: "draft-ready",
+        requestedAction: "draft",
+        productBasis: {
+          language: "he",
+          direction: "rtl",
+        },
+        recommendations: {
+          title: "ניהול לידים | טיפול ברור בלידים",
+          metaDescription: "ניהול לידים עוזר להבין מי אחראי ומה הצעד הבא.",
+          headings: ["למי זה עוזר", "איזו בעיה זה פותר"],
+          faq: [{ question: "האם זה מבטיח דירוג?", answer: "לא." }],
+          keywordHypotheses: ["ניהול לידים", "מעקב אחרי לידים"],
+        },
+        approval: {
+          approvalRequiredBeforeApply: true,
+          applyApproved: false,
+        },
+        handoffs: {
+          mutationRequired: false,
+          visualBuildRequired: true,
+          shareOrReleaseRequiredForPublicVisibility: true,
+        },
+        providerTruth: {
+          searchConsoleConnected: false,
+          realProviderDataAvailable: false,
+          searchVolumeIsHypothesis: true,
+          rankingsAreHypothesis: true,
+        },
+        blockedClaims: ["guarantee-ranking", "fabricate-search-volume", "publish-without-approval"],
+        externalPublicationPerformed: false,
+        visiblePageUpdated: false,
+        userMessage: "נוצרה טיוטת שיפור חיפוש שמחוברת לתוצר.",
+      },
     },
   });
   const html = renderGrowthSurfaceScreen(viewModel);
@@ -204,6 +240,15 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
   assert.match(html, /data-social-campaign-per-post-approval="true"/);
   assert.match(html, /data-social-campaign-fabricated-metrics-blocked="true"/);
   assert.match(html, /טיוטת קמפיין לפני פעולה חיצונית/);
+  assert.match(html, /data-seo-action-task="GROW-SEO-001"/);
+  assert.match(html, /data-seo-action-status="draft-ready"/);
+  assert.match(html, /data-seo-action-language="he"/);
+  assert.match(html, /data-seo-action-direction="rtl"/);
+  assert.match(html, /data-seo-action-approval-required="true"/);
+  assert.match(html, /data-seo-action-visual-build-required="true"/);
+  assert.match(html, /data-seo-action-real-provider-data="false"/);
+  assert.match(html, /data-seo-action-search-volume-hypothesis="true"/);
+  assert.match(html, /טיוטת SEO לפני החלה/);
   assert.match(html, /סימן ראשוני בלבד/);
   assert.match(html, /data-growth-plugin-primary="audience-understanding-test"/);
   assert.match(html, /data-growth-plugin-provider-required="false"/);

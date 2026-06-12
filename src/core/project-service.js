@@ -95,6 +95,7 @@ import {
 import { buildGrowthAgentEnvelope } from "./growth-agent.js";
 import { buildGrowthMeasurementTruth } from "./growth-measurement-truth.js";
 import { buildSocialCampaignExecutionAgentEnvelope } from "./social-campaign-execution-agent.js";
+import { buildSeoActionPathEnvelope } from "./seo-action-path.js";
 import {
   buildApprovedProductDirectionPatch,
   buildBuildApprovalFlow,
@@ -1183,6 +1184,8 @@ export class ProjectService {
       shareDemoAgent: normalizedState.shareDemoAgent ?? null,
       growthAgent: normalizedState.growthAgent ?? null,
       growthMeasurementTruth: normalizedState.growthMeasurementTruth ?? null,
+      seoActionPath: normalizedState.seoActionPath ?? null,
+      socialCampaignExecutionAgent: normalizedState.socialCampaignExecutionAgent ?? null,
       cycle: null,
       runtimeResults: [],
       taskResults: [],
@@ -2283,6 +2286,19 @@ export class ProjectService {
       });
       growthAgent.socialCampaignExecutionAgent = socialCampaignExecutionAgent;
     }
+    let seoActionPath = project.seoActionPath
+      ?? project.context?.seoActionPath
+      ?? project.state?.seoActionPath
+      ?? null;
+    if (growthAgent.growthPluginLayer?.primaryPlugin?.pluginId === "seo-page-draft" || growthAgent.opportunityType === "seo-draft") {
+      seoActionPath = buildSeoActionPathEnvelope({
+        project,
+        userInput,
+        growthAgent,
+        measurementTruth: project.growthMeasurementTruth ?? project.context?.growthMeasurementTruth ?? project.state?.growthMeasurementTruth ?? null,
+      });
+      growthAgent.seoActionPath = seoActionPath;
+    }
     project.growthAgent = growthAgent;
     const growthMeasurementTruth = growthAgent.growthMeasurementTruth ?? buildGrowthMeasurementTruth({
       project,
@@ -2295,14 +2311,58 @@ export class ProjectService {
       growthAgent,
       growthMeasurementTruth,
       socialCampaignExecutionAgent,
+      seoActionPath,
     };
     project.state = {
       ...(project.state ?? {}),
       growthAgent,
       growthMeasurementTruth,
       socialCampaignExecutionAgent,
+      seoActionPath,
     };
     project.socialCampaignExecutionAgent = socialCampaignExecutionAgent;
+    project.seoActionPath = seoActionPath;
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  runSeoActionPath({
+    projectId,
+    userInput = "",
+    approvalDecisions = {},
+    searchConsoleConnection = {},
+  } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const growthAgent = project.growthAgent
+      ?? project.context?.growthAgent
+      ?? project.state?.growthAgent
+      ?? buildGrowthAgentEnvelope({ project, userInput });
+    const seoActionPath = buildSeoActionPathEnvelope({
+      project,
+      userInput,
+      growthAgent,
+      approvalDecisions,
+      searchConsoleConnection,
+      measurementTruth: project.growthMeasurementTruth ?? project.context?.growthMeasurementTruth ?? project.state?.growthMeasurementTruth ?? null,
+    });
+    project.growthAgent = {
+      ...growthAgent,
+      seoActionPath,
+    };
+    project.seoActionPath = seoActionPath;
+    project.context = {
+      ...(project.context ?? {}),
+      growthAgent: project.growthAgent,
+      seoActionPath,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      growthAgent: project.growthAgent,
+      seoActionPath,
+    };
     this.persistProjectRecord(project);
     return this.serializeProject(project);
   }
@@ -4998,6 +5058,11 @@ export class ProjectService {
       ?? project.context?.socialCampaignExecutionAgent
       ?? project.state?.socialCampaignExecutionAgent
       ?? null;
+    const preservedSeoActionPath =
+      project.seoActionPath
+      ?? project.context?.seoActionPath
+      ?? project.state?.seoActionPath
+      ?? null;
     const preservedProviderGatewayBoundary =
       project.providerGatewayBoundary
       ?? project.context?.providerGatewayBoundary
@@ -5077,6 +5142,7 @@ export class ProjectService {
       growthAgent: preservedGrowthAgent,
       growthMeasurementTruth: preservedGrowthMeasurementTruth,
       socialCampaignExecutionAgent: preservedSocialCampaignExecutionAgent,
+      seoActionPath: preservedSeoActionPath,
       providerGatewayBoundary: preservedProviderGatewayBoundary,
       providerReleaseRegistry: preservedProviderReleaseRegistry,
       creativeProviderAssets: preservedCreativeProviderAssets,
@@ -5177,6 +5243,7 @@ export class ProjectService {
     project.growthAgent = preservedGrowthAgent;
     project.growthMeasurementTruth = preservedGrowthMeasurementTruth;
     project.socialCampaignExecutionAgent = preservedSocialCampaignExecutionAgent;
+    project.seoActionPath = preservedSeoActionPath;
     project.context = {
       ...project.context,
       runtimeSkeletonTruth,
@@ -5197,6 +5264,7 @@ export class ProjectService {
       growthAgent: preservedGrowthAgent,
       growthMeasurementTruth: preservedGrowthMeasurementTruth,
       socialCampaignExecutionAgent: preservedSocialCampaignExecutionAgent,
+      seoActionPath: preservedSeoActionPath,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -5222,6 +5290,7 @@ export class ProjectService {
       growthAgent: preservedGrowthAgent,
       growthMeasurementTruth: preservedGrowthMeasurementTruth,
       socialCampaignExecutionAgent: preservedSocialCampaignExecutionAgent,
+      seoActionPath: preservedSeoActionPath,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -7204,6 +7273,10 @@ export class ProjectService {
       socialCampaignExecutionAgent: project.context?.socialCampaignExecutionAgent
         ?? project.socialCampaignExecutionAgent
         ?? project.state?.socialCampaignExecutionAgent
+        ?? null,
+      seoActionPath: project.context?.seoActionPath
+        ?? project.seoActionPath
+        ?? project.state?.seoActionPath
         ?? null,
       companionConversation: project.context?.companionConversation
         ?? project.companionConversation

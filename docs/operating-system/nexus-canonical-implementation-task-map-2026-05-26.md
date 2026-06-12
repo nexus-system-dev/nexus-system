@@ -4735,7 +4735,7 @@ Write-back:
   - `Truth boundary: this closes the first-release growth plugin registry only. It does not publish, send email, spend ad budget, connect providers, measure real external results, execute social campaigns, apply SEO changes, apply landing experiments, or close GROW-MEASURE-001, GROW-AGT-002, GROW-SEO-001, GROW-SEM-001, GROW-EMAIL-001, or GROW-LAND-001.`
 
 #### `GROW-SEO-001 — SEO action path`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `new shell task`
 - source:
@@ -4801,6 +4801,33 @@ Write-back:
   - SEO fabricates search volume, ranking, traffic, or Search Console data
   - SEO treats Google Analytics as its own provider truth instead of Measurement
   - SEO lacks Hebrew/RTL support
+- closure_update_2026-06-12:
+  - status: `trueGreen`
+  - implementation:
+    - `src/core/seo-action-path.js` adds the `GROW-SEO-001` SEO action envelope with product readiness, Hebrew/RTL recommendations, title/meta/headings/opening-copy/FAQ/keyword hypotheses, approval gates, Search Console boundary, measurement ownership, mutation handoff, visual-build handoff, public visibility gate, history events, and blocked outcome claims.
+    - `src/core/growth-agent.js` carries SEO action truth when the Growth Plugin Layer selects `seo-page-draft`.
+    - `src/core/project-service.js` persists `seoActionPath` under project, context, and state truth, restores it across rebuilds, and exposes `runSeoActionPath`.
+    - `src/server.js` exposes `POST /api/projects/:projectId/seo-action-path`.
+    - `web/nexus-ui/adapters/growth-surface-adapter.js` and `web/nexus-ui/screens/GrowthSurfaceScreen.js` render the SEO action path on the Growth surface.
+  - verification:
+    - `node --check src/core/seo-action-path.js`
+    - `node --check src/core/growth-agent.js`
+    - `node --check src/core/project-service.js`
+    - `node --check src/server.js`
+    - `node --check web/nexus-ui/adapters/growth-surface-adapter.js`
+    - `node --check web/nexus-ui/screens/GrowthSurfaceScreen.js`
+    - `node --check scripts/verify-grow-seo-001-live-proof.mjs`
+    - `node --test test/seo-action-path.test.js test/seo-action-project-service.test.js test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-surface-canonical-structure-contract.test.js test/growth-measurement-project-service.test.js`
+    - `node --test --test-name-pattern "GROW-SEO-001|GROW-AGT-001|GROW-PLUG|GROW-MEASURE|SURF-005" test/seo-action-path.test.js test/seo-action-project-service.test.js test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-surface-canonical-structure-contract.test.js test/growth-measurement-project-service.test.js test/project-service.test.js`
+    - `node scripts/verify-grow-seo-001-live-proof.mjs`
+    - `git diff --check`
+  - live_proof:
+    - report: `/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-seo-001-XM8Pvp/report.json`
+    - screenshot: `/var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-seo-001-XM8Pvp/growth-seo.png`
+    - proven states: `draft-ready`, `needs-approval`, `applied-to-visual-build`, `needs-share-or-release`, `draft-mode-search-console-missing`, and `draft-ready-with-provider-data`.
+  - closure_boundary:
+    - This task closes the Nexus SEO action path envelope, draft/apply gates, Search Console truth boundary, Growth surface rendering, and restore continuity.
+    - It does not connect real Search Console accounts, publish public pages, guarantee rankings, create long-form article systems, or bypass Mutation / Visual Build / Share / Release gates.
 
 #### `GROW-SEM-001 — SEM / paid ads action path`
 - status: `new-proposed`

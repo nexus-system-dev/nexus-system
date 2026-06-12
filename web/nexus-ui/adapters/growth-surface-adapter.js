@@ -133,6 +133,7 @@ function summarizeGrowthAgentForSurface(value) {
       forbiddenWithoutApproval: normalizeArray(campaignExecution.forbiddenWithoutApproval).map((item) => normalizeString(item)).filter(Boolean),
     },
     socialCampaignExecutionAgent: normalizeObject(agent.socialCampaignExecutionAgent),
+    seoActionPath: normalizeObject(agent.seoActionPath),
     visibleBoundary: {
       oneNextMoveOnly: visibleBoundary.oneNextMoveOnly !== false,
       noGenericMarketing: visibleBoundary.noGenericMarketing !== false,
@@ -234,6 +235,43 @@ function summarizeSocialCampaignForSurface(value) {
     },
     userMessage: normalizeString(campaign.userMessage, "קמפיין חברתי עדיין לא נוצר."),
     historyCount: normalizeArray(campaign.history).length,
+  };
+}
+
+function summarizeSeoActionForSurface(value) {
+  const seo = normalizeObject(value);
+  const recommendations = normalizeObject(seo.recommendations);
+  const productBasis = normalizeObject(seo.productBasis);
+  const approval = normalizeObject(seo.approval);
+  const handoffs = normalizeObject(seo.handoffs);
+  const providerTruth = normalizeObject(seo.providerTruth);
+  return {
+    taskId: normalizeString(seo.taskId, "GROW-SEO-001"),
+    agentId: normalizeString(seo.agentId, "seo-action-path"),
+    status: normalizeString(seo.status, "not-created"),
+    requestedAction: normalizeString(seo.requestedAction, "draft"),
+    language: normalizeString(productBasis.language, "he"),
+    direction: normalizeString(productBasis.direction, "rtl"),
+    title: normalizeString(recommendations.title),
+    metaDescription: normalizeString(recommendations.metaDescription),
+    headings: normalizeArray(recommendations.headings).map((item) => normalizeString(item)).filter(Boolean),
+    faq: normalizeArray(recommendations.faq).map((item) => normalizeObject(item)),
+    keywordHypotheses: normalizeArray(recommendations.keywordHypotheses).map((item) => normalizeString(item)).filter(Boolean),
+    approvalRequiredBeforeApply: approval.approvalRequiredBeforeApply !== false,
+    applyApproved: approval.applyApproved === true,
+    mutationRequired: handoffs.mutationRequired === true,
+    visualBuildRequired: handoffs.visualBuildRequired === true,
+    shareOrReleaseRequiredForPublicVisibility: handoffs.shareOrReleaseRequiredForPublicVisibility !== false,
+    searchConsoleConnected: providerTruth.searchConsoleConnected === true,
+    realProviderDataAvailable: providerTruth.realProviderDataAvailable === true,
+    searchVolumeIsHypothesis: providerTruth.searchVolumeIsHypothesis !== false,
+    rankingsAreHypothesis: providerTruth.rankingsAreHypothesis !== false,
+    analyticsConsumedFromMeasurement: providerTruth.analyticsConsumedFromMeasurement === true,
+    blockedClaims: normalizeArray(seo.blockedClaims).map((item) => normalizeString(item)).filter(Boolean),
+    externalPublicationPerformed: seo.externalPublicationPerformed === true,
+    visiblePageUpdated: seo.visiblePageUpdated === true,
+    userMessage: normalizeString(seo.userMessage, "SEO עדיין לא נוצר."),
+    historyCount: normalizeArray(seo.history).length,
   };
 }
 
@@ -352,6 +390,12 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       ?? state.socialCampaignExecutionAgent
       ?? growthAgent.socialCampaignExecutionAgent,
   );
+  const seoAction = summarizeSeoActionForSurface(
+    safeProject.seoActionPath
+      ?? safeProject.context?.seoActionPath
+      ?? state.seoActionPath
+      ?? growthAgent.seoActionPath,
+  );
   const growthMeasurement = summarizeGrowthMeasurementForSurface(
     safeProject.growthMeasurementTruth
       ?? safeProject.context?.growthMeasurementTruth
@@ -452,6 +496,7 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       },
       measurement: growthMeasurement,
       socialCampaign,
+      seoAction,
     },
   };
 }

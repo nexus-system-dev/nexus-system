@@ -1,6 +1,7 @@
 import { buildGrowthPluginLayer, summarizeGrowthPluginLayer } from "./growth-plugin-layer.js";
 import { buildGrowthMeasurementTruth, summarizeGrowthMeasurementTruth } from "./growth-measurement-truth.js";
 import { buildSocialCampaignExecutionAgentEnvelope, summarizeSocialCampaignExecutionAgent } from "./social-campaign-execution-agent.js";
+import { buildSeoActionPathEnvelope, summarizeSeoActionPath } from "./seo-action-path.js";
 
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
@@ -269,6 +270,23 @@ function pluginLayerEnvelope(base) {
     "social-campaign-draft": "campaign-draft",
   };
 
+  const seoActionPath = plugin.pluginId === "seo-page-draft"
+    ? buildSeoActionPathEnvelope({
+        project: {
+          id: base.projectId,
+          goal: base.input,
+          runtimeSkeletonTruth: {
+            title: base.originArtifactTitle,
+            productClass: base.productClass,
+          },
+          targetAudience: base.targetAudience,
+        },
+        userInput: base.input,
+        growthAgent: base,
+        measurementTruth: base.growthMeasurementTruth,
+      })
+    : null;
+
   return {
     ...base,
     opportunityType: opportunityTypeByPlugin[plugin.pluginId] ?? "growth-plugin",
@@ -293,6 +311,7 @@ function pluginLayerEnvelope(base) {
       requiresExplicitApprovalBeforeExternalAction: plugin.approvalRequired === true,
       forbiddenWithoutApproval: normalizeArray(plugin.blockedActions),
     },
+    ...(seoActionPath ? { seoActionPath } : {}),
     userMessage: normalizeString(plugin.whyThisPlugin, "זה צעד צמיחה מוגבל שמחובר לתוצר ולא מבצע פעולה חיצונית לבד."),
     status: normalizeString(plugin.status, "recommended"),
   };
@@ -371,6 +390,7 @@ export function summarizeGrowthAgentForSurface(envelope = {}) {
     doNotPromise: normalizeArray(safeEnvelope.doNotPromise),
     campaignExecution: normalizeObject(safeEnvelope.campaignExecution),
     socialCampaignExecutionAgent: summarizeSocialCampaignExecutionAgent(safeEnvelope.socialCampaignExecutionAgent),
+    seoActionPath: summarizeSeoActionPath(safeEnvelope.seoActionPath),
     growthPluginLayer: summarizeGrowthPluginLayer(safeEnvelope.growthPluginLayer),
     growthMeasurementTruth: summarizeGrowthMeasurementTruth(safeEnvelope.growthMeasurementTruth),
   };

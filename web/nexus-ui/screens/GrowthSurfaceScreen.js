@@ -214,6 +214,62 @@ function renderSocialCampaignExecution(campaign = {}) {
   `;
 }
 
+function renderSeoActionPath(seo = {}) {
+  if (!seo || seo.status === "not-created") {
+    return "";
+  }
+  return `
+    <section
+      class="nexus-growth-surface__panel"
+      dir="${escapeHtml(seo.direction ?? "rtl")}"
+      data-seo-action-task="${escapeHtml(seo.taskId ?? "GROW-SEO-001")}"
+      data-seo-action-status="${escapeHtml(seo.status ?? "not-created")}"
+      data-seo-action-requested="${escapeHtml(seo.requestedAction ?? "draft")}"
+      data-seo-action-language="${escapeHtml(seo.language ?? "he")}"
+      data-seo-action-direction="${escapeHtml(seo.direction ?? "rtl")}"
+      data-seo-action-approval-required="${escapeHtml(seo.approvalRequiredBeforeApply === false ? "false" : "true")}"
+      data-seo-action-visual-build-required="${escapeHtml(seo.visualBuildRequired ? "true" : "false")}"
+      data-seo-action-mutation-required="${escapeHtml(seo.mutationRequired ? "true" : "false")}"
+      data-seo-action-public-gate="${escapeHtml(seo.shareOrReleaseRequiredForPublicVisibility === false ? "false" : "true")}"
+      data-seo-action-real-provider-data="${escapeHtml(seo.realProviderDataAvailable ? "true" : "false")}"
+      data-seo-action-search-volume-hypothesis="${escapeHtml(seo.searchVolumeIsHypothesis === false ? "false" : "true")}"
+      data-seo-action-external-published="${escapeHtml(seo.externalPublicationPerformed ? "true" : "false")}"
+      data-growth-region="seo-action-path"
+    >
+      <span class="nexus-growth-surface__tag">חיפוש אורגני</span>
+      <h2>${escapeHtml(seo.status === "applied-to-visual-build" ? "שינוי SEO אושר ונשלח לבנייה" : "טיוטת SEO לפני החלה")}</h2>
+      <p>${escapeHtml(seo.userMessage ?? "SEO עדיין לא נוצר.")}</p>
+      <div class="nexus-growth-surface__signal-grid">
+        <article>
+          <span>כותרת</span>
+          <strong>${escapeHtml(seo.title || "לא נוצרה כותרת")}</strong>
+        </article>
+        <article>
+          <span>תיאור</span>
+          <strong>${escapeHtml(seo.metaDescription || "לא נוצר תיאור")}</strong>
+        </article>
+        <article>
+          <span>מצב נתוני ספק</span>
+          <strong>${escapeHtml(seo.realProviderDataAvailable ? "נתונים אמיתיים זמינים" : "טיוטה ללא נתוני ספק")}</strong>
+        </article>
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>השערות חיפוש לאישור</strong>
+        ${renderList(seo.keywordHypotheses ?? [], "אין השערות חיפוש להצגה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>כותרות מוצעות</strong>
+        ${renderList(seo.headings ?? [], "אין כותרות להצגה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>מה חסום</strong>
+        ${renderList(seo.blockedClaims ?? [], "אין חסימות להצגה.")}
+      </div>
+      <p class="nexus-growth-surface__empty">נתוני חיפוש, דירוגים ונפחי חיפוש נשארים השערה עד שיש מקור אמיתי.</p>
+    </section>
+  `;
+}
+
 export function renderGrowthSurfaceScreen(viewModel = {}) {
   const contract = viewModel.contract ?? {};
   const growth = viewModel.growth ?? {};
@@ -303,6 +359,8 @@ export function renderGrowthSurfaceScreen(viewModel = {}) {
           ${renderGrowthMeasurement(growth.measurement ?? {})}
 
           ${renderSocialCampaignExecution(growth.socialCampaign ?? {})}
+
+          ${renderSeoActionPath(growth.seoAction ?? {})}
 
           <section class="nexus-growth-surface__panel" data-growth-region="growth-metric-baseline">
             <span class="nexus-growth-surface__tag">Baseline</span>
