@@ -762,7 +762,7 @@ Write-back:
 - `2026-06-01: GROW-SEM-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. SEM V1 defaults to full draft plus publishing preparation, with Google Ads as the only possible first real provider if paid execution is enabled; Meta Ads, TikTok Ads, LinkedIn Ads, and paid social boosts remain draft-only or post-release unless explicitly promoted. SEM cannot spend by default, requires separate explicit approval for campaign, each ad, budget, budget change, and activation, enforces a first-campaign budget cap, requires landing/demo path and measurement plan, routes paid social to SEM instead of organic social, routes page/product-message changes through Visual Build or Mutation, consumes measurement truth from GROW-MEASURE-001, supports draft-only mode without provider, and blocks spend/result guarantees.`
 - `2026-06-02: GROW-EMAIL-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. Email V1 defaults to drafts plus test send, with real audience send only after connected provider, clear lawful audience source, scoped send permission, and explicit approval. Preferred V1 providers are Mailchimp and SendGrid; Gmail is limited to test/small personal email, while ConvertKit is optional/post-release unless promoted. Campaign approval prepares a sequence but every real email requires separate approval. Email supports two variants, basic list cleanup, test send, simple user-facing framing, audience-source blocking, product/page change routing through Mutation or Visual Build, measurement ownership through GROW-MEASURE-001, product-readable history, and no promises about opens, replies, leads, sales, conversions, revenue, or audience interest.`
 - `2026-06-02: GROW-LAND-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. Landing Page Experiment V1 defaults to internal draft/experiment, creates a new landing page only from clear audience, problem, core value, and product direction, treats the page as a growth asset connected to the product rather than product truth, limits V1 to up to two manual-comparison versions, requires Mutation for product-message/audience/promise/value changes, requires Visual Build for visible changes, requires Share / Demo or Release plus explicit approval for external visibility, supports basic lead capture with consent and defined storage, routes privacy/data concerns through LEGAL / DATA / SEC, routes measurement through GROW-MEASURE-001, supports Hebrew/RTL, records product-readable history, and blocks fake proof, fake success, unapproved claims, unapproved publication, and release impersonation.`
-- `2026-06-12: GROW-LAND-BACKEND-001 added after GROW-LAND-001 trueGreen exposed a backend gap: landing pages can draft and measure bounded experiments, but lead capture must also write to product-owned backend storage when available, distinguish local/mock from production, preserve consent/source/timestamp/product linkage, block external data collection without storage/privacy truth, and avoid claiming that Nexus experiment leads are already the user's product backend.`
+- `2026-06-12: GROW-LAND-BACKEND-001 added after GROW-LAND-001 trueGreen exposed a backend gap: landing pages can draft and measure bounded experiments, but a publishable landing page must have its own product-owned backend surface, a real lead intake/write path, and a synchronization contract with the user's generated product backend. The task must distinguish Nexus experiment fallback, product-owned local/mock backend, and future production backend; preserve consent/source/timestamp/product linkage; block external data collection without storage/privacy/release truth; and avoid claiming that Nexus experiment leads are already the user's standalone product backend.`
 - `2026-06-02: GROW-MEASURE-001 product answers locked into growth-plugin-layer-contract-2026-06-01.md. Growth measurement is the truth guard for Growth: every real measurement requires a clear source, manual user reports are valid only when labeled manual, internal Nexus measurement is sufficient for V1, Google Analytics and Search Console are optional, required V1 internal events include demo view, share-link open, CTA click, form submit, lead created, action approved, landing opened, test email sent, failed action, and completed action. Every external growth action requires a small success metric, draft-only actions may exist without measurement, measurement separates hypothesis/result/insight, V1 defaults to indication language rather than proof, every conclusion has low/medium/high confidence, source/time/path/experiment are stored for each datapoint, users see a simple summary by default, sensitive data stays internal unless approved, provider failures and conflicting data fail safely, Growth owns next-action decisions, and Mutation owns product-truth changes from measurement.`
 - `2026-06-02: Growth consistency audit completed before returning to execution. Fixed dependency drift so SEO, Email, and Landing paths explicitly depend on GROW-MEASURE-001 where they consume or produce measurement truth; SEO and Email now explicitly depend on MUT-001 and VBUILD-001 where they can route product-message or visible page changes. Updated the Growth Plugin shared output envelope so handoffRequired includes Growth Agent, Visual Build Agent, and Analytics / Measurement Plugin, not only Share/Mutation/Release/Verification/Social. No Growth task was marked trueGreen by this audit.`
 - `2026-06-01: Growth Plugin Layer canonical definition added in growth-plugin-layer-contract-2026-06-01.md. Added first-release release-blockers GROW-PLUG-001, GROW-PLUG-002, GROW-SEO-001, GROW-SEM-001, GROW-EMAIL-001, GROW-LAND-001, and GROW-MEASURE-001 so Growth can choose Social, SEO, SEM, Email, Landing Experiment, and Measurement capabilities by product goal instead of exposing provider tools as the product.`
@@ -5048,7 +5048,7 @@ Write-back:
   - `Live proof artifacts: report /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-land-001-CVfajw/report.json; screenshot /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-land-001-CVfajw/growth-land.png.`
   - `Truth boundary: this closes the first-release Landing Page Experiment action path only. It does not publicly publish landing pages, run production split tests, provide a full landing page builder, connect production analytics, manage product-owned lead backend storage, process payments/orders, or close GROW-LAND-BACKEND-001, REL-AGT-001, STD-HANDOFF-AGT-001, production provider operations, or standalone release packaging.`
 
-#### `GROW-LAND-BACKEND-001 — Landing page lead backend and product-owned storage`
+#### `GROW-LAND-BACKEND-001 — Landing page standalone backend and product sync`
 - status: `new-proposed`
 - type: `release-blocker`
 - classification: `bridge task`
@@ -5062,10 +5062,13 @@ Write-back:
   - `GROW-MEASURE-001`
   - `MUT-001`
 - canonical_law:
-  - `A landing page that collects leads must have a product-owned lead intake target, not only a Nexus growth-state placeholder.`
-  - `Landing lead storage must attach to the generated product backend scaffold when that scaffold exists.`
+  - `A landing page that collects leads must have a product-owned backend surface and lead intake target, not only a Nexus growth-state placeholder.`
+  - `A landing page that may be published must be packageable as an independent asset with its own frontend/backend boundary, even when V1 remains local/mock.`
+  - `Landing lead storage must attach to the generated product backend scaffold when that scaffold exists, and the synchronization direction must be explicit.`
+  - `The landing backend and the user's product backend must stay synchronized through a defined contract: lead schema, source, consent, status, ownership, timestamps, and measurement links.`
   - `The landing page remains a growth asset; it may write lead-intake records, but it must not become the product-truth owner.`
   - `Lead capture must clearly distinguish local/mock product-owned storage from production backend storage.`
+  - `No publish-ready claim is allowed until PRODUCT-RUNTIME-PACKAGE-001 and STANDALONE-ARTIFACT-001 can consume the landing backend/sync contract into a standalone runnable artifact.`
   - `No public landing page may collect real user data unless consent, storage target, ownership, and privacy boundary are explicit.`
   - `Lead capture events feed GROW-MEASURE-001, but result truth remains owned by measurement, not by the landing page.`
   - `Any change to product fields, lead schema, pipeline behavior, notifications, or external provider routing must go through Mutation or the relevant provider/release gate.`
@@ -5074,45 +5077,65 @@ Write-back:
   - `PRODUCT-BACKEND-SKEL-002 product-owned local/mock backend scaffold`
   - `GROW-MEASURE-001 measurement truth`
   - `MUT-001 product-truth change gate`
+  - `PRODUCT-RUNTIME-PACKAGE-001 / STANDALONE-ARTIFACT-001 later release artifact ownership`
 - remove_from_active_path:
   - landing lead forms that imply storage without a concrete target
   - Nexus-only experiment-leads fallback when product-owned backend storage is available
   - public or shared landing capture that hides local/mock vs production storage truth
   - landing copy that implies leads are in the user's product backend before write proof exists
+  - publish-ready landing claims when the landing backend cannot run as a standalone artifact
+  - unsynchronized lead copies where the landing backend and product backend drift silently
 - build:
+  - product-owned landing backend envelope
+  - independent landing frontend/backend package contract for later PRODUCT-RUNTIME-PACKAGE-001 and STANDALONE-ARTIFACT-001 consumption
   - product-owned landing lead intake model
   - lead schema derived from the generated product domain
   - landing form to product-owned backend scaffold write path
+  - landing backend to product backend synchronization contract
+  - sync direction policy: landing -> product, product -> landing, or bidirectional with conflict boundaries
+  - sync event model for lead.created, lead.updated, lead.synced, lead.rejected, and lead.sync.failed
   - local/mock persistence boundary for V1
   - clear storage status: `nexus-experiment-leads`, `product-owned-local-mock`, or `production-backend`
   - consent, source, timestamp, landing draft id, product id, and measurement event linkage on every lead record
+  - artifact boundary status: `draft-only`, `package-contract-ready`, `standalone-ready`, or `production-published`
   - duplicate/invalid lead safe failure states
+  - conflict/duplicate handling between landing backend and product backend
   - mutation handoff for schema changes and workflow changes
   - measurement handoff for views, CTA clicks, submissions, and lead-created events
   - visible Growth surface truth showing where leads are stored and whether the backend is production
   - restore/refresh continuity for captured local/mock lead records
-  - release gate that blocks external data collection when production storage/privacy requirements are missing
+  - release gate that blocks external data collection when standalone backend, production storage, privacy, or release requirements are missing
 - done when:
-  - code creates a product-owned landing lead backend envelope when a product backend scaffold exists
+  - code creates a product-owned landing backend envelope when a product backend scaffold exists
+  - code creates a standalone package contract describing the landing frontend, landing backend, storage boundary, environment needs, and sync contract
   - tests prove landing lead fields are stored in the product-owned backend scaffold, not only Nexus growth state
+  - tests prove the landing backend can be reasoned about as an independent asset and is not only a UI panel inside Nexus
+  - tests prove the landing backend sync contract maps captured leads into the user's product backend truth
+  - tests prove sync failures are visible and do not claim successful capture
   - tests prove the Nexus experiment-leads fallback is used only when product-owned backend storage is unavailable
   - tests prove storage status distinguishes local/mock from production
+  - tests prove artifact boundary status distinguishes draft-only, package-contract-ready, standalone-ready, and production-published
   - tests prove lead capture requires consent, source, timestamp, landing id, product id, and measurement linkage
   - tests prove product schema or workflow changes route through Mutation
-  - tests prove external/public capture is blocked when production storage or privacy gates are missing
+  - tests prove external/public capture is blocked when standalone backend, production storage, privacy, or release gates are missing
   - tests prove refresh restores lead records and storage truth for the same project
   - tests prove one project cannot see or inherit another project's landing leads
   - tests prove fake lead counts, fake customers, fake revenue, or fake conversion claims are blocked
   - tests prove the Growth surface explains lead storage in plain user language without internal task ids
-  - live proof creates a project, creates a landing draft, submits a lead, verifies the lead in product-owned local/mock backend truth, refreshes, and verifies the same lead remains tied to the same project
-  - live proof verifies the page cannot publish/collect externally when only local/mock backend storage exists
+  - tests prove PRODUCT-RUNTIME-PACKAGE-001 and STANDALONE-ARTIFACT-001 receive the landing backend/sync contract as package input, without being marked closed by this task
+  - live proof creates a project, creates a landing draft, submits a lead, verifies the lead in product-owned local/mock landing backend truth, verifies the synchronized product backend lead record, refreshes, and verifies both remain tied to the same project
+  - live proof verifies the page cannot publish/collect externally when only local/mock backend storage or missing standalone artifact truth exists
 - not trueGreen:
   - landing leads remain only in Nexus growth state while claiming product backend storage
   - product-owned backend scaffold exists but landing capture ignores it
+  - landing backend cannot be represented as an independent packageable asset
+  - landing backend and product backend keep separate unsynchronized lead truth
+  - sync failure is hidden while UI claims capture succeeded
   - local/mock storage is presented as production backend
+  - package-contract-ready is presented as standalone-ready or production-published
   - consent, source, timestamp, landing id, or product id is missing from captured leads
   - lead records leak across projects or users
-  - external/public capture proceeds without production storage/privacy approval
+  - external/public capture proceeds without standalone backend, production storage, privacy approval, and release gate truth
   - landing page owns product truth or mutates product schema silently
   - fake lead/result claims appear without measurement truth
 
