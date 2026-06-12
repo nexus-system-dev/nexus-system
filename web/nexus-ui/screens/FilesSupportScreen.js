@@ -27,6 +27,34 @@ function renderFileRow(file) {
   `;
 }
 
+function renderFileIntakeBoundary(boundary = {}) {
+  if (!boundary || typeof boundary !== "object" || !boundary.taskId) {
+    return "";
+  }
+
+  const acceptedFiles = Array.isArray(boundary.acceptedFiles) ? boundary.acceptedFiles : [];
+  const rejectedFiles = Array.isArray(boundary.rejectedFiles) ? boundary.rejectedFiles : [];
+  const policy = boundary.policy ?? {};
+  const routing = boundary.productUnderstandingRouting ?? {};
+  const userFacing = boundary.userFacing ?? {};
+
+  return `
+    <section
+      class="nexus-files-screen__boundary"
+      data-file-intake-task="${escapeHtml(boundary.taskId)}"
+      data-file-intake-status="${escapeHtml(boundary.status ?? "unknown")}"
+      data-file-intake-accepted-count="${acceptedFiles.length}"
+      data-file-intake-rejected-count="${rejectedFiles.length}"
+      data-file-intake-routing="${escapeHtml(routing.status ?? "reference-only-or-empty")}"
+      data-file-intake-retention="${escapeHtml(policy.retentionPolicy ?? "project-lifecycle")}"
+    >
+      <h2>${escapeHtml(userFacing.title ?? "גבול הקבצים")}</h2>
+      <p>${escapeHtml(userFacing.body ?? "Nexus מציג כאן רק קבצים שנקלטו בגבולות הגרסה הראשונה.")}</p>
+      <span>${escapeHtml(userFacing.limits ?? "")}</span>
+    </section>
+  `;
+}
+
 export function renderFilesSupportScreen(viewModel) {
   const sidebar = {
     currentRoute: "/files",
@@ -110,6 +138,8 @@ export function renderFilesSupportScreen(viewModel) {
         </div>
 
         <aside class="nexus-files-screen__side">
+          ${renderFileIntakeBoundary(viewModel.fileIntakeBoundary)}
+
           ${renderNexusCard({
             className: "nexus-files-screen__summary-card",
             padding: "lg",

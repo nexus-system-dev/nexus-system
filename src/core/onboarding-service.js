@@ -25,6 +25,7 @@ import {
 } from "../../web/shared/onboarding-provider-runtime.js";
 import { createProjectDiscoveryAgentState } from "../../web/shared/project-discovery-agent.js";
 import { OnboardingProviderClient } from "./onboarding-provider-client.js";
+import { createFirstReleaseFileIntakeBoundary } from "./file-intake-boundary.js";
 
 function toSlug(value, fallback = "project-draft") {
   return String(value ?? "")
@@ -462,7 +463,11 @@ function inferMissingInputs({ projectName, visionText, uploadedFiles, externalLi
 }
 
 function buildProjectIntake({ projectName = "", visionText = "", uploadedFiles = [], externalLinks = [] }) {
-  const normalizedFiles = normalizeUploadedFiles(uploadedFiles);
+  const fileIntakeBoundary = createFirstReleaseFileIntakeBoundary({
+    uploadedFiles,
+    externalLinks,
+  });
+  const normalizedFiles = normalizeUploadedFiles(fileIntakeBoundary.acceptedFiles);
   const normalizedLinks = normalizeExternalLinks(externalLinks);
   const normalizedProjectName = typeof projectName === "string" && projectName.trim()
     ? projectName.trim()
@@ -481,6 +486,7 @@ function buildProjectIntake({ projectName = "", visionText = "", uploadedFiles =
     externalLinks: normalizedLinks,
     projectType,
     requestedDeliverables,
+    fileIntakeBoundary,
   };
 }
 
@@ -489,6 +495,9 @@ function buildParsedSignals(projectIntake) {
     detectedProjectType: projectIntake.projectType,
     hasUploadedFiles: projectIntake.uploadedFiles.length > 0,
     hasExternalLinks: projectIntake.externalLinks.length > 0,
+    fileIntakeStatus: projectIntake.fileIntakeBoundary?.status ?? "empty",
+    rejectedFileCount: projectIntake.fileIntakeBoundary?.rejectedFiles?.length ?? 0,
+    productUnderstandingRouting: projectIntake.fileIntakeBoundary?.productUnderstandingRouting?.status ?? "reference-only-or-empty",
     requestedDeliverables: projectIntake.requestedDeliverables,
     detectedInputs: [
       ...(projectIntake.projectName ? ["project-name"] : []),

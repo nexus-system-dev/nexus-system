@@ -2692,6 +2692,94 @@ test("project service supports onboarding intake updates file uploads current st
   assert.equal(service.listProjects().some((project) => project.id === "launch-app"), true);
 });
 
+test("FILE-001 project service stores bounded intake files on finished project truth", () => {
+  const service = createProjectService();
+  const session = service.createOnboardingSession({
+    userId: "user-file-001",
+    projectDraftId: "file-intake-app",
+    initialInput: "",
+  });
+
+  const updated = service.updateOnboardingIntake({
+    sessionId: session.sessionId,
+    visionText: "שם הפרויקט: File Intake App\nכלי פנימי לניהול לידים עם קבצי דרישות",
+    uploadedFiles: [
+      { name: "requirements.md", type: "text/markdown", content: "# Leads\nNeed owner and next action." },
+      { name: "brand.png", type: "image/png", size: 120_000 },
+      { name: "installer.exe", type: "application/octet-stream", content: "no" },
+    ],
+    externalLinks: [],
+  });
+
+  assert.equal(updated.updatedSession.projectIntake.uploadedFiles.length, 2);
+  assert.equal(updated.updatedSession.projectIntake.fileIntakeBoundary.rejectedFiles.length, 1);
+  assert.equal(updated.updatedSession.projectIntake.fileIntakeBoundary.acceptedFiles.some((file) => file.name === "installer.exe"), false);
+
+  const storedSession = service.onboarding.sessions.get(session.sessionId);
+  service.onboarding.sessions.set(session.sessionId, {
+    ...storedSession,
+    conversation: {
+      ...(storedSession.conversation ?? {}),
+      lastAgentDecision: {
+        intent: "product-answer",
+        nextMove: "advance-to-skeleton",
+        skeletonReady: {
+          ready: true,
+          reason: "Enough discovery truth for the FILE-001 storage proof.",
+        },
+        confidence: 0.92,
+      },
+    },
+  });
+
+  const finished = service.finishOnboardingSession(session.sessionId);
+
+  assert.equal(finished.blocked, false);
+  assert.equal(finished.project.id, "file-intake-app");
+  assert.equal(finished.project.fileIntakeBoundary.taskId, "FILE-001");
+  assert.equal(finished.project.fileIntakeBoundary.status, "bounded-with-rejections");
+  assert.equal(finished.project.fileIntakeBoundary.acceptedFiles.length, 2);
+  assert.equal(finished.project.fileIntakeBoundary.rejectedFiles.length, 1);
+  assert.equal(finished.project.fileStorageRecord.storageScope, "intake");
+  assert.equal(finished.project.fileStorageRecord.summary.attachmentCount, 2);
+  assert.equal(finished.project.projectIntake.uploadedFiles.some((file) => file.name === "installer.exe"), false);
+  assert.equal(finished.project.fileIntakeBoundary.productUnderstandingRouting.status, "routed-to-project-understanding");
+});
+
+test("FILE-001 project service serializes file intake boundary from direct project state", () => {
+  const service = createProjectService();
+  const boundary = {
+    taskId: "FILE-001",
+    status: "ready",
+    acceptedFiles: [{ id: "file-1", name: "requirements.md", type: "text/markdown", size: 12 }],
+    rejectedFiles: [],
+    productUnderstandingRouting: { status: "routed-to-project-understanding" },
+    policy: { retentionPolicy: "project-lifecycle-until-user-delete" },
+    userFacing: { title: "קבצים ייכנסו כהקשר לפרויקט" },
+  };
+
+  service.createProject({
+    id: "direct-file-intake",
+    name: "Direct File Intake",
+    goal: "פרויקט עם גבול קבצים שמגיע ממצב יצירה ישיר.",
+    state: {
+      intake: { uploadedFiles: boundary.acceptedFiles, fileIntakeBoundary: boundary },
+      fileIntakeBoundary: boundary,
+      fileStorageRecord: {
+        storageScope: "intake",
+        attachments: [{ name: "requirements.md", path: "attachments/direct-file-intake/file-1" }],
+        summary: { attachmentCount: 1 },
+      },
+    },
+  });
+
+  const project = service.getProject("direct-file-intake");
+
+  assert.equal(project.fileIntakeBoundary.taskId, "FILE-001");
+  assert.equal(project.projectIntake.uploadedFiles.length, 1);
+  assert.equal(project.fileStorageRecord.summary.attachmentCount, 1);
+});
+
 test("W4-FIX-007 preserves automatic skeleton handoff outputs on the finished project truth", () => {
   const service = createProjectService();
   const session = service.createOnboardingSession({

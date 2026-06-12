@@ -64,8 +64,13 @@ function buildFileItem(entry, source) {
 function collectProjectFiles(project) {
   const safeProject = normalizeObject(project);
   const state = normalizeObject(safeProject.state);
+  const context = normalizeObject(safeProject.context);
+  const projectIntake = normalizeObject(safeProject.projectIntake ?? context.intake ?? state.intake);
+  const fileStorageRecord = normalizeObject(safeProject.fileStorageRecord ?? context.fileStorageRecord ?? state.fileStorageRecord);
   const proof = normalizeObject(safeProject.generatedSurfaceProofSchema ?? state.generatedSurfaceProofSchema);
   const files = [
+    ...normalizeArray(projectIntake.uploadedFiles).map((entry) => buildFileItem(entry, "intake")),
+    ...normalizeArray(fileStorageRecord.attachments).map((entry) => buildFileItem(entry, "storage")),
     ...normalizeArray(safeProject.generatedFiles).map((entry) => buildFileItem(entry, "generated")),
     ...normalizeArray(safeProject.files).map((entry) => buildFileItem(entry, "project")),
     ...normalizeArray(proof.files).map((entry) => buildFileItem(entry, "proof")),
@@ -112,6 +117,8 @@ function buildSourceSummary(files) {
 
   const order = [
     ["project", "פרויקט"],
+    ["intake", "נקלטו"],
+    ["storage", "אחסון"],
     ["generated", "Generated"],
     ["proof", "Proof"],
     ["draft", "Draft"],
@@ -128,44 +135,69 @@ function buildSourceSummary(files) {
 export function buildFilesSupportViewModel({ project = null, draftInputs = null } = {}) {
   const safeProject = normalizeObject(project);
   const hasProject = Boolean(safeProject.id);
+  const state = normalizeObject(safeProject.state);
+  const context = normalizeObject(safeProject.context);
+  const projectIntake = normalizeObject(safeProject.projectIntake ?? context.intake ?? state.intake);
+  const fileIntakeBoundary = normalizeObject(
+    safeProject.fileIntakeBoundary
+      ?? context.fileIntakeBoundary
+      ?? state.fileIntakeBoundary
+      ?? projectIntake.fileIntakeBoundary,
+  );
+  const fileStorageRecord = normalizeObject(safeProject.fileStorageRecord ?? context.fileStorageRecord ?? state.fileStorageRecord);
+  const hasFileIntakeBoundary = Boolean(fileIntakeBoundary.taskId);
   const projectFiles = collectProjectFiles(safeProject);
   const draftFile = buildDraftFile(draftInputs);
   const files = draftFile ? [draftFile, ...projectFiles] : projectFiles;
   const proofCount = files.filter((file) => file.source === "proof").length;
   const generatedCount = files.filter((file) => file.source === "generated").length;
+  const intakeCount = files.filter((file) => file.source === "intake").length;
   const sourceSummary = buildSourceSummary(files);
 
   return {
     badge: "Support screen",
     title: hasProject ? `קבצים עבור ${safeProject.name ?? "הפרויקט הפעיל"}` : "קבצים ב־Nexus",
     subtitle: hasProject
-      ? "רואים כאן רק קבצים שכבר דווחו בפרויקט או ב־proof. אין במסך הזה העלאה, מחיקה, או backend מומצא."
+      ? hasFileIntakeBoundary
+        ? "רואים כאן את הקבצים שנקלטו לפרויקט, את גבולות ההעלאה, ואת רשומת האחסון המקומית של הגרסה הראשונה."
+        : "רואים כאן רק קבצים שכבר דווחו בפרויקט או ב־proof. אין במסך הזה העלאה, מחיקה, או backend מומצא."
       : draftFile
         ? "עדיין אין runtime מלא לקבצים, אבל אפשר לראות את הקובץ התומך שנשמר ב־draft המקומי."
         : "אין עדיין runtime מלא לקבצים. זה shell בטוח שמציג רק מה שכבר קיים ב־draft או בפרויקט.",
     projectName: hasProject ? safeProject.name ?? "Project" : "Nexus Files",
     stats: [
       { label: "קבצים גלויים", value: String(files.length) },
+      { label: "נקלטו", value: String(intakeCount) },
       { label: "Generated", value: String(generatedCount) },
       { label: "Proof", value: String(proofCount) },
     ],
     files,
     sourceSummary,
+    fileIntakeBoundary,
+    fileStorageRecord,
     runtimeCard: {
       title: hasProject ? "החיבור הפעיל" : "מצב החיבור",
       body: hasProject
-        ? `המסך מחובר ל־project payload הקיים. עודכן לאחרונה: ${formatUpdatedAt(safeProject.updatedAt)}.`
+        ? hasFileIntakeBoundary
+          ? `המסך מחובר לגבול הקבצים של הפרויקט ולרשומת האחסון המקומית. עודכן לאחרונה: ${formatUpdatedAt(safeProject.updatedAt)}.`
+          : `המסך מחובר ל־project payload הקיים. עודכן לאחרונה: ${formatUpdatedAt(safeProject.updatedAt)}.`
         : draftFile
           ? "המסך משתמש כרגע רק ב־draft המקומי של היצירה לפני שנפתח פרויקט פעיל."
           : "אין כרגע project payload או Files backend ייעודי, לכן נשמרת תצוגת placeholder בטוחה.",
     },
     limitsCard: {
-      title: "מה המסך כן עושה",
-      bullets: [
-        "מאחד קבצים מה־project payload, מ־generated files, ומ־proof אם הם כבר קיימים.",
-        "שומר את הממשק קריא גם בלי runtime ייעודי ל־Files.",
-        "נמנע במכוון מלהציג upload, delete, rename, או open flows שלא חוברו.",
-      ],
+      title: hasFileIntakeBoundary ? "גבול הקליטה" : "מה המסך כן עושה",
+      bullets: hasFileIntakeBoundary
+        ? [
+            fileIntakeBoundary.userFacing?.limits ?? "עד שמונה קבצים, עד שני מגה לכל קובץ, וסוגים מוגבלים בלבד.",
+            fileIntakeBoundary.policy?.deleteBehavior ?? "מחיקה תסומן למחיקה יחד עם מחיקת הפרויקט.",
+            fileIntakeBoundary.policy?.replaceBehavior ?? "החלפה נעשית בהעלאה חוזרת ומבוקרת.",
+          ]
+        : [
+            "מאחד קבצים מה־project payload, מ־generated files, ומ־proof אם הם כבר קיימים.",
+            "שומר את הממשק קריא גם בלי runtime ייעודי ל־Files.",
+            "נמנע במכוון מלהציג upload, delete, rename, או open flows שלא חוברו.",
+          ],
     },
     emptyState: hasProject
       ? {

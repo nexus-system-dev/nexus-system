@@ -5953,10 +5953,11 @@ Write-back:
   - `It does not close PRODUCT-RUNTIME-PACKAGE-001, STANDALONE-ARTIFACT-001, PRODUCT-PROMISE-GATE-001, CAPABILITY-ACTION-UX-001, VER-AGT-001, REL-AGT-001, production backend, real deployment, provider execution, publish, payment, WhatsApp, or standalone product packaging.`
 
 #### `FILE-001 — First-release file and asset intake boundary`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - source:
   - `Product Shell Coverage Audit — 2026-05-30`
+  - `2026-06-12 implementation pass`
 - depends_on:
   - `FND-002`
   - `ENG-001`
@@ -5971,6 +5972,19 @@ Write-back:
   - upload button exists without durable storage
   - files do not affect product understanding despite being presented as inputs
   - file safety/retention is undefined
+- closure_update:
+  - `2026-06-12: Implemented FILE-001 as a real first-release file intake boundary across onboarding, project serialization, create surface, Files surface, and live verification.`
+  - `2026-06-12: Added shared/core file intake boundary module with explicit accepted scope: image, PDF/document/text/markdown/code-reference/CSV/JSON/external-link; unsupported executables, over-count uploads, and files over 2MB are rejected before storage.`
+  - `2026-06-12: Added routing truth: accepted document/text/code/data files enter product understanding, images are stored as visual reference-only, and rejected files are kept in the boundary decisions but excluded from project understanding and storage.`
+  - `2026-06-12: Added storage truth via project-intake-local-durable-state and fileStorageRecord for accepted intake files; createProject and finishOnboardingSession both serialize fileIntakeBoundary, projectIntake, and fileStorageRecord.`
+  - `2026-06-12: Updated Project Create to show the file boundary, accepted/reference/rejected decisions, max-file policy, retention, delete, and replace behavior before project creation.`
+  - `2026-06-12: Updated Files support surface to show intake files, storage attachments, FILE-001 boundary status, routing, retention, and no fake full backend claim.`
+  - `2026-06-12: Verification passed: node --check web/shared/file-intake-boundary.js; node --check src/core/file-intake-boundary.js; node --check src/core/onboarding-service.js; node --check src/core/project-service.js; node --check web/nexus-ui/adapters/project-adapter.js; node --check web/nexus-ui/screens/ProjectCreateScreen.js; node --check web/nexus-ui/adapters/files-adapter.js; node --check web/nexus-ui/screens/FilesSupportScreen.js; node --check scripts/verify-file-001-live-proof.mjs.`
+  - `2026-06-12: Targeted tests passed: node --test test/file-intake-boundary.test.js test/project-adapter.test.js test/project-create-screen-render.test.js test/files-support-adapter.test.js; node --test --test-name-pattern="FILE-001" test/project-service.test.js.`
+  - `2026-06-12: Live proof passed via node scripts/verify-file-001-live-proof.mjs on http://127.0.0.1:4034. It verified onboarding intake accepted requirements.md, marked brand.png reference-only, rejected installer.exe, serialized fileStorageRecord with two attachments, opened /files?projectId=..., found data-file-intake-task=FILE-001, status=bounded-with-rejections, acceptedCount=2, rejectedCount=1, routing=routed-to-project-understanding, retention=project-lifecycle-until-user-delete, visible storage/boundary copy, and no fake full backend/storage/virus-scan claim. Report root: /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-file-001-iGXCP4.`
+- closure_boundary:
+  - `FILE-001 closes only first-release file and asset intake boundaries for local project intake.`
+  - `It does not close remote-drive sync, background malware scanning, full file manager actions, production object storage, public file sharing, full privacy rights/retention automation, workspace storage quotas, PRODUCT-RUNTIME-PACKAGE-001, STANDALONE-ARTIFACT-001, DATA-001, USAGE-001, or release packaging.`
 
 #### `USAGE-001 — First-release usage limits and provider cost guard`
 - status: `new-proposed`

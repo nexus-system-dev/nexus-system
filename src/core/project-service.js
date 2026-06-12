@@ -2,6 +2,8 @@ import { NexusOrchestrator } from "./orchestrator.js";
 import { AgentRuntime } from "./agent-runtime.js";
 import { EventBus } from "./event-bus.js";
 import { FileEventLog } from "./file-event-log.js";
+import { createFirstReleaseFileIntakeBoundary } from "./file-intake-boundary.js";
+import { createFileAndArtifactStorageModule } from "./file-artifact-storage-module.js";
 import { scanProject } from "./project-scanner.js";
 import { AiProjectAnalyst } from "./ai-analyst.js";
 import { CasinoDiagnosticsConnector } from "./casino-connector.js";
@@ -1212,6 +1214,18 @@ export class ProjectService {
       privacyRightsResult: null,
     };
 
+    if (securityState?.fileIntakeBoundary?.taskId === "FILE-001") {
+      project.projectIntake = securityState.intake ?? null;
+      project.fileIntakeBoundary = securityState.fileIntakeBoundary;
+      project.fileStorageRecord = securityState.fileStorageRecord ?? null;
+      project.context = {
+        ...(project.context ?? {}),
+        intake: project.projectIntake,
+        fileIntakeBoundary: project.fileIntakeBoundary,
+        fileStorageRecord: project.fileStorageRecord,
+      };
+    }
+
     this.projects.set(id, project);
     return project;
   }
@@ -1933,10 +1947,53 @@ export class ProjectService {
       ?? project.projectCreationEvent
       ?? null;
     project.projectCreationMetric = this.projectCreationMetric ?? project.projectCreationMetric ?? null;
-    project.projectIntake = projectIntake;
+    const existingFileIntakeBoundary =
+      projectIntake?.fileIntakeBoundary?.taskId === "FILE-001" ? projectIntake.fileIntakeBoundary : null;
+    const fileIntakeBoundary = existingFileIntakeBoundary
+      ? {
+          ...existingFileIntakeBoundary,
+          projectId,
+          sessionId,
+        }
+      : createFirstReleaseFileIntakeBoundary({
+          projectId,
+          sessionId,
+          uploadedFiles: projectIntake?.uploadedFiles ?? [],
+          externalLinks: projectIntake?.externalLinks ?? [],
+        });
+    const { storageRecord: fileStorageRecord } = createFileAndArtifactStorageModule({
+      storageRequest: {
+        projectId,
+        workspaceId: project.context?.workspaceModel?.workspaceId ?? project.state?.workspaceModel?.workspaceId ?? null,
+        runId: sessionId,
+        storageScope: "intake",
+        storageDriver: "project-intake-local-durable-state",
+        attachments: fileIntakeBoundary.acceptedFiles,
+        retentionPolicy: fileIntakeBoundary.policy?.retentionPolicy ?? "project-lifecycle",
+      },
+    });
+    project.projectIntake = {
+      ...(projectIntake ?? {}),
+      uploadedFiles: fileIntakeBoundary.acceptedFiles,
+      fileIntakeBoundary,
+    };
+    project.fileIntakeBoundary = fileIntakeBoundary;
+    project.fileStorageRecord = fileStorageRecord;
+    project.state = {
+      ...(project.state ?? {}),
+      intake: project.projectIntake,
+      fileIntakeBoundary,
+      fileStorageRecord,
+    };
+    project.context = {
+      ...(project.context ?? {}),
+      intake: project.projectIntake,
+      fileIntakeBoundary,
+      fileStorageRecord,
+    };
     project.intakeScanHandoff = createUploadedIntakeToScannerHandoff({
       projectId,
-      projectIntake,
+      projectIntake: project.projectIntake,
       connectedSources: finishedSession.connectedSources,
       gitSnapshot: project.gitSnapshot,
       notionSnapshot: project.notionSnapshot,
@@ -7460,6 +7517,19 @@ export class ProjectService {
       projectCreationMetric: project.context?.projectCreationMetric ?? project.projectCreationMetric ?? null,
       projectCreationSummary: project.context?.projectCreationSummary ?? project.projectCreationSummary ?? null,
       existingBusinessAssets: project.context?.existingBusinessAssets ?? null,
+      projectIntake: project.context?.intake
+        ?? project.projectIntake
+        ?? project.state?.intake
+        ?? null,
+      fileIntakeBoundary: project.context?.fileIntakeBoundary
+        ?? project.fileIntakeBoundary
+        ?? project.state?.fileIntakeBoundary
+        ?? project.projectIntake?.fileIntakeBoundary
+        ?? null,
+      fileStorageRecord: project.context?.fileStorageRecord
+        ?? project.fileStorageRecord
+        ?? project.state?.fileStorageRecord
+        ?? null,
       repositoryImportAndCodebaseDiagnosis: project.context?.repositoryImportAndCodebaseDiagnosis ?? null,
       liveWebsiteIngestionAndFunnelDiagnosis: project.context?.liveWebsiteIngestionAndFunnelDiagnosis ?? null,
       importedAnalyticsNormalization: project.context?.importedAnalyticsNormalization ?? null,

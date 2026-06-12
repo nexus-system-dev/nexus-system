@@ -1,11 +1,11 @@
 import { createProjectDiscoveryAgentState } from "../../shared/project-discovery-agent.js";
+import { createFirstReleaseFileIntakeBoundary } from "../../shared/file-intake-boundary.js";
 
 function normalizeString(value, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
 
 const CREATE_PROJECT_UPLOAD_EMPTY_META = "";
-const CREATE_PROJECT_UPLOAD_SELECTED_META = "";
 
 function parseDraftFiles(fileName = "", fileContent = "") {
   if (typeof fileContent === "string" && fileContent.trim()) {
@@ -39,11 +39,14 @@ export function buildProjectCreateViewModel({
   const fileName = normalizeString(draftInputs.fileName, "");
   const fileContent = normalizeString(draftInputs.fileContent, "");
   const selectedFiles = parseDraftFiles(fileName, fileContent);
+  const fileIntakeBoundary = createFirstReleaseFileIntakeBoundary({
+    uploadedFiles: selectedFiles,
+  });
   const primaryFileName = selectedFiles[0]?.name ?? "";
   const discoveryAgent = createProjectDiscoveryAgentState({
     projectName,
     visionText,
-    selectedFiles,
+    selectedFiles: fileIntakeBoundary.acceptedFiles,
     conversation: onboardingConversation,
   });
 
@@ -76,8 +79,11 @@ export function buildProjectCreateViewModel({
           : primaryFileName
             ? primaryFileName
           : "",
-      meta: selectedFiles.length > 0 ? CREATE_PROJECT_UPLOAD_SELECTED_META : CREATE_PROJECT_UPLOAD_EMPTY_META,
+      meta: selectedFiles.length > 0
+        ? fileIntakeBoundary.userFacing?.limits ?? CREATE_PROJECT_UPLOAD_EMPTY_META
+        : CREATE_PROJECT_UPLOAD_EMPTY_META,
       selectedFiles,
+      fileIntakeBoundary,
     },
     entryHighlights: [],
     helperCards: [],

@@ -85,3 +85,24 @@ test("project create screen can show live skeleton handoff progress without fake
   assert.doesNotMatch(html, /data-product-skeleton-task="SKEL-001"/);
   assert.doesNotMatch(html, /data-visual-skeleton-task="VSKEL-001"/);
 });
+
+test("FILE-001 project create screen renders file intake boundary truth", () => {
+  const html = renderProjectCreateScreen(buildProjectCreateViewModel({
+    draftInputs: {
+      visionText: "כלי פנימי לניהול לידים",
+      fileName: "ignored",
+      fileContent: JSON.stringify([
+        { name: "requirements.md", type: "text/markdown", content: "# Leads" },
+        { name: "installer.exe", type: "application/octet-stream", content: "no" },
+      ]),
+    },
+  }));
+
+  assert.match(html, /data-file-intake-task="FILE-001"/);
+  assert.match(html, /data-file-intake-status="bounded-with-rejections"/);
+  assert.match(html, /data-file-intake-accepted-count="1"/);
+  assert.match(html, /data-file-intake-rejected-count="1"/);
+  assert.match(html, /requirements\.md/);
+  assert.match(html, /installer\.exe/);
+  assert.match(html, /לא נקלט/);
+});

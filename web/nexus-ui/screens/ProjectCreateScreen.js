@@ -19,6 +19,56 @@ function renderFileChip(file) {
   return `<span class="nexus-create-screen__file-chip">${escapeHtml(name)}</span>`;
 }
 
+function renderFileIntakeBoundary(fileIntakeBoundary = null) {
+  if (!fileIntakeBoundary || typeof fileIntakeBoundary !== "object") {
+    return "";
+  }
+
+  const acceptedFiles = Array.isArray(fileIntakeBoundary.acceptedFiles) ? fileIntakeBoundary.acceptedFiles : [];
+  const rejectedFiles = Array.isArray(fileIntakeBoundary.rejectedFiles) ? fileIntakeBoundary.rejectedFiles : [];
+  const decisions = Array.isArray(fileIntakeBoundary.decisions) ? fileIntakeBoundary.decisions : [];
+  if (decisions.length === 0) {
+    return "";
+  }
+
+  const userFacing = fileIntakeBoundary.userFacing ?? {};
+  const policy = fileIntakeBoundary.policy ?? {};
+  const routing = fileIntakeBoundary.productUnderstandingRouting ?? {};
+  const decisionRows = decisions.slice(0, 4).map((decision) => {
+    const isRejected = decision.decision === "rejected";
+    const label = isRejected ? "לא נקלט" : decision.decision === "reference-only" ? "רפרנס" : "נקלט";
+    return `
+      <li class="nexus-create-screen__file-boundary-row" data-file-decision="${escapeHtml(decision.decision ?? "unknown")}">
+        <span>${escapeHtml(decision.name ?? "קובץ")}</span>
+        <strong>${escapeHtml(label)}</strong>
+      </li>
+    `;
+  }).join("");
+
+  return `
+    <aside
+      class="nexus-create-screen__file-boundary"
+      data-file-intake-task="${escapeHtml(fileIntakeBoundary.taskId ?? "FILE-001")}"
+      data-file-intake-status="${escapeHtml(fileIntakeBoundary.status ?? "unknown")}"
+      data-file-intake-accepted-count="${acceptedFiles.length}"
+      data-file-intake-rejected-count="${rejectedFiles.length}"
+      data-file-intake-routing="${escapeHtml(routing.status ?? "reference-only-or-empty")}"
+      data-file-intake-retention="${escapeHtml(policy.retentionPolicy ?? "project-lifecycle")}"
+      data-file-intake-delete-behavior="${escapeHtml(policy.deleteBehavior ?? "")}"
+      data-file-intake-replace-behavior="${escapeHtml(policy.replaceBehavior ?? "")}"
+      data-file-intake-max-files="${escapeHtml(String(policy.maxFiles ?? ""))}"
+      data-file-intake-max-file-bytes="${escapeHtml(String(policy.maxFileBytes ?? ""))}"
+    >
+      <div>
+        <strong>${escapeHtml(userFacing.title ?? "קבצים ייקלטו בזהירות")}</strong>
+        <p>${escapeHtml(userFacing.body ?? "Nexus ישתמש רק בקבצים שעומדים בגבולות ההעלאה של הגרסה הראשונה.")}</p>
+      </div>
+      <ul>${decisionRows}</ul>
+      <span>${escapeHtml(userFacing.limits ?? "")}</span>
+    </aside>
+  `;
+}
+
 function renderDiscoveryAgent(discoveryAgent = {}) {
   const transcript = Array.isArray(discoveryAgent.transcript) ? discoveryAgent.transcript : [];
   const agentLayer = discoveryAgent.agentLayer ?? {};
@@ -160,6 +210,7 @@ export function renderProjectCreateScreen(viewModel) {
                 >
                   ${selectedFiles.map((file) => renderFileChip(file)).join("")}
                 </div>
+                ${renderFileIntakeBoundary(upload.fileIntakeBoundary)}
                 <div class="nexus-create-screen__composer-row">
                   <button
                     id="create-project-file-picker-button"
