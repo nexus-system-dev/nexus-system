@@ -1,3 +1,5 @@
+import { buildStudioHandoffAgentEnvelope } from "../../shared/studio-handoff-agent.js";
+
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
@@ -62,11 +64,16 @@ export function buildStudioBoundaryViewModel({ project = null, qaMode = false } 
   const projectName = normalizeString(safeProject.name, "Nexus Project");
   const projectGoal = normalizeString(safeProject.goal, "Nexus project");
   const connection = resolveStudioConnection(studioWorkspace, desktopShellScope, localDevelopmentBridge);
-  const desktopOpenUrl = firstNonEmpty(
-    studioWorkspace.openUrl,
-    studioWorkspace.desktopUrl,
-    `nexus-studio://open?project=${encodeURIComponent(normalizeString(safeProject.id, "project"))}`,
-  );
+  const projectId = normalizeString(safeProject.id, "studio-boundary-project");
+  const handoffAgent = buildStudioHandoffAgentEnvelope({
+    project: safeProject,
+    requestedAction: studioWorkspace.requestedAction ?? "open-project",
+    requiredLocalCapability: studioWorkspace.requiredLocalCapability ?? "local-workspace",
+    currentScreen: "studio",
+    currentFlow: "web-studio-boundary",
+    returnToWebUrl: `/loop?projectId=${encodeURIComponent(projectId)}`,
+  });
+  const desktopOpenUrl = handoffAgent.desktopOpenUrl;
   const installUrl = firstNonEmpty(studioWorkspace.installUrl, studioWorkspace.downloadUrl, "");
   const localRequirements = normalizeArray(studioWorkspace.localRequirements)
     .map((item) => normalizeString(item))
@@ -76,13 +83,14 @@ export function buildStudioBoundaryViewModel({ project = null, qaMode = false } 
     contract: createStudioBoundaryViewContract(),
     qaMode,
     project: {
-      id: normalizeString(safeProject.id, "studio-boundary-project"),
+      id: projectId,
       name: projectName,
       goal: projectGoal,
       productClass: firstNonEmpty(artifactExpectation.projectType, safeProject.projectType, "generic"),
     },
     studio: {
       connection,
+      handoffAgent,
       desktopOpenUrl,
       installUrl,
       primaryActionLabel: connection.isConnected ? "פתח ב-Nexus Studio" : "נסה לפתוח Studio",
@@ -101,6 +109,7 @@ export function buildStudioBoundaryViewModel({ project = null, qaMode = false } 
         "טיוטות מקומיות עד סנכרון חזרה",
       ],
       requiredReason: firstNonEmpty(
+        handoffAgent.envelope?.userVisibleReason,
         studioWorkspace.requiredReason,
         "הפעולה הזאת דורשת יכולות מקומיות שאסור להעמיד פנים שקיימות בתוך הדפדפן.",
       ),

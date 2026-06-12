@@ -5289,7 +5289,7 @@ Write-back:
     - `No screenshot artifact was produced in this closure run because local Chrome screenshot capture was the unstable part of the proof; DOM route verification, refresh verification, API state, and persisted project truth passed.`
 
 #### `STD-HANDOFF-AGT-001 — Studio handoff agent web-to-desktop boundary`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -5328,6 +5328,18 @@ Write-back:
   - `/studio` becomes a fake desktop app
   - Studio handoff is only a button/link
   - Web promises local capability without installed/connected Studio truth
+- closure_update_2026-06-12:
+  - `Implemented the Studio handoff agent contract as a bounded Web-to-Desktop decision envelope.`
+  - `Added browser-loadable shared contract code and kept the src/core entry point as a re-export, so Web can render the decision path without importing unavailable server-only files.`
+  - `Studio boundary screen now exposes STD-HANDOFF-AGT-001 data truth, handoff status, handoff decision, protocol, required capability, handoff id, and return-state contract.`
+  - `Studio deep links now use nexus-studio://open?handoffId=... instead of project-only links.`
+  - `Unavailable Studio state shows a truthful fallback and does not claim file access, local runtime, opened Studio, accepted project, or sync success.`
+  - `Connected Studio state is represented as connected-ready/open only when project truth provides connected/ready state.`
+  - `Return truth is bounded to known Studio return states and must attach to the originating handoff/project id.`
+  - `Live proof verified two real project routes in clean browser pages: not-installed/unavailable fallback and connected-ready/open handoff.`
+  - `Evidence: node --check web/shared/studio-handoff-agent.js; node --check src/core/studio-handoff-agent.js; node --check web/nexus-ui/adapters/studio-boundary-adapter.js; node --check web/nexus-ui/screens/StudioBoundaryScreen.js; node --check scripts/verify-std-handoff-agt-001-live-proof.mjs; node --test test/studio-handoff-agent.test.js test/studio-boundary-surface-contract.test.js test/nexus-sidebar-navigation-contract.test.js test/shell-to-engine-integration-contract.test.js passed 22/22; node scripts/verify-std-handoff-agt-001-live-proof.mjs passed.`
+  - `Live proof report: /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-std-handoff-agt-001-0ZPuS9/report.json.`
+  - `Truth boundary: this closes the Web handoff agent decision path, deep-link envelope, unavailable/connected states, and bounded return contract. It does not implement Nexus Studio Desktop, install detection, local file access, local runtime, local package generation, Desktop sync, offline work, or production Studio return transport.`
 
 #### `EXP-007 — Studio decision gate and handoff path`
 - status: `new-proposed`
