@@ -4975,7 +4975,7 @@ Write-back:
   - `Truth boundary: this closes the first-release email campaign action path only. It does not connect a real email provider account, actually send external email, run broad audience campaigns, verify production deliverability, manage unsubscribes in production, or close GROW-LAND-001, REL-AGT-001, STD-HANDOFF-AGT-001, or production provider operations.`
 
 #### `GROW-LAND-001 — Landing Page Experiment action path`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `new shell task`
 - source:
@@ -5038,6 +5038,14 @@ Write-back:
   - fake proof, customers, numbers, or testimonials appear
   - landing experiment claims success without real measurement
   - Hebrew/RTL is not supported
+- closure_update:
+  - `2026-06-12: GROW-LAND-001 implemented and verified trueGreen. src/core/landing-action-path.js now owns the bounded Landing Page Experiment action path: product-readiness gate, internal draft default, preview-not-public boundary, Share / Release approval gate, Mutation handoff for product-truth changes, Visual Build handoff for visual-only changes, lead consent/storage boundary, Nexus experiment-leads fallback storage, measurement event envelope, Hebrew/RTL draft support, fabricated-results prevention, and product-truth owner boundary.`
+  - `Code wiring: src/core/growth-agent.js builds landingActionPath for the landing experiment growth plugin; src/core/project-service.js persists/restores it and exposes runLandingActionPath; src/server.js exposes POST /api/projects/:projectId/landing-action-path; web/nexus-ui/adapters/growth-surface-adapter.js and web/nexus-ui/screens/GrowthSurfaceScreen.js render a user-visible landing action panel without implying public publication or fake results.`
+  - `Tests added/updated: test/landing-action-path.test.js, test/landing-action-project-service.test.js, and test/growth-surface-canonical-structure-contract.test.js.`
+  - `Verification run: node --check src/core/landing-action-path.js; node --check src/core/growth-agent.js; node --check src/core/project-service.js; node --check web/nexus-ui/adapters/growth-surface-adapter.js; node --check web/nexus-ui/screens/GrowthSurfaceScreen.js; node --check scripts/verify-grow-land-001-live-proof.mjs; node --check src/server.js; node --test --test-name-pattern "GROW-LAND-001|GROW-EMAIL-001|GROW-SEM-001|GROW-PLUG|GROW-MEASURE|SURF-005" test/landing-action-path.test.js test/landing-action-project-service.test.js test/email-action-path.test.js test/email-action-project-service.test.js test/growth-agent.test.js test/growth-plugin-layer.test.js test/growth-measurement-truth.test.js test/growth-surface-canonical-structure-contract.test.js test/sem-action-path.test.js test/sem-action-project-service.test.js; node scripts/verify-grow-land-001-live-proof.mjs.`
+  - `Verification result: syntax checks passed; focused regression sweep passed 37/37; live proof passed with draft-ready, preview-ready, needs-share-or-release-gate, handoff-to-mutation, shared-demo-ready, and results-received states; DOM proof showed publicVisible=false, externalPublished=false, leadConsent=true, productTruthOwner=source-product-not-landing, fabricatedResultsBlocked=true, boundary copy visible, and restoredStatus=results-received after refresh.`
+  - `Live proof artifacts: report /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-land-001-CVfajw/report.json; screenshot /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-grow-land-001-CVfajw/growth-land.png.`
+  - `Truth boundary: this closes the first-release Landing Page Experiment action path only. It does not publicly publish landing pages, run production split tests, provide a full landing page builder, connect production analytics, manage production leads, process payments/orders, or close REL-AGT-001, STD-HANDOFF-AGT-001, production provider operations, or standalone release packaging.`
 
 #### `GROW-MEASURE-001 — Growth measurement and result truth`
 - status: `trueGreen`

@@ -136,6 +136,7 @@ function summarizeGrowthAgentForSurface(value) {
     seoActionPath: normalizeObject(agent.seoActionPath),
     semActionPath: normalizeObject(agent.semActionPath),
     emailActionPath: normalizeObject(agent.emailActionPath),
+    landingActionPath: normalizeObject(agent.landingActionPath),
     visibleBoundary: {
       oneNextMoveOnly: visibleBoundary.oneNextMoveOnly !== false,
       noGenericMarketing: visibleBoundary.noGenericMarketing !== false,
@@ -390,6 +391,63 @@ function summarizeEmailActionForSurface(value) {
   };
 }
 
+function summarizeLandingActionForSurface(value) {
+  const landing = normalizeObject(value);
+  const productBasis = normalizeObject(landing.productBasis);
+  const readiness = normalizeObject(landing.readiness);
+  const draft = normalizeObject(landing.draft);
+  const visibility = normalizeObject(landing.visibility);
+  const handoffs = normalizeObject(landing.handoffs);
+  const leadCapture = normalizeObject(landing.leadCapture);
+  const measurement = normalizeObject(landing.measurement);
+  return {
+    taskId: normalizeString(landing.taskId, "GROW-LAND-001"),
+    agentId: normalizeString(landing.agentId, "landing-action-path"),
+    status: normalizeString(landing.status, "not-created"),
+    requestedAction: normalizeString(landing.requestedAction, "draft"),
+    language: normalizeString(productBasis.language, "he"),
+    direction: normalizeString(productBasis.direction, "rtl"),
+    audience: normalizeString(productBasis.audience),
+    problem: normalizeString(productBasis.problem),
+    coreValue: normalizeString(productBasis.coreValue),
+    productDirection: normalizeString(productBasis.productDirection),
+    ready: readiness.ready === true,
+    missing: normalizeArray(readiness.missing).map((item) => normalizeString(item)).filter(Boolean),
+    hypothesis: normalizeString(draft.hypothesis),
+    versionCount: normalizeArray(draft.versions).length,
+    maxVersions: Number.isFinite(Number(draft.maxVersions)) ? Number(draft.maxVersions) : 2,
+    ctaVariants: normalizeArray(draft.versions).map((item) => normalizeString(item.cta)).filter(Boolean),
+    sections: normalizeArray(draft.sections).map((item) => normalizeString(item)).filter(Boolean),
+    draftInternal: visibility.draftInternal !== false,
+    previewInspectableNotPublic: visibility.previewInspectableNotPublic === true,
+    publicVisible: visibility.publicVisible === true,
+    externalApprovalGranted: visibility.externalApprovalGranted === true,
+    shareDemoReady: visibility.shareDemoReady === true,
+    releaseReady: visibility.releaseReady === true,
+    shareApprovalGranted: visibility.shareApprovalGranted === true,
+    releaseApprovalGranted: visibility.releaseApprovalGranted === true,
+    shareOrReleaseGateRequired: visibility.shareOrReleaseGateRequired !== false,
+    releaseImpersonationBlocked: visibility.releaseImpersonationBlocked !== false,
+    mutationRequiredForProductTruthChanges: handoffs.mutationRequiredForProductTruthChanges === true,
+    visualBuildRequiredForVisibleChanges: handoffs.visualBuildRequiredForVisibleChanges === true,
+    measurementOwner: normalizeString(handoffs.measurementOwner, "GROW-MEASURE-001"),
+    leadCaptureEnabled: leadCapture.enabled !== false,
+    consentConfigured: leadCapture.consentConfigured === true,
+    leadStorage: normalizeString(leadCapture.storage, "nexus-experiment-leads"),
+    fallbackStorage: leadCapture.fallbackStorage === true,
+    landingEvents: normalizeArray(measurement.landingEvents).map((item) => normalizeString(item)).filter(Boolean),
+    resultTruthAvailable: measurement.resultTruthAvailable === true,
+    fabricatedConversionDataBlocked: measurement.fabricatedConversionDataBlocked !== false,
+    successClaimAllowed: measurement.successClaimAllowed === true,
+    forbiddenClaims: normalizeArray(landing.forbiddenClaims).map((item) => normalizeString(item)).filter(Boolean),
+    successClaimBlockedWithoutMeasurement: landing.successClaimBlockedWithoutMeasurement !== false,
+    externalPublicationPerformed: landing.externalPublicationPerformed === true,
+    productTruthOwner: normalizeString(landing.productTruthOwner, "source-product-not-landing"),
+    userMessage: normalizeString(landing.userMessage, "מסלול דף נחיתה עדיין לא נוצר."),
+    historyCount: normalizeArray(landing.history).length,
+  };
+}
+
 function createGrowthSurfaceViewContract() {
   return {
     contractId: "SURF-005",
@@ -523,6 +581,12 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       ?? state.emailActionPath
       ?? growthAgent.emailActionPath,
   );
+  const landingAction = summarizeLandingActionForSurface(
+    safeProject.landingActionPath
+      ?? safeProject.context?.landingActionPath
+      ?? state.landingActionPath
+      ?? growthAgent.landingActionPath,
+  );
   const growthMeasurement = summarizeGrowthMeasurementForSurface(
     safeProject.growthMeasurementTruth
       ?? safeProject.context?.growthMeasurementTruth
@@ -626,6 +690,7 @@ export function buildGrowthSurfaceViewModel({ project = null, qaMode = false } =
       seoAction,
       semAction,
       emailAction,
+      landingAction,
     },
   };
 }

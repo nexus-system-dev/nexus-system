@@ -328,6 +328,65 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
         forbiddenPromises: ["guarantee-opens", "guarantee-replies", "send-without-approval"],
         userMessage: "הכנתי רצף אימיילים כטיוטה. אישור קמפיין לא שולח את כל הרצף.",
       },
+      landingActionPath: {
+        taskId: "GROW-LAND-001",
+        agentId: "landing-action-path",
+        status: "preview-ready",
+        requestedAction: "preview",
+        productBasis: {
+          language: "he",
+          direction: "rtl",
+          audience: "צוות מכירות",
+          problem: "לידים הולכים לאיבוד בלי מעקב.",
+          coreValue: "לראות מי אחראי ומה הצעד הבא.",
+          productDirection: "internal-tool",
+        },
+        readiness: {
+          ready: true,
+          missing: [],
+        },
+        draft: {
+          hypothesis: "אם צוות מכירות רואה דף קצר, הוא מבין את הערך.",
+          maxVersions: 2,
+          versions: [
+            { cta: "בדקו אם זה מתאים" },
+            { cta: "שלחו לי דמו קצר" },
+          ],
+          sections: ["למי זה מיועד", "הבעיה", "איך זה עובד"],
+        },
+        visibility: {
+          draftInternal: true,
+          previewInspectableNotPublic: true,
+          publicVisible: false,
+          externalApprovalGranted: false,
+          shareDemoReady: false,
+          releaseReady: false,
+          shareOrReleaseGateRequired: true,
+          releaseImpersonationBlocked: true,
+        },
+        handoffs: {
+          mutationRequiredForProductTruthChanges: false,
+          visualBuildRequiredForVisibleChanges: true,
+          measurementOwner: "GROW-MEASURE-001",
+        },
+        leadCapture: {
+          enabled: true,
+          consentConfigured: true,
+          storage: "nexus-experiment-leads",
+          fallbackStorage: true,
+        },
+        measurement: {
+          landingEvents: ["landing.opened", "landing.cta.clicked", "landing.form.submitted"],
+          resultTruthAvailable: false,
+          fabricatedConversionDataBlocked: true,
+          successClaimAllowed: false,
+        },
+        forbiddenClaims: ["fake-testimonials", "fake-conversions", "publish-without-approval"],
+        successClaimBlockedWithoutMeasurement: true,
+        externalPublicationPerformed: false,
+        productTruthOwner: "source-product-not-landing",
+        userMessage: "התצוגה המקדימה מוכנה לבדיקה פנימית, אבל עדיין לא ציבורית.",
+      },
     },
   });
   const html = renderGrowthSurfaceScreen(viewModel);
@@ -386,6 +445,20 @@ test("Growth surface renders SURF-005 regions with canonical right rail and no a
   assert.match(html, /data-email-action-per-email-approval="true"/);
   assert.match(html, /data-email-action-fabricated-metrics-blocked="true"/);
   assert.match(html, /טיוטת אימייל לפני שליחה/);
+  assert.match(html, /data-landing-action-task="GROW-LAND-001"/);
+  assert.match(html, /data-landing-action-status="preview-ready"/);
+  assert.match(html, /data-landing-action-language="he"/);
+  assert.match(html, /data-landing-action-direction="rtl"/);
+  assert.match(html, /data-landing-action-draft-internal="true"/);
+  assert.match(html, /data-landing-action-preview-not-public="true"/);
+  assert.match(html, /data-landing-action-public-visible="false"/);
+  assert.match(html, /data-landing-action-share-gate-required="true"/);
+  assert.match(html, /data-landing-action-external-published="false"/);
+  assert.match(html, /data-landing-action-product-truth-owner="source-product-not-landing"/);
+  assert.match(html, /data-landing-action-lead-consent="true"/);
+  assert.match(html, /data-landing-action-rtl="true"/);
+  assert.match(html, /data-landing-action-fabricated-results-blocked="true"/);
+  assert.match(html, /תצוגה פנימית מוכנה/);
   assert.match(html, /סימן ראשוני בלבד/);
   assert.match(html, /data-growth-plugin-primary="audience-understanding-test"/);
   assert.match(html, /data-growth-plugin-provider-required="false"/);

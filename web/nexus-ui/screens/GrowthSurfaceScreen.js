@@ -89,6 +89,22 @@ function labelEmailBlockedPromise(item) {
   return labels[item] ?? item;
 }
 
+function labelLandingBlockedClaim(item) {
+  const labels = {
+    "fake-customers": "לא להציג לקוחות מזויפים",
+    "fake-testimonials": "לא להציג המלצות מזויפות",
+    "fake-proof": "לא להציג הוכחה מזויפת",
+    "fake-conversions": "לא להמציא המרות",
+    "guarantee-leads": "לא להבטיח לידים",
+    "guarantee-sales": "לא להבטיח מכירות",
+    "guarantee-revenue": "לא להבטיח הכנסות",
+    "publish-without-approval": "לא לפרסם בלי אישור",
+    "release-impersonation": "לא להציג טיוטה כשחרור",
+    "collect-without-consent": "לא לאסוף פרטים בלי הסכמה",
+  };
+  return labels[item] ?? item;
+}
+
 function renderGrowthPluginLayer(pluginLayer = {}) {
   const primary = pluginLayer.primaryPlugin ?? {};
   const registry = pluginLayer.registry ?? {};
@@ -447,6 +463,76 @@ function renderEmailActionPath(email = {}) {
   `;
 }
 
+function renderLandingActionPath(landing = {}) {
+  if (!landing || landing.status === "not-created") {
+    return "";
+  }
+  return `
+    <section
+      class="nexus-growth-surface__panel"
+      dir="${escapeHtml(landing.direction ?? "rtl")}"
+      data-landing-action-task="${escapeHtml(landing.taskId ?? "GROW-LAND-001")}"
+      data-landing-action-status="${escapeHtml(landing.status ?? "not-created")}"
+      data-landing-action-requested="${escapeHtml(landing.requestedAction ?? "draft")}"
+      data-landing-action-language="${escapeHtml(landing.language ?? "he")}"
+      data-landing-action-direction="${escapeHtml(landing.direction ?? "rtl")}"
+      data-landing-action-ready="${escapeHtml(landing.ready ? "true" : "false")}"
+      data-landing-action-draft-internal="${escapeHtml(landing.draftInternal === false ? "false" : "true")}"
+      data-landing-action-preview-not-public="${escapeHtml(landing.previewInspectableNotPublic ? "true" : "false")}"
+      data-landing-action-public-visible="${escapeHtml(landing.publicVisible ? "true" : "false")}"
+      data-landing-action-external-approval="${escapeHtml(landing.externalApprovalGranted ? "true" : "false")}"
+      data-landing-action-share-ready="${escapeHtml(landing.shareDemoReady ? "true" : "false")}"
+      data-landing-action-release-ready="${escapeHtml(landing.releaseReady ? "true" : "false")}"
+      data-landing-action-share-gate-required="${escapeHtml(landing.shareOrReleaseGateRequired === false ? "false" : "true")}"
+      data-landing-action-external-published="${escapeHtml(landing.externalPublicationPerformed ? "true" : "false")}"
+      data-landing-action-product-truth-owner="${escapeHtml(landing.productTruthOwner ?? "source-product-not-landing")}"
+      data-landing-action-lead-consent="${escapeHtml(landing.consentConfigured ? "true" : "false")}"
+      data-landing-action-lead-storage="${escapeHtml(landing.leadStorage ?? "nexus-experiment-leads")}"
+      data-landing-action-rtl="${escapeHtml(landing.direction === "rtl" ? "true" : "false")}"
+      data-landing-action-fabricated-results-blocked="${escapeHtml(landing.fabricatedConversionDataBlocked === false ? "false" : "true")}"
+      data-growth-region="landing-action-path"
+    >
+      <span class="nexus-growth-surface__tag">דף נחיתה</span>
+      <h2>${escapeHtml(landing.status === "shared-demo-ready" ? "מוכן לשיתוף דמו מאושר" : landing.status === "release-handoff-ready" ? "מוכן למסלול שחרור מאושר" : landing.status === "preview-ready" ? "תצוגה פנימית מוכנה" : "טיוטת דף נחיתה פנימית")}</h2>
+      <p>${escapeHtml(landing.userMessage ?? "מסלול דף נחיתה עדיין לא נוצר.")}</p>
+      <div class="nexus-growth-surface__signal-grid">
+        <article>
+          <span>גרסאות</span>
+          <strong>${escapeHtml(`${landing.versionCount ?? 0}/${landing.maxVersions ?? 2}`)}</strong>
+        </article>
+        <article>
+          <span>נראות ציבורית</span>
+          <strong>${escapeHtml(landing.publicVisible ? "מותרת דרך שער" : "לא ציבורי")}</strong>
+        </article>
+        <article>
+          <span>בעלות אמת מוצר</span>
+          <strong>${escapeHtml(landing.productTruthOwner ?? "source-product-not-landing")}</strong>
+        </article>
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>השערת ניסוי</strong>
+        ${renderList([landing.hypothesis].filter(Boolean), "אין השערה להצגה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>כפתורי פעולה לבדיקה</strong>
+        ${renderList(landing.ctaVariants ?? [], "אין כפתורים להצגה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>מדידה שמותרת לדף להפיק</strong>
+        ${renderList(landing.landingEvents ?? [], "אין אירועי מדידה להצגה.")}
+      </div>
+      <div class="nexus-growth-surface__plugin-list">
+        <strong>מה חסום</strong>
+        ${renderList((landing.forbiddenClaims ?? []).map(labelLandingBlockedClaim), "אין חסימות להצגה.")}
+      </div>
+      ${landing.missing?.length ? `
+        <p class="nexus-growth-surface__empty">חסר לפני יצירה: ${escapeHtml(landing.missing.join(", "))}</p>
+      ` : ""}
+      <p class="nexus-growth-surface__empty">דף נחיתה הוא נכס צמיחה פנימי. שינוי אמת מוצר עובר לשינוי מוצר, שינוי חזותי עובר לבנייה חזותית, ונראות חיצונית עוברת לשיתוף או שחרור.</p>
+    </section>
+  `;
+}
+
 export function renderGrowthSurfaceScreen(viewModel = {}) {
   const contract = viewModel.contract ?? {};
   const growth = viewModel.growth ?? {};
@@ -542,6 +628,8 @@ export function renderGrowthSurfaceScreen(viewModel = {}) {
           ${renderSemActionPath(growth.semAction ?? {})}
 
           ${renderEmailActionPath(growth.emailAction ?? {})}
+
+          ${renderLandingActionPath(growth.landingAction ?? {})}
 
           <section class="nexus-growth-surface__panel" data-growth-region="growth-metric-baseline">
             <span class="nexus-growth-surface__tag">Baseline</span>

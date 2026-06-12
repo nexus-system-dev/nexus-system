@@ -98,6 +98,7 @@ import { buildSocialCampaignExecutionAgentEnvelope } from "./social-campaign-exe
 import { buildSeoActionPathEnvelope } from "./seo-action-path.js";
 import { buildSemActionPathEnvelope } from "./sem-action-path.js";
 import { buildEmailActionPathEnvelope } from "./email-action-path.js";
+import { buildLandingActionPathEnvelope } from "./landing-action-path.js";
 import {
   buildApprovedProductDirectionPatch,
   buildBuildApprovalFlow,
@@ -1189,6 +1190,7 @@ export class ProjectService {
       seoActionPath: normalizedState.seoActionPath ?? null,
       semActionPath: normalizedState.semActionPath ?? null,
       emailActionPath: normalizedState.emailActionPath ?? null,
+      landingActionPath: normalizedState.landingActionPath ?? null,
       socialCampaignExecutionAgent: normalizedState.socialCampaignExecutionAgent ?? null,
       cycle: null,
       runtimeResults: [],
@@ -2329,6 +2331,19 @@ export class ProjectService {
       });
       growthAgent.emailActionPath = emailActionPath;
     }
+    let landingActionPath = project.landingActionPath
+      ?? project.context?.landingActionPath
+      ?? project.state?.landingActionPath
+      ?? null;
+    if (growthAgent.growthPluginLayer?.primaryPlugin?.pluginId === "landing-experiment-draft" || growthAgent.opportunityType === "landing-experiment") {
+      landingActionPath = buildLandingActionPathEnvelope({
+        project,
+        userInput,
+        growthAgent,
+        measurementTruth: project.growthMeasurementTruth ?? project.context?.growthMeasurementTruth ?? project.state?.growthMeasurementTruth ?? growthAgent.growthMeasurementTruth ?? null,
+      });
+      growthAgent.landingActionPath = landingActionPath;
+    }
     project.growthAgent = growthAgent;
     const growthMeasurementTruth = growthAgent.growthMeasurementTruth ?? buildGrowthMeasurementTruth({
       project,
@@ -2344,6 +2359,7 @@ export class ProjectService {
       seoActionPath,
       semActionPath,
       emailActionPath,
+      landingActionPath,
     };
     project.state = {
       ...(project.state ?? {}),
@@ -2353,11 +2369,60 @@ export class ProjectService {
       seoActionPath,
       semActionPath,
       emailActionPath,
+      landingActionPath,
     };
     project.socialCampaignExecutionAgent = socialCampaignExecutionAgent;
     project.seoActionPath = seoActionPath;
     project.semActionPath = semActionPath;
     project.emailActionPath = emailActionPath;
+    project.landingActionPath = landingActionPath;
+    this.persistProjectRecord(project);
+    return this.serializeProject(project);
+  }
+
+  runLandingActionPath({
+    projectId,
+    userInput = "",
+    approvalDecisions = {},
+    shareDemoAgent = null,
+    releaseGate = null,
+    leadCapture = {},
+    providerResults = null,
+  } = {}) {
+    const project = this.projects.get(projectId);
+    if (!project) {
+      return null;
+    }
+    const growthAgent = project.growthAgent
+      ?? project.context?.growthAgent
+      ?? project.state?.growthAgent
+      ?? buildGrowthAgentEnvelope({ project, userInput });
+    const landingActionPath = buildLandingActionPathEnvelope({
+      project,
+      userInput,
+      growthAgent,
+      approvalDecisions,
+      shareDemoAgent,
+      releaseGate,
+      leadCapture,
+      providerResults,
+      measurementTruth: project.growthMeasurementTruth ?? project.context?.growthMeasurementTruth ?? project.state?.growthMeasurementTruth ?? null,
+    });
+    project.growthAgent = {
+      ...growthAgent,
+      landingActionPath,
+    };
+    project.landingActionPath = landingActionPath;
+    project.context = {
+      ...(project.context ?? {}),
+      growthAgent: project.growthAgent,
+      landingActionPath,
+    };
+    project.state = {
+      ...(project.state ?? {}),
+      growthAgent: project.growthAgent,
+      landingActionPath,
+    };
     this.persistProjectRecord(project);
     return this.serializeProject(project);
   }
@@ -5201,6 +5266,11 @@ export class ProjectService {
       ?? project.context?.emailActionPath
       ?? project.state?.emailActionPath
       ?? null;
+    const preservedLandingActionPath =
+      project.landingActionPath
+      ?? project.context?.landingActionPath
+      ?? project.state?.landingActionPath
+      ?? null;
     const preservedProviderGatewayBoundary =
       project.providerGatewayBoundary
       ?? project.context?.providerGatewayBoundary
@@ -5283,6 +5353,7 @@ export class ProjectService {
       seoActionPath: preservedSeoActionPath,
       semActionPath: preservedSemActionPath,
       emailActionPath: preservedEmailActionPath,
+      landingActionPath: preservedLandingActionPath,
       providerGatewayBoundary: preservedProviderGatewayBoundary,
       providerReleaseRegistry: preservedProviderReleaseRegistry,
       creativeProviderAssets: preservedCreativeProviderAssets,
@@ -5386,6 +5457,7 @@ export class ProjectService {
     project.seoActionPath = preservedSeoActionPath;
     project.semActionPath = preservedSemActionPath;
     project.emailActionPath = preservedEmailActionPath;
+    project.landingActionPath = preservedLandingActionPath;
     project.context = {
       ...project.context,
       runtimeSkeletonTruth,
@@ -5409,6 +5481,7 @@ export class ProjectService {
       seoActionPath: preservedSeoActionPath,
       semActionPath: preservedSemActionPath,
       emailActionPath: preservedEmailActionPath,
+      landingActionPath: preservedLandingActionPath,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -5437,6 +5510,7 @@ export class ProjectService {
       seoActionPath: preservedSeoActionPath,
       semActionPath: preservedSemActionPath,
       emailActionPath: preservedEmailActionPath,
+      landingActionPath: preservedLandingActionPath,
       skeletonChoiceTruth,
       runtimeLearningEvents,
       runtimeLearningDecisionHints,
@@ -7431,6 +7505,10 @@ export class ProjectService {
       emailActionPath: project.context?.emailActionPath
         ?? project.emailActionPath
         ?? project.state?.emailActionPath
+        ?? null,
+      landingActionPath: project.context?.landingActionPath
+        ?? project.landingActionPath
+        ?? project.state?.landingActionPath
         ?? null,
       companionConversation: project.context?.companionConversation
         ?? project.companionConversation

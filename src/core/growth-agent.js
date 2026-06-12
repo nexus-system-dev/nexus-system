@@ -4,6 +4,7 @@ import { buildSocialCampaignExecutionAgentEnvelope, summarizeSocialCampaignExecu
 import { buildSeoActionPathEnvelope, summarizeSeoActionPath } from "./seo-action-path.js";
 import { buildSemActionPathEnvelope, summarizeSemActionPath } from "./sem-action-path.js";
 import { buildEmailActionPathEnvelope, summarizeEmailActionPath } from "./email-action-path.js";
+import { buildLandingActionPathEnvelope, summarizeLandingActionPath } from "./landing-action-path.js";
 
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
@@ -320,6 +321,25 @@ function pluginLayerEnvelope(base) {
         measurementTruth: base.growthMeasurementTruth,
       })
     : null;
+  const landingActionPath = plugin.pluginId === "landing-experiment-draft"
+    ? buildLandingActionPathEnvelope({
+        project: {
+          id: base.projectId,
+          goal: base.input,
+          runtimeSkeletonTruth: {
+            title: base.originArtifactTitle,
+            productClass: base.productClass,
+          },
+          targetAudience: base.targetAudience,
+          problem: base.input,
+          coreValue: normalizeString(base.growthPluginLayer?.readiness?.coreValue, base.input),
+          productDirection: base.productClass,
+        },
+        userInput: base.input,
+        growthAgent: base,
+        measurementTruth: base.growthMeasurementTruth,
+      })
+    : null;
 
   return {
     ...base,
@@ -348,6 +368,7 @@ function pluginLayerEnvelope(base) {
     ...(seoActionPath ? { seoActionPath } : {}),
     ...(semActionPath ? { semActionPath } : {}),
     ...(emailActionPath ? { emailActionPath } : {}),
+    ...(landingActionPath ? { landingActionPath } : {}),
     userMessage: normalizeString(plugin.whyThisPlugin, "זה צעד צמיחה מוגבל שמחובר לתוצר ולא מבצע פעולה חיצונית לבד."),
     status: normalizeString(plugin.status, "recommended"),
   };
@@ -429,6 +450,7 @@ export function summarizeGrowthAgentForSurface(envelope = {}) {
     seoActionPath: summarizeSeoActionPath(safeEnvelope.seoActionPath),
     semActionPath: summarizeSemActionPath(safeEnvelope.semActionPath),
     emailActionPath: summarizeEmailActionPath(safeEnvelope.emailActionPath),
+    landingActionPath: summarizeLandingActionPath(safeEnvelope.landingActionPath),
     growthPluginLayer: summarizeGrowthPluginLayer(safeEnvelope.growthPluginLayer),
     growthMeasurementTruth: summarizeGrowthMeasurementTruth(safeEnvelope.growthMeasurementTruth),
   };
