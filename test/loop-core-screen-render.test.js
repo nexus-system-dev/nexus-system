@@ -907,6 +907,77 @@ test("SLICE-005 — Build canvas renders a mobile app as a simulator-like runtim
   assert.doesNotMatch(html, /מסוכן/);
 });
 
+test("RUNTIME-001 — Build canvas exposes preview sandbox boundary on runtime skeleton", () => {
+  const project = buildProjectWithProductSkeleton({
+    productType: "כלי פנימי לניהול לידים",
+    primaryUser: "בעל עסק קטן",
+    primaryProblem: "לידים נופלים בלי אחראי ותזכורת",
+    firstWorkflow: {
+      title: "רשימת לידים",
+      whyThisFirst: "צריך לטפל בליד בלי לעבור למסך אחר.",
+      steps: ["בחר ליד", "שנה אחראי", "קבע תזכורת"],
+    },
+    initialScreens: [{ name: "לידים", purpose: "ניהול רשימת לידים" }],
+    initialActions: ["הוסף ליד", "שייך אחראי", "קבע תזכורת"],
+    dataObjects: [{ name: "ליד", fields: ["שם", "סטטוס", "אחראי", "תזכורת", "צעד הבא"] }],
+    versionOneBoundary: { buildNow: ["בחירת ליד", "עריכת אחראי ותזכורת"], doNotBuildNow: ["וואטסאפ", "פרסום"] },
+  }, {
+    buildMutationTruth: {
+      taskId: "BUILD-MUTATION-TRUTH-001",
+      status: "applied",
+      lastMutationId: "mutation-runtime-001",
+      lastOperationId: "record.create",
+    },
+  });
+
+  const viewModel = buildLoopCoreViewModel({ project });
+  const html = renderLoopCoreScreen(viewModel);
+
+  assert.equal(viewModel.buildPreviewSandbox.taskId, "RUNTIME-001");
+  assert.equal(viewModel.buildPreviewSandbox.status, "ready");
+  assert.equal(viewModel.buildPreviewSandbox.previewStatus, "sandbox-preview-ready");
+  assert.match(html, /data-runtime-boundary-task="RUNTIME-001"/);
+  assert.match(html, /data-runtime-boundary-status="ready"/);
+  assert.match(html, /data-runtime-build-status="ready"/);
+  assert.match(html, /data-runtime-preview-status="sandbox-preview-ready"/);
+  assert.match(html, /data-runtime-sandbox-boundary="nexus-internal-sandbox-not-production"/);
+  assert.match(html, /data-runtime-artifact-fallback="not-needed"/);
+  assert.match(html, /data-runtime-retry-available="false"/);
+  assert.match(html, /data-runtime-trace-mutation-id="mutation-runtime-001"/);
+  assert.match(html, /התצוגה מוכנה לבדיקה בתוך Nexus/);
+  assert.match(html, /לא פרסום חי ולא גרסת ייצור/);
+});
+
+test("RUNTIME-001 — missing preview artifact renders retry-safe fallback state", () => {
+  const project = {
+    id: "runtime-001-missing-artifact",
+    name: "פרויקט בלי שלד",
+    buildPreviewState: {
+      buildStatus: "failed",
+      error: "לא נוצר נכס תצוגה",
+    },
+  };
+
+  const viewModel = {
+    projectName: project.name,
+    whatHappensNext: "ממתינים לבנייה אמינה.",
+    previewSurfaceTitle: "אין תצוגה מוכנה",
+    previewSurfaceSubtitle: "צריך לנסות שוב כדי ליצור שלד ראשון.",
+    buildPreviewSandbox: buildLoopCoreViewModel({ project }).buildPreviewSandbox,
+  };
+  const html = renderLoopCoreScreen(viewModel);
+
+  assert.equal(viewModel.buildPreviewSandbox.status, "failed");
+  assert.match(html, /data-runtime-boundary-task="RUNTIME-001"/);
+  assert.match(html, /data-runtime-boundary-status="failed"/);
+  assert.match(html, /data-runtime-preview-status="preview-unavailable"/);
+  assert.match(html, /data-runtime-artifact-fallback="show-failure-recovery"/);
+  assert.match(html, /data-runtime-retry-available="true"/);
+  assert.match(html, /data-runtime-preview-retry="retry-build-preview"/);
+  assert.match(html, /בניית התצוגה נכשלה/);
+  assert.match(html, /לא נוצר נכס תצוגה/);
+});
+
 test("W4-FIX-007 — Build opens a visible runtime skeleton from discovery truth when skeleton agents are pending", () => {
   const project = {
     id: "w4-fix-007-auto-handoff",

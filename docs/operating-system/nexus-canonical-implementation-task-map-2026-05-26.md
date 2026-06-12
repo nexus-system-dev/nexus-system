@@ -5925,7 +5925,7 @@ Write-back:
   - SSO availability is implied while provider setup is missing
 
 #### `RUNTIME-001 — Build preview sandbox and failure-state boundary`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - source:
   - `Product Shell Coverage Audit — 2026-05-30`
@@ -5942,6 +5942,15 @@ Write-back:
   - preview is visual only
   - build can hang forever in thinking/working
   - artifact generation failure has no visible recovery path
+- closure_update:
+  - `2026-06-12: Closed trueGreen. Added build preview sandbox boundary shared contract in web/shared/build-preview-sandbox-boundary.js with explicit buildStatus, previewStatus, sandboxBoundary, timeoutPolicy, retryPolicy, artifactFallback, noFakeLiveProductClaim, and trace fields for project/runtime/artifact/mutation/build-agent state.`
+  - `2026-06-12: Loop view model now attaches buildPreviewSandbox to the visible Build canvas, and LoopCoreScreen renders a human-readable sandbox/failure/retry panel plus data-runtime-* proof markers on the runtime skeleton root.`
+  - `2026-06-12: Failure states are bounded: artifact-not-created, failed, and timed-out return preview-unavailable, user-driven retry, and no fake production/live-product claim. Ready state is explicitly nexus-internal-sandbox-not-production.`
+  - `2026-06-12: Verification passed: node --check web/shared/build-preview-sandbox-boundary.js; node --check src/core/build-preview-sandbox-boundary.js; node --check web/nexus-ui/adapters/loop-adapter.js; node --check web/nexus-ui/screens/LoopCoreScreen.js; node --check scripts/verify-runtime-001-live-proof.mjs; node --test test/build-preview-sandbox-boundary.test.js test/loop-core-screen-render.test.js.`
+  - `2026-06-12: Live proof passed via node scripts/verify-runtime-001-live-proof.mjs on http://127.0.0.1:4033. It created runtime-001-live-1781294512164, opened /loop?projectId=..., verified data-runtime-boundary-task=RUNTIME-001, boundaryStatus=ready, buildStatus=ready, previewStatus=sandbox-preview-ready, sandboxBoundary=nexus-internal-sandbox-not-production, artifactFallback=not-needed, retryAvailable=false, traceSkeletonId=runtime-skeleton:runtime-001-live-1781294512164:internal-tool, traceMutationId=mutation-runtime-001-1781294512164, no fake published/live-production claims, and the same truth after refresh. Report root: /var/folders/qq/34tg4t115095jq683xwx0q180000gn/T/nexus-runtime-001-196aDe.`
+- closure_boundary:
+  - `RUNTIME-001 closes only the Nexus build preview sandbox/failure-state boundary.`
+  - `It does not close PRODUCT-RUNTIME-PACKAGE-001, STANDALONE-ARTIFACT-001, PRODUCT-PROMISE-GATE-001, CAPABILITY-ACTION-UX-001, VER-AGT-001, REL-AGT-001, production backend, real deployment, provider execution, publish, payment, WhatsApp, or standalone product packaging.`
 
 #### `FILE-001 — First-release file and asset intake boundary`
 - status: `new-proposed`

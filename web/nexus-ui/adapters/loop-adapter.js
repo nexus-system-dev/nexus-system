@@ -6,6 +6,7 @@ import {
   resolveRuntimeSkeletonTruth,
 } from "../../shared/runtime-skeleton-truth.js";
 import { buildSkeletonChoiceTruthEnvelope } from "../../shared/skeleton-choice-candidates.js";
+import { createBuildPreviewSandboxBoundary } from "../../shared/build-preview-sandbox-boundary.js";
 
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
@@ -395,6 +396,24 @@ export function buildLoopCoreViewModel({ project = null, qaMode = false, compani
     skeletonQualityBaseline: safeProject.skeletonQualityBaseline,
     projectStage: currentPhase === "understanding-complete" ? "first-skeleton" : "build",
   });
+  const runtimeSkeleton = buildRuntimeSkeletonViewModel({
+    project: safeProject,
+    productClass,
+    productClassSource: productClassResolution.source,
+    surfaceWorkspace,
+    productSkeleton: productSkeletonAgentOutput,
+    visualSkeleton: visualProductSkeletonAgentOutput,
+    artifactExpectation,
+    generationIntent: effectiveGenerationIntent,
+    projectName: safeProject.name,
+  });
+  const buildPreviewSandbox = createBuildPreviewSandboxBoundary({
+    project: safeProject,
+    runtimeSkeleton,
+    previewArtifact: proofArtifact,
+    buildMutationTruth,
+    buildAgentTurn: buildAgentTurnState,
+  });
   const missionTitle = repeatedLoopContinuation.missionTitle
     ? repeatedLoopContinuation.missionTitle
     : taskSignal.title === "כרגע אין משימה פעילה" && artifactExpectation.title
@@ -723,30 +742,11 @@ export function buildLoopCoreViewModel({ project = null, qaMode = false, compani
           historyCount: normalizeArray(visualBuildTruth.history).length,
         }
       : null,
-    runtimeSkeleton: buildRuntimeSkeletonViewModel({
-      project: safeProject,
-      productClass,
-      productClassSource: productClassResolution.source,
-      surfaceWorkspace,
-      productSkeleton: productSkeletonAgentOutput,
-      visualSkeleton: visualProductSkeletonAgentOutput,
-      artifactExpectation,
-      generationIntent: effectiveGenerationIntent,
-      projectName: safeProject.name,
-    }),
+    runtimeSkeleton,
+    buildPreviewSandbox,
     skeletonChoice: buildSkeletonChoiceViewModel({
       project: safeProject,
-      runtimeSkeleton: buildRuntimeSkeletonViewModel({
-        project: safeProject,
-        productClass,
-        productClassSource: productClassResolution.source,
-        surfaceWorkspace,
-        productSkeleton: productSkeletonAgentOutput,
-        visualSkeleton: visualProductSkeletonAgentOutput,
-        artifactExpectation,
-        generationIntent: effectiveGenerationIntent,
-        projectName: safeProject.name,
-      }),
+      runtimeSkeleton,
       skeletonChoiceTruth,
     }),
     teamMembership: buildTeamMembershipViewModel(safeProject),

@@ -2769,6 +2769,69 @@
   line-height: 1.05;
 }
 
+.nexus-runtime-sandbox-boundary {
+  display: grid;
+  gap: 7px;
+  margin: 0 28px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background: rgba(239, 246, 255, 0.86);
+  color: #1e3a8a;
+}
+
+.nexus-live-build-preview .nexus-runtime-sandbox-boundary {
+  margin: 0 0 18px;
+}
+
+.nexus-runtime-sandbox-boundary span {
+  font-size: 0.74rem;
+  font-weight: 850;
+  color: rgba(30, 58, 138, 0.78);
+}
+
+.nexus-runtime-sandbox-boundary strong {
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.nexus-runtime-sandbox-boundary p,
+.nexus-runtime-sandbox-boundary small {
+  margin: 0;
+  color: rgba(30, 58, 138, 0.78);
+  line-height: 1.55;
+}
+
+.nexus-runtime-sandbox-boundary button {
+  justify-self: start;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #1d4ed8;
+  color: #fff;
+  font-weight: 850;
+}
+
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="failed"],
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="timed-out"],
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="artifact-not-created"] {
+  border-color: rgba(245, 158, 11, 0.34);
+  background: rgba(255, 251, 235, 0.88);
+  color: #78350f;
+}
+
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="failed"] p,
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="timed-out"] p,
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="artifact-not-created"] p,
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="failed"] small,
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="timed-out"] small,
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="artifact-not-created"] small,
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="failed"] span,
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="timed-out"] span,
+.nexus-runtime-sandbox-boundary[data-runtime-boundary-status="artifact-not-created"] span {
+  color: #92400e;
+}
+
 .nexus-runtime-skeleton__header p,
 .nexus-runtime-skeleton__trace p,
 .nexus-runtime-landing-page p {

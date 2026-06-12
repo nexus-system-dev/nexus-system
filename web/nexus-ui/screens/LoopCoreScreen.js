@@ -322,6 +322,7 @@ function renderBuildApprovalFlow(approval = null) {
 function renderFallbackLiveBuildCanvas(viewModel) {
   return `
     <section class="nexus-live-build-preview" aria-label="שלד מוצר חי">
+      ${renderBuildPreviewSandboxBoundary(viewModel.buildPreviewSandbox)}
       <div class="nexus-live-build-preview__badge">RTL · Live skeleton</div>
       <header class="nexus-live-build-preview__hero">
         <div>
@@ -371,6 +372,38 @@ function renderFallbackLiveBuildCanvas(viewModel) {
         </div>
       </div>
     </section>
+  `;
+}
+
+function renderBuildPreviewSandboxBoundary(boundary = null) {
+  if (!boundary?.taskId) {
+    return "";
+  }
+  return `
+    <aside
+      class="nexus-runtime-sandbox-boundary"
+      aria-label="גבול תצוגת הרצה"
+      data-runtime-boundary-task="${escapeAttribute(boundary.taskId)}"
+      data-runtime-boundary-status="${escapeAttribute(boundary.status)}"
+      data-runtime-build-status="${escapeAttribute(boundary.buildStatus)}"
+      data-runtime-preview-status="${escapeAttribute(boundary.previewStatus)}"
+      data-runtime-sandbox-boundary="${escapeAttribute(boundary.sandboxBoundary)}"
+      data-runtime-artifact-fallback="${escapeAttribute(boundary.artifactFallback)}"
+      data-runtime-retry-available="${boundary.retryPolicy?.canRetry ? "true" : "false"}"
+      data-runtime-retry-action="${escapeAttribute(boundary.retryPolicy?.retryAction)}"
+      data-runtime-timeout-policy="${escapeAttribute(boundary.timeoutPolicy?.status)}"
+      data-runtime-trace-project-id="${escapeAttribute(boundary.trace?.projectId)}"
+      data-runtime-trace-skeleton-id="${escapeAttribute(boundary.trace?.runtimeSkeletonId)}"
+      data-runtime-trace-artifact-build-id="${escapeAttribute(boundary.trace?.artifactBuildId)}"
+      data-runtime-trace-mutation-id="${escapeAttribute(boundary.trace?.mutationId)}"
+      data-runtime-no-fake-live-product="${boundary.noFakeLiveProductClaim ? "true" : "false"}"
+    >
+      <span>${boundary.status === "ready" ? "סביבת בדיקה" : "צריך טיפול"}</span>
+      <strong>${escapeHtml(boundary.userFacing?.title ?? "מצב התצוגה")}</strong>
+      <p>${escapeHtml(boundary.userFacing?.body ?? "התצוגה מוגבלת לגבול בדיקה בתוך Nexus.")}</p>
+      <small>${escapeHtml(boundary.userFacing?.nextAction ?? "אפשר לנסות שוב או להמשיך בבנייה.")}</small>
+      ${boundary.retryPolicy?.canRetry ? `<button type="button" data-runtime-preview-retry="${escapeAttribute(boundary.retryPolicy.retryAction)}">נסה שוב</button>` : ""}
+    </aside>
   `;
 }
 
@@ -553,6 +586,7 @@ function renderRuntimeSkeletonSurface(viewModel) {
     return "";
   }
   const mutationTruth = viewModel.buildMutationTruth ?? {};
+  const sandboxBoundary = viewModel.buildPreviewSandbox ?? runtime.buildPreviewSandboxBoundary ?? null;
   const marketQuality = runtime.professionalSkeletonQuality?.marketCalibratedSkeletonQuality ?? {};
   const realismQuality = runtime.professionalSkeletonQuality?.productRealisticSkeletonQuality
     ?? marketQuality.productRealisticSkeletonQuality
@@ -607,6 +641,19 @@ function renderRuntimeSkeletonSurface(viewModel) {
     data-build-mutation-operation="${escapeAttribute(mutationTruth.lastOperationId)}"
     data-build-mutation-history-count="${escapeAttribute(mutationTruth.historyCount)}"
     data-build-mutation-user-summary="${escapeAttribute(mutationTruth.visibleSummary)}"
+    data-runtime-boundary-task="${escapeAttribute(sandboxBoundary?.taskId)}"
+    data-runtime-boundary-status="${escapeAttribute(sandboxBoundary?.status)}"
+    data-runtime-build-status="${escapeAttribute(sandboxBoundary?.buildStatus)}"
+    data-runtime-preview-status="${escapeAttribute(sandboxBoundary?.previewStatus)}"
+    data-runtime-sandbox-boundary="${escapeAttribute(sandboxBoundary?.sandboxBoundary)}"
+    data-runtime-artifact-fallback="${escapeAttribute(sandboxBoundary?.artifactFallback)}"
+    data-runtime-retry-available="${sandboxBoundary?.retryPolicy?.canRetry ? "true" : "false"}"
+    data-runtime-timeout-policy="${escapeAttribute(sandboxBoundary?.timeoutPolicy?.status)}"
+    data-runtime-trace-project-id="${escapeAttribute(sandboxBoundary?.trace?.projectId)}"
+    data-runtime-trace-skeleton-id="${escapeAttribute(sandboxBoundary?.trace?.runtimeSkeletonId)}"
+    data-runtime-trace-artifact-build-id="${escapeAttribute(sandboxBoundary?.trace?.artifactBuildId)}"
+    data-runtime-trace-mutation-id="${escapeAttribute(sandboxBoundary?.trace?.mutationId)}"
+    data-runtime-no-fake-live-product="${sandboxBoundary?.noFakeLiveProductClaim ? "true" : "false"}"
   `;
 
   if (runtime.shellFamily === "mobile-simulator") {
@@ -617,6 +664,7 @@ function renderRuntimeSkeletonSurface(viewModel) {
           <strong>${escapeHtml(runtime.title)}</strong>
           <p>${escapeHtml(runtime.subtitle)}</p>
         </header>
+        ${renderBuildPreviewSandboxBoundary(sandboxBoundary)}
         ${renderProfessionalSkeletonQuality(runtime)}
         ${renderBuildMutationSummary(mutationTruth)}
         <main class="nexus-runtime-mobile-frame">
@@ -664,6 +712,7 @@ function renderRuntimeSkeletonSurface(viewModel) {
     return `
       <section class="nexus-runtime-skeleton nexus-runtime-skeleton--landing" ${commonAttrs} aria-label="שלד ריצה של דף נחיתה">
         <header class="nexus-runtime-browser-bar"><span></span><span></span><span></span><strong>${escapeHtml(runtime.title.toLowerCase().replace(/\s+/g, "-"))}.local</strong></header>
+        ${renderBuildPreviewSandboxBoundary(sandboxBoundary)}
         ${renderProfessionalSkeletonQuality(runtime)}
         ${renderBuildMutationSummary(mutationTruth)}
         <main class="nexus-runtime-landing-page">
@@ -696,6 +745,7 @@ function renderRuntimeSkeletonSurface(viewModel) {
           <strong>${escapeHtml(runtime.scene.title)}</strong>
           <p>${escapeHtml(runtime.scene.objective)}</p>
         </header>
+        ${renderBuildPreviewSandboxBoundary(sandboxBoundary)}
         ${renderProfessionalSkeletonQuality(runtime)}
         ${renderBuildMutationSummary(mutationTruth)}
         <main class="nexus-runtime-game-scene">
@@ -723,6 +773,7 @@ function renderRuntimeSkeletonSurface(viewModel) {
           <strong>${escapeHtml(runtime.title)}</strong>
           <p>${escapeHtml(runtime.subtitle)}</p>
         </header>
+        ${renderBuildPreviewSandboxBoundary(sandboxBoundary)}
         ${renderProfessionalSkeletonQuality(runtime)}
         ${renderBuildMutationSummary(mutationTruth)}
         <main class="nexus-runtime-board">
@@ -748,6 +799,7 @@ function renderRuntimeSkeletonSurface(viewModel) {
           <strong>${escapeHtml(runtime.title)}</strong>
           <p>${escapeHtml(runtime.subtitle)}</p>
         </header>
+        ${renderBuildPreviewSandboxBoundary(sandboxBoundary)}
         ${renderProfessionalSkeletonQuality(runtime)}
         ${renderBuildMutationSummary(mutationTruth)}
         <div class="nexus-runtime-workspace-metrics" aria-label="מדדי עבודה">
@@ -807,6 +859,7 @@ function renderRuntimeSkeletonSurface(viewModel) {
         <strong>${escapeHtml(runtime.title)}</strong>
         <p>${escapeHtml(runtime.subtitle)}</p>
       </header>
+      ${renderBuildPreviewSandboxBoundary(sandboxBoundary)}
       ${renderProfessionalSkeletonQuality(runtime)}
       ${renderBuildMutationSummary(mutationTruth)}
       <main class="nexus-runtime-tool-shell">
