@@ -71,8 +71,8 @@ They may provide truth, state, evidence, and continuity, but they may not reintr
 
 - surface contract: `SURF-003`
 - engines: `project-service-truth-engine`, `onboarding-intake-engine`, `artifact-generation-engine`, `continuity-memory-refresh-engine`
-- open agent tasks: `SKEL-001`, `VSKEL-001`, `BLD-AGT-001`, `VBUILD-001`
-- status: cannot claim full live build behavior until these agents pass `Agent Reality Gate`
+- live agent tasks: `SKEL-001`, `VSKEL-001`, `BLD-AGT-001`, `VBUILD-001`, `MUT-001`
+- status: these Build-side live agent anchors have passed `Agent Reality Gate`; broader release readiness still depends on `VER-AGT-001` and `REL-AGT-001`
 
 ### Release
 
@@ -85,28 +85,28 @@ They may provide truth, state, evidence, and continuity, but they may not reintr
 
 - surface contract: `SURF-005`
 - engines: `project-service-truth-engine`, `continuity-memory-refresh-engine`
-- open agent tasks: `GROW-AGT-001`, `GROW-AGT-002`, `GROW-MEASURE-001`
-- status: growth surface may frame bounded opportunities, but live growth ownership requires these agents
+- live agent tasks: `GROW-AGT-001`, `GROW-AGT-002`, `GROW-MEASURE-001`
+- status: growth surface has bounded live-agent ownership for first-release growth drafts; external publishing, provider execution, paid spend, and release claims still stay behind provider/release gates
 
 ### History
 
 - surface contract: `SURF-006`
 - engines: `project-service-truth-engine`, `continuity-memory-refresh-engine`
-- open agent task: `HIST-AGT-001`
-- status: history engine may preserve state, but live explanation/recovery ownership requires this agent
+- live agent task: `HIST-AGT-001`
+- status: history/continuity live ownership has passed the first-release Agent Reality Gate; deep rollback/recovery beyond the closed boundary remains owned by later history/release work
 
 ### Share
 
 - surface contract: `SURF-007`
 - engines: `project-service-truth-engine`, `artifact-generation-engine`, `release-readiness-engine`
-- open agent task: `SHARE-AGT-001`
-- status: share surface may show review/demo boundaries, but live safe-share decisions require this agent
+- live agent task: `SHARE-AGT-001`
+- status: safe-share/demo live ownership has passed the first-release Agent Reality Gate; public publishing and release remain behind release/provider gates
 
 ### Studio
 
 - surface contract: `SURF-008`
 - engines: `project-service-truth-engine`, `continuity-memory-refresh-engine`
-- open agent task: `STD-HANDOFF-AGT-001`
+- live agent task: `STD-HANDOFF-AGT-001`
 - contract anchors:
   - `STD-DOOR-001`
   - `STD-SYNC-001`
@@ -116,7 +116,7 @@ They may provide truth, state, evidence, and continuity, but they may not reintr
   - `STD-DESIGN-001`
   - `STD-AGENT-001`
   - `STD-HIST-001`
-- status: Studio web boundary may explain and hand off, but live handoff decisions require `STD-HANDOFF-AGT-001`
+- status: Studio web boundary now routes Web-to-Desktop decisions through `STD-HANDOFF-AGT-001`; Desktop installation, local run, file write, sync, package, and recovery still require Desktop-side proof
 - promise boundary:
   - Web may explain why Studio is needed
   - Web may offer open/download/connect actions
@@ -166,7 +166,10 @@ They may provide truth, state, evidence, and continuity, but they may not reintr
 
 The Studio bridge now also declares Studio contract anchors from the completed Studio rulebook, but those anchors are planning-contract-only and do not prove Desktop behavior.
 
-`SURF-009B` remains open because most surface agents remain release-blockers and have not passed `Agent Reality Gate`.
+`SURF-009B` remains blocked because two required release-surface agents remain release-blockers and have not passed `Agent Reality Gate`:
+
+- `VER-AGT-001`
+- `REL-AGT-001`
 
 ## Dependency Split
 
@@ -182,7 +185,7 @@ The split resolves the cycle:
 - `SURF-009A` is trueGreen as the screen/engine/contract bridge
 - `SURF-009B` depends on the live agent chain and does not block `SLICE-001`
 
-Open `SURF-009B` live agent dependencies:
+Closed `SURF-009B` live agent dependencies:
 
 - `SKEL-001`
 - `VSKEL-001`
@@ -194,9 +197,12 @@ Open `SURF-009B` live agent dependencies:
 - `GROW-AGT-001`
 - `GROW-AGT-002`
 - `GROW-MEASURE-001`
+- `STD-HANDOFF-AGT-001`
+
+Open `SURF-009B` live agent dependencies:
+
 - `VER-AGT-001`
 - `REL-AGT-001`
-- `STD-HANDOFF-AGT-001`
 
 No additional rail marker, shell attribute, or planning contract can close `SURF-009B`.
 

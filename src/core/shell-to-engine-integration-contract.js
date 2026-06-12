@@ -70,11 +70,11 @@ export const SHELL_TO_ENGINE_SURFACE_BRIDGES = Object.freeze({
     surfaceContract: "SURF-003",
     engineAnchors: ["project-service-truth-engine", "onboarding-intake-engine", "artifact-generation-engine", "continuity-memory-refresh-engine"],
     agentAnchors: [
-      { taskId: "SKEL-001", agentId: "product-skeleton-agent", status: "pending-release-blocker" },
-      { taskId: "VSKEL-001", agentId: "visual-product-skeleton-agent", status: "pending-release-blocker" },
-      { taskId: "BLD-AGT-001", agentId: "build-loop-agent", status: "pending-release-blocker" },
-      { taskId: "VBUILD-001", agentId: "visual-build-agent", status: "pending-release-blocker" },
-      { taskId: "MUT-001", agentId: "mutation-change-agent", status: "pending-release-blocker" },
+      { taskId: "SKEL-001", agentId: "product-skeleton-agent", status: "trueGreen" },
+      { taskId: "VSKEL-001", agentId: "visual-product-skeleton-agent", status: "trueGreen" },
+      { taskId: "BLD-AGT-001", agentId: "build-loop-agent", status: "trueGreen" },
+      { taskId: "VBUILD-001", agentId: "visual-build-agent", status: "trueGreen" },
+      { taskId: "MUT-001", agentId: "mutation-change-agent", status: "trueGreen" },
     ],
     shellRole: "live-build-workspace-over-preserved-engines",
   },
@@ -91,9 +91,9 @@ export const SHELL_TO_ENGINE_SURFACE_BRIDGES = Object.freeze({
     surfaceContract: "SURF-005",
     engineAnchors: ["project-service-truth-engine", "continuity-memory-refresh-engine"],
     agentAnchors: [
-      { taskId: "GROW-AGT-001", agentId: "growth-agent", status: "pending-release-blocker" },
-      { taskId: "GROW-AGT-002", agentId: "social-campaign-execution-agent", status: "pending-release-blocker" },
-      { taskId: "GROW-MEASURE-001", agentId: "growth-measurement-agent", status: "pending-release-blocker" },
+      { taskId: "GROW-AGT-001", agentId: "growth-agent", status: "trueGreen" },
+      { taskId: "GROW-AGT-002", agentId: "social-campaign-execution-agent", status: "trueGreen" },
+      { taskId: "GROW-MEASURE-001", agentId: "growth-measurement-agent", status: "trueGreen" },
     ],
     shellRole: "bounded-growth-over-product-truth",
   },
@@ -101,7 +101,7 @@ export const SHELL_TO_ENGINE_SURFACE_BRIDGES = Object.freeze({
     surfaceContract: "SURF-006",
     engineAnchors: ["project-service-truth-engine", "continuity-memory-refresh-engine"],
     agentAnchors: [
-      { taskId: "HIST-AGT-001", agentId: "history-continuity-agent", status: "pending-release-blocker" },
+      { taskId: "HIST-AGT-001", agentId: "history-continuity-agent", status: "trueGreen" },
     ],
     shellRole: "product-memory-over-history-engines",
   },
@@ -109,7 +109,7 @@ export const SHELL_TO_ENGINE_SURFACE_BRIDGES = Object.freeze({
     surfaceContract: "SURF-007",
     engineAnchors: ["project-service-truth-engine", "artifact-generation-engine", "release-readiness-engine"],
     agentAnchors: [
-      { taskId: "SHARE-AGT-001", agentId: "share-demo-agent", status: "pending-release-blocker" },
+      { taskId: "SHARE-AGT-001", agentId: "share-demo-agent", status: "trueGreen" },
     ],
     shellRole: "safe-demo-over-artifact-and-release-truth",
   },
@@ -117,7 +117,7 @@ export const SHELL_TO_ENGINE_SURFACE_BRIDGES = Object.freeze({
     surfaceContract: "SURF-008",
     engineAnchors: ["project-service-truth-engine", "continuity-memory-refresh-engine"],
     agentAnchors: [
-      { taskId: "STD-HANDOFF-AGT-001", agentId: "studio-handoff-agent", status: "pending-release-blocker" },
+      { taskId: "STD-HANDOFF-AGT-001", agentId: "studio-handoff-agent", status: "trueGreen" },
     ],
     contractAnchors: [
       { taskId: "STD-DOOR-001", contractId: "studio-web-studio-door-contract", status: "trueGreen", closureScope: "planning-contract-only" },
@@ -148,7 +148,40 @@ function cloneContractAnchors(contractAnchors = []) {
   return contractAnchors.map((contract) => ({ ...contract }));
 }
 
+export function createLiveSurfaceAgentIntegrationGate() {
+  const liveAgentDependencies = Object.entries(SHELL_TO_ENGINE_SURFACE_BRIDGES).flatMap(([surfaceId, bridge]) =>
+    cloneAgentAnchors(bridge.agentAnchors).map((agent) => ({
+      surfaceId,
+      ...agent,
+      agentRealityGatePassed: agent.status === "trueGreen",
+    })),
+  );
+  const blockingDependencies = liveAgentDependencies.filter((agent) => !agent.agentRealityGatePassed);
+
+  return {
+    taskId: "SURF-009B",
+    classification: "bridge task",
+    status: blockingDependencies.length > 0 ? "blocked" : "ready-for-live-proof",
+    canonicalLaw:
+      "Visible product surfaces may claim live agent action only when every required surface agent has passed Agent Reality Gate.",
+    liveAgentDependencies,
+    blockingDependencies,
+    closureRequirements: [
+      "all-required-live-surface-agents-pass-agent-reality-gate",
+      "surfaces-show-real-agent-action-path-or-truthful-blocked-state",
+      "live-browser-proof-covers-user-input-agent-result-visible-or-product-change",
+    ],
+    notTrueGreenWhen: [
+      "verification-agent-is-not-implemented",
+      "release-agent-is-not-implemented",
+      "surface-uses-template-or-ui-only-success-instead-of-agent-backed-truth",
+      "studio-web-claims-desktop-local-action-before-desktop-proof",
+    ],
+  };
+}
+
 export function createShellToEngineIntegrationContract() {
+  const liveAgentGate = createLiveSurfaceAgentIntegrationGate();
   return {
     contractId: "SURF-009",
     status: "ready-for-implementation",
@@ -174,6 +207,7 @@ export function createShellToEngineIntegrationContract() {
         .filter((agent) => agent.status !== "trueGreen")
         .map((agent) => ({ surfaceId, ...agent })),
     ),
+    liveAgentIntegrationGate: liveAgentGate,
     closureRequirements: [
       "every-canonical-surface-declares-surf-009-bridge",
       "preserved-engines-remain-hidden-engines",

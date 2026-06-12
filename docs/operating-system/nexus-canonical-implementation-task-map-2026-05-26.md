@@ -1118,7 +1118,7 @@ Write-back:
   - `SLICE-001 — First vertical slice execution lane`
 
 #### `SURF-009B — Live surface agent integration gate`
-- status: `new-proposed`
+- status: `blocked`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -1153,6 +1153,11 @@ Write-back:
 - canonical_write_back:
   - `2026-06-03: SURF-009B was created as the later live-agent gate split out of SURF-009. It intentionally does not block SLICE-001 because the live agents it requires are produced by the slice and agent chain. It remains open until all listed surface agents pass Agent Reality Gate.`
   - `2026-06-07: NEXUS-FACADE-001 added after user clarification that internal multi-agent ownership must be invisible to normal users. SURF-009B still owns live surface-agent integration; NEXUS-FACADE-001 owns the unified user-facing Nexus agent facade after those live agent paths exist.`
+  - `2026-06-12: SURF-009B dependency audit rerun after STD-HANDOFF-AGT-001 closure. Code bridge now reflects current live-agent truth: SKEL-001, VSKEL-001, BLD-AGT-001, VBUILD-001, MUT-001, HIST-AGT-001, SHARE-AGT-001, GROW-AGT-001, GROW-AGT-002, GROW-MEASURE-001, and STD-HANDOFF-AGT-001 are trueGreen; only VER-AGT-001 and REL-AGT-001 remain open.`
+  - `Implemented createLiveSurfaceAgentIntegrationGate() in src/core/shell-to-engine-integration-contract.js so SURF-009B reports blocked state from current agent reality instead of stale pending anchors.`
+  - `Verification passed: node --check src/core/shell-to-engine-integration-contract.js; node --test test/shell-to-engine-integration-contract.test.js test/nexus-sidebar-navigation-contract.test.js test/studio-boundary-surface-contract.test.js test/release-surface-canonical-structure-contract.test.js passed 22/22.`
+  - `Canonical blocker: SURF-009B cannot close trueGreen until VER-AGT-001 and REL-AGT-001 are implemented, surface-wired, and live-proofed through Agent Reality Gate.`
+  - `Blocker classification: missing dependency.`
 
 #### `NEXUS-FACADE-001 — Unified user-facing Nexus agent facade`
 - status: `new-proposed`

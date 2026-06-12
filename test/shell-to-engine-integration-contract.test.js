@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  createLiveSurfaceAgentIntegrationGate,
   createShellToEngineIntegrationContract,
   getShellToEngineSurfaceBridge,
 } from "../src/core/shell-to-engine-integration-contract.js";
@@ -54,6 +55,7 @@ test("SURF-009 maps each canonical surface to explicit engine and agent anchors"
   assert.equal(buildBridge.agentAnchors.some((agent) => agent.taskId === "SKEL-001"), true);
   assert.equal(buildBridge.agentAnchors.some((agent) => agent.taskId === "VBUILD-001"), true);
   assert.equal(buildBridge.agentAnchors.some((agent) => agent.taskId === "MUT-001"), true);
+  assert.equal(buildBridge.agentAnchors.every((agent) => agent.status === "trueGreen"), true);
   assert.equal(releaseBridge.surfaceContract, "SURF-004");
   assert.equal(releaseBridge.engineAnchors.includes("release-readiness-engine"), true);
   assert.equal(releaseBridge.agentAnchors.some((agent) => agent.taskId === "REL-AGT-001"), true);
@@ -73,11 +75,14 @@ test("SURF-009 refuses fake green when surface agents are still open", () => {
   const contract = createShellToEngineIntegrationContract();
 
   assert.equal(contract.agentRealityRule.includes("live agent or explicit open release-blocker"), true);
-  assert.equal(contract.openAgentRuntimeDependencies.length > 0, true);
-  assert.equal(contract.openAgentRuntimeDependencies.some((agent) => agent.taskId === "GROW-AGT-001"), true);
-  assert.equal(contract.openAgentRuntimeDependencies.some((agent) => agent.taskId === "HIST-AGT-001"), true);
-  assert.equal(contract.openAgentRuntimeDependencies.some((agent) => agent.taskId === "SHARE-AGT-001"), true);
-  assert.equal(contract.openAgentRuntimeDependencies.some((agent) => agent.taskId === "STD-HANDOFF-AGT-001"), true);
+  assert.deepEqual(
+    contract.openAgentRuntimeDependencies.map((agent) => agent.taskId).sort(),
+    ["REL-AGT-001", "VER-AGT-001"],
+  );
+  assert.equal(contract.openAgentRuntimeDependencies.some((agent) => agent.taskId === "GROW-AGT-001"), false);
+  assert.equal(contract.openAgentRuntimeDependencies.some((agent) => agent.taskId === "HIST-AGT-001"), false);
+  assert.equal(contract.openAgentRuntimeDependencies.some((agent) => agent.taskId === "SHARE-AGT-001"), false);
+  assert.equal(contract.openAgentRuntimeDependencies.some((agent) => agent.taskId === "STD-HANDOFF-AGT-001"), false);
   assert.equal(contract.notTrueGreenWhen.includes("studio-web-boundary-claims-desktop-local-action-before-desktop-proof"), true);
 });
 
@@ -86,11 +91,26 @@ test("SURF-009 keeps Studio contract anchors separate from live Desktop proof", 
 
   assert.equal(studioBridge.contractAnchors.length >= 8, true);
   assert.equal(studioBridge.contractAnchors.every((contract) => contract.closureScope === "planning-contract-only"), true);
-  assert.equal(studioBridge.agentAnchors.some((agent) => agent.status === "pending-release-blocker"), true);
+  assert.equal(studioBridge.agentAnchors.every((agent) => agent.status === "trueGreen"), true);
   assert.equal(
     studioBridge.localActionPromiseBoundary.includes("web-must-not-claim-installation-detection-before-desktop-proof"),
     true,
   );
+});
+
+test("SURF-009B live surface agent gate is blocked only by verification and release agents", () => {
+  const gate = createLiveSurfaceAgentIntegrationGate();
+
+  assert.equal(gate.taskId, "SURF-009B");
+  assert.equal(gate.status, "blocked");
+  assert.deepEqual(
+    gate.blockingDependencies.map((agent) => `${agent.surfaceId}:${agent.taskId}`).sort(),
+    ["release:REL-AGT-001", "release:VER-AGT-001"],
+  );
+  assert.equal(gate.liveAgentDependencies.some((agent) => agent.taskId === "STD-HANDOFF-AGT-001" && agent.agentRealityGatePassed), true);
+  assert.equal(gate.liveAgentDependencies.some((agent) => agent.taskId === "GROW-AGT-001" && agent.agentRealityGatePassed), true);
+  assert.equal(gate.notTrueGreenWhen.includes("verification-agent-is-not-implemented"), true);
+  assert.equal(gate.notTrueGreenWhen.includes("release-agent-is-not-implemented"), true);
 });
 
 test("canonical rail exposes SURF-009 on visible product surfaces", () => {
