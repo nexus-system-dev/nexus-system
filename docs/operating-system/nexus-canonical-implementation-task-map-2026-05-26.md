@@ -6774,7 +6774,7 @@ Write-back:
   - `VER-AGT-001 — Verification / QA Agent live artifact gate`
 
 #### `VER-AGT-001 — Verification / QA Agent live artifact gate`
-- status: `new-proposed`
+- status: `blocked`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -6816,6 +6816,13 @@ Write-back:
 - not trueGreen:
   - verification is only a passive checklist or hardcoded pass state
   - release can bypass verification-agent output
+- canonical_write_back:
+  - `2026-06-12: VER-AGT-001 dependency check run after SURF-009B was blocked on release agents. The task cannot execute yet because its required upstream product/artifact/state gates are not closed.`
+  - `Closed dependency confirmed: EXP-004.`
+  - `Open required dependencies: STANDALONE-ARTIFACT-001, PRODUCT-PROMISE-GATE-001, CAPABILITY-ACTION-UX-001, STATE-001, RUNTIME-001, A11Y-001, DATA-001.`
+  - `Canonical blocker: implementing the Verification / QA Agent before those dependencies would create a passive checklist or hardcoded verification result instead of an agent-owned artifact gate over real standalone artifact, product promise, action UX, state, runtime, accessibility, and data truth.`
+  - `Blocker classification: missing dependency.`
+  - `Verification run: repository status parser confirmed dependency statuses directly from this canonical implementation task map.`
 
 #### `REL-001 — Artifact verified gate`
 - status: `new-proposed`
