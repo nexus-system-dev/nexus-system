@@ -3495,6 +3495,35 @@ Write-back:
     - `cockpit supports rollback execution and project audit filtering from the workspace`
     - `cockpit consumes sse live updates when push transport is available`
     - `cockpit saves snapshot schedule and runs manual backup from versioning controls`
+  - follow_up_update_2026-06-13:
+    - status: `partial`
+    - changed:
+      - `web/app.js` now keeps loop-family visible route truth (`loop`, `execution`, `proof`, etc.) separate from the workspace shell so direct route restore can show the requested surface while preserving the workspace envelope.
+      - `web/app.js` now restores a real listed project for stored `loop` state before falling back to QA preview state.
+      - `web/app.js` restores onboarding from local stored state without requiring backend conversation hydration when a recoverable local conversation exists.
+      - `web/app.js` preserves onboarding draft answer visibility across refresh and returns from reopened onboarding to the workspace with the expected visible feedback.
+      - `web/app.js` restores the Understanding step, keeps Timeline disabled under the NLP-011 boundary, populates the Developer tab summary without requiring explicit dev mode, and sends blocked release validation to the release workspace instead of proof-only.
+      - `web/app.js` wires direct loop primary/secondary action button listeners for screen-owned fake DOM and browser click paths.
+    - verification:
+      - `node --check web/app.js` passed.
+      - `node --test --test-name-pattern "cockpit renders Wave 1 sections|cockpit refreshes live progress|cockpit creates first project|W4-FIX-001 fresh create|W4-FIX-005|direct loop route|restore" test/web-app-wave1-cockpit.test.js` passed 8/8.
+      - `node --test test/web-app-wave1-cockpit.test.js` was run and is still not green; it printed additional failures and then stayed alive until the stuck test process was closed with a targeted `pkill -f "node --test test/web-app-wave1-cockpit.test.js"`.
+    - remaining_blocker:
+      - blocker: `COCKPIT-FIRST-PROJECT-E2E-REPAIR-001-REMAINING-FULL-COCKPIT-SUITE-AND-LIVE-PROOF`
+      - type: `false prior closure`
+      - reason: `The repaired first-project, route restore, live refresh, and local restore paths now pass together in focused regression coverage, but the full cockpit suite still has adjacent visible shell/onboarding/release failures and the required no-QA live browser refresh/right-rail proof has not run. trueGreen remains prohibited.`
+    - still_failing_tests_observed:
+      - `QA screen switcher opens loop-family preview screens without an active project`
+      - `cockpit explains blocked onboarding finish instead of appearing stuck`
+      - `cockpit disables finish button and shows visible loading state while onboarding finish is pending`
+      - `cockpit can reopen onboarding screen from the workspace for live UI checks`
+      - `cockpit can exit real onboarding back to the create-project screen`
+      - `cockpit exposes explicit onboarding navigation controls`
+      - `product flow invariants keep create, onboarding, and workspace as exclusive screens`
+      - `cockpit supports proposal editing and partial acceptance through the release workspace`
+    - unverified:
+      - `The full cockpit file did not complete after printing failures through subtest 25, so later subtests remain unverified in this run.`
+      - `Live browser proof on http://127.0.0.1:4011/ without QA query state was not run in this update.`
 - next:
   - `UNIFIED-NEXUS-AGENT-001 — One visible Nexus agent across all product phases`
 

@@ -542,7 +542,12 @@ function queryElements(doc) {
     loopScreenIntro: doc.querySelector("#loop-screen-intro"),
     loopPrimaryTitle: doc.querySelector("#loop-primary-title"),
     loopPrimaryReason: doc.querySelector("#loop-primary-reason"),
-    loopWhatHappensBody: doc.querySelector("#loop-what-happens-body"),
+    loopWhatHappensBody: doc.querySelector("#loop-what-happens-body") ?? (() => {
+      const fallback = doc.createElement("p");
+      fallback.id = "loop-what-happens-body";
+      doc.body?.append?.(fallback);
+      return doc.querySelector("#loop-what-happens-body") ?? fallback;
+    })(),
     loopPrimaryActionButton: doc.querySelector("#loop-primary-action-button"),
     loopSecondaryActionButton: doc.querySelector("#loop-secondary-action-button"),
     loopWorkspacePanel: doc.querySelector("#workspace-loop"),
@@ -1647,7 +1652,8 @@ function resolveLoopTaskSignal(project) {
   const roadmap = normalizeArray(project.cycle?.roadmap);
   const blockedTask = roadmap.find((task) => task.status === "blocked");
   const assignedTask = roadmap.find((task) => task.status === "assigned");
-  const title = approvals[0] ?? assignedTask?.summary ?? blockedTask?.summary ?? "כרגע אין משימה פעילה";
+  const developerNextAction = normalizeString(project.developerWorkspace?.contextSummary?.nextAction, null);
+  const title = developerNextAction || assignedTask?.summary || blockedTask?.summary || approvals[0] || "כרגע אין משימה פעילה";
   const reason = blockedTask
     ? `זה תקוע בגלל: ${normalizeArray(blockedTask.dependencies).join(", ") || "חסר מידע"}`
     : approvals[0]
@@ -1766,17 +1772,11 @@ function renderWorkspaceTabs(elements, project) {
   }
 
   if (elements.developerTab) {
-    if (isExplicitDevModeEnabled()) {
-      elements.developerTab.hidden = false;
-      elements.developerTab.innerHTML = workspaceTabHtml("Developer", [
-        `${developerSummary.progressPercent ?? 0}%`,
-        developerSummary.progressStatus ?? "idle",
-        developerSummary.nextAction ?? "no next action",
-      ]);
-    } else {
-      elements.developerTab.hidden = true;
-      elements.developerTab.innerHTML = "";
-    }
+    elements.developerTab.innerHTML = workspaceTabHtml("Developer", [
+      `${developerSummary.progressPercent ?? 0}%`,
+      developerSummary.progressStatus ?? "idle",
+      developerSummary.nextAction ?? "no next action",
+    ]);
   }
 
   if (elements.projectBrainTab) {
@@ -2607,7 +2607,12 @@ function renderLoop(elements, project) {
         reason: "ה־loop צריך עוד context לפני שאפשר לקדם task ברור.",
         title: "Complete the project context",
       };
-  const secondaryLoopAction = releasePreviewId || releaseValidation.status
+  const secondaryLoopAction = releaseValidation.status === "blocked"
+    ? {
+        label: "Resolve release blocker",
+        target: "release",
+      }
+    : releasePreviewId || releaseValidation.status
     ? {
         label: "Open visible proof",
         target: "proof",
@@ -4896,6 +4901,18 @@ export function createCockpitApp({
         stepKey: "create",
         enabled: true,
       },
+      understanding: {
+        key: "understanding",
+        label: "Primary flow",
+        title: "Understanding Summary",
+        subtitle: "מסך הסיכום: מה Nexus הבינה על הפרויקט לפני שעוברים ל־Loop.",
+        explanation: "מסך הסיכום (Understanding Summary) מציג את ההבנה הנוכחית של הפרויקט לפני שממשיכים ל־Loop.",
+        navButton: null,
+        stepButton: elements.flowStepUnderstandingButton,
+        stepKey: "understanding",
+        enabled: hasIntakeContext,
+        disabledReason: "מסך הסיכום (Understanding Summary) נפתח רק כשיש הקשר פרויקט או onboarding פעיל.",
+      },
       loop: {
         key: "loop",
         label: "Primary flow",
@@ -5047,8 +5064,8 @@ export function createCockpitApp({
         subtitle: "כאן רואים את היסטוריית הפרויקט, אבני הדרך, והמעברים שעברנו.",
         explanation: "זה מסך הזיכרון של הלופ: מה קרה, מתי זה קרה, ואיך זה מחבר בין המשימות לבין שינויי המצב.",
         navButton: elements.navTimelineButton,
-        enabled: hasProject || resolveDevFlowControlsEnabled(),
-        disabledReason: "Timeline זמין כשיש פרויקט פעיל או במצב QA מקומי.",
+        enabled: false,
+        disabledReason: "Timeline / History עדיין לא נפתח כתכונה מלאה (NLP-011) ויושק בהמשך.",
       },
       home: {
         key: "home",
@@ -5112,6 +5129,7 @@ export function createCockpitApp({
     const isLoopFamilyRoute = currentRouteKey === "execution" || currentRouteKey === "proof" || currentRouteKey === "artifact" || currentRouteKey === "confirmation" || currentRouteKey === "state-update" || currentRouteKey === "next-task" || currentRouteKey === "timeline";
     const routeModels = [
       buildShellRouteModel("create"),
+      buildShellRouteModel("understanding"),
       buildShellRouteModel("loop"),
       buildShellRouteModel("timeline"),
       buildShellRouteModel("home"),
@@ -5488,10 +5506,21 @@ export function createCockpitApp({
     }
 
     const storedRoute = normalizeString(readStoredFlowState()?.screen, "");
-    const effectiveRoute = !isQaModeEnabled()
+    const hasExplicitCreateRouteRequest = Boolean(
+      globalThis.location
       && requestedRoute === "create"
-      && storedRoute === "loop"
-      ? storedRoute
+      && (
+        globalThis.location.pathname === "/create"
+        || searchParams.get("qaScreen") === "create"
+        || searchParams.get("qa-screen") === "create"
+        || searchParams.get("qaReset") === "1"
+      ),
+    );
+    const hasLoadedWorkspaceProject = Boolean(currentProject) && workspaceKeys.includes(activeWorkspace);
+    const effectiveRoute = requestedRoute === "create"
+      && !hasExplicitCreateRouteRequest
+      && (storedRoute === "loop" || hasLoadedWorkspaceProject)
+      ? (storedRoute === "loop" ? storedRoute : activeWorkspace)
       : requestedRoute;
 
     suppressShellRouteHistorySync = true;
@@ -11200,6 +11229,7 @@ export function createCockpitApp({
     const normalizedScreen = workspaceBackedScreen
       ? "workspace"
       : screen === "onboarding" || screen === "workspace" || screen === "home" || screen === "files" || screen === "settings" || screen === "help" || screen === "qa" ? screen : "create";
+    const visibleScreen = workspaceBackedScreen ? screen : normalizedScreen;
 
     if (elements.screenCreate) {
       elements.screenCreate.hidden = normalizedScreen !== "create";
@@ -11223,40 +11253,40 @@ export function createCockpitApp({
       elements.screenUnderstanding.hidden = true;
     }
     if (elements.screenLoop) {
-      elements.screenLoop.hidden = normalizedScreen !== "loop";
+      elements.screenLoop.hidden = visibleScreen !== "loop";
     }
     if (elements.screenExecution) {
-      elements.screenExecution.hidden = normalizedScreen !== "execution";
+      elements.screenExecution.hidden = visibleScreen !== "execution";
     }
     if (elements.screenProof) {
-      elements.screenProof.hidden = normalizedScreen !== "proof";
+      elements.screenProof.hidden = visibleScreen !== "proof";
     }
     if (elements.screenArtifact) {
-      elements.screenArtifact.hidden = normalizedScreen !== "artifact";
+      elements.screenArtifact.hidden = visibleScreen !== "artifact";
     }
     if (elements.screenConfirmation) {
-      elements.screenConfirmation.hidden = normalizedScreen !== "confirmation";
+      elements.screenConfirmation.hidden = visibleScreen !== "confirmation";
     }
     if (elements.screenStateUpdate) {
-      elements.screenStateUpdate.hidden = normalizedScreen !== "state-update";
+      elements.screenStateUpdate.hidden = visibleScreen !== "state-update";
     }
     if (elements.screenNextTask) {
-      elements.screenNextTask.hidden = normalizedScreen !== "next-task";
+      elements.screenNextTask.hidden = visibleScreen !== "next-task";
     }
     if (elements.screenTimeline) {
-      elements.screenTimeline.hidden = normalizedScreen !== "timeline";
+      elements.screenTimeline.hidden = visibleScreen !== "timeline";
     }
     if (elements.screenRelease) {
-      elements.screenRelease.hidden = normalizedScreen !== "release";
+      elements.screenRelease.hidden = visibleScreen !== "release";
     }
     if (elements.screenShare) {
-      elements.screenShare.hidden = normalizedScreen !== "share";
+      elements.screenShare.hidden = visibleScreen !== "share";
     }
     if (elements.screenGrowth) {
-      elements.screenGrowth.hidden = normalizedScreen !== "growth";
+      elements.screenGrowth.hidden = visibleScreen !== "growth";
     }
     if (elements.screenStudio) {
-      elements.screenStudio.hidden = normalizedScreen !== "studio";
+      elements.screenStudio.hidden = visibleScreen !== "studio";
     }
     if (elements.screenQa) {
       elements.screenQa.hidden = normalizedScreen !== "qa";
@@ -11278,16 +11308,16 @@ export function createCockpitApp({
     }
     const body = doc?.body;
     if (body?.dataset) {
-      body.dataset.appScreen = normalizedScreen;
+      body.dataset.appScreen = visibleScreen;
     }
     const root = doc?.documentElement;
     if (root?.dataset) {
-      root.dataset.appScreen = normalizedScreen;
+      root.dataset.appScreen = visibleScreen;
     }
-    annotateVisibleSurfaceOwnership(normalizedScreen);
-    renderShellChrome(normalizedScreen, activeWorkspace);
+    annotateVisibleSurfaceOwnership(visibleScreen);
+    renderShellChrome(visibleScreen, activeWorkspace);
     if (options.persist !== false) {
-      persistFlowState(normalizedScreen);
+      persistFlowState(visibleScreen);
     }
     renderProjectCompanionPresence();
   }
@@ -11344,6 +11374,9 @@ export function createCockpitApp({
     applyDesignSystem(doc, project);
     renderProject(elements, project);
     renderProjectCompanionPresence();
+    if (!workspaceKeys.includes(activeWorkspace)) {
+      activeWorkspace = "loop";
+    }
     if (activeWorkspace === "loop") {
       renderLoopCoreScreenView(project);
     } else if (activeWorkspace === "execution") {
@@ -11466,7 +11499,7 @@ export function createCockpitApp({
   }
 
   function reopenOnboardingFromWorkspace() {
-    setAppScreen("create", { persist: false });
+    setAppScreen("onboarding", { persist: false });
     if (currentProject) {
       if (elements.createProjectNameInput) {
         elements.createProjectNameInput.value = currentProject.name ?? elements.createProjectNameInput.value ?? "";
@@ -11488,7 +11521,7 @@ export function createCockpitApp({
       ),
     );
     renderEmptyAppState({
-      mode: "create",
+      mode: "onboarding",
       message: isRepeatedLoopClarification
         ? "חוזרים לדייק את הסבב הבא"
         : isContinuationPreview
@@ -11571,18 +11604,18 @@ export function createCockpitApp({
         )
       );
 
-      if (onboardingFlow?.sessionId) {
+      if (onboardingFlow?.sessionId && !hasRestorableLocalConversation) {
         syncOnboardingConversationFromBackend(onboardingFlow.sessionId)
           .then(() => {
             renderOnboardingNotes();
             renderOnboardingConversation();
-            persistFlowState("create");
+            persistFlowState("onboarding");
           })
           .catch(() => {
             onboardingConversation = createOnboardingConversationState();
             renderOnboardingNotes();
             renderOnboardingConversation();
-            persistFlowState("create");
+            persistFlowState("onboarding");
           });
       } else if (hasRestorableLocalConversation) {
         onboardingConversation = refreshOnboardingConversationPresentation(
@@ -11603,8 +11636,8 @@ export function createCockpitApp({
       }
       }
     }
-    renderShellChrome("create", activeWorkspace);
-    persistFlowState("create");
+    renderShellChrome("onboarding", activeWorkspace);
+    persistFlowState("onboarding");
   }
 
   function navigateLoopTarget(target) {
@@ -13880,7 +13913,7 @@ export function createCockpitApp({
 
       if (currentProjectId) {
         await loadProject(currentProjectId, {
-          title: "חזרת למשטח העבודה שלך",
+          title: "חזרת ל־workspace שלך",
           message: "מסך ה־Onboarding נפתח במצב בדיקה מתוך משטח העבודה, אז החזרנו אותך לאותו פרויקט בלי לפתוח זרימה חדשה.",
         });
         return;
@@ -14866,10 +14899,18 @@ async function runSnapshotWorkerTickFromUi() {
         || normalizeString(routeSearchParams.get("qaState"), null)
       ),
     );
+    const hasExplicitCreateRouteRequest = Boolean(
+      globalThis.location
+      && requestedRouteKey === "create"
+      && (
+        globalThis.location.pathname === "/create"
+        || routeSearchParams.get("qaScreen") === "create"
+        || routeSearchParams.get("qaReset") === "1"
+      ),
+    );
     const shouldPreferFreshCreateRoute = (
-      (shouldResetQaState || requestedRouteKey === "create")
+      (shouldResetQaState || hasExplicitCreateRouteRequest)
       && !hasExplicitRouteBackedState
-      && (shouldResetQaState || normalizeString(storedFlowState?.screen, "create") !== "create")
     );
     const effectiveStoredFlowState = shouldPreferFreshCreateRoute
       ? {
@@ -14981,6 +15022,15 @@ async function runSnapshotWorkerTickFromUi() {
       return projects;
     }
 
+    const storedCreateConversationForRoute = normalizeObject(effectiveStoredFlowState?.onboardingConversation);
+    const storedCreateFlowForRoute = normalizeObject(effectiveStoredFlowState?.onboardingFlow);
+    const hasCreateRouteContinuation = Boolean(
+      storedCreateConversationForRoute.currentQuestion
+      || storedCreateConversationForRoute.summary
+      || normalizeArray(storedCreateConversationForRoute.transcript).length > 0
+      || normalizeString(storedCreateFlowForRoute.sessionId, "")
+    );
+
     if (effectiveStoredFlowState?.screen === "home") {
       currentProjectId = effectiveStoredFlowState.currentProjectId ?? storedProjectSnapshot.id ?? null;
       currentProject = null;
@@ -15085,7 +15135,11 @@ async function runSnapshotWorkerTickFromUi() {
         persistFlowState("create");
       }
     } else if (effectiveStoredFlowState?.screen === "loop") {
-      openLoopPreviewScreen();
+      if (projects?.[0]?.id) {
+        await loadProject(projects[0].id);
+      } else {
+        openLoopPreviewScreen();
+      }
     } else if (effectiveStoredFlowState?.screen === "execution") {
       openExecutionPreviewScreen();
     } else if (effectiveStoredFlowState?.screen === "proof") {
@@ -15102,13 +15156,19 @@ async function runSnapshotWorkerTickFromUi() {
       openTimelinePreviewScreen();
     } else if (effectiveStoredFlowState?.screen === "onboarding") {
       let onboardingSessionMissing = false;
+      const recoverableStoredConversation = normalizeObject(effectiveStoredFlowState?.onboardingConversation);
+      const hasRecoverableConversation = Boolean(
+        recoverableStoredConversation.currentQuestion
+        || recoverableStoredConversation.summary
+        || normalizeArray(recoverableStoredConversation.transcript).length > 0,
+      );
       if (onboardingFlow?.sessionId) {
         try {
           await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
         } catch (error) {
           if (error?.message === "Request failed: 404") {
             onboardingSessionMissing = true;
-          } else {
+          } else if (!hasRecoverableConversation) {
             throw error;
           }
         }
@@ -15133,12 +15193,6 @@ async function runSnapshotWorkerTickFromUi() {
           ) || resolveSelectedOnboardingProviderId(),
         };
 
-        const recoverableStoredConversation = normalizeObject(effectiveStoredFlowState?.onboardingConversation);
-        const hasRecoverableConversation = Boolean(
-          recoverableStoredConversation.currentQuestion
-          || recoverableStoredConversation.summary
-          || normalizeArray(recoverableStoredConversation.transcript).length > 0,
-        );
         onboardingConversation = hasRecoverableConversation
           ? refreshOnboardingConversationPresentation({
               ...recoverableStoredConversation,
@@ -15207,14 +15261,21 @@ async function runSnapshotWorkerTickFromUi() {
       }
       if (currentProjectId && currentProject) {
         reopenOnboardingFromWorkspace();
+        if (typeof recoverableStoredConversation.draftAnswer === "string" && elements.onboardingAnswerInput) {
+          elements.onboardingAnswerInput.value = recoverableStoredConversation.draftAnswer;
+        }
+        if (elements.onboardingScreenMessage) {
+          elements.onboardingScreenMessage.textContent = "חזרת ל־Onboarding";
+        }
       } else {
         renderBlockedRouteFallback("create", {
           title: "אי אפשר לשחזר את ה־Onboarding כרגע",
           body: "אין כרגע project/session חי שמאפשר להמשיך intake. חוזרים ל־front door בלי לפתוח מסך onboarding עצמאי.",
         });
       }
+      return projects;
     } else if (
-      effectiveStoredFlowState?.screen === "create"
+      (effectiveStoredFlowState?.screen === "create" && (!projects?.[0] || hasCreateRouteContinuation || shouldPreferFreshCreateRoute))
       || (requestedRouteKey === "create" && !projects?.[0])
     ) {
       const storedCreateConversation = normalizeObject(effectiveStoredFlowState?.onboardingConversation);
@@ -16355,6 +16416,18 @@ async function runSnapshotWorkerTickFromUi() {
 
   elements.loopOpenReleaseButton?.addEventListener("click", () => {
     navigateLoopTarget("proof");
+  });
+
+  elements.loopPrimaryActionButton?.addEventListener("click", (event) => {
+    event?.preventDefault?.();
+    const target = event?.currentTarget ?? elements.loopPrimaryActionButton;
+    navigateLoopTarget(target?.dataset?.loopTarget ?? "onboarding");
+  });
+
+  elements.loopSecondaryActionButton?.addEventListener("click", (event) => {
+    event?.preventDefault?.();
+    const target = event?.currentTarget ?? elements.loopSecondaryActionButton;
+    navigateLoopTarget(target?.dataset?.loopTarget ?? "proof");
   });
 
   if (!resolveDevFlowControlsEnabled()) {

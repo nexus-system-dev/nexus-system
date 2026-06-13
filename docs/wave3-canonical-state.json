@@ -1251,7 +1251,7 @@
       "title": "First project creation to workspace runtime repair",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
       "status": "partial",
-      "reason": "COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 remains the next canonical execution task. On 2026-06-13 the isolated empty app -> create project -> onboarding fallback -> backend finish -> workspace path was repaired and verified, but the full cockpit suite still has route restore, reopened onboarding, live progress, SSE, rollback audit, release proposal, and snapshot schedule failures, and live browser refresh/right-rail proof has not run. trueGreen is prohibited until COCKPIT-FIRST-PROJECT-E2E-REPAIR-001-REMAINING-RESTORE-LIVE-SUITE is resolved."
+      "reason": "COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 remains the next canonical execution task. On 2026-06-13 the focused first-project, live refresh, direct loop restore, workspace restore, onboarding restore, reopened-onboarding restore, and W4-FIX-001 fresh-create paths passed together in test/web-app-wave1-cockpit.test.js, but the full cockpit suite is still not green and no no-QA live browser refresh/right-rail proof has run. trueGreen is prohibited until COCKPIT-FIRST-PROJECT-E2E-REPAIR-001-REMAINING-FULL-COCKPIT-SUITE-AND-LIVE-PROOF is resolved."
     },
     "completedCanonicalExecutionTasks": [
       {
