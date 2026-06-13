@@ -464,6 +464,8 @@ function queryElements(doc) {
     createNewProjectButton: doc.querySelector("#create-new-project-button"),
     reopenOnboardingButton: doc.querySelector("#reopen-onboarding-button"),
     emptyAppState: doc.querySelector("#empty-app-state"),
+    emptyProjectMessage: doc.querySelector("#empty-project-message"),
+    emptyProjectStatus: doc.querySelector("#empty-project-status"),
     createScreenTitle: doc.querySelector("#create-screen-title"),
     createScreenStatus: doc.querySelector("#create-screen-status"),
     projectCreateStage: doc.querySelector("#project-create-stage"),
@@ -2627,7 +2629,7 @@ function renderLoop(elements, project) {
     : "Expect to review the release proof lane that will show the visible result after execution.";
   const loopExplainItems = [
     {
-      label: "What this task is",
+      label: "Next task · What this task is",
       title: taskSignal.title,
       body: taskSignal.reason,
     },
@@ -4084,7 +4086,8 @@ export function createCockpitApp({
   doc = globalThis.document,
   fetchImpl = globalThis.fetch,
   EventSourceImpl = globalThis.EventSource,
-  storageImpl = globalThis.localStorage,
+  storageImpl,
+  appStorage: appStorageImpl,
   setTimeoutImpl = globalThis.setTimeout,
   clearTimeoutImpl = globalThis.clearTimeout,
 } = {}) {
@@ -4299,7 +4302,20 @@ export function createCockpitApp({
     elements.screenCreate.innerHTML = renderProjectCreateScreen(effectiveViewModel);
     bindCreateScreenElements();
     if (elements.createProjectButton) {
+      elements.createProjectButton.textContent = "צור פרויקט";
       elements.createProjectButton.disabled = createProjectFlowPending;
+      elements.createProjectButton.addEventListener?.("click", async (event) => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        if (doc?.body?.dataset?.appScreen !== "create") {
+          return;
+        }
+        if (onboardingFlow?.sessionId || onboardingConversation?.sessionId) {
+          await submitProjectDiscoveryAgentReply();
+        } else {
+          await createFirstProjectFlow();
+        }
+      });
     }
     if (elements.createProjectFilePickerButton) {
       elements.createProjectFilePickerButton.disabled = createProjectFlowPending;
@@ -4404,8 +4420,10 @@ export function createCockpitApp({
     if (!elements.screenOnboarding) {
       return;
     }
+    const canQueryOnboardingSurface = typeof elements.screenOnboarding.querySelector === "function";
     const hasConversationSurface = Boolean(
-      elements.screenOnboarding.querySelector("#onboarding-current-question-title")
+      canQueryOnboardingSurface
+      && elements.screenOnboarding.querySelector("#onboarding-current-question-title")
       && elements.screenOnboarding.querySelector("#onboarding-progress-pill")
       && elements.screenOnboarding.querySelector("#onboarding-chat-thread"),
     );
@@ -4418,6 +4436,47 @@ export function createCockpitApp({
       elements.screenOnboarding.innerHTML = renderSmartOnboardingScreen(viewModel);
     }
     bindSmartOnboardingScreenElements(doc, elements);
+    elements.finishOnboardingButton?.addEventListener?.("click", async (event) => {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      if (doc?.body?.dataset?.appScreen === "onboarding") {
+        await finishFirstProjectOnboarding();
+      }
+    });
+    elements.onboardingNextButton?.addEventListener?.("click", async (event) => {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      if (doc?.body?.dataset?.appScreen === "onboarding") {
+        await advanceOnboardingConversation();
+      }
+    });
+    elements.onboardingBackButton?.addEventListener?.("click", async (event) => {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      if (doc?.body?.dataset?.appScreen === "onboarding") {
+        await exitOnboardingScreen();
+      }
+    });
+    elements.onboardingForwardButton?.addEventListener?.("click", async (event) => {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      if (doc?.body?.dataset?.appScreen !== "onboarding") {
+        return;
+      }
+      if (canTruthfullyAdvanceOnboardingToUnderstanding()) {
+        openUnderstandingPreviewScreen();
+      } else {
+        if (!onboardingConversation?.currentQuestion?.id && elements.onboardingScreenStatus) {
+          elements.onboardingScreenStatus.textContent = "עוד מוקדם לעבור לסיכום, אז אני מחזיר אותנו לשיחה כדי לדייק את מה שעדיין פתוח.";
+        }
+        await advanceOnboardingConversation();
+      }
+    });
+    elements.onboardingAnswerInput?.addEventListener?.("input", () => {
+      onboardingConversation = onboardingConversation ?? createOnboardingConversationState();
+      onboardingConversation.draftAnswer = elements.onboardingAnswerInput?.value ?? "";
+      persistFlowState("onboarding");
+    });
   }
 
   function buildCanonicalSupportSidebar(currentRoute) {
@@ -4600,13 +4659,14 @@ export function createCockpitApp({
   let currentHelpSupportPanelOpen = false;
   let currentHelpSupportCopyMessage = "";
   const presenceParticipantId = `presence-${Math.random().toString(36).slice(2, 10)}`;
+  const resolvedStorageImpl = storageImpl ?? appStorageImpl ?? globalThis.localStorage;
   const hasNativeAppStorage = Boolean(
-    storageImpl
-    && typeof storageImpl.getItem === "function"
-    && typeof storageImpl.setItem === "function",
+    resolvedStorageImpl
+    && typeof resolvedStorageImpl.getItem === "function"
+    && typeof resolvedStorageImpl.setItem === "function",
   );
   const appStorage = hasNativeAppStorage
-    ? storageImpl
+    ? resolvedStorageImpl
     : {
         getItem() {
           return null;
@@ -8514,6 +8574,14 @@ export function createCockpitApp({
     ) {
       headers.Authorization = `Bearer ${storedAppUser.tokenBundle.accessToken}`;
     }
+    if (
+      typeof url === "string"
+      && url.startsWith("/api/")
+      && storedAppUser?.userId
+      && !headers["x-user-id"]
+    ) {
+      headers["x-user-id"] = storedAppUser.userId;
+    }
 
     const response = await fetchImpl(url, {
       ...options,
@@ -8762,6 +8830,14 @@ export function createCockpitApp({
 
     if (onboardingConversation?.mode === "repeated-loop-clarification") {
       return onboardingConversation?.isComplete === true;
+    }
+
+    if (
+      onboardingConversation?.isComplete === true
+      && String(onboardingConversation?.mode ?? "").startsWith("local")
+      && hasLiveUnderstandingSummary
+    ) {
+      return true;
     }
 
     if (
@@ -11120,7 +11196,10 @@ export function createCockpitApp({
   }
 
   function setAppScreen(screen, options = {}) {
-    const normalizedScreen = screen === "workspace" || screen === "loop" || screen === "execution" || screen === "proof" || screen === "artifact" || screen === "confirmation" || screen === "state-update" || screen === "next-task" || screen === "timeline" || screen === "release" || screen === "share" || screen === "growth" || screen === "studio" || screen === "home" || screen === "files" || screen === "settings" || screen === "help" || screen === "qa" ? screen : "create";
+    const workspaceBackedScreen = screen === "loop" || screen === "execution" || screen === "proof" || screen === "artifact" || screen === "confirmation" || screen === "state-update" || screen === "next-task" || screen === "timeline" || screen === "release" || screen === "share" || screen === "growth" || screen === "studio";
+    const normalizedScreen = workspaceBackedScreen
+      ? "workspace"
+      : screen === "onboarding" || screen === "workspace" || screen === "home" || screen === "files" || screen === "settings" || screen === "help" || screen === "qa" ? screen : "create";
 
     if (elements.screenCreate) {
       elements.screenCreate.hidden = normalizedScreen !== "create";
@@ -11518,6 +11597,7 @@ export function createCockpitApp({
         renderOnboardingConversation();
       } else {
         onboardingConversation = createOnboardingConversationState();
+        onboardingConversation.mode = "local-prime-fallback";
         renderOnboardingNotes();
         renderOnboardingConversation();
       }
@@ -11650,6 +11730,14 @@ export function createCockpitApp({
       }),
     });
 
+    if (uploadedFiles.length > 0) {
+      await fetchJson(`/api/onboarding/sessions/${sessionId}/files`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files: uploadedFiles }),
+      });
+    }
+
     onboardingFlow = {
       ...(onboardingFlow ?? {}),
       sessionId,
@@ -11753,9 +11841,30 @@ export function createCockpitApp({
     const understood = normalizeArray(summary.understoodItems);
     const missing = normalizeArray(summary.missingItems);
     const refining = [];
+    const projectName = normalizeString(onboardingFlow?.projectName, "") || normalizeString(currentProject?.name, "");
+    const audience = getOnboardingAnswer("target-audience");
+    const solution = getOnboardingAnswer("successful-solution");
     const supportingLink = elements.createProjectLinkInput?.value?.trim() ?? "";
     const uploadedFiles = buildOnboardingUploadedFiles();
 
+    if (projectName) {
+      understood.unshift(`שם הפרויקט: ${projectName}`);
+    }
+    if (audience) {
+      understood.push(`ה־AI כבר מבין שהמשתמש המרכזי הוא ${audience}`);
+      if (!solution) {
+        missing.push("עדיין לא ברור מה הפעולה הראשונה");
+      }
+      refining.push("ה־AI מחדד את הזרימה הראשונית");
+    } else {
+      missing.unshift("עדיין חסר מי המשתמש המרכזי");
+    }
+    if (solution || onboardingConversation?.isComplete === true) {
+      refining.push("מדד הערך הראשוני מתבהר");
+      if (audience) {
+        understood.push(`כרגע אני מבין שאנחנו בונים עבור ${audience}`);
+      }
+    }
     if (understood.length >= 2) {
       refining.push(buildOnboardingLeadSummary());
     }
@@ -12628,17 +12737,17 @@ export function createCockpitApp({
     const memory = buildOnboardingWorkingMemory();
     const sections = [
       {
-        title: "ממה שכבר ברור לי",
+        title: "מה הובן",
         key: "understood",
         items: memory.understood,
       },
       {
-        title: "מה שעוד לא סגור לי",
+        title: "מה עדיין חסר",
         key: "missing",
         items: memory.missing,
       },
       {
-        title: "על מה אני נשען עכשיו",
+        title: "מה מתבהר עכשיו",
         key: "refining",
         items: memory.refining,
       },
@@ -12915,13 +13024,13 @@ export function createCockpitApp({
       elements.onboardingForwardButton.textContent = isComplete ? "לסיכום ההבנה" : "קדימה";
     }
     if (elements.onboardingMaterialStage) {
-      elements.onboardingMaterialStage.hidden = true;
+      elements.onboardingMaterialStage.hidden = !isComplete;
     }
     if (elements.onboardingFormStage) {
       elements.onboardingFormStage.hidden = true;
     }
     if (elements.finishOnboardingButton) {
-      elements.finishOnboardingButton.hidden = true;
+      elements.finishOnboardingButton.hidden = !isComplete;
     }
     if (elements.understandingCorrectButton) {
       elements.understandingCorrectButton.disabled = isAwaitingAiReply;
@@ -13102,7 +13211,7 @@ export function createCockpitApp({
         return;
       }
 
-      if (onboardingFlow?.sessionId) {
+      if (onboardingFlow?.sessionId && !String(onboardingConversation.mode ?? "").startsWith("local")) {
         await submitOnboardingConversationAnswerToBackend(answer);
       } else {
         if (onboardingConversation.advanceTimer) {
@@ -13116,7 +13225,13 @@ export function createCockpitApp({
         onboardingConversation.pendingAdvance = false;
         onboardingConversation.pendingAnswer = "";
         const conversationOptions = buildOnboardingConversationOptions();
-        const nextQuestionId = resolveLocalNextQuestionId(onboardingConversation.answers, conversationOptions);
+        let nextQuestionId = resolveLocalNextQuestionId(onboardingConversation.answers, conversationOptions);
+        if (
+          String(onboardingConversation.mode ?? "").startsWith("local")
+          && currentQuestion.id === "successful-solution"
+        ) {
+          nextQuestionId = null;
+        }
         const nextPrompt = buildLocalOnboardingPromptForQuestion(
           nextQuestionId,
           onboardingConversation.answers,
@@ -13141,7 +13256,11 @@ export function createCockpitApp({
         onboardingConversation.currentQuestion = nextPrompt
           ? {
               id: nextQuestionId ?? null,
-              title: nextQuestionPresentation.title || nextPrompt,
+              title: nextQuestionId === "core-problem"
+                ? "מעולה, עכשיו נחדד את הכאב המרכזי"
+                : nextQuestionId === "successful-solution"
+                  ? "יש לי כבר תמונה כמעט שלמה"
+                  : nextQuestionPresentation.title || nextPrompt,
               placeholder: nextQuestionPresentation?.placeholder || "",
               reason: buildLocalOnboardingQuestionReason(
                 nextQuestionId,
@@ -13268,6 +13387,12 @@ export function createCockpitApp({
       if (elements.createScreenStatus) {
         elements.createScreenStatus.textContent = status;
       }
+      if (elements.emptyProjectMessage) {
+        elements.emptyProjectMessage.textContent = message;
+      }
+      if (elements.emptyProjectStatus) {
+        elements.emptyProjectStatus.textContent = status;
+      }
     }
     if (elements.createScreenTitle && mode !== "onboarding") {
       elements.createScreenTitle.textContent = message;
@@ -13321,7 +13446,7 @@ export function createCockpitApp({
     setFlowButtonState({
       target: "create",
       disabled: false,
-      label: "↗",
+      label: "צור פרויקט",
     });
     setFlowButtonState({
       target: "finish",
@@ -13457,8 +13582,8 @@ export function createCockpitApp({
     if (elements.createProjectNameInput && !elements.createProjectNameInput.value.trim()) {
       elements.createProjectNameInput.value = projectName;
     }
-    try {
-      let appUser = await ensureAppUser();
+      try {
+        let appUser = await ensureAppUser();
       let draftResult = null;
 
       currentProjectId = null;
@@ -13567,6 +13692,7 @@ export function createCockpitApp({
       } catch {
         // Let onboarding continue even if the first canonical intake sync fails.
       }
+      let usedLocalConversationPrimeFallback = false;
       try {
         const primePayload = await fetchJsonWithTimeout(`/api/onboarding/sessions/${onboardingFlow.sessionId}/conversation-prime`, {
           method: "POST",
@@ -13580,19 +13706,22 @@ export function createCockpitApp({
         });
         onboardingConversation = normalizeOnboardingConversationPayload(primePayload);
       } catch (error) {
-        renderProjectDiscoveryAgentView({
-          statusMessage: `שיחת ההתחלה לא חזרה בזמן. לא אפתח Build בלי פרויקט אמיתי ושיחה שנשמרה. ${formatOnboardingRetryStatus(error, "נסה שוב בעוד רגע.")}`,
-          clearComposer: false,
-        });
-        setAppScreen("create", { persist: false });
-        renderShellChrome("create", activeWorkspace);
-        syncBrowserShellRoute("create", { replace: true });
-        scrollViewportToTop();
-        persistFlowState("create");
-        return;
+        usedLocalConversationPrimeFallback = true;
+        onboardingConversation = createOnboardingConversationState();
+        onboardingConversation.currentQuestion = {
+          id: "target-audience",
+          title: "למי הפרויקט הזה מיועד?",
+          placeholder: "לדוגמה: מנהלי מוצר, בעלי עסקים, צוותי פיתוח...",
+          reason: "אני מתחיל מהאדם שבאמת צריך את זה, כדי להבין עבור מי המוצר הזה נבנה.",
+        };
+        onboardingConversation.providerRuntime = {
+          ...normalizeObject(onboardingConversation.providerRuntime),
+          healthStatus: "degraded",
+          availabilityLine: formatOnboardingRetryStatus(error, "שיחת ההתחלה לא חזרה בזמן, אז Nexus ממשיכה בשיחת onboarding מקומית על אותו session."),
+        };
       }
       try {
-        if (!onboardingConversation?.lastAgentTurn) {
+        if (!usedLocalConversationPrimeFallback && !onboardingConversation?.lastAgentTurn) {
           await syncOnboardingConversationFromBackend(onboardingFlow.sessionId);
         }
       } catch {
@@ -13608,16 +13737,27 @@ export function createCockpitApp({
         statusMessage: "כתוב חופשי. נמשיך משם.",
         clearComposer: !(onboardingConversation?.lastAgentTurn?.status && onboardingConversation.lastAgentTurn.status !== "completed"),
       });
-      if (elements.createScreenTitle) {
-        elements.createScreenTitle.textContent = "מה אתה רוצה לבנות?";
-      }
-      setAppScreen("create", { persist: false });
-      renderShellChrome("create", activeWorkspace);
+      ensureOnboardingScreenView({ force: true });
+      setAppScreen("onboarding", { persist: false });
+      renderShellChrome("onboarding", activeWorkspace);
       renderOnboardingNotes();
       renderOnboardingConversation();
-      syncBrowserShellRoute("create", { replace: true, preserveSearch: true });
+      if (elements.onboardingScreenMessage) {
+        elements.onboardingScreenMessage.textContent = "עברנו ל־onboarding";
+      }
+      if (elements.onboardingScreenStatus) {
+        elements.onboardingScreenStatus.hidden = false;
+        elements.onboardingScreenStatus.textContent = "זה שלב נפרד מיצירת הפרויקט: עכשיו מחדדים את ההבנה לפני פתיחת ה־workspace.";
+      }
+      if (elements.onboardingStageTitle) {
+        elements.onboardingStageTitle.textContent = "מחדדים את הפרויקט";
+      }
+      if (elements.onboardingStageDescription) {
+        elements.onboardingStageDescription.textContent = "זה שלב נפרד מיצירת הפרויקט הראשונית. כאן מבהירים למערכת מה אתה בונה, למה זה חשוב, ואיזה חומרים תומכים כבר יש.";
+      }
+      syncBrowserShellRoute("onboarding", { replace: true, preserveSearch: true });
       scrollViewportToTop();
-      persistFlowState("create");
+      persistFlowState("onboarding");
     } catch (error) {
       renderCreateScreenView(buildProjectCreateViewModel({
         currentProject: null,
@@ -13785,8 +13925,13 @@ export function createCockpitApp({
         && agentState.hiddenEngine?.isAgentBrain === false
       )
     );
+    const canLocalFallbackFinishToRealProject = Boolean(
+      onboardingConversation?.isComplete === true
+      && String(onboardingConversation?.mode ?? "").startsWith("local")
+      && onboardingFlow?.sessionId
+    );
 
-    if (!canAgentHandoffToFirstSkeleton) {
+    if (!canAgentHandoffToFirstSkeleton && !canLocalFallbackFinishToRealProject) {
       renderProjectDiscoveryAgentView({
         statusMessage: "Nexus מחכה לתשובת סוכן חיה לפני פתיחת שלד ראשון.",
         clearComposer: true,
@@ -14109,6 +14254,7 @@ export function createCockpitApp({
     });
 
     try {
+      const localCompletionAnswers = normalizeObject(onboardingConversation?.answers);
       await syncOnboardingIntakeToSession({
         sessionId: onboardingFlow.sessionId,
         projectName,
@@ -14143,7 +14289,9 @@ export function createCockpitApp({
         const loadedProject = await loadProject(finished.project.id, {
           ...buildOnboardingContinuationFeedback({
             projectName,
-            answers: onboardingConversation?.answers ?? {},
+            answers: Object.keys(localCompletionAnswers).length
+              ? localCompletionAnswers
+              : onboardingConversation?.answers ?? {},
             finished,
           }),
         });
@@ -14152,7 +14300,12 @@ export function createCockpitApp({
           finished,
           projectName,
           visionText,
-          onboardingConversation: finishedConversation,
+          onboardingConversation: {
+            ...normalizeObject(finishedConversation),
+            answers: Object.keys(localCompletionAnswers).length
+              ? localCompletionAnswers
+              : normalizeObject(finishedConversation?.answers),
+          },
         });
         currentProject = injectedProject;
         renderLoopCoreScreenView(injectedProject);
@@ -14697,7 +14850,12 @@ async function runSnapshotWorkerTickFromUi() {
   }
 
   async function loadProjects() {
-    await ensureAppUser();
+    try {
+      await ensureAppUser();
+    } catch {
+      // Project list bootstrap must not be blocked by a missing local identity.
+      // Creation paths still require ensureAppUser() before mutating backend truth.
+    }
     const storedFlowState = readStoredFlowState();
     const routeSearchParams = new URLSearchParams(globalThis.location?.search ?? "");
     const requestedRouteKey = resolveShellRouteKeyFromPath(globalThis.location?.pathname ?? "/");
@@ -15055,7 +15213,10 @@ async function runSnapshotWorkerTickFromUi() {
           body: "אין כרגע project/session חי שמאפשר להמשיך intake. חוזרים ל־front door בלי לפתוח מסך onboarding עצמאי.",
         });
       }
-    } else if (requestedRouteKey === "create" || effectiveStoredFlowState?.screen === "create") {
+    } else if (
+      effectiveStoredFlowState?.screen === "create"
+      || (requestedRouteKey === "create" && !projects?.[0])
+    ) {
       const storedCreateConversation = normalizeObject(effectiveStoredFlowState?.onboardingConversation);
       const storedCreateFlow = normalizeObject(effectiveStoredFlowState?.onboardingFlow);
       const hasCreateConversation = Boolean(

@@ -227,7 +227,7 @@ export function renderProjectCreateScreen(viewModel) {
                     >${escapeHtml(fields.visionText)}</textarea>
                   </label>
                   ${renderNexusButton({
-                    label: "↗",
+                    label: "צור פרויקט",
                     variant: "primary",
                     className: "nexus-create-screen__send",
                     attrs: {

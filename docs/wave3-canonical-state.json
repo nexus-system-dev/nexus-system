@@ -1250,8 +1250,8 @@
       "taskId": "COCKPIT-FIRST-PROJECT-E2E-REPAIR-001",
       "title": "First project creation to workspace runtime repair",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
-      "status": "new-proposed",
-      "reason": "COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 was added on 2026-06-13 after main-tree cockpit verification failed 22/25 tests, including the empty app -> create project -> workspace path. It sits earlier than UNIFIED-NEXUS-AGENT-001 and the later Phase 6 blockers because the active project/route/storage/onboarding/workspace path must be coherent before the visible Nexus agent can truthfully mutate the active product."
+      "status": "partial",
+      "reason": "COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 remains the next canonical execution task. On 2026-06-13 the isolated empty app -> create project -> onboarding fallback -> backend finish -> workspace path was repaired and verified, but the full cockpit suite still has route restore, reopened onboarding, live progress, SSE, rollback audit, release proposal, and snapshot schedule failures, and live browser refresh/right-rail proof has not run. trueGreen is prohibited until COCKPIT-FIRST-PROJECT-E2E-REPAIR-001-REMAINING-RESTORE-LIVE-SUITE is resolved."
     },
     "completedCanonicalExecutionTasks": [
       {

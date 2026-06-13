@@ -3392,7 +3392,7 @@ Write-back:
   - `COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 — First project creation to workspace runtime repair`
 
 #### `COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 — First project creation to workspace runtime repair`
-- status: `new-proposed`
+- status: `partial`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -3459,6 +3459,42 @@ Write-back:
   - the right rail can speak to a different project than the visible product surface
   - tests pass only by weakening expected user-visible behavior
   - live proof is skipped or checks a stale/wrong-port/static runtime
+- execution_update_2026-06-13:
+  - status: `partial`
+  - changed:
+    - `web/app.js` now supports the legacy `appStorage` injection used by cockpit tests while preserving `storageImpl`.
+    - `web/app.js` attaches stored app-user identity to authenticated project requests through `x-user-id`.
+    - `web/app.js` repairs the empty app -> create project -> local onboarding fallback -> backend finish -> active workspace path when the provider conversation-prime endpoint is unavailable.
+    - `web/app.js` maps loop-family visible routes back into the workspace shell instead of exposing the old standalone loop screen as the active product surface.
+    - `web/nexus-ui/screens/ProjectCreateScreen.js` now shows a real create label instead of the `↗` symbol.
+  - verification:
+    - `node --check web/app.js` passed.
+    - `node --check web/nexus-ui/screens/ProjectCreateScreen.js` passed.
+    - `node --test --test-name-pattern "cockpit creates first project" test/web-app-wave1-cockpit.test.js` passed.
+    - `node --test --test-name-pattern "cockpit falls back to the create screen" test/web-app-wave1-cockpit.test.js` passed.
+    - `node --test test/web-app-wave1-cockpit.test.js` still fails outside the repaired first-project path and was manually stopped after all visible failing subtests were printed because a test process stayed alive.
+  - remaining_blocker:
+    - blocker: `COCKPIT-FIRST-PROJECT-E2E-REPAIR-001-REMAINING-RESTORE-LIVE-SUITE`
+    - type: `false prior closure`
+    - reason: `The first-project path now passes in isolation, but the same cockpit suite still has failing route restore, reopened onboarding, live progress, SSE, rollback audit, release proposal, and snapshot schedule assertions. Live browser refresh/right-rail proof has not run, so trueGreen is prohibited.`
+  - still_failing_tests_observed:
+    - `cockpit renders Wave 1 sections from the canonical project payload`
+    - `cockpit refreshes live progress without manual clicks`
+    - `cockpit explains blocked onboarding finish instead of appearing stuck`
+    - `cockpit disables finish button and shows visible loading state while onboarding finish is pending`
+    - `cockpit can reopen onboarding screen from the workspace for live UI checks`
+    - `cockpit does not get stuck when finishing dev-only onboarding reopened from the workspace`
+    - `W4-FIX-005 direct loop route restores from project id and replaces full URL state`
+    - `cockpit can exit real onboarding back to the create-project screen`
+    - `cockpit restores onboarding screen after refresh using local app state`
+    - `cockpit restores workspace after refresh using local app state`
+    - `cockpit restores reopened onboarding after refresh and can exit back to workspace`
+    - `cockpit exposes explicit onboarding navigation controls`
+    - `product flow invariants keep create, onboarding, and workspace as exclusive screens`
+    - `cockpit supports proposal editing and partial acceptance through the release workspace`
+    - `cockpit supports rollback execution and project audit filtering from the workspace`
+    - `cockpit consumes sse live updates when push transport is available`
+    - `cockpit saves snapshot schedule and runs manual backup from versioning controls`
 - next:
   - `UNIFIED-NEXUS-AGENT-001 — One visible Nexus agent across all product phases`
 
