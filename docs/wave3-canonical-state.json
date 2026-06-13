@@ -1247,11 +1247,11 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "PRIVACY-001",
-      "title": "Full privacy rights and data lifecycle boundary",
+      "taskId": "DATA-001",
+      "title": "Product shell persistence and data ownership boundary",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
       "status": "selected-unblocked",
-      "reason": "LIVE-PROOF-INTEGRITY-001 closed trueGreen on 2026-06-13 with a claim-to-visible-proof matrix, DOM markers, targeted tests, and live browser proof. PRIVACY-001 is now the next release-blocker in the canonical map, but its dependencies must be reverified before implementation."
+      "reason": "PRIVACY-001 was rechecked on 2026-06-13 and is blocked by missing dependency DATA-001. DATA-001 is the correct next executable release-blocker because full privacy deletion/export/retention cannot close before data ownership and persistence truth are explicit."
     },
     "completedCanonicalExecutionTasks": [
       {
@@ -1443,9 +1443,9 @@
           "BUILD-RELEASE-GATE-001"
         ],
         "nextTaskTruth": {
-          "taskId": "PRIVACY-001",
+          "taskId": "DATA-001",
           "status": "selected-unblocked",
-          "reason": "PRIVACY-001 is the next release-blocker after LIVE-PROOF-INTEGRITY-001 in the canonical task map; dependencies must be reverified before implementation."
+          "reason": "PRIVACY-001 was dependency-checked after LIVE-PROOF-INTEGRITY-001 and is blocked by DATA-001, so DATA-001 is the next executable dependency."
         }
       },
       {

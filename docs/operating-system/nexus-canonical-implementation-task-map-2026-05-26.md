@@ -6073,7 +6073,7 @@ Write-back:
   - `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
 
 #### `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
-- status: `new-proposed`
+- status: `blocked`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -6112,6 +6112,10 @@ Write-back:
   - deletion leaves active user/project data reachable by normal routes
   - retention promises contradict logs, files, backups, billing records, or audit records
   - provider-side data deletion is implied without provider proof or clear boundary
+- blocker_update:
+  - `2026-06-13: PRIVACY-001 was selected by the canonical next-task pointer after LIVE-PROOF-INTEGRITY-001, but dependency verification found it is not actually unblocked because DATA-001 remains new-proposed. This is a missing dependency blocker, not an implementation failure inside PRIVACY-001.`
+  - `PRIVACY-001 depends on DATA-001 because full deletion, export, retention, consent, and user-rights behavior cannot truthfully close until first-release data ownership, source-of-truth, stale-state, persistence, and restore boundaries are explicit.`
+  - `Correct next executable dependency: DATA-001 — Product shell persistence and data ownership boundary.`
 
 #### `SSO-001 — Enterprise and external identity provider boundary`
 - status: `new-proposed`
