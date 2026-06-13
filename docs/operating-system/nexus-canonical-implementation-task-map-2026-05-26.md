@@ -6005,7 +6005,7 @@ Write-back:
   - `LIVE-PROOF-INTEGRITY-001 — Claim-to-visible-proof execution integrity gate`
 
 #### `LIVE-PROOF-INTEGRITY-001 — Claim-to-visible-proof execution integrity gate`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -6061,6 +6061,14 @@ Write-back:
   - `This task owns execution-integrity reporting and proof discipline.`
   - `It does not implement every product feature; it prevents future false closure of those features.`
   - `It must remain in force for all later release-blockers, including privacy, SSO, billing, runtime package, standalone artifact, verification, and release gates.`
+- closure_update:
+  - `2026-06-13: LIVE-PROOF-INTEGRITY-001 implementation landed. web/shared/live-proof-integrity.js now provides a claim-to-visible-proof matrix and validator that blocks trueGreen/fixed/user-visible closure when claim text, changed files, loaded app.js/styles.css, visible route owner, runtime mode, QA-state absence, browser proof, refresh proof, restore proof, behavior proof, artifact paths, and verification commands do not agree.`
+  - `2026-06-13: web/app.js now exposes LIVE-PROOF-INTEGRITY-001 DOM markers on the body, document root, and active visible host during setAppScreen. web/index.html now loads app.js?v=20260613-live-proof-integrity so stale app assets cannot satisfy this proof accidentally.`
+  - `2026-06-13: test/live-proof-integrity.test.js added coverage for clean claim-to-proof closure, QA contamination blocking, missing asset blocking, route-mismatched frontend edits, unmapped changed files, missing refresh/restore/behavior/artifact/command proof, support-file route mapping, self-closure of LIVE-PROOF-INTEGRITY-001, and web/app.js DOM marker wiring.`
+  - `2026-06-13: scripts/verify-live-proof-integrity-001-live-proof.mjs added a live browser proof that signs up a local user, creates a real project, opens http://127.0.0.1:4011/loop?projectId=<id> without qaState/nexusState/qaScreen, verifies SURFACE-OWNER-RUNTIME-001 ownership markers, verifies LIVE-PROOF-INTEGRITY-001 body/root/host markers, verifies app.js asset version 20260613-live-proof-integrity, refreshes and verifies the same project-backed route, and proves negative cases for QA contamination, route-mismatched edits, and missing loaded assets.`
+  - `Verification passed 2026-06-13: node --check web/shared/live-proof-integrity.js; node --check web/app.js; node --check scripts/verify-live-proof-integrity-001-live-proof.mjs; node --test test/live-proof-integrity.test.js test/visible-surface-ownership.test.js; NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-live-proof-integrity-001-live-proof.mjs.`
+  - `Live report: /private/tmp/nexus-live-proof-integrity-001-1781340700540-report.json. Screenshots: /private/tmp/nexus-live-proof-integrity-001-1781340700540-loop.png, /private/tmp/nexus-live-proof-integrity-001-1781340700540-after-refresh.png.`
+  - `Boundary: this closes the reusable execution-integrity proof gate and write-back discipline for future release-blockers. It does not retroactively prove every older trueGreen item had user-visible proof; future tasks must consume this gate, and older over-broad visible claims still need narrowing or reopening when encountered.`
 - next:
   - `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
 

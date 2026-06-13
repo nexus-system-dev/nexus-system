@@ -1247,11 +1247,11 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "LIVE-PROOF-INTEGRITY-001",
-      "title": "Claim-to-visible-proof execution integrity gate",
+      "taskId": "PRIVACY-001",
+      "title": "Full privacy rights and data lifecycle boundary",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
       "status": "selected-unblocked",
-      "reason": "SURFACE-OWNER-RUNTIME-001 closed trueGreen on 2026-06-13 with a route/surface/runtime ownership map, live DOM ownership markers, targeted tests, and live browser proof. LIVE-PROOF-INTEGRITY-001 is now the earliest release-blocker because it consumes that ownership map to prevent future false fixed/trueGreen claims."
+      "reason": "LIVE-PROOF-INTEGRITY-001 closed trueGreen on 2026-06-13 with a claim-to-visible-proof matrix, DOM markers, targeted tests, and live browser proof. PRIVACY-001 is now the next release-blocker in the canonical map, but its dependencies must be reverified before implementation."
     },
     "completedCanonicalExecutionTasks": [
       {
@@ -1398,12 +1398,31 @@
       {
         "taskId": "LIVE-PROOF-INTEGRITY-001",
         "title": "Claim-to-visible-proof execution integrity gate",
-        "status": "selected-unblocked",
+        "status": "trueGreen",
         "createdAt": "2026-06-11",
+        "closedAt": "2026-06-13",
         "source": "2026-06-11 repository-truth and execution-integrity investigation",
         "reason": "Inserted to prevent future trueGreen claims unless repository diff, loaded runtime, static assets, route, browser proof, refresh proof, restore proof, and user-visible behavior all agree.",
         "unblockedAt": "2026-06-13",
         "unblockedBy": "SURFACE-OWNER-RUNTIME-001",
+        "closureEvidence": [
+          "web/shared/live-proof-integrity.js",
+          "web/app.js",
+          "web/index.html",
+          "test/live-proof-integrity.test.js",
+          "scripts/verify-live-proof-integrity-001-live-proof.mjs",
+          "/private/tmp/nexus-live-proof-integrity-001-1781340700540-report.json",
+          "/private/tmp/nexus-live-proof-integrity-001-1781340700540-loop.png",
+          "/private/tmp/nexus-live-proof-integrity-001-1781340700540-after-refresh.png"
+        ],
+        "verification": [
+          "node --check web/shared/live-proof-integrity.js",
+          "node --check web/app.js",
+          "node --check scripts/verify-live-proof-integrity-001-live-proof.mjs",
+          "node --test test/live-proof-integrity.test.js test/visible-surface-ownership.test.js",
+          "NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-live-proof-integrity-001-live-proof.mjs"
+        ],
+        "boundary": "Closes the reusable claim-to-visible-proof integrity gate: future trueGreen/fixed/user-visible closure must prove claim text, changed files, loaded app.js/styles.css, route ownership, runtime mode, QA-state absence, browser proof, refresh proof, restore proof, behavior proof, artifacts, and verification commands agree. It does not retroactively validate every older trueGreen entry; older over-broad visible claims still need narrowing or reopening when encountered.",
         "blocks": [
           "PRIVACY-001",
           "SSO-001",
@@ -1422,7 +1441,12 @@
           "PRODUCT-PROMISE-GATE-001",
           "VER-AGT-001",
           "BUILD-RELEASE-GATE-001"
-        ]
+        ],
+        "nextTaskTruth": {
+          "taskId": "PRIVACY-001",
+          "status": "selected-unblocked",
+          "reason": "PRIVACY-001 is the next release-blocker after LIVE-PROOF-INTEGRITY-001 in the canonical task map; dependencies must be reverified before implementation."
+        }
       },
       {
         "taskId": "BUILD-SPEECH-TRUTH-001",

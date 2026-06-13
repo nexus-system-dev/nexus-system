@@ -73,6 +73,7 @@ import {
   buildVisibleSurfaceProofDataset,
   getVisibleSurfaceOwnership,
 } from "./shared/visible-surface-ownership.js";
+import { LIVE_PROOF_INTEGRITY_TASK_ID } from "./shared/live-proof-integrity.js";
 
 function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
@@ -11101,10 +11102,12 @@ export function createCockpitApp({
     const body = doc?.body;
     if (body?.dataset) {
       Object.assign(body.dataset, dataset);
+      body.dataset.liveProofIntegrityTask = LIVE_PROOF_INTEGRITY_TASK_ID;
     }
     const root = doc?.documentElement;
     if (root?.dataset) {
       root.dataset.surfaceOwnerTask = SURFACE_OWNER_RUNTIME_TASK_ID;
+      root.dataset.liveProofIntegrityTask = LIVE_PROOF_INTEGRITY_TASK_ID;
       root.dataset.surfaceOwnerRoute = dataset.surfaceOwnerRoute;
       root.dataset.surfaceOwnerRuntimeMode = dataset.surfaceOwnerRuntimeMode;
     }
@@ -11112,6 +11115,7 @@ export function createCockpitApp({
     const host = doc.querySelector(hostSelector);
     if (host?.dataset) {
       Object.assign(host.dataset, dataset);
+      host.dataset.liveProofIntegrityTask = LIVE_PROOF_INTEGRITY_TASK_ID;
     }
   }
 
