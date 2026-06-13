@@ -5931,7 +5931,7 @@ Write-back:
   - `SURFACE-OWNER-RUNTIME-001 — Visible surface ownership and runtime path truth gate`
 
 #### `SURFACE-OWNER-RUNTIME-001 — Visible surface ownership and runtime path truth gate`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -5941,7 +5941,9 @@ Write-back:
   - `W4-FIX-005`
   - `W4-FIX-007`
   - `SLICE-007`
-  - `SURF-009B`
+- dependency_correction:
+  - `2026-06-13: SURF-009B was removed as a hard dependency for SURFACE-OWNER-RUNTIME-001 because it is the later live-agent integration gate and remains blocked on VER-AGT-001 / REL-AGT-001. SURFACE-OWNER-RUNTIME-001 owns route/runtime/surface ownership proof discipline and can close before all live surface agents close.`
+  - `SURF-009B remains a downstream consumer of this ownership map, not an upstream dependency.`
 - blocks:
   - `LIVE-PROOF-INTEGRITY-001`
   - `PRIVACY-001`
@@ -5991,6 +5993,14 @@ Write-back:
   - `This task owns visible surface ownership, runtime-path truth, and route/restore masking prevention.`
   - `It does not own the business capability of each downstream surface; those remain with their existing canonical tasks.`
   - `It does not replace VER-AGT-001; it defines the minimum route/runtime truth that VER-AGT-001 and later proof agents must consume.`
+- closure_update:
+  - `2026-06-13: SURFACE-OWNER-RUNTIME-001 implementation landed. web/shared/visible-surface-ownership.js now defines the route ownership map for Create, Loop, Execution, Proof, Artifact, Confirmation, State Update, Next Task, Timeline, Release, Share, Growth, Studio, Home, Files, Settings, Help, Developer, and Project Brain. Each route has explicit path, visible host, screen owner, adapter owner, render owner, state owner, restore owner, fallback owner, backend-restorable flag, QA ownership flag, runtime mode, and proof invalidators.`
+  - `2026-06-13: web/app.js now imports the shared ownership map and annotates the live document/body/root/visible host with SURFACE-OWNER-RUNTIME-001 data markers on every setAppScreen transition: route, host, screen owner, adapter owner, render owner, state owner, restore owner, runtime mode, proof validity, invalidators, and loaded asset identity. web/index.html app.js asset version was bumped to 20260613-surface-owner-runtime so stale browser assets cannot silently mask this change.`
+  - `2026-06-13: test/visible-surface-ownership.test.js added coverage for every primary visible route, project-backed vs blocked runtime modes, QA-state invalidation for regular proof, live-proof dataset stability, route/path resolution, and web/app.js marker wiring.`
+  - `2026-06-13: scripts/verify-surface-owner-runtime-001-live-proof.mjs added a live browser proof that signs up a local user, creates a real project, opens http://127.0.0.1:4011/loop?projectId=<id> with no qaState/nexusState/qaScreen, verifies loaded app.js/styles.css identity, verifies LoopCoreScreen / loop-adapter / project-service-project-truth / projectId-backend-restore markers, refreshes and verifies the same project-backed truth, then opens /loop in a clean anonymous browser context and verifies blocked-route truth with backend-route-not-project-backed invalidator instead of QA fallback or silent create.`
+  - `Verification passed 2026-06-13: node --check web/shared/visible-surface-ownership.js; node --check web/app.js; node --check scripts/verify-surface-owner-runtime-001-live-proof.mjs; node --test test/visible-surface-ownership.test.js test/nexus-sidebar-navigation-contract.test.js; NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-surface-owner-runtime-001-live-proof.mjs.`
+  - `Live report: /private/tmp/nexus-surface-owner-runtime-001-1781339629223-report.json. Screenshots: /private/tmp/nexus-surface-owner-runtime-001-1781339629223-project-backed-loop.png, /private/tmp/nexus-surface-owner-runtime-001-1781339629223-after-refresh.png, /private/tmp/nexus-surface-owner-runtime-001-1781339629223-blocked-loop.png.`
+  - `Non-blocking pre-existing test debt observed 2026-06-13: node --test test/visible-surface-ownership.test.js test/nexus-sidebar-navigation-contract.test.js test/slice-007-continuity-contract.test.js test/loop-core-screen-render.test.js failed only on the existing SLICE-007 source-regex expectation for live-events userId query wiring. The SURFACE-OWNER-RUNTIME-001 targeted tests and live proof passed.`
 - next:
   - `LIVE-PROOF-INTEGRITY-001 — Claim-to-visible-proof execution integrity gate`
 

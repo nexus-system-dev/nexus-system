@@ -68,6 +68,11 @@ import {
   resolveOnboardingModelFamily,
 } from "./shared/onboarding-provider-runtime.js";
 import { appendLiveUpdateDiagnosticEvent } from "./shared/live-update-diagnostics.js";
+import {
+  SURFACE_OWNER_RUNTIME_TASK_ID,
+  buildVisibleSurfaceProofDataset,
+  getVisibleSurfaceOwnership,
+} from "./shared/visible-surface-ownership.js";
 
 function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
@@ -11067,6 +11072,49 @@ export function createCockpitApp({
     }
   }
 
+  function resolveLoadedAssetSrc(selector) {
+    try {
+      return normalizeString(doc.querySelector(selector)?.getAttribute("src")
+        ?? doc.querySelector(selector)?.getAttribute("href"), "");
+    } catch {
+      return "";
+    }
+  }
+
+  function annotateVisibleSurfaceOwnership(screen) {
+    const routeKey = resolveCurrentShellRouteKey(screen, activeWorkspace);
+    const searchParams = new URLSearchParams(globalThis.location?.search ?? "");
+    const dataset = buildVisibleSurfaceProofDataset({
+      routeKey,
+      pathname: globalThis.location?.pathname ?? "/",
+      appScreen: screen,
+      protocol: globalThis.location?.protocol ?? "http:",
+      qaMode: isQaModeEnabled(),
+      hasProjectId: Boolean(searchParams.get("projectId") || currentProjectId),
+      hasCurrentProject: Boolean(currentProject?.id),
+      hasQaState: searchParams.has("qaState"),
+      hasNexusState: searchParams.has("nexusState"),
+      hasQaScreen: searchParams.has("qaScreen"),
+      loadedAppScript: resolveLoadedAssetSrc('script[type="module"][src*="app.js"]'),
+      loadedStylesheet: resolveLoadedAssetSrc('link[rel="stylesheet"][href*="styles.css"]'),
+    });
+    const body = doc?.body;
+    if (body?.dataset) {
+      Object.assign(body.dataset, dataset);
+    }
+    const root = doc?.documentElement;
+    if (root?.dataset) {
+      root.dataset.surfaceOwnerTask = SURFACE_OWNER_RUNTIME_TASK_ID;
+      root.dataset.surfaceOwnerRoute = dataset.surfaceOwnerRoute;
+      root.dataset.surfaceOwnerRuntimeMode = dataset.surfaceOwnerRuntimeMode;
+    }
+    const hostSelector = getVisibleSurfaceOwnership(routeKey).hostSelector;
+    const host = doc.querySelector(hostSelector);
+    if (host?.dataset) {
+      Object.assign(host.dataset, dataset);
+    }
+  }
+
   function setAppScreen(screen, options = {}) {
     const normalizedScreen = screen === "workspace" || screen === "loop" || screen === "execution" || screen === "proof" || screen === "artifact" || screen === "confirmation" || screen === "state-update" || screen === "next-task" || screen === "timeline" || screen === "release" || screen === "share" || screen === "growth" || screen === "studio" || screen === "home" || screen === "files" || screen === "settings" || screen === "help" || screen === "qa" ? screen : "create";
 
@@ -11153,6 +11201,7 @@ export function createCockpitApp({
     if (root?.dataset) {
       root.dataset.appScreen = normalizedScreen;
     }
+    annotateVisibleSurfaceOwnership(normalizedScreen);
     renderShellChrome(normalizedScreen, activeWorkspace);
     if (options.persist !== false) {
       persistFlowState(normalizedScreen);

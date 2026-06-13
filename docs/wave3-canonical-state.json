@@ -1247,11 +1247,11 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "SURFACE-OWNER-RUNTIME-001",
-      "title": "Visible surface ownership and runtime path truth gate",
+      "taskId": "LIVE-PROOF-INTEGRITY-001",
+      "title": "Claim-to-visible-proof execution integrity gate",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
       "status": "selected-unblocked",
-      "reason": "A 2026-06-11 repository-truth and execution-integrity investigation found an earlier execution blocker: code edits can land in real files while visible Nexus behavior remains unchanged because route ownership, QA state, restore state, stale runtime, static asset loading, wrong port, or inactive frontend surfaces can mask the change. SURFACE-OWNER-RUNTIME-001 is now the earliest unblocked release-blocker before PRIVACY-001 and all later user-visible claims."
+      "reason": "SURFACE-OWNER-RUNTIME-001 closed trueGreen on 2026-06-13 with a route/surface/runtime ownership map, live DOM ownership markers, targeted tests, and live browser proof. LIVE-PROOF-INTEGRITY-001 is now the earliest release-blocker because it consumes that ownership map to prevent future false fixed/trueGreen claims."
     },
     "completedCanonicalExecutionTasks": [
       {
@@ -1340,10 +1340,34 @@
       {
         "taskId": "SURFACE-OWNER-RUNTIME-001",
         "title": "Visible surface ownership and runtime path truth gate",
-        "status": "selected-unblocked",
+        "status": "trueGreen",
         "createdAt": "2026-06-11",
+        "closedAt": "2026-06-13",
         "source": "2026-06-11 repository-truth and execution-integrity investigation",
         "reason": "Inserted because repository truth showed that editing web/nexus-ui screens, app code, or canonical docs does not by itself prove the same route/runtime/surface the user sees changed. The task blocks broad continuation until route owner, screen owner, adapter owner, restore path, static asset loading, QA mode, project id, and browser proof identity are explicit.",
+        "closureEvidence": [
+          "web/shared/visible-surface-ownership.js",
+          "web/app.js",
+          "web/index.html",
+          "test/visible-surface-ownership.test.js",
+          "scripts/verify-surface-owner-runtime-001-live-proof.mjs",
+          "/private/tmp/nexus-surface-owner-runtime-001-1781339629223-report.json",
+          "/private/tmp/nexus-surface-owner-runtime-001-1781339629223-project-backed-loop.png",
+          "/private/tmp/nexus-surface-owner-runtime-001-1781339629223-after-refresh.png",
+          "/private/tmp/nexus-surface-owner-runtime-001-1781339629223-blocked-loop.png"
+        ],
+        "verification": [
+          "node --check web/shared/visible-surface-ownership.js",
+          "node --check web/app.js",
+          "node --check scripts/verify-surface-owner-runtime-001-live-proof.mjs",
+          "node --test test/visible-surface-ownership.test.js test/nexus-sidebar-navigation-contract.test.js",
+          "NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-surface-owner-runtime-001-live-proof.mjs"
+        ],
+        "boundary": "Closes visible route/surface/runtime ownership proof discipline: primary route ownership map, screen/adapter/render/state/restore/fallback owners, app/body/host DOM proof markers, regular project-backed Loop proof with no qaState/nexusState/qaScreen, refresh proof, blocked anonymous /loop proof, and static app.js/styles.css identity proof. It does not close live surface agent integration, verification agent, release agent, or business capability depth of each surface.",
+        "dependencyCorrection": "SURF-009B is not an upstream dependency for SURFACE-OWNER-RUNTIME-001. It remains a later live-agent integration gate blocked on VER-AGT-001 and REL-AGT-001, while SURFACE-OWNER-RUNTIME-001 supplies the route/runtime ownership map those later proofs must consume.",
+        "knownResidualDebt": [
+          "A wider regression command including test/slice-007-continuity-contract.test.js still fails on an existing source-regex expectation for live-events userId query wiring; this was not introduced by SURFACE-OWNER-RUNTIME-001 and is not part of the route ownership proof closure."
+        ],
         "blocks": [
           "LIVE-PROOF-INTEGRITY-001",
           "PRIVACY-001",
@@ -1367,20 +1391,19 @@
         ],
         "nextTaskTruth": {
           "taskId": "LIVE-PROOF-INTEGRITY-001",
-          "status": "blocked-on-SURFACE-OWNER-RUNTIME-001",
-          "reason": "LIVE-PROOF-INTEGRITY-001 depends on a real visible surface ownership map before it can enforce claim-to-visible-proof closure discipline."
+          "status": "selected-unblocked",
+          "reason": "LIVE-PROOF-INTEGRITY-001 is now unblocked because SURFACE-OWNER-RUNTIME-001 supplies the route, visible host, screen owner, adapter owner, state owner, restore owner, static asset, runtime mode, and invalidator map required for claim-to-visible-proof enforcement."
         }
       },
       {
         "taskId": "LIVE-PROOF-INTEGRITY-001",
         "title": "Claim-to-visible-proof execution integrity gate",
-        "status": "blocked",
+        "status": "selected-unblocked",
         "createdAt": "2026-06-11",
         "source": "2026-06-11 repository-truth and execution-integrity investigation",
         "reason": "Inserted to prevent future trueGreen claims unless repository diff, loaded runtime, static assets, route, browser proof, refresh proof, restore proof, and user-visible behavior all agree.",
-        "blockedBy": [
-          "SURFACE-OWNER-RUNTIME-001"
-        ],
+        "unblockedAt": "2026-06-13",
+        "unblockedBy": "SURFACE-OWNER-RUNTIME-001",
         "blocks": [
           "PRIVACY-001",
           "SSO-001",
