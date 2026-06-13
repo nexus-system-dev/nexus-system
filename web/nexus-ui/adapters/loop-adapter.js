@@ -294,6 +294,11 @@ export function buildLoopCoreViewModel({ project = null, qaMode = false, compani
     ?? safeProject.context?.providerGatewayBoundary
     ?? safeProject.state?.providerGatewayBoundary,
   );
+  const dataOwnershipBoundary = normalizeObject(
+    safeProject.dataOwnershipBoundary
+    ?? safeProject.context?.dataOwnershipBoundary
+    ?? safeProject.state?.dataOwnershipBoundary,
+  );
   const visualBuildTruth = normalizeObject(
     safeProject.visualBuildTruth
     ?? safeProject.context?.visualBuildTruth
@@ -744,6 +749,7 @@ export function buildLoopCoreViewModel({ project = null, qaMode = false, compani
       : null,
     runtimeSkeleton,
     buildPreviewSandbox,
+    dataOwnershipBoundary,
     skeletonChoice: buildSkeletonChoiceViewModel({
       project: safeProject,
       runtimeSkeleton,

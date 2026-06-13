@@ -145,6 +145,11 @@ export function buildFilesSupportViewModel({ project = null, draftInputs = null 
       ?? projectIntake.fileIntakeBoundary,
   );
   const fileStorageRecord = normalizeObject(safeProject.fileStorageRecord ?? context.fileStorageRecord ?? state.fileStorageRecord);
+  const dataOwnershipBoundary = normalizeObject(
+    safeProject.dataOwnershipBoundary
+      ?? context.dataOwnershipBoundary
+      ?? state.dataOwnershipBoundary,
+  );
   const hasFileIntakeBoundary = Boolean(fileIntakeBoundary.taskId);
   const projectFiles = collectProjectFiles(safeProject);
   const draftFile = buildDraftFile(draftInputs);
@@ -175,6 +180,7 @@ export function buildFilesSupportViewModel({ project = null, draftInputs = null 
     sourceSummary,
     fileIntakeBoundary,
     fileStorageRecord,
+    dataOwnershipBoundary,
     runtimeCard: {
       title: hasProject ? "החיבור הפעיל" : "מצב החיבור",
       body: hasProject

@@ -75,10 +75,25 @@ test("timeline route renders the canonical product history workspace", () => {
           },
         },
       },
+      dataOwnershipBoundary: {
+        taskId: "DATA-001",
+        status: "ready",
+        sourceOfTruthLaw: "אמת המוצר נשמרת בפרויקט, לא במצב בדיקה.",
+        entities: [{ entityId: "project" }, { entityId: "history" }],
+        persistenceProviderDecision: {
+          provider: "Supabase",
+          decision: "defer-until-SUPABASE-001",
+          reason: "ספק אחסון חיצוני ייבחר רק אחרי שמקור האמת של הנתונים ברור.",
+        },
+      },
     },
   }));
 
   assert.match(html, /data-history-surface-contract="SURF-006"/);
+  assert.match(html, /data-data-ownership-task="DATA-001"/);
+  assert.match(html, /data-data-ownership-status="ready"/);
+  assert.match(html, /data-history-region="data-ownership-boundary"/);
+  assert.match(html, /אמת המוצר נשמרת בפרויקט, לא במצב בדיקה/);
   assert.match(html, /data-history-continuity-agent="HIST-AGT-001"/);
   assert.match(html, /data-history-continuity-agent-task="HIST-AGT-001"/);
   assert.match(html, /data-history-restore-decision-status="impact-ready"/);

@@ -6420,7 +6420,7 @@ Write-back:
   - an active-looking control does nothing without loading, success, blocked, or failure feedback
 
 #### `DATA-001 — Product shell persistence and data ownership boundary`
-- status: `new-proposed`
+- status: `trueGreen`
 - type: `release-blocker`
 - source:
   - `Product Shell Coverage Audit — 2026-05-30`
@@ -6444,9 +6444,30 @@ Write-back:
   - project or conversation truth exists only in client state
   - stale QA state can masquerade as production project truth
   - UI copy implies a conversation/action was saved but refresh cannot restore it from the declared source of truth
+- closure_update:
+  - `2026-06-13: DATA-001 closed trueGreen. Added src/core/product-shell-data-ownership-boundary.js and serialized dataOwnershipBoundary through ProjectService as project truth.`
+  - `The source-of-truth matrix now covers user, project, Product Graph, artifacts, conversation, files, history, mutations, provider metadata, release, and growth landing backend boundaries.`
+  - `QA state, nexusState, project-draft, and browser localStorage are explicitly excluded from production Product Graph truth or limited to bootstrap/session helper roles.`
+  - `Visible product surfaces now expose human-readable data ownership truth on Build, History, and Files without making Supabase appear connected.`
+  - `Supabase timing decision is defer-until-SUPABASE-001: DATA-001 defines ownership first, and SUPABASE-001 must decide adopt/defer/reject as the persistence provider gate.`
+- verification:
+  - `node --check src/core/product-shell-data-ownership-boundary.js`
+  - `node --check src/core/project-service.js`
+  - `node --check scripts/verify-data-001-live-proof.mjs`
+  - `node --test test/data-ownership-boundary.test.js test/loop-core-screen-render.test.js test/timeline-history-screen-render.test.js test/files-support-adapter.test.js`
+  - `NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-data-001-live-proof.mjs`
+- live_evidence:
+  - `/private/tmp/nexus-data-001-1781342254079-report.json`
+  - `/private/tmp/nexus-data-001-1781342254079-loop.png`
+  - `/private/tmp/nexus-data-001-1781342254079-loop-after-refresh.png`
+  - `/private/tmp/nexus-data-001-1781342254079-timeline.png`
+  - `/private/tmp/nexus-data-001-1781342254079-files.png`
+- does_not_close:
+  - `Supabase production connection, schema, row-level-security, auth mapping, backups, export/delete hooks, and provider-secret handling remain owned by SUPABASE-001.`
+  - `Full privacy deletion, export, retention, consent, and rights workflows remain owned by PRIVACY-001 after SUPABASE-001 resolves the persistence provider path.`
 
 #### `SUPABASE-001 — Supabase persistence provider integration timing gate`
-- status: `blocked`
+- status: `selected-unblocked`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -6480,8 +6501,9 @@ Write-back:
   - Supabase auth is added as a button without account linking, project ownership, and SEC-001 enforcement
   - privacy export/deletion implies Supabase-backed coverage without schema-level proof
   - the task closes by saying "use Supabase later" without a canonical adoption/defer/reject decision
-- blocker:
-  - `SUPABASE-001 is intentionally blocked until DATA-001 closes, because DATA-001 must define the data ownership matrix before any external persistence provider can be connected safely.`
+- unblock_update:
+  - `2026-06-13: DATA-001 closed trueGreen and recorded Supabase as defer-until-SUPABASE-001, so SUPABASE-001 is now the next canonical persistence-provider gate.`
+  - `SUPABASE-001 must not assume adoption. It must decide adopt/defer/reject and, if adopted, implement schema, auth/session mapping, storage, RLS, service-role boundaries, local migration, export/delete hooks, and live project-route proof.`
 - next:
   - `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
 

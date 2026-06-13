@@ -404,6 +404,11 @@ export function buildTimelineViewModel({ project = null, qaMode = false } = {}) 
   const wave4LiveVerificationMatrix = resolveWave4LiveVerificationMatrix(safeProject);
   const canonicalLearningSystemContract = resolveCanonicalLearningSystemContract(safeProject);
   const learningDecisionImpact = resolveLearningDecisionImpact(safeProject);
+  const dataOwnershipBoundary = normalizeObject(
+    safeProject.dataOwnershipBoundary
+      ?? safeProject.context?.dataOwnershipBoundary
+      ?? safeProject.state?.dataOwnershipBoundary,
+  );
 
   return {
     title: "מה נשמר מהדרך עד עכשיו",
@@ -411,6 +416,7 @@ export function buildTimelineViewModel({ project = null, qaMode = false } = {}) 
     projectName: safeProject.name ?? "Nexus",
     badge: qaMode ? "תצוגת בדיקה" : "זיכרון מוצר",
     contract,
+    dataOwnershipBoundary,
     historyContinuityAgent: {
       taskId: escapeText(historyContinuityAgent.taskId, ""),
       agentId: escapeText(historyContinuityAgent.agentId, ""),

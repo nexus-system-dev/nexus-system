@@ -4,6 +4,7 @@ import { EventBus } from "./event-bus.js";
 import { FileEventLog } from "./file-event-log.js";
 import { createFirstReleaseFileIntakeBoundary } from "./file-intake-boundary.js";
 import { createFileAndArtifactStorageModule } from "./file-artifact-storage-module.js";
+import { buildProductShellDataOwnershipBoundary } from "./product-shell-data-ownership-boundary.js";
 import { scanProject } from "./project-scanner.js";
 import { AiProjectAnalyst } from "./ai-analyst.js";
 import { CasinoDiagnosticsConnector } from "./casino-connector.js";
@@ -7502,6 +7503,10 @@ export class ProjectService {
     const lastCycleEvent = events.at(-1);
     const blockedTasks =
       project.cycle?.roadmap.filter((task) => task.status === "blocked").map((task) => task.summary) ?? [];
+    const dataOwnershipBoundary = buildProductShellDataOwnershipBoundary({
+      ...project,
+      events,
+    });
 
     return {
       id: project.id,
@@ -7530,6 +7535,7 @@ export class ProjectService {
         ?? project.fileStorageRecord
         ?? project.state?.fileStorageRecord
         ?? null,
+      dataOwnershipBoundary,
       repositoryImportAndCodebaseDiagnosis: project.context?.repositoryImportAndCodebaseDiagnosis ?? null,
       liveWebsiteIngestionAndFunnelDiagnosis: project.context?.liveWebsiteIngestionAndFunnelDiagnosis ?? null,
       importedAnalyticsNormalization: project.context?.importedAnalyticsNormalization ?? null,

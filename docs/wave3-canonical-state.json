@@ -1247,13 +1247,75 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "DATA-001",
-      "title": "Product shell persistence and data ownership boundary",
+      "taskId": "SUPABASE-001",
+      "title": "Supabase persistence provider integration timing gate",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
       "status": "selected-unblocked",
-      "reason": "PRIVACY-001 was rechecked on 2026-06-13 and is blocked by missing dependencies DATA-001 and SUPABASE-001. DATA-001 is the correct next executable release-blocker because it must define data ownership and persistence truth before the Supabase timing gate can safely run."
+      "reason": "DATA-001 closed trueGreen on 2026-06-13 and recorded Supabase as defer-until-SUPABASE-001. SUPABASE-001 is now the correct next executable release-blocker because it must decide adopt/defer/reject before PRIVACY-001 can truthfully close deletion, export, retention, consent, and user-rights behavior."
     },
     "completedCanonicalExecutionTasks": [
+      {
+        "taskId": "DATA-001",
+        "title": "Product shell persistence and data ownership boundary",
+        "status": "trueGreen",
+        "closedAt": "2026-06-13",
+        "closureEvidence": [
+          "src/core/product-shell-data-ownership-boundary.js",
+          "src/core/project-service.js",
+          "web/nexus-ui/adapters/loop-adapter.js",
+          "web/nexus-ui/adapters/timeline-adapter.js",
+          "web/nexus-ui/adapters/files-adapter.js",
+          "web/nexus-ui/screens/LoopCoreScreen.js",
+          "web/nexus-ui/screens/TimelineHistoryScreen.js",
+          "web/nexus-ui/screens/FilesSupportScreen.js",
+          "test/data-ownership-boundary.test.js",
+          "test/loop-core-screen-render.test.js",
+          "test/timeline-history-screen-render.test.js",
+          "test/files-support-adapter.test.js",
+          "scripts/verify-data-001-live-proof.mjs",
+          "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md"
+        ],
+        "verification": [
+          "node --check src/core/product-shell-data-ownership-boundary.js",
+          "node --check src/core/project-service.js",
+          "node --check scripts/verify-data-001-live-proof.mjs",
+          "node --test test/data-ownership-boundary.test.js test/loop-core-screen-render.test.js test/timeline-history-screen-render.test.js test/files-support-adapter.test.js",
+          "NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-data-001-live-proof.mjs"
+        ],
+        "liveEvidence": {
+          "report": "/private/tmp/nexus-data-001-1781342254079-report.json",
+          "screenshots": [
+            "/private/tmp/nexus-data-001-1781342254079-loop.png",
+            "/private/tmp/nexus-data-001-1781342254079-loop-after-refresh.png",
+            "/private/tmp/nexus-data-001-1781342254079-timeline.png",
+            "/private/tmp/nexus-data-001-1781342254079-files.png"
+          ]
+        },
+        "closureTruth": {
+          "sourceOfTruthMatrix": "ProjectService now serializes dataOwnershipBoundary as project truth for first-release entities.",
+          "excludedState": [
+            "qaState",
+            "nexusState",
+            "project-draft",
+            "browser localStorage as production truth"
+          ],
+          "visibleSurfaceTruth": [
+            "Build",
+            "History",
+            "Files"
+          ],
+          "supabaseDecision": "defer-until-SUPABASE-001",
+          "doesNotClose": [
+            "Supabase production connection",
+            "full privacy deletion/export/retention/consent/user-rights implementation"
+          ]
+        },
+        "nextTaskTruth": {
+          "taskId": "SUPABASE-001",
+          "status": "selected-unblocked",
+          "reason": "DATA-001 closed trueGreen and intentionally deferred provider adoption to SUPABASE-001."
+        }
+      },
       {
         "taskId": "AUTH-TOKEN-001",
         "title": "Server-verified session identity boundary",
@@ -1443,9 +1505,9 @@
           "BUILD-RELEASE-GATE-001"
         ],
         "nextTaskTruth": {
-          "taskId": "DATA-001",
+          "taskId": "SUPABASE-001",
           "status": "selected-unblocked",
-          "reason": "PRIVACY-001 was dependency-checked after LIVE-PROOF-INTEGRITY-001 and is blocked by DATA-001, so DATA-001 is the next executable dependency."
+          "reason": "DATA-001 closed trueGreen on 2026-06-13. PRIVACY-001 remains blocked by SUPABASE-001, so SUPABASE-001 is now the next executable persistence-provider dependency."
         }
       },
       {

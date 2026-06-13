@@ -143,6 +143,13 @@ export function renderTimelineHistoryScreen(viewModel = {}) {
   const contract = viewModel.contract ?? {};
   const history = viewModel.history ?? {};
   const historyContinuityAgent = viewModel.historyContinuityAgent ?? {};
+  const dataOwnership = viewModel.dataOwnershipBoundary ?? {};
+  const dataEntities = Array.isArray(dataOwnership.entities) ? dataOwnership.entities : [];
+  const providerDecision = dataOwnership.persistenceProviderDecision ?? {};
+  const dataOwnershipUserTruth = dataOwnership.userFacing?.sourceOfTruth
+    ?? "אמת המוצר נשמרת בפרויקט, לא במצב בדיקה או בזיכרון זמני של הדפדפן.";
+  const providerDecisionUserTruth = providerDecision.userFacingReason
+    ?? "ספק אחסון חיצוני ייבחר רק אחרי שמקור האמת של הנתונים ברור ומסונכרן.";
   const currentState = history.currentState ?? {};
   const returnToBuild = history.returnToBuild ?? viewModel.primaryAction ?? {};
 
@@ -154,6 +161,9 @@ export function renderTimelineHistoryScreen(viewModel = {}) {
       data-surface-purpose="${escapeAttribute(contract.purpose ?? "product-continuity-and-change-memory-workspace")}"
       data-history-law="${escapeAttribute(contract.historyLaw ?? "product-memory-and-restore-truth-not-debug-timeline")}"
       data-history-continuity-agent="${escapeAttribute(historyContinuityAgent.taskId || "pending")}"
+      data-data-ownership-task="${escapeAttribute(dataOwnership.taskId)}"
+      data-data-ownership-status="${escapeAttribute(dataOwnership.status)}"
+      data-data-ownership-entity-count="${escapeAttribute(dataEntities.length)}"
     >
       <header class="nexus-history-surface__hero" data-history-region="history-current-state-anchor">
         <div>
@@ -200,6 +210,12 @@ export function renderTimelineHistoryScreen(viewModel = {}) {
             >
               ${escapeHtml(returnToBuild.label ?? "חזור לבנייה")}
             </button>
+          </section>
+
+          <section class="nexus-history-surface__panel" data-history-region="data-ownership-boundary">
+            <span class="nexus-history-surface__tag">אמת נתונים</span>
+            <h2>${escapeHtml(dataOwnershipUserTruth)}</h2>
+            <p>${escapeHtml(providerDecisionUserTruth)}</p>
           </section>
         </aside>
       </section>

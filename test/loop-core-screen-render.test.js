@@ -70,6 +70,15 @@ test("loop core screen renders the first-skeleton eyebrow from the preview paylo
     aiControlCenterSurface: {
       generatedSurfacePreview: {},
     },
+    dataOwnershipBoundary: {
+      taskId: "DATA-001",
+      status: "ready",
+      entities: [{ entityId: "project" }, { entityId: "conversation" }],
+      persistenceProviderDecision: {
+        provider: "Supabase",
+        decision: "defer-until-SUPABASE-001",
+      },
+    },
   };
 
   const viewModel = buildLoopCoreViewModel({ project });
@@ -88,6 +97,10 @@ test("loop core screen renders the first-skeleton eyebrow from the preview paylo
   assert.match(html, /data-build-region="human-progress-state"/);
   assert.match(html, /data-build-region="change-direction-affordance"/);
   assert.match(html, /data-build-region="release-readiness-affordance"/);
+  assert.match(html, /data-data-ownership-task="DATA-001"/);
+  assert.match(html, /data-data-ownership-status="ready"/);
+  assert.match(html, /data-data-ownership-entity-count="2"/);
+  assert.match(html, /אמת נתונים/);
   assert.match(html, /data-first-slice-trust-task="SLICE-008"/);
   assert.match(html, /גבול שחרור/);
   assert.match(html, /data-build-region="continuity-restore-anchor"/);

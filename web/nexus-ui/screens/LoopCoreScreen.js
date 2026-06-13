@@ -1185,6 +1185,9 @@ function renderBuildWorkspaceSurface(viewModel) {
   const buildSurface = viewModel.buildSurfaceContract ?? {};
   const agentRail = workspace.regions?.agentRail ?? {};
   const buildCanvas = workspace.regions?.buildCanvas ?? {};
+  const dataOwnership = viewModel.dataOwnershipBoundary ?? {};
+  const dataEntities = Array.isArray(dataOwnership.entities) ? dataOwnership.entities : [];
+  const providerDecision = dataOwnership.persistenceProviderDecision ?? {};
 
   return `
     <section
@@ -1195,6 +1198,10 @@ function renderBuildWorkspaceSurface(viewModel) {
       data-surface-purpose="${escapeAttribute(buildSurface.purpose ?? "live-creation-workspace")}"
       data-legacy-route-boundary="${escapeAttribute(buildSurface.legacyRouteCompatibility ?? "loop-route-renders-build-surface")}"
       data-workspace-law="${escapeAttribute(workspace.workspaceLaw ?? "persistent-agent-rail-plus-live-build-canvas")}"
+      data-data-ownership-task="${escapeAttribute(dataOwnership.taskId)}"
+      data-data-ownership-status="${escapeAttribute(dataOwnership.status)}"
+      data-data-ownership-entity-count="${escapeAttribute(dataEntities.length)}"
+      data-data-ownership-provider-decision="${escapeAttribute(providerDecision.decision)}"
       data-transition-motion="discovery-chat-morphs-to-right-agent-rail"
       data-primary-workspace-from="first-skeleton"
       data-primary-workspace-until="release"
@@ -1251,6 +1258,12 @@ function renderBuildWorkspaceSurface(viewModel) {
         <div class="nexus-build-surface-truth-anchors" aria-label="עוגני Build" data-build-region="human-progress-state">
           <span data-build-region="change-direction-affordance">שינוי</span>
           <span data-build-region="release-readiness-affordance">גבול שחרור</span>
+          <span
+            data-data-ownership-visible-status="${escapeAttribute(dataOwnership.status || "pending")}"
+            data-data-ownership-provider="${escapeAttribute(providerDecision.provider || "none")}"
+          >
+            אמת נתונים
+          </span>
         </div>
         <div class="nexus-build-canvas-body">
           <div class="nexus-build-canvas-body__preview">

@@ -55,6 +55,32 @@ function renderFileIntakeBoundary(boundary = {}) {
   `;
 }
 
+function renderDataOwnershipBoundary(boundary = {}) {
+  if (!boundary || typeof boundary !== "object" || !boundary.taskId) {
+    return "";
+  }
+
+  const entities = Array.isArray(boundary.entities) ? boundary.entities : [];
+  const providerDecision = boundary.persistenceProviderDecision ?? {};
+  const dataOwnershipUserTruth = boundary.userFacing?.sourceOfTruth
+    ?? "אמת המוצר נשמרת בפרויקט, ומצב בדיקה לא מחליף אותה.";
+  const providerDecisionUserTruth = providerDecision.userFacingReason
+    ?? "ספק אחסון חיצוני ייבחר רק אחרי שמקור האמת ברור ומסונכרן.";
+  return `
+    <section
+      class="nexus-files-screen__boundary"
+      data-data-ownership-task="${escapeHtml(boundary.taskId)}"
+      data-data-ownership-status="${escapeHtml(boundary.status ?? "unknown")}"
+      data-data-ownership-entity-count="${entities.length}"
+      data-data-ownership-provider-decision="${escapeHtml(providerDecision.decision ?? "pending")}"
+    >
+      <h2>אמת נתונים</h2>
+      <p>${escapeHtml(dataOwnershipUserTruth)}</p>
+      <span>${escapeHtml(providerDecisionUserTruth)}</span>
+    </section>
+  `;
+}
+
 export function renderFilesSupportScreen(viewModel) {
   const sidebar = {
     currentRoute: "/files",
@@ -138,6 +164,7 @@ export function renderFilesSupportScreen(viewModel) {
         </div>
 
         <aside class="nexus-files-screen__side">
+          ${renderDataOwnershipBoundary(viewModel.dataOwnershipBoundary)}
           ${renderFileIntakeBoundary(viewModel.fileIntakeBoundary)}
 
           ${renderNexusCard({

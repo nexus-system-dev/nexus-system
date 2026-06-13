@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { buildFilesSupportViewModel } from "../web/nexus-ui/adapters/files-adapter.js";
+import { renderFilesSupportScreen } from "../web/nexus-ui/screens/FilesSupportScreen.js";
 
 test("buildFilesSupportViewModel merges project, proof, and draft files without inventing runtime actions", () => {
   const viewModel = buildFilesSupportViewModel({
@@ -72,16 +73,32 @@ test("FILE-001 buildFilesSupportViewModel exposes intake boundary and local stor
           { name: "requirements.md", path: "attachments/lead-tool/requirements.md", type: "text/markdown" },
         ],
       },
+      dataOwnershipBoundary: {
+        taskId: "DATA-001",
+        status: "ready",
+        sourceOfTruthLaw: "אמת המוצר נשמרת בפרויקט.",
+        entities: [{ entityId: "files" }, { entityId: "project" }],
+        persistenceProviderDecision: {
+          provider: "Supabase",
+          decision: "defer-until-SUPABASE-001",
+          reason: "ספק אחסון חיצוני ייבחר רק אחרי שמקור האמת ברור.",
+        },
+      },
     },
   });
+  const html = renderFilesSupportScreen(viewModel);
 
   assert.equal(viewModel.fileIntakeBoundary.taskId, "FILE-001");
+  assert.equal(viewModel.dataOwnershipBoundary.taskId, "DATA-001");
   assert.equal(viewModel.fileIntakeBoundary.rejectedFiles.length, 1);
   assert.equal(viewModel.files.some((file) => file.source === "intake" && file.name === "requirements.md"), true);
   assert.equal(viewModel.files.some((file) => file.source === "storage" && file.name === "requirements.md"), true);
   assert.equal(viewModel.stats.some((item) => item.label === "נקלטו" && item.value === "1"), true);
   assert.match(viewModel.subtitle, /גבולות ההעלאה/);
   assert.equal(viewModel.limitsCard.title, "גבול הקליטה");
+  assert.match(html, /data-data-ownership-task="DATA-001"/);
+  assert.match(html, /data-data-ownership-provider-decision="defer-until-SUPABASE-001"/);
+  assert.match(html, /אמת המוצר נשמרת בפרויקט/);
 });
 
 test("buildFilesSupportViewModel falls back to a safe placeholder when no project runtime exists", () => {
