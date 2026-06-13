@@ -811,6 +811,7 @@ Write-back:
 - `ID-001`, `ACCT-001`, `SEC-001`, `PROV-001`, `RUNTIME-001`, `FILE-001`, `USAGE-001`, `OBS-001`, `ADMIN-001`, `RESP-001`, `LEGAL-001`, `STATE-001`, `DATA-001`, `A11Y-001`, and `OPS-001` added as release-blockers in Phase 6.
 - `2026-06-09: Added/deepened PRIVACY-001, SSO-001, BILLING-001, and EXP-009 so full privacy rights, external identity, paid billing/entitlement, and real teams/project membership are no longer hidden inside broad account/security/provider tasks or post-release placeholders.`
 - `2026-06-11: Added SURFACE-OWNER-RUNTIME-001 and LIVE-PROOF-INTEGRITY-001 after repository-truth investigation found that code edits can land in real files while the visible product stays unchanged because web/app.js route/restore/QA/runtime ownership, stale browser state, static asset loading, or wrong-port proof can mask the edited surface. These tasks block future release-blocker closure before broad continuation.`
+- `2026-06-13: Added UNIFIED-NEXUS-AGENT-001, CURRENT-SURFACE-ACTION-ROUTER-001, PRODUCT-SURFACE-MUTATION-001, and GAME-RUNTIME-MUTATION-001 after the ice-tower live behavior showed a user-visible contradiction: the left product surface had a game shell while the right agent still behaved like onboarding/discovery and asked for solution details instead of explaining or changing the active product. These tasks block broad continuation until Nexus is user-visible as one agent across onboarding, build, verification, release, growth, files, and product-surface mutation.`
 - `POST-006`, `POST-007`, and `POST-008` added as post-release scope decisions.
 - Release-readiness dependencies updated so final release cannot bypass these product-shell responsibilities.
 - `No new task was marked trueGreen by this audit.`
@@ -3384,6 +3385,209 @@ Write-back:
   - `Non-blocking follow-up observed 2026-06-11: the external provider request still renders broad product-direction approval copy in the wider mutation/approval surface, but no external action or fake success occurred. Cleanup belongs to BUILD-RELEASE-GATE-001 / PROV-001 approval copy and provider-boundary work, not BUILD-SPEECH-TRUTH-001.`
   - `Non-blocking diagnostics observed 2026-06-11: the live proof recorded one 404 console/network event outside the speech-truth flow; diagnostics cleanup belongs to OBS-001.`
   - `Known pre-existing debt, not introduced by this task: test/project-service-companion-correction.test.js has 3 failing tests in the onboarding correction/comparable-intelligence path; verified failing with this task's changes fully reverted.`
+- next:
+  - `UNIFIED-NEXUS-AGENT-001 — One visible Nexus agent across all product phases`
+
+#### `UNIFIED-NEXUS-AGENT-001 — One visible Nexus agent across all product phases`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-13 user clarification: the user must feel one Nexus agent, not separate onboarding/build/release agents`
+  - `2026-06-13 ice-tower live diagnosis: the product surface showed a game while the right rail still spoke like onboarding/discovery`
+  - `BUILD-SPEECH-TRUTH-001 closure boundary`
+- depends_on:
+  - `BLD-AGT-001`
+  - `BUILD-SPEECH-TRUTH-001`
+  - `SURFACE-OWNER-RUNTIME-001`
+  - `LIVE-PROOF-INTEGRITY-001`
+- blocks:
+  - `CURRENT-SURFACE-ACTION-ROUTER-001`
+  - `PRODUCT-SURFACE-MUTATION-001`
+  - `GAME-RUNTIME-MUTATION-001`
+  - `VER-AGT-001`
+  - `REL-AGT-001`
+  - `BUILD-TEST-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `STANDALONE-ARTIFACT-001`
+- canonical_law:
+  - `The user experiences Nexus as one agent. Internal agent boundaries may exist, but they must not leak as separate personalities, disconnected memory, or contradictory behavior.`
+  - `The right-side conversation must operate from the active project and active surface truth before it asks onboarding-style questions.`
+  - `Nexus may route internally to onboarding, build, mutation, verification, release, growth, files, provider, or design engines, but the visible reply must preserve one continuous product-building relationship.`
+- preserve:
+  - `AGT-001D` user-facing language rules
+  - `BLD-AGT-001` build routing and handoff truth
+  - `BUILD-SPEECH-TRUTH-001` no-fake-success gate
+  - `SURFACE-OWNER-RUNTIME-001` visible owner/path truth
+  - specialized internal engines as hidden execution owners
+- remove_from_active_path:
+  - visible copy that says or implies separate agents own separate conversations
+  - right-rail replies that ignore the active screen and restart discovery when a product already exists
+  - onboarding fallback questions shown inside Build/Loop when the user asks about or changes the current product
+  - internal task/agent/provider names used as the user's explanation of what is happening
+  - contradictions such as left surface = playable product while right rail says "this is not a game/product yet" without a precise limitation
+- build:
+  - unified visible-agent context envelope consumed by all right-rail replies
+  - product-phase resolver that distinguishes create/discovery/build/mutate/verify/release/share/growth/files while keeping one Nexus voice
+  - active-project + active-surface + current-artifact summary injected before any user-facing response
+  - answer policy for "what is this", "where is the product", "how do I use it", and "change this" requests on an existing surface
+  - internal routing trace hidden from the user but available for tests/proofs
+- done_when:
+  - tests prove a Build/Loop right-rail reply uses active project/surface truth and does not fall back to onboarding discovery when a runtime product exists
+  - tests prove Create/Build/Release/Growth/Files replies share one visible Nexus voice and hide internal agent names
+  - tests prove "where is the game/product", "how do I use this", and equivalent Hebrew/English requests receive a product-surface-aware answer
+  - tests prove internal handoffs still route to the correct owner without exposing the handoff as separate agents to the user
+  - live proof covers an existing product surface with a right-rail question and shows no contradiction between surface truth and agent reply
+- not_trueGreen:
+  - right rail can still ask generic onboarding/solution questions while an active product surface exists
+  - user-facing copy exposes separate agent ownership as the reason something can or cannot happen
+  - right rail ignores current projectId, current surface, runtime skeleton, product domain, or mutation history
+  - live proof only checks a transcript, not the visible active surface
+- next:
+  - `CURRENT-SURFACE-ACTION-ROUTER-001 — Route right-rail requests from the active surface truth`
+
+#### `CURRENT-SURFACE-ACTION-ROUTER-001 — Route right-rail requests from the active surface truth`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `UNIFIED-NEXUS-AGENT-001`
+  - `2026-06-13 ice-tower live diagnosis`
+- depends_on:
+  - `UNIFIED-NEXUS-AGENT-001`
+  - `BLD-AGT-001`
+  - `BUILD-SPEECH-TRUTH-001`
+  - `SURFACE-OWNER-RUNTIME-001`
+- blocks:
+  - `PRODUCT-SURFACE-MUTATION-001`
+  - `GAME-RUNTIME-MUTATION-001`
+  - `BUILD-TEST-001`
+  - `BUILD-RELEASE-GATE-001`
+  - `VER-AGT-001`
+  - `REL-AGT-001`
+- canonical_law:
+  - `A right-rail user request must be interpreted against the currently visible product surface before falling back to generic discovery.`
+  - `If the active surface is a game, app, landing page, editor, tool, release page, or growth artifact, Nexus must classify the request in that surface context.`
+- preserve:
+  - `BUILD-SPEECH-TRUTH-001` reply gate
+  - existing route/state/restore truth
+  - specialized mutation, verification, release, provider, growth, and file boundaries
+- remove_from_active_path:
+  - standalone message classification that ignores screen route and current artifact
+  - Build rail fallback to onboarding slots such as audience/problem/solution when the user asks about a visible artifact
+  - ambiguous "tell me more" prompts when the user asked to operate the current screen
+- build:
+  - active-surface request classifier for explain, mutate, generate-assets, test/check, release/publish, connect-provider, navigate, and clarify intents
+  - route-aware prompt/context package consumed by companion-turn and build-agent routing
+  - fallback policy that asks one precise product-surface question only when the requested action is under-specified
+  - telemetry/proof fields for selected surface, selected artifact, selected owner, and blocked reason
+- done_when:
+  - tests prove "איפה המשחק", "איך משחקים", "תוסיף אויבים", "שנה צבע", "צור 10 תמונות ותכניס", "תבדוק שזה עובד", and "פרסם" route differently from generic onboarding
+  - tests prove active route/project/artifact changes the classification
+  - tests prove no unsupported action is claimed applied without a downstream result
+  - live proof covers the right rail on an existing product screen, including refresh/restore
+- not_trueGreen:
+  - the classifier only reads the text message and ignores active surface state
+  - the right rail asks broad onboarding questions after an actionable surface request
+  - surface-aware routing exists only in UI copy and not in project-service truth
+- next:
+  - `PRODUCT-SURFACE-MUTATION-001 — Apply right-rail product-surface changes to visible product truth`
+
+#### `PRODUCT-SURFACE-MUTATION-001 — Apply right-rail product-surface changes to visible product truth`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `CURRENT-SURFACE-ACTION-ROUTER-001`
+  - `BUILD-SPEECH-TRUTH-001`
+  - `MUT-001`
+- depends_on:
+  - `CURRENT-SURFACE-ACTION-ROUTER-001`
+  - `MUT-001`
+  - `BUILD-MUTATION-TRUTH-001`
+  - `BUILD-SPEECH-TRUTH-001`
+  - `VBUILD-001`
+- blocks:
+  - `GAME-RUNTIME-MUTATION-001`
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `STANDALONE-ARTIFACT-001`
+  - `VER-AGT-001`
+  - `REL-AGT-001`
+- canonical_law:
+  - `A request made in the right rail to change the visible product must either mutate the visible product/domain/runtime/package truth or return a truthful not-applied state.`
+  - `Canvas-only, transcript-only, or intent-only changes do not satisfy product-surface mutation.`
+- preserve:
+  - `MUT-001` approval/impact ownership
+  - `BUILD-MUTATION-TRUTH-001` mutation history truth
+  - `VBUILD-001` visual continuation ownership
+  - `BUILD-SPEECH-TRUTH-001` speech gate
+- remove_from_active_path:
+  - right-rail replies that say a visible product changed when only chat state changed
+  - product-surface requests that update internal fields but not the visible runtime or artifact
+  - generic unsupported copy for common first-release surface changes that Nexus can safely apply
+- build:
+  - product-surface mutation resolver for common changes: copy, color/style, layout emphasis, screen element add/remove, simple interaction rule, generated/reference asset insertion, and product-domain field/action changes
+  - mutation-to-visible-runtime sync that updates runtimeSkeletonTruth/productDomainSkeleton/productOwnedBackendSkeleton where applicable
+  - history entries that show before/after and applied/not-applied state
+  - refresh/restore continuity for applied surface mutations
+- done_when:
+  - tests prove common right-rail product-surface changes visibly update the rendered product and project truth
+  - tests prove generated/reference assets can be attached or are truthfully blocked by provider/file boundary
+  - tests prove unsupported changes do not leave success claims in transcript/history after refresh
+  - live proof covers a visible product change requested from the right rail and verifies changed DOM/runtime/domain truth after refresh
+- not_trueGreen:
+  - visible product does not materially change after an applied reply
+  - only the transcript, currentProjectSnapshot, or QA state changes
+  - mutation history lacks the changed artifact/runtime/domain reference
+  - asset generation/insertion claims are made without file/provider/storage truth
+- next:
+  - `GAME-RUNTIME-MUTATION-001 — Game-specific runtime mutation and playability path`
+
+#### `GAME-RUNTIME-MUTATION-001 — Game-specific runtime mutation and playability path`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-13 ice-tower live diagnosis`
+  - `PRODUCT-KIND-001`
+  - `PRODUCT-SURFACE-MUTATION-001`
+- depends_on:
+  - `PRODUCT-SURFACE-MUTATION-001`
+  - `PRODUCT-KIND-001`
+  - `RUNTIME-SKEL-001`
+  - `PRO-SKEL-003`
+- blocks:
+  - `PRODUCT-RUNTIME-PACKAGE-001`
+  - `STANDALONE-ARTIFACT-001`
+  - `VER-AGT-001`
+  - `REL-AGT-001`
+- canonical_law:
+  - `A game surface must be treated as a game, not as a generic card or decorative preview.`
+  - `Game changes must update playability truth: scene, player/control, goal, rules, scoring, failure/win state, levels/obstacles/assets, and instructions where relevant.`
+- preserve:
+  - `PRODUCT-KIND-001` product-class detection
+  - runtime skeleton and product-domain skeleton ownership
+  - product-surface mutation speech and history gates
+- remove_from_active_path:
+  - game shells that render a decorative object without clear controls/rules
+  - right-rail game requests routed back to onboarding solution discovery
+  - "game created" claims when there is no playable loop or instruction
+- build:
+  - game runtime mutation vocabulary for player, controls, movement, score, timer, obstacles, levels, win/fail, difficulty, art/assets, and instructions
+  - default first playable loop for under-specified game requests
+  - game-aware right-rail explanations for "where is the game" and "how do I play"
+  - live playability proof hooks for keyboard/touch interaction and score/state changes
+- done_when:
+  - tests prove game projects expose a game-aware runtime contract, not generic app/tool copy
+  - tests prove right-rail requests such as "איפה המשחק", "איך משחקים", "תוסיף מכשולים", "תוסיף שלבים", "שנה את השחקן", and "תוסיף ניקוד" produce game-aware explanations or mutations
+  - tests prove applied game mutations change runtime/game-domain truth and visible play surface
+  - live proof verifies a game project can be played, changed from the right rail, refreshed, and still preserve the changed game state
+- not_trueGreen:
+  - game requests are answered with generic product discovery
+  - the surface has no clear controls/rules/goals
+  - mutation changes labels only while playability remains unchanged
+  - live proof does not interact with the game surface
 - next:
   - `AUTH-TOKEN-001 — Server-verified session identity boundary`
 
@@ -7240,6 +7444,10 @@ Write-back:
 - `AUTH-SESSION-PROJECT-ISO-001`
 - `BLD-AGT-001`
 - `BUILD-SPEECH-TRUTH-001`
+- `UNIFIED-NEXUS-AGENT-001`
+- `CURRENT-SURFACE-ACTION-ROUTER-001`
+- `PRODUCT-SURFACE-MUTATION-001`
+- `GAME-RUNTIME-MUTATION-001`
 - `BUILD-APPROVAL-001`
 - `BUILD-TEST-001`
 - `BUILD-RELEASE-GATE-001`
@@ -7308,7 +7516,7 @@ Write-back:
 5. `AGT-001A`
 6. `AGT-001C`
 7. `SURF-001..008 -> SURF-009A`
-8. `W4-FIX-001 -> AUTH-SESSION-PROJECT-ISO-001 -> W4-FIX-005 -> W4-FIX-007 -> SLICE-001..004 -> SKEL-001 -> DESIGN-PLUG-001..004 -> VSKEL-001 -> SLICE-005 -> RUNTIME-TRUTH-001 -> PRODUCT-BACKEND-SKEL-001 -> PRODUCT-BACKEND-SKEL-002 -> RUNTIME-SKEL-001 -> PRO-SKEL-001 -> PRO-SKEL-002 -> PRO-SKEL-003 -> BUILD-MUTATION-TRUTH-001 -> LEARNING-RUNTIME-001 -> PRODUCT-KIND-001 -> LEARNING-PRODUCT-INTELLIGENCE-001 -> BLD-AGT-001 -> BUILD-SPEECH-TRUTH-001 -> SKELETON-CHOICE-001 -> VBUILD-001`
+8. `W4-FIX-001 -> AUTH-SESSION-PROJECT-ISO-001 -> W4-FIX-005 -> W4-FIX-007 -> SLICE-001..004 -> SKEL-001 -> DESIGN-PLUG-001..004 -> VSKEL-001 -> SLICE-005 -> RUNTIME-TRUTH-001 -> PRODUCT-BACKEND-SKEL-001 -> PRODUCT-BACKEND-SKEL-002 -> RUNTIME-SKEL-001 -> PRO-SKEL-001 -> PRO-SKEL-002 -> PRO-SKEL-003 -> BUILD-MUTATION-TRUTH-001 -> LEARNING-RUNTIME-001 -> PRODUCT-KIND-001 -> LEARNING-PRODUCT-INTELLIGENCE-001 -> BLD-AGT-001 -> BUILD-SPEECH-TRUTH-001 -> UNIFIED-NEXUS-AGENT-001 -> CURRENT-SURFACE-ACTION-ROUTER-001 -> PRODUCT-SURFACE-MUTATION-001 -> GAME-RUNTIME-MUTATION-001 -> SKELETON-CHOICE-001 -> VBUILD-001`
 9. `SLICE-006..008`
 10. `MUT-001 -> BUILD-APPROVAL-001 -> HIST-AGT-001 -> SHARE-AGT-001 -> GROW-AGT-001 -> GROW-PLUG-001..002 -> GROW-MEASURE-001 -> GROW-AGT-002 -> GROW-SEO-001 -> GROW-SEM-001 -> GROW-EMAIL-001 -> GROW-LAND-001 -> GROW-LAND-BACKEND-001 -> STD-HANDOFF-AGT-001 -> SURF-009B -> NEXUS-FACADE-001 -> NEXUS-ACTION-FACADE-001 -> SURF-CODE-001`
 11. `EXP-001..008`
