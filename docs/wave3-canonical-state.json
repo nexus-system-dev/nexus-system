@@ -1251,7 +1251,7 @@
       "title": "Product shell persistence and data ownership boundary",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
       "status": "selected-unblocked",
-      "reason": "PRIVACY-001 was rechecked on 2026-06-13 and is blocked by missing dependency DATA-001. DATA-001 is the correct next executable release-blocker because full privacy deletion/export/retention cannot close before data ownership and persistence truth are explicit."
+      "reason": "PRIVACY-001 was rechecked on 2026-06-13 and is blocked by missing dependencies DATA-001 and SUPABASE-001. DATA-001 is the correct next executable release-blocker because it must define data ownership and persistence truth before the Supabase timing gate can safely run."
     },
     "completedCanonicalExecutionTasks": [
       {

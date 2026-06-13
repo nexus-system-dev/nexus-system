@@ -6084,6 +6084,7 @@ Write-back:
   - `SEC-001`
   - `FILE-001`
   - `DATA-001`
+  - `SUPABASE-001`
 - blocks:
   - `REL-AGT-001`
   - `BUILD-RELEASE-GATE-001`
@@ -6114,7 +6115,8 @@ Write-back:
   - provider-side data deletion is implied without provider proof or clear boundary
 - blocker_update:
   - `2026-06-13: PRIVACY-001 was selected by the canonical next-task pointer after LIVE-PROOF-INTEGRITY-001, but dependency verification found it is not actually unblocked because DATA-001 remains new-proposed. This is a missing dependency blocker, not an implementation failure inside PRIVACY-001.`
-  - `PRIVACY-001 depends on DATA-001 because full deletion, export, retention, consent, and user-rights behavior cannot truthfully close until first-release data ownership, source-of-truth, stale-state, persistence, and restore boundaries are explicit.`
+  - `2026-06-13: Added SUPABASE-001 as a timed persistence-provider integration gate after DATA-001 and before PRIVACY-001 so Supabase can be connected deliberately if it matches the DATA-001 source-of-truth contract instead of becoming a second accidental data source.`
+  - `PRIVACY-001 depends on DATA-001 and SUPABASE-001 because full deletion, export, retention, consent, and user-rights behavior cannot truthfully close until first-release data ownership, persistence provider timing, source-of-truth, stale-state, persistence, and restore boundaries are explicit.`
   - `Correct next executable dependency: DATA-001 — Product shell persistence and data ownership boundary.`
 
 #### `SSO-001 — Enterprise and external identity provider boundary`
@@ -6437,10 +6439,51 @@ Write-back:
   - QA/localStorage state is excluded from production persistence truth
   - migration/restore behavior for stale state is explicit
   - conversation events, skeleton choices, artifact mutations, demo/local actions, and history entries each declare whether they are persisted product truth or temporary demo state
+  - persistence-provider timing decision exists for Supabase: connect now, defer, or reject, with a reason tied to source-of-truth ownership and privacy/release needs
 - not_trueGreen:
   - project or conversation truth exists only in client state
   - stale QA state can masquerade as production project truth
   - UI copy implies a conversation/action was saved but refresh cannot restore it from the declared source of truth
+
+#### `SUPABASE-001 — Supabase persistence provider integration timing gate`
+- status: `blocked`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-13 user clarification: connect Supabase at the right time so it helps DATA-001/PRIVACY-001 and is not lost`
+- depends_on:
+  - `DATA-001`
+  - `ID-001`
+  - `ACCT-001`
+  - `SEC-001`
+  - `FILE-001`
+- blocks:
+  - `PRIVACY-001`
+  - `SSO-001`
+  - `BILLING-001`
+  - `BUILD-RELEASE-GATE-001`
+- canonical_law:
+  - `Supabase may be a persistence provider, not a replacement for Nexus Product Graph truth.`
+  - `Nexus must not add Supabase as a second accidental source of truth before DATA-001 defines ownership, restore, retention, and stale-state boundaries.`
+  - `If Supabase is adopted, auth, database, storage, realtime, row-level-security, backups, export, and deletion boundaries must map back to Nexus account/project/Product Graph truth.`
+- done_when:
+  - DATA-001 source-of-truth matrix identifies exactly which Nexus entities move to Supabase and which remain local/in-memory/generated-only
+  - first-release decision is explicit: adopt Supabase now, defer Supabase, or reject Supabase for this release, with user-visible product implications
+  - if adopted, schema ownership exists for users, projects, Product Graph, conversation events, files/storage metadata, history, releases, provider metadata, audit records, and privacy requests
+  - if adopted, row-level-security, project/team ownership, session mapping, service-role boundaries, local development migration, and environment variable handling are implemented and tested
+  - if adopted, export/delete/retention hooks are present or precisely blocked before PRIVACY-001 claims full privacy rights
+  - if deferred or rejected, the canonical write-back states what storage path remains active and why that path still supports DATA-001 and PRIVACY-001 truth
+  - live proof shows a normal project route reading and writing through the selected persistence path without qaState/nexusState/project-draft fallback
+- not_trueGreen:
+  - Supabase credentials or service-role secrets are exposed to the browser
+  - Supabase tables exist but Nexus still reads product truth from unrelated localStorage or stale in-memory state
+  - Supabase auth is added as a button without account linking, project ownership, and SEC-001 enforcement
+  - privacy export/deletion implies Supabase-backed coverage without schema-level proof
+  - the task closes by saying "use Supabase later" without a canonical adoption/defer/reject decision
+- blocker:
+  - `SUPABASE-001 is intentionally blocked until DATA-001 closes, because DATA-001 must define the data ownership matrix before any external persistence provider can be connected safely.`
+- next:
+  - `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
 
 #### `A11Y-001 — First-release accessibility and keyboard minimum`
 - status: `new-proposed`
@@ -7507,6 +7550,7 @@ Write-back:
 - `LEGAL-001`
 - `STATE-001`
 - `DATA-001`
+- `SUPABASE-001`
 - `A11Y-001`
 - `OPS-001`
 - `DESIGN-PROVIDER-ORCH-001`
