@@ -1247,11 +1247,11 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "SSO-001",
-      "title": "Enterprise and external identity provider boundary",
+      "taskId": "COCKPIT-FIRST-PROJECT-E2E-REPAIR-001",
+      "title": "First project creation to workspace runtime repair",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
-      "status": "blocked-by-dependency",
-      "reason": "PRIVACY-001 closed trueGreen on 2026-06-13. SSO-001 is now the earliest unresolved release-blocker by task-map order, but it remains blocked because BILLING-001 is open and BILLING-001 depends on USAGE-001. The next buildable dependency is USAGE-001."
+      "status": "new-proposed",
+      "reason": "COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 was added on 2026-06-13 after main-tree cockpit verification failed 22/25 tests, including the empty app -> create project -> workspace path. It sits earlier than UNIFIED-NEXUS-AGENT-001 and the later Phase 6 blockers because the active project/route/storage/onboarding/workspace path must be coherent before the visible Nexus agent can truthfully mutate the active product."
     },
     "completedCanonicalExecutionTasks": [
       {
@@ -1318,9 +1318,9 @@
           ]
         },
         "nextTaskTruth": {
-          "taskId": "SSO-001",
-          "status": "blocked-by-dependency",
-          "reason": "SSO-001 is earliest unresolved by map order but depends on BILLING-001; BILLING-001 depends on USAGE-001, so USAGE-001 is the next buildable dependency."
+          "taskId": "COCKPIT-FIRST-PROJECT-E2E-REPAIR-001",
+          "status": "new-proposed",
+          "reason": "This pointer supersedes the earlier SSO-001 blocked-by-dependency note after COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 was inserted earlier in the critical path on 2026-06-13. SSO-001 remains blocked by BILLING-001 and USAGE-001, but the next canonical execution task is now the first-project runtime repair."
         }
       },
       {

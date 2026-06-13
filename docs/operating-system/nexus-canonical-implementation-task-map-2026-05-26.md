@@ -812,6 +812,7 @@ Write-back:
 - `2026-06-09: Added/deepened PRIVACY-001, SSO-001, BILLING-001, and EXP-009 so full privacy rights, external identity, paid billing/entitlement, and real teams/project membership are no longer hidden inside broad account/security/provider tasks or post-release placeholders.`
 - `2026-06-11: Added SURFACE-OWNER-RUNTIME-001 and LIVE-PROOF-INTEGRITY-001 after repository-truth investigation found that code edits can land in real files while the visible product stays unchanged because web/app.js route/restore/QA/runtime ownership, stale browser state, static asset loading, or wrong-port proof can mask the edited surface. These tasks block future release-blocker closure before broad continuation.`
 - `2026-06-13: Added UNIFIED-NEXUS-AGENT-001, CURRENT-SURFACE-ACTION-ROUTER-001, PRODUCT-SURFACE-MUTATION-001, and GAME-RUNTIME-MUTATION-001 after the ice-tower live behavior showed a user-visible contradiction: the left product surface had a game shell while the right agent still behaved like onboarding/discovery and asked for solution details instead of explaining or changing the active product. These tasks block broad continuation until Nexus is user-visible as one agent across onboarding, build, verification, release, growth, files, and product-surface mutation.`
+- `2026-06-13: Added COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 after a repository-truth QA check of test/web-app-wave1-cockpit.test.js showed that the core first-project path still fails in the main tree: 22/25 cockpit tests failed, including empty app -> create project -> workspace, onboarding navigation/restore, stored app user attachment, and visible loop/workspace refresh. This task blocks broad continuation before unified-agent and surface-mutation work because the right-rail agent cannot truthfully mutate the visible product if the active project, route, storage, onboarding, and workspace are not one coherent runtime path.`
 - `POST-006`, `POST-007`, and `POST-008` added as post-release scope decisions.
 - Release-readiness dependencies updated so final release cannot bypass these product-shell responsibilities.
 - `No new task was marked trueGreen by this audit.`
@@ -3385,6 +3386,77 @@ Write-back:
   - `Non-blocking follow-up observed 2026-06-11: the external provider request still renders broad product-direction approval copy in the wider mutation/approval surface, but no external action or fake success occurred. Cleanup belongs to BUILD-RELEASE-GATE-001 / PROV-001 approval copy and provider-boundary work, not BUILD-SPEECH-TRUTH-001.`
   - `Non-blocking diagnostics observed 2026-06-11: the live proof recorded one 404 console/network event outside the speech-truth flow; diagnostics cleanup belongs to OBS-001.`
   - `Known pre-existing debt, not introduced by this task: test/project-service-companion-correction.test.js has 3 failing tests in the onboarding correction/comparable-intelligence path; verified failing with this task's changes fully reverted.`
+- next:
+  - `COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 — First project creation to workspace runtime repair`
+
+#### `COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 — First project creation to workspace runtime repair`
+- status: `new-proposed`
+- type: `release-blocker`
+- classification: `bridge task`
+- source:
+  - `2026-06-13 user-approved follow-up after external repo diagnosis: Nexus must repair the real visible path, not copy a side-folder patch blindly.`
+  - `2026-06-13 main-tree verification: node --test test/web-app-wave1-cockpit.test.js failed 22/25 tests, including first project creation, onboarding navigation, workspace restore, app-user request attachment, live progress refresh, and loop/workspace visibility.`
+  - `W4-FIX-007 regression notes already recorded that Create -> real projectId -> Loop needed positive reproving after draft-route and provider-timeout repairs.`
+- depends_on:
+  - `W4-FIX-001`
+  - `AUTH-SESSION-PROJECT-ISO-001`
+  - `W4-FIX-005`
+  - `W4-FIX-007`
+  - `SURFACE-OWNER-RUNTIME-001`
+  - `LIVE-PROOF-INTEGRITY-001`
+  - `BUILD-SPEECH-TRUTH-001`
+- blocks:
+  - `UNIFIED-NEXUS-AGENT-001`
+  - `CURRENT-SURFACE-ACTION-ROUTER-001`
+  - `PRODUCT-SURFACE-MUTATION-001`
+  - `GAME-RUNTIME-MUTATION-001`
+  - `SKELETON-CHOICE-001`
+  - `VBUILD-001`
+  - `VER-AGT-001`
+  - `REL-AGT-001`
+  - `BUILD-TEST-001`
+  - `BUILD-RELEASE-GATE-001`
+- canonical_law:
+  - `The first visible project path must be one coherent runtime path: empty app -> idea input -> project creation -> onboarding/build handoff -> active workspace -> refresh restore.`
+  - `The right-rail Nexus conversation may not be considered product-capable until it is attached to the same active project, route, surface, storage, onboarding state, and workspace truth the user sees.`
+  - `A test-only fake DOM fix or side-folder patch does not close this task. Closure requires main-tree code, live browser proof, refresh proof, and no QA-state contamination.`
+- preserve:
+  - `W4-FIX-007` real project handoff law
+  - `AUTH-SESSION-PROJECT-ISO-001` project/session isolation
+  - `SURFACE-OWNER-RUNTIME-001` route and visible-surface ownership markers
+  - `LIVE-PROOF-INTEGRITY-001` claim-to-visible-proof matrix
+  - `BUILD-SPEECH-TRUTH-001` no-fake-success speech gate
+  - existing canonical onboarding, project-service, runtime skeleton, and loop engines
+- remove_from_active_path:
+  - create buttons or CTA states that expose generic symbols such as `↗` where the user needs a clear create action
+  - first-project click handlers that work only when document-level delegation exists but fail in the screen-owned create surface
+  - local/browser-only project truth that does not become a backend-restorable project id
+  - stale `qaState`, `nexusState`, draft ids, old `currentProjectId`, or wrong route restore overriding a fresh create flow
+  - right-rail/project conversation state that survives from a different project or is not attached to the visible project
+  - fake closure from tests that never prove a real browser route and refresh
+- build:
+  - a main-tree repair of the visible first-project route from empty state to active project workspace
+  - create-screen ownership alignment between `web/app.js`, `web/nexus-ui/screens/ProjectCreateScreen.js`, storage, route restore, and backend project creation
+  - reliable app-user/session attachment for authenticated project requests without header-only spoofing or stale-user reuse
+  - onboarding/session restore rules that keep create, onboarding, loop/workspace, and clean-return states exclusive and refresh-safe
+  - a live proof script that creates a project from the browser route, verifies active project id, verifies the same visible workspace after refresh, verifies the right rail is attached to that project, and verifies no `qaState` / `nexusState` / draft id contamination
+  - regression coverage for the existing failing `test/web-app-wave1-cockpit.test.js` path without weakening assertions to match broken behavior
+- done_when:
+  - `node --test test/web-app-wave1-cockpit.test.js` passes or every remaining failure is proven unrelated to first-project route truth and recorded as pre-existing debt with exact failing test names
+  - tests prove empty app -> create project -> onboarding/build handoff -> workspace route uses a real backend project id
+  - tests prove stored app-user/session truth is attached to project requests and stale app users are replaced safely
+  - tests prove refresh restores the same active project and workspace, not a draft, QA state, or old project
+  - tests prove returning to Create clears prior project anchors without deleting preserved project truth
+  - live proof passes on `http://127.0.0.1:4011/` without QA query state and captures visible evidence before and after refresh
+  - right-rail proof shows the visible conversation is attached to the active project created in the same flow
+  - canonical write-back records what code changed, what tests passed, what live artifacts prove, and any unrelated remaining debt
+- not_trueGreen:
+  - first-project flow still depends on `qaState`, `nexusState`, `project-draft`, or stale localStorage truth
+  - clicking create does not create a backend-restorable project id
+  - refresh loses the active project or opens the wrong route
+  - the right rail can speak to a different project than the visible product surface
+  - tests pass only by weakening expected user-visible behavior
+  - live proof is skipped or checks a stale/wrong-port/static runtime
 - next:
   - `UNIFIED-NEXUS-AGENT-001 — One visible Nexus agent across all product phases`
 
@@ -7572,6 +7644,7 @@ Write-back:
 - `AUTH-SESSION-PROJECT-ISO-001`
 - `BLD-AGT-001`
 - `BUILD-SPEECH-TRUTH-001`
+- `COCKPIT-FIRST-PROJECT-E2E-REPAIR-001`
 - `UNIFIED-NEXUS-AGENT-001`
 - `CURRENT-SURFACE-ACTION-ROUTER-001`
 - `PRODUCT-SURFACE-MUTATION-001`
@@ -7645,7 +7718,7 @@ Write-back:
 5. `AGT-001A`
 6. `AGT-001C`
 7. `SURF-001..008 -> SURF-009A`
-8. `W4-FIX-001 -> AUTH-SESSION-PROJECT-ISO-001 -> W4-FIX-005 -> W4-FIX-007 -> SLICE-001..004 -> SKEL-001 -> DESIGN-PLUG-001..004 -> VSKEL-001 -> SLICE-005 -> RUNTIME-TRUTH-001 -> PRODUCT-BACKEND-SKEL-001 -> PRODUCT-BACKEND-SKEL-002 -> RUNTIME-SKEL-001 -> PRO-SKEL-001 -> PRO-SKEL-002 -> PRO-SKEL-003 -> BUILD-MUTATION-TRUTH-001 -> LEARNING-RUNTIME-001 -> PRODUCT-KIND-001 -> LEARNING-PRODUCT-INTELLIGENCE-001 -> BLD-AGT-001 -> BUILD-SPEECH-TRUTH-001 -> UNIFIED-NEXUS-AGENT-001 -> CURRENT-SURFACE-ACTION-ROUTER-001 -> PRODUCT-SURFACE-MUTATION-001 -> GAME-RUNTIME-MUTATION-001 -> SKELETON-CHOICE-001 -> VBUILD-001`
+8. `W4-FIX-001 -> AUTH-SESSION-PROJECT-ISO-001 -> W4-FIX-005 -> W4-FIX-007 -> SLICE-001..004 -> SKEL-001 -> DESIGN-PLUG-001..004 -> VSKEL-001 -> SLICE-005 -> RUNTIME-TRUTH-001 -> PRODUCT-BACKEND-SKEL-001 -> PRODUCT-BACKEND-SKEL-002 -> RUNTIME-SKEL-001 -> PRO-SKEL-001 -> PRO-SKEL-002 -> PRO-SKEL-003 -> BUILD-MUTATION-TRUTH-001 -> LEARNING-RUNTIME-001 -> PRODUCT-KIND-001 -> LEARNING-PRODUCT-INTELLIGENCE-001 -> BLD-AGT-001 -> BUILD-SPEECH-TRUTH-001 -> COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 -> UNIFIED-NEXUS-AGENT-001 -> CURRENT-SURFACE-ACTION-ROUTER-001 -> PRODUCT-SURFACE-MUTATION-001 -> GAME-RUNTIME-MUTATION-001 -> SKELETON-CHOICE-001 -> VBUILD-001`
 9. `SLICE-006..008`
 10. `MUT-001 -> BUILD-APPROVAL-001 -> HIST-AGT-001 -> SHARE-AGT-001 -> GROW-AGT-001 -> GROW-PLUG-001..002 -> GROW-MEASURE-001 -> GROW-AGT-002 -> GROW-SEO-001 -> GROW-SEM-001 -> GROW-EMAIL-001 -> GROW-LAND-001 -> GROW-LAND-BACKEND-001 -> STD-HANDOFF-AGT-001 -> SURF-009B -> NEXUS-FACADE-001 -> NEXUS-ACTION-FACADE-001 -> SURF-CODE-001`
 11. `EXP-001..008`
