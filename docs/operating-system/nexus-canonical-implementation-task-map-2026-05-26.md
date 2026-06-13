@@ -6073,7 +6073,7 @@ Write-back:
   - `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
 
 #### `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
-- status: `blocked`
+- status: `selected-unblocked`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -6118,6 +6118,9 @@ Write-back:
   - `2026-06-13: Added SUPABASE-001 as a timed persistence-provider integration gate after DATA-001 and before PRIVACY-001 so Supabase can be connected deliberately if it matches the DATA-001 source-of-truth contract instead of becoming a second accidental data source.`
   - `PRIVACY-001 depends on DATA-001 and SUPABASE-001 because full deletion, export, retention, consent, and user-rights behavior cannot truthfully close until first-release data ownership, persistence provider timing, source-of-truth, stale-state, persistence, and restore boundaries are explicit.`
   - `Correct next executable dependency: DATA-001 — Product shell persistence and data ownership boundary.`
+- unblock_update:
+  - `2026-06-13: DATA-001 and SUPABASE-001 are now trueGreen. PRIVACY-001 is selected-unblocked and is the next canonical release-blocker.`
+  - `PRIVACY-001 must implement full deletion, export, retention, consent, and user-rights behavior against the selected first-release ProjectService/projectWorkspaceStore persistence path without claiming Supabase coverage.`
 
 #### `SSO-001 — Enterprise and external identity provider boundary`
 - status: `new-proposed`
