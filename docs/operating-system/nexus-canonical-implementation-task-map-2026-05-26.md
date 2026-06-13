@@ -813,6 +813,7 @@ Write-back:
 - `2026-06-11: Added SURFACE-OWNER-RUNTIME-001 and LIVE-PROOF-INTEGRITY-001 after repository-truth investigation found that code edits can land in real files while the visible product stays unchanged because web/app.js route/restore/QA/runtime ownership, stale browser state, static asset loading, or wrong-port proof can mask the edited surface. These tasks block future release-blocker closure before broad continuation.`
 - `2026-06-13: Added UNIFIED-NEXUS-AGENT-001, CURRENT-SURFACE-ACTION-ROUTER-001, PRODUCT-SURFACE-MUTATION-001, and GAME-RUNTIME-MUTATION-001 after the ice-tower live behavior showed a user-visible contradiction: the left product surface had a game shell while the right agent still behaved like onboarding/discovery and asked for solution details instead of explaining or changing the active product. These tasks block broad continuation until Nexus is user-visible as one agent across onboarding, build, verification, release, growth, files, and product-surface mutation.`
 - `2026-06-13: Added COCKPIT-FIRST-PROJECT-E2E-REPAIR-001 after a repository-truth QA check of test/web-app-wave1-cockpit.test.js showed that the core first-project path still fails in the main tree: 22/25 cockpit tests failed, including empty app -> create project -> workspace, onboarding navigation/restore, stored app user attachment, and visible loop/workspace refresh. This task blocks broad continuation before unified-agent and surface-mutation work because the right-rail agent cannot truthfully mutate the visible product if the active project, route, storage, onboarding, and workspace are not one coherent runtime path.`
+- `2026-06-13: Added SKELETON-QUALITY-CLOSURE-ADDENDUM-001 as a canonical quality addendum, not a separate implementation lane, after the user raised a valid concern that many truth boundaries can close while the first generated skeleton still may not feel strong, real, and beautiful. This addendum tightens PRO-SKEL-003, SKELETON-CHOICE-001, VBUILD-001, and PUBLISH-DESIGN-GATE-001 so future closure cannot rely on structure, data attributes, provider success, or code shape alone; it requires live user-visible product quality, class-specific design, responsive screenshots, non-generic copy, and continuation readiness.`
 - `POST-006`, `POST-007`, and `POST-008` added as post-release scope decisions.
 - Release-readiness dependencies updated so final release cannot bypass these product-shell responsibilities.
 - `No new task was marked trueGreen by this audit.`
@@ -2902,6 +2903,7 @@ Write-back:
   - `PRO-SKEL-003` does not reopen already-closed backend truth, product-domain truth, mutation truth, or learning event contracts; it blocks the next user-visible Build Agent continuation path until the first skeleton is product-realistic enough to build on.
   - `2026-06-07 scope clarification: PRO-SKEL-003 closed the realism bar for the currently proven class-specific skeleton path. It does not close unknown product-kind discovery, arbitrary product-pattern interpretation, or learning-driven product-kind intelligence. Those are now explicit blockers before the Build Agent can claim broad product-building continuation.`
   - `2026-06-10 provider clarification: PRO-SKEL-003 may consume creative-provider outputs after PROV-001 provider gating, but it does not close provider connection, provider execution, creative asset licensing/usage, publishing, spending, or package realization. Provider-assisted visuals must still pass Nexus product-realism and continuation truth.`
+  - `2026-06-13 skeleton-quality addendum: PRO-SKEL-003 remains trueGreen for the already-proven class-specific first-skeleton realism path, but future skeleton-related closure may not cite this task as proof that every new generated skeleton is strong, beautiful, publishable, or broadly product-grade. Any future class, provider-assisted direction, or new product pattern must reprove live screenshots, mobile/desktop composition, domain-specific visual language, non-generic copy, first-screen comprehension, and continuation readiness before it can inherit the PRO-SKEL-003 quality claim.`
   - `PRO-SKEL-003` does not close Build Agent continuation, product-direction approval, full verification, release, publishing, external providers, payments, WhatsApp, deployment, production backend infrastructure, or App Store delivery.
 - next:
   - `PRODUCT-KIND-001 — Unknown product-kind discovery and skeleton selection`
@@ -3823,6 +3825,7 @@ Write-back:
   - `If several candidate directions exist, Nexus must not continue building until the user selects one direction or explicitly approves Nexus recommended direction.`
   - `After selection, the chosen direction becomes locked product continuation truth. Build, Visual Build, Mutation, Learning, Restore, History, Release, and Verification must use the selected candidate identity until the user approves a direction change.`
   - `The selected design/provider direction is not only a visual preference. Downstream product package generation must translate the chosen direction into package structure, runtime tools, frontend/backend boundaries, dependencies, interaction patterns, and verification expectations where relevant.`
+  - `Skeleton choice is not satisfied by three cosmetic skins over the same generic shell. Each candidate direction must materially differ in product structure, visual system, interaction model, audience fit, and continuation path while remaining grounded in the same Nexus product truth.`
   - `Creative providers may be used as candidate sources for brand identity, app screens, motion/video, image assets, campaign creative, or design imports, but every candidate must still be normalized into the same Nexus candidate contract and cannot become a vendor-owned direction.`
   - `Provider unavailability must produce a visible bounded failure or a clearly marked internal fallback candidate; Nexus may not pretend that missing providers produced real provider-backed alternatives.`
 - preserve:
@@ -3856,6 +3859,7 @@ Write-back:
 - done when:
   - tests prove Nexus can request at least three skeleton candidates from configured provider/adaptor paths for the same product truth envelope
   - tests prove each candidate includes visual direction, product-kind fit, product-domain fit, actions/state fit, boundaries, and provider capability metadata
+  - tests prove candidate directions are materially distinct in layout/composition, product emphasis, interaction model, audience fit, and continuation path rather than color-only or provider-only variants
   - tests prove creative-provider candidates can be accepted only when brand/screen/video/image/campaign assets are mapped to product truth, selected direction truth, and downstream package/growth handoff truth
   - tests prove a candidate without product-domain/action/state mapping is rejected
   - tests prove provider unavailability returns a bounded failure or explicitly marked fallback, not fake provider success
@@ -3869,6 +3873,7 @@ Write-back:
   - live browser proof shows a real project receiving multiple candidate skeleton directions, the user selecting one, refresh restoring the selection, and Build continuing only on the selected direction
 - not trueGreen:
   - Nexus generates multiple pretty cards without real provider/adaptor integration
+  - Nexus offers multiple directions that differ only by color, image style, provider name, or generic marketing tone
   - Nexus generates or imports brand/video/screen/ad assets but cannot attach them to a selected product direction, package plan, growth plan, history event, or approval boundary
   - provider output becomes product truth instead of a candidate over Nexus truth
   - the selected direction is not persisted
@@ -3890,6 +3895,7 @@ Write-back:
 - residual_notes:
   - `The external Figma/design-provider path is represented as unavailable bounded provider failure in this environment; this task closes configured provider/adaptor candidate integration and honest provider failure truth, not production external provider execution.`
   - `VBUILD-001 still owns deeper visual build continuation once a selected direction exists.`
+  - `2026-06-13 skeleton-quality addendum: SKELETON-CHOICE-001 remains closed for selected-direction truth, but future use of this closure cannot claim that Nexus produces strong skeleton options unless candidate proof shows materially different, product-specific, user-understandable directions with rendered evidence.`
 - next:
   - `VBUILD-001 — Visual Build Agent active visual build continuation`
 
@@ -3919,6 +3925,7 @@ Write-back:
   - `Visual build output must be traceable to the active product graph, skeleton envelope, mutation proposal, and verification state.`
   - `Visual Build Agent must preserve or intentionally switch the selected Design Plugin; it may not drift into a generic Nexus default style without user/agent decision.`
   - `Small safe visual changes may be applied directly; meaning-changing changes require approval and canonical mutation ownership.`
+  - `A visual continuation is not closed by metadata, a small local patch, or a proof chip. It must materially improve the visible product surface while preserving the selected skeleton direction and making the product easier to understand, use, or continue building.`
   - `Visual Build Agent does not own Product Graph truth. It proposes and performs visual change; Mutation / Change Agent decides what becomes product truth.`
   - `Agent failure does not create fake change.`
 - preserve:
@@ -3946,6 +3953,7 @@ Write-back:
   - tests prove build rail instructions reach Visual Build Agent before visible canvas mutation
   - tests prove visible canvas state matches build-agent/visual-build-agent state
   - tests prove visual changes preserve selected Design Plugin unless style change is requested
+  - tests prove visual changes are evaluated against skeleton-quality continuity: the changed surface still feels product-specific, coherent, non-generic, responsive, and ready for further product work
   - tests prove small safe changes can apply without heavy approval while meaning-changing changes require approval/mutation handoff
   - tests prove invalid/unavailable agent output does not mutate canvas or product truth and preserves pending retry
   - live browser proof shows a user instruction in the rail produces a visible product-surface update with no fake/static preview path
@@ -3957,6 +3965,7 @@ Write-back:
   - user sees build progress that is not backed by visual build state
   - style silently resets to generic Nexus design
   - the agent says it changed something but the screen did not change
+  - the screen changes only cosmetically while becoming less product-specific, less usable, less responsive, or less coherent with the selected skeleton direction
   - the visual change mutates product truth without Mutation / Change Agent path
   - provider failure or malformed envelope triggers a local fallback that impersonates the agent
 - closure_evidence:
@@ -3986,6 +3995,7 @@ Write-back:
   - `Sending "זה נראה יבש, תהפוך את זה לפרימיום" produced intent=visual-style-change, requiresApproval=true, mayClaimChanged=false, and did not create a new fake visual mutation or overwrite the selected direction.`
 - residual_notes:
   - `VBUILD-001 closes safe active visual continuation from the selected skeleton direction, not full product mutation, deep product-direction change, verification execution, provider connection, publishing, WhatsApp, payment, or release.`
+  - `2026-06-13 skeleton-quality addendum: VBUILD-001 remains trueGreen for the proven safe visual continuation cases, but future visual-build claims must include live before/after rendered evidence and must show product-quality improvement, not only changed DOM, metadata, or a passing agent envelope.`
   - `MUT-001 / SLICE-006 still own deeper artifact mutation and product-truth change semantics after visual build continuation.`
 - next:
   - `SLICE-006 — Conversation mutation updates artifact`
@@ -6821,6 +6831,7 @@ Write-back:
   - `The gate must evaluate actual rendered output or provider artifact output, not only code structure or task status.`
   - `A live screenshot or equivalent rendered artifact proof is required before approval for every externally visible artifact.`
   - `Provider-assisted output must be judged by Nexus product truth and design quality, not by provider success alone.`
+  - `A publish-grade result must prove continuity from the selected skeleton direction and Visual Build work. The gate must reject artifacts that look professional in isolation but no longer match the product's domain, interaction model, backend/data truth, selected direction, or user promise.`
   - `A failed design gate blocks publish/package/release but may route back to Visual Build, provider orchestration, Growth, Mutation, or product package planning.`
 - preserve:
   - `DESIGN-PROVIDER-ORCH-001 provider asset truth`
@@ -6842,6 +6853,7 @@ Write-back:
   - language and tone check for user-facing text
   - internal-language and provider-plumbing leak check
   - product-specificity and selected-skeleton-direction fidelity check
+  - skeleton-quality inheritance check that verifies the artifact still looks like a strong real product rather than a polished but detached campaign/demo asset
   - professional-versus-demo verdict
   - conversion/action clarity check for landing and growth assets
   - trust/consent/boundary check for external data collection
@@ -6853,6 +6865,7 @@ Write-back:
   - tests prove a generic/demo/internal-looking artifact cannot be marked publish-ready
   - tests prove landing pages consume GROW-LAND-DESIGN-001 before the gate can approve them
   - tests prove provider success alone is insufficient without rendered/artifact quality proof
+  - tests prove publish approval fails when an artifact is visually polished but disconnected from selectedSkeletonCandidateId, visualBuildTruth, product-domain truth, or product-owned backend/data truth
   - tests prove live screenshot or equivalent rendered artifact proof is required before approval
   - tests prove landing pages require publish-grade hero, CTA, responsive layout, lead form, consent framing, and no internal language
   - tests prove apps/internal tools require product-specific layout, workflow clarity, responsive/screen-fit checks, and no decorative fake dashboard claims
@@ -7645,6 +7658,7 @@ Write-back:
 - `BLD-AGT-001`
 - `BUILD-SPEECH-TRUTH-001`
 - `COCKPIT-FIRST-PROJECT-E2E-REPAIR-001`
+- `SKELETON-QUALITY-CLOSURE-ADDENDUM-001`
 - `UNIFIED-NEXUS-AGENT-001`
 - `CURRENT-SURFACE-ACTION-ROUTER-001`
 - `PRODUCT-SURFACE-MUTATION-001`
