@@ -1179,6 +1179,69 @@ export function createServer(projectService, runtimeStatus = {}) {
       return;
     }
 
+    if (request.method === "GET" && url.pathname === "/api/privacy-center") {
+      const userId = resolvedUserId;
+      if (!userId) {
+        sendJson(response, 401, { error: "Authentication required" });
+        return;
+      }
+
+      const result = typeof projectService.buildPrivacyCenter === "function"
+        ? projectService.buildPrivacyCenter(userId)
+        : null;
+      if (!result) {
+        sendJson(response, 404, { error: "User not found" });
+        return;
+      }
+
+      sendJson(response, 200, result);
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/privacy/export") {
+      const userId = resolvedUserId;
+      if (!userId) {
+        sendJson(response, 401, { error: "Authentication required" });
+        return;
+      }
+
+      const result = typeof projectService.exportPrivacyData === "function"
+        ? projectService.exportPrivacyData(userId)
+        : null;
+      if (!result) {
+        sendJson(response, 404, { error: "User not found" });
+        return;
+      }
+
+      sendJson(response, 200, result);
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/privacy/actions") {
+      const userId = resolvedUserId;
+      if (!userId) {
+        sendJson(response, 401, { error: "Authentication required" });
+        return;
+      }
+
+      const body = await parseBody(request).catch(() => ({}));
+      const result = typeof projectService.applyPrivacyAction === "function"
+        ? projectService.applyPrivacyAction({
+            userId,
+            actorUserId: userId,
+            actionType: body.actionType,
+            payload: body.payload,
+          })
+        : null;
+      if (!result) {
+        sendJson(response, 404, { error: "User not found" });
+        return;
+      }
+
+      sendJson(response, result.status === "blocked" ? 409 : 200, result);
+      return;
+    }
+
     if (request.method === "POST" && url.pathname === "/api/project-drafts") {
       if (!resolvedUserId) {
         sendJson(response, 401, { error: "Authentication required", reason: "authentication-required" });

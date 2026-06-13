@@ -192,3 +192,72 @@ test("ACCT-001 settings screen renders account boundary without internal task la
   assert.doesNotMatch(html, /PRIVACY-001/);
   assert.doesNotMatch(html, /PROV-001/);
 });
+
+test("PRIVACY-001 settings screen renders a visible privacy center with truthful states", () => {
+  const viewModel = buildSettingsViewModel({
+    activePanel: "privacy",
+    settingsProfileSurface: {
+      actorProfile: {
+        userId: "user-1",
+        displayName: "Yogev",
+        email: "yogev@example.com",
+        role: "owner",
+      },
+      accountBoundary: {
+        status: "ready",
+        activeSession: { status: "active" },
+        accountSecurity: { authMethod: "password", availableActions: [] },
+        linkedTruth: {},
+      },
+      privacyCenter: {
+        taskId: "PRIVACY-001",
+        status: "ready",
+        userFacing: {
+          title: "פרטיות ונתונים",
+          summary: "כאן אפשר לראות מה נשמר ומה ניתן לייצא או למחוק בפועל.",
+          deletionPromise: "מחיקה לא מוצגת כמיידית אם יש שמירה מוצדקת.",
+        },
+        dataInventory: [
+          {
+            key: "account",
+            label: "פרטי חשבון",
+            status: "stored",
+            retentionBoundary: "active-until-deletion-request",
+            deleteState: "request-supported",
+          },
+          {
+            key: "audit",
+            label: "רשומות אבטחה וביקורת",
+            status: "stored-append-only",
+            retentionBoundary: "retained-for-security-integrity",
+            deleteState: "blocked-security-audit-retention",
+          },
+        ],
+        consentStates: [
+          { key: "files", label: "קבצים", status: "required-before-upload" },
+          { key: "provider-connection", label: "חיבור ספקים", status: "explicit-approval-required" },
+        ],
+        rights: {
+          export: { status: "available" },
+          deletion: {
+            status: "request-available-with-retention-review",
+            blockedScopes: [{ key: "audit", reason: "blocked-security-audit-retention" }],
+          },
+          retention: { status: "visible" },
+          rightsRequest: { status: "not-requested" },
+        },
+      },
+    },
+  });
+
+  const html = renderSettingsScreen(viewModel);
+
+  assert.match(html, /data-privacy-center-task="PRIVACY-001"/);
+  assert.match(html, /data-privacy-center-status="ready"/);
+  assert.match(html, /data-privacy-export-status="available"/);
+  assert.match(html, /פרטיות ונתונים/);
+  assert.match(html, /מה נשמר עכשיו/);
+  assert.match(html, /הסכמות ושליטה/);
+  assert.match(html, /גבולות מחיקה/);
+  assert.match(html, /מחיקה לא מוצגת כמיידית/);
+});

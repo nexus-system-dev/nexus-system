@@ -16,6 +16,7 @@ function buildTabItems(activePanel) {
     { key: "notifications", label: "התראות", icon: "◔", active: activePanel === "notifications" },
     { key: "security", label: "אבטחה", icon: "⛨", active: activePanel === "security" },
     { key: "account", label: "חשבון", icon: "⌁", active: activePanel === "account" },
+    { key: "privacy", label: "פרטיות", icon: "◇", active: activePanel === "privacy" },
     { key: "appearance", label: "מראה", icon: "◈", active: activePanel === "appearance" },
   ];
 }
@@ -33,6 +34,8 @@ export function buildSettingsViewModel({
   const notificationPreferences = normalizeObject(surface.notificationPreferences);
   const securitySettings = normalizeObject(surface.securitySettings);
   const accountBoundary = normalizeObject(surface.accountBoundary);
+  const privacyCenter = normalizeObject(surface.privacyCenter);
+  const privacyRights = normalizeObject(privacyCenter.rights);
   const supabasePersistenceDecision = normalizeObject(surface.supabasePersistenceDecision);
   const linkedTruth = normalizeObject(accountBoundary.linkedTruth);
   const privacyTruth = normalizeObject(linkedTruth.privacy);
@@ -84,6 +87,39 @@ export function buildSettingsViewModel({
         title: normalizeString(entry.summary, "פעולת חשבון"),
         status: normalizeString(entry.status, "completed"),
         occurredAt: normalizeString(entry.occurredAt, ""),
+      })),
+    },
+    privacy: {
+      taskId: normalizeString(privacyCenter.taskId, ""),
+      status: normalizeString(privacyCenter.status, "blocked-auth-required"),
+      title: normalizeString(privacyCenter.userFacing?.title, "פרטיות ונתונים"),
+      summary: normalizeString(
+        privacyCenter.userFacing?.summary,
+        "כאן מוצג מה נשמר ומה ניתן לייצא או למחוק בפועל.",
+      ),
+      deletionPromise: normalizeString(
+        privacyCenter.userFacing?.deletionPromise,
+        "מחיקה לא מוצגת כמיידית אם יש שמירה מוצדקת.",
+      ),
+      inventoryItems: normalizeArray(privacyCenter.dataInventory).map((item) => ({
+        key: normalizeString(item.key, "unknown"),
+        label: normalizeString(item.label, "מידע"),
+        status: normalizeString(item.status, "unknown"),
+        retentionBoundary: normalizeString(item.retentionBoundary, ""),
+        deleteState: normalizeString(item.deleteState, ""),
+      })),
+      consentItems: normalizeArray(privacyCenter.consentStates).map((item) => ({
+        key: normalizeString(item.key, "unknown"),
+        label: normalizeString(item.label, "הסכמה"),
+        status: normalizeString(item.status, "unknown"),
+      })),
+      exportStatus: normalizeString(privacyRights.export?.status, "unknown"),
+      deletionStatus: normalizeString(privacyRights.deletion?.status, "unknown"),
+      retentionStatus: normalizeString(privacyRights.retention?.status, "unknown"),
+      rightsRequestStatus: normalizeString(privacyRights.rightsRequest?.status, "not-requested"),
+      blockedDeletionScopes: normalizeArray(privacyRights.deletion?.blockedScopes).map((item) => ({
+        key: normalizeString(item.key, "unknown"),
+        reason: normalizeString(item.reason, "retention-required"),
       })),
     },
     persistenceProvider: {

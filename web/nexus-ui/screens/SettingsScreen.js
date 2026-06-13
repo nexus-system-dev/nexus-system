@@ -110,6 +110,80 @@ function renderAccountPanel(viewModel) {
   });
 }
 
+function renderPrivacyPanel(viewModel) {
+  const privacy = viewModel.privacy ?? {};
+  const inventoryItems = Array.isArray(privacy.inventoryItems) ? privacy.inventoryItems : [];
+  const consentItems = Array.isArray(privacy.consentItems) ? privacy.consentItems : [];
+  const blockedScopes = Array.isArray(privacy.blockedDeletionScopes) ? privacy.blockedDeletionScopes : [];
+
+  return renderNexusCard({
+    className: "nexus-settings-screen__card nexus-settings-screen__privacy-card",
+    content: `
+      <section
+        data-privacy-center-task="${escapeHtml(privacy.taskId)}"
+        data-privacy-center-status="${escapeHtml(privacy.status)}"
+        data-privacy-export-status="${escapeHtml(privacy.exportStatus)}"
+        data-privacy-deletion-status="${escapeHtml(privacy.deletionStatus)}"
+        data-privacy-retention-status="${escapeHtml(privacy.retentionStatus)}"
+        data-privacy-rights-request-status="${escapeHtml(privacy.rightsRequestStatus)}"
+      >
+        <div class="nexus-settings-screen__card-copy">
+          <h3>${escapeHtml(privacy.title ?? "פרטיות ונתונים")}</h3>
+          <p>${escapeHtml(privacy.summary ?? "כאן מוצג מה נשמר ומה ניתן לייצא או למחוק בפועל.")}</p>
+        </div>
+        <div class="nexus-settings-screen__security-grid">
+          <article class="nexus-settings-screen__security-item">
+            <span>יצוא מידע</span>
+            <strong>${escapeHtml(privacy.exportStatus ?? "unknown")}</strong>
+          </article>
+          <article class="nexus-settings-screen__security-item">
+            <span>מחיקה</span>
+            <strong>${escapeHtml(privacy.deletionStatus ?? "unknown")}</strong>
+          </article>
+          <article class="nexus-settings-screen__security-item">
+            <span>שמירת מידע</span>
+            <strong>${escapeHtml(privacy.retentionStatus ?? "unknown")}</strong>
+          </article>
+          <article class="nexus-settings-screen__security-item">
+            <span>בקשה אחרונה</span>
+            <strong>${escapeHtml(privacy.rightsRequestStatus ?? "not-requested")}</strong>
+          </article>
+        </div>
+        <div class="nexus-settings-screen__boundary-list">
+          <h4>מה נשמר עכשיו</h4>
+          ${inventoryItems.map((item) => `
+            <p>
+              <strong>${escapeHtml(item.label)}</strong>
+              <span>${escapeHtml(item.status)} · ${escapeHtml(item.retentionBoundary)}</span>
+            </p>
+          `).join("")}
+        </div>
+        <div class="nexus-settings-screen__boundary-list">
+          <h4>הסכמות ושליטה</h4>
+          ${consentItems.map((item) => `
+            <p>
+              <strong>${escapeHtml(item.label)}</strong>
+              <span>${escapeHtml(item.status)}</span>
+            </p>
+          `).join("")}
+        </div>
+        <div class="nexus-settings-screen__boundary-list">
+          <h4>גבולות מחיקה</h4>
+          <p>${escapeHtml(privacy.deletionPromise ?? "מחיקה לא מוצגת כמיידית אם יש שמירה מוצדקת.")}</p>
+          ${blockedScopes.length > 0
+            ? blockedScopes.map((item) => `
+              <p>
+                <strong>${escapeHtml(item.key)}</strong>
+                <span>${escapeHtml(item.reason)}</span>
+              </p>
+            `).join("")
+            : "<p>אין כרגע גבולות מחיקה חסומים.</p>"}
+        </div>
+      </section>
+    `,
+  });
+}
+
 function renderPanel(viewModel) {
   const profileCard = renderNexusCard({
     className: "nexus-settings-screen__card",
@@ -209,6 +283,7 @@ function renderPanel(viewModel) {
     profile: "",
     notifications: "",
     security: "",
+    privacy: "",
     appearance: "",
   };
 
@@ -248,6 +323,9 @@ function renderPanel(viewModel) {
       </section>
       <section class="nexus-settings-screen__panel ${viewModel.activePanel === "account" ? "" : "is-hidden"}" data-settings-panel="account">
         ${renderAccountPanel(viewModel)}
+      </section>
+      <section class="nexus-settings-screen__panel ${viewModel.activePanel === "privacy" ? "" : "is-hidden"}" data-settings-panel="privacy">
+        ${renderPrivacyPanel(viewModel)}
       </section>
       <section class="nexus-settings-screen__panel ${viewModel.activePanel === "appearance" ? "" : "is-hidden"}" data-settings-panel="appearance">
         ${renderNexusCard({

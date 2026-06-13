@@ -1247,13 +1247,82 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "PRIVACY-001",
-      "title": "Full privacy rights and data lifecycle boundary",
+      "taskId": "SSO-001",
+      "title": "Enterprise and external identity provider boundary",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
-      "status": "selected-unblocked",
-      "reason": "SUPABASE-001 closed trueGreen on 2026-06-13 with decision defer-for-first-release, leaving ProjectService/projectWorkspaceStore as the selected first-release persistence path. PRIVACY-001 is now the correct next executable release-blocker because deletion, export, retention, consent, and user-rights behavior can be implemented against that selected path without claiming Supabase coverage."
+      "status": "blocked-by-dependency",
+      "reason": "PRIVACY-001 closed trueGreen on 2026-06-13. SSO-001 is now the earliest unresolved release-blocker by task-map order, but it remains blocked because BILLING-001 is open and BILLING-001 depends on USAGE-001. The next buildable dependency is USAGE-001."
     },
     "completedCanonicalExecutionTasks": [
+      {
+        "taskId": "PRIVACY-001",
+        "title": "Full privacy rights and data lifecycle boundary",
+        "status": "trueGreen",
+        "closedAt": "2026-06-13",
+        "closureEvidence": [
+          "src/core/first-release-privacy-boundary.js",
+          "src/core/project-service.js",
+          "src/server.js",
+          "web/nexus-ui/adapters/settings-adapter.js",
+          "web/nexus-ui/screens/SettingsScreen.js",
+          "web/index.html",
+          "test/privacy-001-boundary.test.js",
+          "test/guided-task-and-settings-surfaces.test.js",
+          "scripts/verify-privacy-001-live-proof.mjs",
+          "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md"
+        ],
+        "verification": [
+          "node --check src/core/first-release-privacy-boundary.js",
+          "node --check src/core/project-service.js",
+          "node --check src/server.js",
+          "node --check web/nexus-ui/adapters/settings-adapter.js",
+          "node --check web/nexus-ui/screens/SettingsScreen.js",
+          "node --check scripts/verify-privacy-001-live-proof.mjs",
+          "node --test test/privacy-001-boundary.test.js test/guided-task-and-settings-surfaces.test.js test/acct-001-server-account-boundary.test.js",
+          "NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-privacy-001-live-proof.mjs"
+        ],
+        "liveEvidence": {
+          "report": "/private/tmp/nexus-privacy-001-1781345753088-report.json",
+          "screenshots": [
+            "/private/tmp/nexus-privacy-001-1781345753088-settings-privacy.png",
+            "/private/tmp/nexus-privacy-001-1781345753088-settings-privacy-after-refresh.png"
+          ]
+        },
+        "closureTruth": {
+          "selectedPersistencePath": "project-service-workspace-store",
+          "privacyCenterVisible": true,
+          "exportIncludes": [
+            "account truth",
+            "owned project truth",
+            "product domain/backend/runtime truth",
+            "file boundary records",
+            "provider metadata boundary",
+            "billing and usage summaries",
+            "analytics and audit summaries"
+          ],
+          "exportExcludes": [
+            "access tokens",
+            "refresh tokens",
+            "token bundles",
+            "password hashes",
+            "credential input",
+            "other users' projects"
+          ],
+          "deletionTruth": "account and project deletion requests are recorded with retention review; provider-side deletion is blocked until provider proof exists.",
+          "doesNotClose": [
+            "physical erasure across every local store",
+            "provider-side deletion execution",
+            "Supabase-backed privacy hooks",
+            "production legal workflow automation",
+            "billing legal retention once paid billing is active"
+          ]
+        },
+        "nextTaskTruth": {
+          "taskId": "SSO-001",
+          "status": "blocked-by-dependency",
+          "reason": "SSO-001 is earliest unresolved by map order but depends on BILLING-001; BILLING-001 depends on USAGE-001, so USAGE-001 is the next buildable dependency."
+        }
+      },
       {
         "taskId": "SUPABASE-001",
         "title": "Supabase persistence provider integration timing gate",

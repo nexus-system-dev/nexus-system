@@ -144,6 +144,11 @@ import { createSnapshotRetentionGuard } from "./snapshot-retention-guard.js";
 import { createSnapshotBackupWorkerJob } from "./snapshot-backup-worker-job.js";
 import { createPrivacyRightsExecutionModule } from "./privacy-rights-execution-module.js";
 import {
+  applyPrivacyCenterAction,
+  buildFirstReleasePrivacyCenter,
+  createPrivacyExportPayload,
+} from "./first-release-privacy-boundary.js";
+import {
   applyFirstReleaseAccountAction,
   buildFirstReleaseAccountBoundary,
 } from "./first-release-account-boundary.js";
@@ -924,7 +929,12 @@ export class ProjectService {
       return null;
     }
 
-    const accountBoundary = buildFirstReleaseAccountBoundary({ authPayload });
+    const ownedProjects = this.getRawProjectsForUser(userId);
+    const privacyCenter = this.buildPrivacyCenter(userId)?.privacyCenter ?? null;
+    const accountBoundary = buildFirstReleaseAccountBoundary({
+      authPayload,
+      privacyState: privacyCenter,
+    });
     const supabasePersistenceDecision = buildSupabasePersistenceProviderDecision({
       project: { userId },
       dataOwnershipBoundary: { taskId: "DATA-001", entities: [] },
@@ -947,10 +957,13 @@ export class ProjectService {
           trustLevel: authPayload.userIdentity?.userId ? "known-user" : "anonymous",
         },
         accountBoundary,
+        privacyCenter,
         supabasePersistenceDecision,
         summary: {
           canEditProfile: true,
           hasSettingsRoute: true,
+          hasPrivacyCenter: Boolean(privacyCenter),
+          ownedProjectCount: ownedProjects.length,
         },
       },
     };
@@ -972,6 +985,111 @@ export class ProjectService {
     return {
       ...result,
       authPayload: persistedAuthPayload ?? result.authPayload,
+      settingsProfileSurface: this.buildAccountSettingsSurface(userId)?.settingsProfileSurface ?? null,
+    };
+  }
+
+  getRawProjectsForUser(userId) {
+    const normalizedUserId = normalizeString(userId, null);
+    if (!normalizedUserId) {
+      return [];
+    }
+    return [...this.projects.values()].filter((project) =>
+      (project.userId ?? resolveProjectOwnerUserId(project) ?? null) === normalizedUserId);
+  }
+
+  buildPrivacyCenter(userId) {
+    const authPayload = this.getUserAuthPayload(userId);
+    if (!authPayload) {
+      return null;
+    }
+
+    const projects = this.getRawProjectsForUser(userId);
+    const latestRequest = normalizeArray(authPayload.privacyRequests).at(-1) ?? authPayload.accountDeletionRequest ?? null;
+    return {
+      privacyCenter: buildFirstReleasePrivacyCenter({
+        account: authPayload,
+        projects,
+        latestRequest,
+      }),
+    };
+  }
+
+  exportPrivacyData(userId) {
+    const authPayload = this.getUserAuthPayload(userId);
+    if (!authPayload) {
+      return null;
+    }
+
+    const projects = this.getRawProjectsForUser(userId);
+    const privacyCenter = this.buildPrivacyCenter(userId)?.privacyCenter ?? null;
+    const exportPayload = createPrivacyExportPayload({
+      account: authPayload,
+      projects,
+      privacyCenter,
+    });
+    const exportRequest = {
+      privacyRequestId: exportPayload.exportId,
+      taskId: "PRIVACY-001",
+      actionType: "export",
+      status: "completed",
+      actorUserId: userId,
+      subjectUserId: userId,
+      requestedAt: exportPayload.exportedAt,
+      visibleSummary: "יצוא פרטיות נוצר בלי סודות ובלי נתוני משתמשים אחרים.",
+    };
+    this.persistUserAuthPayload({
+      ...authPayload,
+      privacyRequests: [...normalizeArray(authPayload.privacyRequests), exportRequest].slice(-50),
+    });
+    this.eventBus.emit("privacy.exported", {
+      taskId: "PRIVACY-001",
+      userId,
+      projectCount: projects.length,
+      exportId: exportPayload.exportId,
+      secretBoundary: "secrets-redacted",
+    });
+    return {
+      status: "completed",
+      exportPayload,
+      privacyCenter: this.buildPrivacyCenter(userId)?.privacyCenter ?? privacyCenter,
+    };
+  }
+
+  applyPrivacyAction({ userId = null, actionType = null, payload = null, actorUserId = null } = {}) {
+    const authPayload = this.getUserAuthPayload(userId);
+    if (!authPayload) {
+      return null;
+    }
+
+    const projects = this.getRawProjectsForUser(userId);
+    const result = applyPrivacyCenterAction({
+      account: authPayload,
+      projects,
+      actionType,
+      payload,
+      actorUserId: actorUserId ?? userId,
+    });
+    const persistedAuthPayload = this.persistUserAuthPayload(result.account);
+    for (const project of normalizeArray(result.projects)) {
+      this.persistProjectRecord(project);
+    }
+    this.eventBus.emit("privacy.action.recorded", {
+      taskId: "PRIVACY-001",
+      userId,
+      actorUserId: actorUserId ?? userId,
+      actionType,
+      status: result.status,
+      privacyRequestId: result.privacyRequest?.privacyRequestId ?? null,
+      projectId: result.privacyRequest?.projectId ?? null,
+      retentionReason: result.privacyRequest?.retentionReason ?? null,
+      secretBoundary: "no-secrets-recorded",
+    });
+    return {
+      status: result.status,
+      privacyRequest: result.privacyRequest,
+      authPayload: persistedAuthPayload ?? result.account,
+      privacyCenter: this.buildPrivacyCenter(userId)?.privacyCenter ?? null,
       settingsProfileSurface: this.buildAccountSettingsSurface(userId)?.settingsProfileSurface ?? null,
     };
   }
@@ -7517,10 +7635,21 @@ export class ProjectService {
       project,
       dataOwnershipBoundary,
     });
+    const ownerUserId = project.userId ?? resolveProjectOwnerUserId(project) ?? null;
+    const privacyCenter = ownerUserId
+      ? buildFirstReleasePrivacyCenter({
+          account: this.getUserAuthPayload(ownerUserId),
+          projects: this.getRawProjectsForUser(ownerUserId),
+          latestRequest: normalizeArray(this.getUserAuthPayload(ownerUserId)?.privacyRequests).at(-1)
+            ?? this.getUserAuthPayload(ownerUserId)?.accountDeletionRequest
+            ?? project.context?.privacyDeletionRequest
+            ?? null,
+        })
+      : null;
 
     return {
       id: project.id,
-      userId: project.userId ?? resolveProjectOwnerUserId(project) ?? null,
+      userId: ownerUserId,
       name: project.name,
       goal: project.goal,
       status: project.status,
@@ -7546,6 +7675,7 @@ export class ProjectService {
         ?? project.state?.fileStorageRecord
         ?? null,
       dataOwnershipBoundary,
+      privacyCenter,
       supabasePersistenceDecision,
       repositoryImportAndCodebaseDiagnosis: project.context?.repositoryImportAndCodebaseDiagnosis ?? null,
       liveWebsiteIngestionAndFunnelDiagnosis: project.context?.liveWebsiteIngestionAndFunnelDiagnosis ?? null,

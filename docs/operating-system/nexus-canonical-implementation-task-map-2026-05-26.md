@@ -6073,7 +6073,7 @@ Write-back:
   - `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
 
 #### `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
-- status: `selected-unblocked`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -6121,9 +6121,22 @@ Write-back:
 - unblock_update:
   - `2026-06-13: DATA-001 and SUPABASE-001 are now trueGreen. PRIVACY-001 is selected-unblocked and is the next canonical release-blocker.`
   - `PRIVACY-001 must implement full deletion, export, retention, consent, and user-rights behavior against the selected first-release ProjectService/projectWorkspaceStore persistence path without claiming Supabase coverage.`
+- closure_update:
+  - `2026-06-13: Closed trueGreen against the selected first-release ProjectService/projectWorkspaceStore persistence path. Added src/core/first-release-privacy-boundary.js as the privacy center, data inventory, retention, consent, export, and privacy-action boundary for PRIVACY-001.`
+  - `2026-06-13: ProjectService now exposes buildPrivacyCenter, exportPrivacyData, and applyPrivacyAction; serializeProject now includes privacyCenter for owned projects; settings-profile now includes privacyCenter alongside the ACCT-001 account boundary.`
+  - `2026-06-13: Server now exposes authenticated /api/privacy-center, /api/privacy/export, and /api/privacy/actions. The export path includes account/project/product truth and redacts or excludes token, credential, password hash, and other secret fields. Privacy actions record product-readable privacy requests and retention reasons without pretending blocked deletion completed.`
+  - `2026-06-13: Settings now has a user-visible Privacy tab showing data inventory, export status, deletion status, retention status, latest rights request, consent states, and deletion boundaries in human-facing language. The visible surface exposes data-privacy-* proof markers only as DOM attributes, not as internal task text.`
+  - `Verification passed 2026-06-13: node --check src/core/first-release-privacy-boundary.js; node --check src/core/project-service.js; node --check src/server.js; node --check web/nexus-ui/adapters/settings-adapter.js; node --check web/nexus-ui/screens/SettingsScreen.js; node --check scripts/verify-privacy-001-live-proof.mjs; node --test test/privacy-001-boundary.test.js test/guided-task-and-settings-surfaces.test.js test/acct-001-server-account-boundary.test.js.`
+  - `Live proof passed 2026-06-13 on http://127.0.0.1:4011 via NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-privacy-001-live-proof.mjs. Report: /private/tmp/nexus-privacy-001-1781345753088-report.json. Screenshots: /private/tmp/nexus-privacy-001-1781345753088-settings-privacy.png and /private/tmp/nexus-privacy-001-1781345753088-settings-privacy-after-refresh.png.`
+  - `Broad regression note: node --test test/privacy-rights-execution-module.test.js test/privacy-retention-and-deletion-policy-resolver.test.js test/data-privacy-classification-schema.test.js test/project-service.test.js test/server-health-endpoints.test.js test/privacy-001-boundary.test.js was not usable as closure evidence because project-service.test.js still contains existing unrelated failures in demo seed, permission schema deploy assumptions, onboarding classification/name expectations, git snapshot status, and other old paths; the run also left a tool-session artifact after partial output.`
+- closure_boundary:
+  - `PRIVACY-001 closes first-release privacy center, data inventory, export, consent state visibility, retention boundaries, privacy action authorization through existing authenticated server routes, project/user ownership filtering, and truthful blocked deletion reasons.`
+  - `It does not close physical erasure across all stores, provider-side deletion, Supabase-backed privacy hooks, production legal workflows, billing legal retention once paid billing is active, or enterprise privacy automation.`
+- next:
+  - `SSO-001 — blocked by BILLING-001, which depends on USAGE-001. Next buildable dependency is USAGE-001.`
 
 #### `SSO-001 — Enterprise and external identity provider boundary`
-- status: `new-proposed`
+- status: `blocked-by-dependency`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -6154,6 +6167,9 @@ Write-back:
   - external identity creates duplicate or orphan accounts without recovery
   - organization login grants access to projects without team/project membership
   - SSO availability is implied while provider setup is missing
+- blocker_update:
+  - `2026-06-13: After PRIVACY-001 closed trueGreen, SSO-001 became the earliest unresolved release-blocker by map order, but it is not executable because BILLING-001 remains open and BILLING-001 depends on USAGE-001. This is a missing dependency blocker, not an SSO implementation failure.`
+  - `Correct next buildable dependency: USAGE-001 — First-release usage limits and provider cost guard.`
 
 #### `RUNTIME-001 — Build preview sandbox and failure-state boundary`
 - status: `trueGreen`
