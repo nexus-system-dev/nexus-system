@@ -83,6 +83,8 @@ test("ACCT-001 server settings route returns account boundary and executes bound
   assert.equal(settings.statusCode, 200);
   assert.equal(settings.body.settingsProfileSurface.accountBoundary.taskId, "ACCT-001");
   assert.equal(settings.body.settingsProfileSurface.accountBoundary.linkedTruth.team.ownerTask, "EXP-009");
+  assert.equal(settings.body.settingsProfileSurface.supabasePersistenceDecision.taskId, "SUPABASE-001");
+  assert.equal(settings.body.settingsProfileSurface.supabasePersistenceDecision.decision, "defer-for-first-release");
 
   const deletion = await requestJsonWithBody(server, "POST", "/api/account/actions", {
     actionType: "request-account-deletion",

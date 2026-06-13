@@ -29,7 +29,7 @@ test("DATA-001 builds a source-of-truth matrix for first-release project entitie
   assert.equal(boundary.entities.find((entity) => entity.entityId === "files").sourceOfTruth, "FILE-001 fileStorageRecord");
   assert.equal(boundary.entities.find((entity) => entity.entityId === "mutation").sourceOfTruth, "BUILD-MUTATION-TRUTH-001 history");
   assert.equal(boundary.persistenceProviderDecision.provider, "Supabase");
-  assert.equal(boundary.persistenceProviderDecision.decision, "defer-until-SUPABASE-001");
+  assert.equal(boundary.persistenceProviderDecision.decision, "defer-for-first-release");
   assert.equal(boundary.temporaryOrDemoEntities.some((entry) => entry.key === "qaState" && entry.status === "excluded-from-production-truth"), true);
 });
 
@@ -47,5 +47,5 @@ test("DATA-001 is serialized by ProjectService as project truth, not client QA s
   assert.equal(project.dataOwnershipBoundary.taskId, DATA_OWNERSHIP_BOUNDARY_TASK_ID);
   assert.equal(project.dataOwnershipBoundary.restorePolicy.projectRestore, "backend-projectId-restore");
   assert.equal(project.dataOwnershipBoundary.temporaryOrDemoEntities.find((entry) => entry.key === "localStorage").status, "session/bootstrap-helper-not-product-truth");
-  assert.equal(project.dataOwnershipBoundary.persistenceProviderDecision.decision, "defer-until-SUPABASE-001");
+  assert.equal(project.dataOwnershipBoundary.persistenceProviderDecision.decision, "defer-for-first-release");
 });

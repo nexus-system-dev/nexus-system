@@ -144,7 +144,7 @@ const project = projectResponse.payload?.project ?? projectResponse.payload;
 assertCondition(project?.dataOwnershipBoundary?.taskId === "DATA-001", "API project did not serialize DATA-001 boundary.", project);
 assertCondition(project.dataOwnershipBoundary.entities.length >= 10, "API project DATA-001 inventory is incomplete.", project.dataOwnershipBoundary);
 assertCondition(
-  project.dataOwnershipBoundary.persistenceProviderDecision?.decision === "defer-until-SUPABASE-001",
+  project.dataOwnershipBoundary.persistenceProviderDecision?.decision === "defer-for-first-release",
   "DATA-001 did not record Supabase timing decision.",
   project.dataOwnershipBoundary,
 );
@@ -216,7 +216,7 @@ await page.goto(`${baseUrl}/files?projectId=${encodeURIComponent(projectId)}`, {
   waitUntil: "domcontentloaded",
   timeout: 20_000,
 });
-await page.waitForSelector('[data-data-ownership-task="DATA-001"][data-data-ownership-provider-decision="defer-until-SUPABASE-001"]', { timeout: 20_000 });
+await page.waitForSelector('[data-data-ownership-task="DATA-001"][data-data-ownership-provider-decision="defer-for-first-release"]', { timeout: 20_000 });
 const filesProof = await readRouteProof(page, "files");
 assertDataProof(filesProof, "files");
 assertCondition(/ספק אחסון חיצוני/u.test(filesProof.text), "Files route did not show provider timing truth.", filesProof);

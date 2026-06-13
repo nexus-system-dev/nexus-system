@@ -81,6 +81,29 @@ function renderDataOwnershipBoundary(boundary = {}) {
   `;
 }
 
+function renderSupabaseProviderDecision(decision = {}) {
+  if (!decision || typeof decision !== "object" || !decision.taskId) {
+    return "";
+  }
+
+  const userFacing = decision.userFacing ?? {};
+  const adoptionRequirements = Array.isArray(decision.adoptionRequirements) ? decision.adoptionRequirements : [];
+  return `
+    <section
+      class="nexus-files-screen__boundary"
+      data-supabase-provider-task="${escapeHtml(decision.taskId)}"
+      data-supabase-provider-decision="${escapeHtml(decision.decision ?? "unknown")}"
+      data-supabase-selected-path="${escapeHtml(decision.selectedPersistencePath ?? "project-service-workspace-store")}"
+      data-supabase-adoption-requirement-count="${adoptionRequirements.length}"
+    >
+      <h2>${escapeHtml(userFacing.title ?? "ספק אחסון חיצוני")}</h2>
+      <p><strong>${escapeHtml(userFacing.status ?? "לא מחובר עכשיו")}</strong></p>
+      <p>${escapeHtml(userFacing.summary ?? "נקסוס לא מחברת ספק חיצוני לפני שמקור האמת של הפרויקט ברור.")}</p>
+      <span>${escapeHtml(userFacing.nextStep ?? "החיבור ייפתח אחרי שמיפוי הרשאות, קבצים, פרטיות ושחזור יהיה מוכן.")}</span>
+    </section>
+  `;
+}
+
 export function renderFilesSupportScreen(viewModel) {
   const sidebar = {
     currentRoute: "/files",
@@ -164,6 +187,7 @@ export function renderFilesSupportScreen(viewModel) {
         </div>
 
         <aside class="nexus-files-screen__side">
+          ${renderSupabaseProviderDecision(viewModel.supabasePersistenceDecision)}
           ${renderDataOwnershipBoundary(viewModel.dataOwnershipBoundary)}
           ${renderFileIntakeBoundary(viewModel.fileIntakeBoundary)}
 

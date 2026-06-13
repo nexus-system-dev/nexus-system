@@ -33,6 +33,7 @@ export function buildSettingsViewModel({
   const notificationPreferences = normalizeObject(surface.notificationPreferences);
   const securitySettings = normalizeObject(surface.securitySettings);
   const accountBoundary = normalizeObject(surface.accountBoundary);
+  const supabasePersistenceDecision = normalizeObject(surface.supabasePersistenceDecision);
   const linkedTruth = normalizeObject(accountBoundary.linkedTruth);
   const privacyTruth = normalizeObject(linkedTruth.privacy);
   const billingTruth = normalizeObject(linkedTruth.billing);
@@ -84,6 +85,23 @@ export function buildSettingsViewModel({
         status: normalizeString(entry.status, "completed"),
         occurredAt: normalizeString(entry.occurredAt, ""),
       })),
+    },
+    persistenceProvider: {
+      taskId: normalizeString(supabasePersistenceDecision.taskId, ""),
+      provider: normalizeString(supabasePersistenceDecision.provider, "Supabase"),
+      decision: normalizeString(supabasePersistenceDecision.decision, "defer-for-first-release"),
+      status: normalizeString(supabasePersistenceDecision.userFacing?.status, "לא מחובר עכשיו"),
+      title: normalizeString(supabasePersistenceDecision.userFacing?.title, "ספק אחסון חיצוני"),
+      summary: normalizeString(
+        supabasePersistenceDecision.userFacing?.summary,
+        "נקסוס שומרת כרגע את אמת הפרויקט בשרת המקומי ולא מחברת ספק חיצוני לפני מיפוי מלא.",
+      ),
+      nextStep: normalizeString(
+        supabasePersistenceDecision.userFacing?.nextStep,
+        "החיבור ייפתח רק אחרי שמיפוי הרשאות, קבצים, פרטיות ושחזור יהיה מוכן.",
+      ),
+      selectedPersistencePath: normalizeString(supabasePersistenceDecision.selectedPersistencePath, "project-service-workspace-store"),
+      adoptionRequirementCount: normalizeArray(supabasePersistenceDecision.adoptionRequirements).length,
     },
   };
 }

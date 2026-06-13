@@ -80,8 +80,21 @@ test("FILE-001 buildFilesSupportViewModel exposes intake boundary and local stor
         entities: [{ entityId: "files" }, { entityId: "project" }],
         persistenceProviderDecision: {
           provider: "Supabase",
-          decision: "defer-until-SUPABASE-001",
-          reason: "ספק אחסון חיצוני ייבחר רק אחרי שמקור האמת ברור.",
+          decision: "defer-for-first-release",
+          reason: "ספק אחסון חיצוני לא מחובר עכשיו.",
+        },
+      },
+      supabasePersistenceDecision: {
+        taskId: "SUPABASE-001",
+        provider: "Supabase",
+        decision: "defer-for-first-release",
+        selectedPersistencePath: "project-service-workspace-store",
+        adoptionRequirements: ["schema", "rls", "privacy-hooks"],
+        userFacing: {
+          title: "ספק אחסון חיצוני",
+          status: "לא מחובר עכשיו",
+          summary: "נקסוס שומרת כרגע את אמת הפרויקט בשרת המקומי.",
+          nextStep: "החיבור ייפתח אחרי שמיפוי הרשאות, קבצים, פרטיות ושחזור יהיה מוכן.",
         },
       },
     },
@@ -90,6 +103,7 @@ test("FILE-001 buildFilesSupportViewModel exposes intake boundary and local stor
 
   assert.equal(viewModel.fileIntakeBoundary.taskId, "FILE-001");
   assert.equal(viewModel.dataOwnershipBoundary.taskId, "DATA-001");
+  assert.equal(viewModel.supabasePersistenceDecision.taskId, "SUPABASE-001");
   assert.equal(viewModel.fileIntakeBoundary.rejectedFiles.length, 1);
   assert.equal(viewModel.files.some((file) => file.source === "intake" && file.name === "requirements.md"), true);
   assert.equal(viewModel.files.some((file) => file.source === "storage" && file.name === "requirements.md"), true);
@@ -97,7 +111,9 @@ test("FILE-001 buildFilesSupportViewModel exposes intake boundary and local stor
   assert.match(viewModel.subtitle, /גבולות ההעלאה/);
   assert.equal(viewModel.limitsCard.title, "גבול הקליטה");
   assert.match(html, /data-data-ownership-task="DATA-001"/);
-  assert.match(html, /data-data-ownership-provider-decision="defer-until-SUPABASE-001"/);
+  assert.match(html, /data-data-ownership-provider-decision="defer-for-first-release"/);
+  assert.match(html, /data-supabase-provider-task="SUPABASE-001"/);
+  assert.match(html, /data-supabase-provider-decision="defer-for-first-release"/);
   assert.match(html, /אמת המוצר נשמרת בפרויקט/);
 });
 

@@ -1247,13 +1247,72 @@
       "closedAt": "2026-05-18"
     },
     "nextCanonicalExecutionTask": {
-      "taskId": "SUPABASE-001",
-      "title": "Supabase persistence provider integration timing gate",
+      "taskId": "PRIVACY-001",
+      "title": "Full privacy rights and data lifecycle boundary",
       "source": "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md",
       "status": "selected-unblocked",
-      "reason": "DATA-001 closed trueGreen on 2026-06-13 and recorded Supabase as defer-until-SUPABASE-001. SUPABASE-001 is now the correct next executable release-blocker because it must decide adopt/defer/reject before PRIVACY-001 can truthfully close deletion, export, retention, consent, and user-rights behavior."
+      "reason": "SUPABASE-001 closed trueGreen on 2026-06-13 with decision defer-for-first-release, leaving ProjectService/projectWorkspaceStore as the selected first-release persistence path. PRIVACY-001 is now the correct next executable release-blocker because deletion, export, retention, consent, and user-rights behavior can be implemented against that selected path without claiming Supabase coverage."
     },
     "completedCanonicalExecutionTasks": [
+      {
+        "taskId": "SUPABASE-001",
+        "title": "Supabase persistence provider integration timing gate",
+        "status": "trueGreen",
+        "closedAt": "2026-06-13",
+        "closureEvidence": [
+          "src/core/supabase-persistence-provider-decision.js",
+          "src/core/product-shell-data-ownership-boundary.js",
+          "src/core/project-service.js",
+          "web/nexus-ui/adapters/settings-adapter.js",
+          "web/nexus-ui/adapters/files-adapter.js",
+          "web/nexus-ui/screens/SettingsScreen.js",
+          "web/nexus-ui/screens/FilesSupportScreen.js",
+          "test/supabase-persistence-provider-decision.test.js",
+          "test/guided-task-and-settings-surfaces.test.js",
+          "test/files-support-adapter.test.js",
+          "test/acct-001-server-account-boundary.test.js",
+          "scripts/verify-supabase-001-live-proof.mjs",
+          "docs/operating-system/nexus-canonical-implementation-task-map-2026-05-26.md"
+        ],
+        "verification": [
+          "node --check src/core/supabase-persistence-provider-decision.js",
+          "node --check src/core/project-service.js",
+          "node --check web/nexus-ui/adapters/settings-adapter.js",
+          "node --check web/nexus-ui/screens/SettingsScreen.js",
+          "node --check scripts/verify-supabase-001-live-proof.mjs",
+          "node --test test/supabase-persistence-provider-decision.test.js test/guided-task-and-settings-surfaces.test.js test/files-support-adapter.test.js test/acct-001-server-account-boundary.test.js",
+          "NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-supabase-001-live-proof.mjs"
+        ],
+        "liveEvidence": {
+          "report": "/private/tmp/nexus-supabase-001-1781343982488-report.json",
+          "screenshots": [
+            "/private/tmp/nexus-supabase-001-1781343982488-files.png",
+            "/private/tmp/nexus-supabase-001-1781343982488-files-after-refresh.png",
+            "/private/tmp/nexus-supabase-001-1781343982488-settings.png"
+          ]
+        },
+        "closureTruth": {
+          "decision": "defer-for-first-release",
+          "selectedPersistencePath": "project-service-workspace-store",
+          "supabaseConnected": false,
+          "secretsReachBrowser": false,
+          "visibleSurfaceTruth": [
+            "Files",
+            "Settings"
+          ],
+          "doesNotClose": [
+            "Supabase production adoption",
+            "Supabase database schema and RLS",
+            "Supabase storage buckets and backups",
+            "Supabase-backed privacy export/delete hooks"
+          ]
+        },
+        "nextTaskTruth": {
+          "taskId": "PRIVACY-001",
+          "status": "selected-unblocked",
+          "reason": "SUPABASE-001 selected the ProjectService persistence path for first release, so PRIVACY-001 can now implement rights against that path without pretending Supabase is active."
+        }
+      },
       {
         "taskId": "DATA-001",
         "title": "Product shell persistence and data ownership boundary",
@@ -1312,8 +1371,8 @@
         },
         "nextTaskTruth": {
           "taskId": "SUPABASE-001",
-          "status": "selected-unblocked",
-          "reason": "DATA-001 closed trueGreen and intentionally deferred provider adoption to SUPABASE-001."
+          "status": "trueGreen",
+          "reason": "SUPABASE-001 closed trueGreen and selected ProjectService as the first-release persistence path while deferring Supabase adoption."
         }
       },
       {
@@ -1505,9 +1564,9 @@
           "BUILD-RELEASE-GATE-001"
         ],
         "nextTaskTruth": {
-          "taskId": "SUPABASE-001",
+          "taskId": "PRIVACY-001",
           "status": "selected-unblocked",
-          "reason": "DATA-001 closed trueGreen on 2026-06-13. PRIVACY-001 remains blocked by SUPABASE-001, so SUPABASE-001 is now the next executable persistence-provider dependency."
+          "reason": "DATA-001 and SUPABASE-001 are now trueGreen, so PRIVACY-001 is the next executable privacy and lifecycle dependency."
         }
       },
       {

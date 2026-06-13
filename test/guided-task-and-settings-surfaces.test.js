@@ -164,6 +164,19 @@ test("ACCT-001 settings screen renders account boundary without internal task la
           },
         ],
       },
+      supabasePersistenceDecision: {
+        taskId: "SUPABASE-001",
+        provider: "Supabase",
+        decision: "defer-for-first-release",
+        selectedPersistencePath: "project-service-workspace-store",
+        adoptionRequirements: ["schema", "rls"],
+        userFacing: {
+          title: "ספק אחסון חיצוני",
+          status: "לא מחובר עכשיו",
+          summary: "נקסוס לא מחברת ספק חיצוני לפני מיפוי מלא.",
+          nextStep: "החיבור ייפתח אחרי שמיפוי הרשאות, קבצים, פרטיות ושחזור יהיה מוכן.",
+        },
+      },
     },
   });
 
@@ -172,6 +185,9 @@ test("ACCT-001 settings screen renders account boundary without internal task la
   assert.match(html, /גבול חשבון/);
   assert.match(html, /בקש מחיקת חשבון/);
   assert.match(html, /פעילות חשבון/);
+  assert.match(html, /data-supabase-provider-task="SUPABASE-001"/);
+  assert.match(html, /data-supabase-provider-decision="defer-for-first-release"/);
+  assert.match(html, /לא מחובר עכשיו/);
   assert.doesNotMatch(html, /ACCT-001/);
   assert.doesNotMatch(html, /PRIVACY-001/);
   assert.doesNotMatch(html, /PROV-001/);

@@ -6467,7 +6467,7 @@ Write-back:
   - `Full privacy deletion, export, retention, consent, and rights workflows remain owned by PRIVACY-001 after SUPABASE-001 resolves the persistence provider path.`
 
 #### `SUPABASE-001 — Supabase persistence provider integration timing gate`
-- status: `selected-unblocked`
+- status: `trueGreen`
 - type: `release-blocker`
 - classification: `bridge task`
 - source:
@@ -6504,6 +6504,28 @@ Write-back:
 - unblock_update:
   - `2026-06-13: DATA-001 closed trueGreen and recorded Supabase as defer-until-SUPABASE-001, so SUPABASE-001 is now the next canonical persistence-provider gate.`
   - `SUPABASE-001 must not assume adoption. It must decide adopt/defer/reject and, if adopted, implement schema, auth/session mapping, storage, RLS, service-role boundaries, local migration, export/delete hooks, and live project-route proof.`
+- closure_update:
+  - `2026-06-13: SUPABASE-001 closed trueGreen with decision defer-for-first-release. Nexus keeps ProjectService/projectWorkspaceStore as the selected first-release persistence path and does not connect Supabase yet.`
+  - `Added src/core/supabase-persistence-provider-decision.js and serialized supabasePersistenceDecision through ProjectService project truth and settings profile truth.`
+  - `Visible Files and Settings surfaces now show that the external storage provider is not connected yet and explain the required schema, permissions, file, privacy, backup, export, and deletion work before adoption.`
+  - `The decision explicitly keeps Supabase secrets out of the browser and requires future adoption to implement schema ownership, RLS, account/team/project mapping, server-only service-role boundaries, local migration, FILE-001 storage ownership, and privacy hooks.`
+  - `DATA-001 dataOwnershipBoundary now reflects the resolved first-release decision as defer-for-first-release instead of a pending defer-until-SUPABASE-001 state.`
+- verification:
+  - `node --check src/core/supabase-persistence-provider-decision.js`
+  - `node --check src/core/project-service.js`
+  - `node --check web/nexus-ui/adapters/settings-adapter.js`
+  - `node --check web/nexus-ui/screens/SettingsScreen.js`
+  - `node --check scripts/verify-supabase-001-live-proof.mjs`
+  - `node --test test/supabase-persistence-provider-decision.test.js test/guided-task-and-settings-surfaces.test.js test/files-support-adapter.test.js test/acct-001-server-account-boundary.test.js`
+  - `NODE_PATH=/Users/yogevlavian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules NEXUS_BASE_URL=http://127.0.0.1:4011 node scripts/verify-supabase-001-live-proof.mjs`
+- live_evidence:
+  - `/private/tmp/nexus-supabase-001-1781343982488-report.json`
+  - `/private/tmp/nexus-supabase-001-1781343982488-files.png`
+  - `/private/tmp/nexus-supabase-001-1781343982488-files-after-refresh.png`
+  - `/private/tmp/nexus-supabase-001-1781343982488-settings.png`
+- does_not_close:
+  - `Supabase production adoption, database schema creation, RLS policies, storage buckets, backups, and provider-side privacy hooks remain future implementation work and must not be claimed as active.`
+  - `PRIVACY-001 still owns full deletion, export, retention, consent, and user-rights workflows on the selected ProjectService persistence path.`
 - next:
   - `PRIVACY-001 — Full privacy rights and data lifecycle boundary`
 

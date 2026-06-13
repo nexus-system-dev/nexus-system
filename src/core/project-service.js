@@ -5,6 +5,7 @@ import { FileEventLog } from "./file-event-log.js";
 import { createFirstReleaseFileIntakeBoundary } from "./file-intake-boundary.js";
 import { createFileAndArtifactStorageModule } from "./file-artifact-storage-module.js";
 import { buildProductShellDataOwnershipBoundary } from "./product-shell-data-ownership-boundary.js";
+import { buildSupabasePersistenceProviderDecision } from "./supabase-persistence-provider-decision.js";
 import { scanProject } from "./project-scanner.js";
 import { AiProjectAnalyst } from "./ai-analyst.js";
 import { CasinoDiagnosticsConnector } from "./casino-connector.js";
@@ -924,6 +925,10 @@ export class ProjectService {
     }
 
     const accountBoundary = buildFirstReleaseAccountBoundary({ authPayload });
+    const supabasePersistenceDecision = buildSupabasePersistenceProviderDecision({
+      project: { userId },
+      dataOwnershipBoundary: { taskId: "DATA-001", entities: [] },
+    });
     return {
       settingsProfileSurface: {
         settingsProfileSurfaceId: `settings-profile:${authPayload.userIdentity?.userId ?? userId}`,
@@ -942,6 +947,7 @@ export class ProjectService {
           trustLevel: authPayload.userIdentity?.userId ? "known-user" : "anonymous",
         },
         accountBoundary,
+        supabasePersistenceDecision,
         summary: {
           canEditProfile: true,
           hasSettingsRoute: true,
@@ -7507,6 +7513,10 @@ export class ProjectService {
       ...project,
       events,
     });
+    const supabasePersistenceDecision = buildSupabasePersistenceProviderDecision({
+      project,
+      dataOwnershipBoundary,
+    });
 
     return {
       id: project.id,
@@ -7536,6 +7546,7 @@ export class ProjectService {
         ?? project.state?.fileStorageRecord
         ?? null,
       dataOwnershipBoundary,
+      supabasePersistenceDecision,
       repositoryImportAndCodebaseDiagnosis: project.context?.repositoryImportAndCodebaseDiagnosis ?? null,
       liveWebsiteIngestionAndFunnelDiagnosis: project.context?.liveWebsiteIngestionAndFunnelDiagnosis ?? null,
       importedAnalyticsNormalization: project.context?.importedAnalyticsNormalization ?? null,

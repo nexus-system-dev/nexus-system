@@ -34,6 +34,7 @@ function renderSettingsToggle({ id, label, description, enabled = false } = {}) 
 
 function renderAccountPanel(viewModel) {
   const activityItems = Array.isArray(viewModel.account.activityItems) ? viewModel.account.activityItems : [];
+  const provider = viewModel.persistenceProvider ?? {};
   return renderNexusCard({
     className: "nexus-settings-screen__card",
     content: `
@@ -82,6 +83,18 @@ function renderAccountPanel(viewModel) {
           <p>${escapeHtml(item)}</p>
         `).join("")}
       </div>
+      <section
+        class="nexus-settings-screen__boundary-list"
+        data-supabase-provider-task="${escapeHtml(provider.taskId)}"
+        data-supabase-provider-decision="${escapeHtml(provider.decision)}"
+        data-supabase-selected-path="${escapeHtml(provider.selectedPersistencePath)}"
+        data-supabase-adoption-requirement-count="${escapeHtml(provider.adoptionRequirementCount)}"
+      >
+        <h4>${escapeHtml(provider.title ?? "ספק אחסון חיצוני")}</h4>
+        <p><strong>${escapeHtml(provider.status ?? "לא מחובר עכשיו")}</strong></p>
+        <p>${escapeHtml(provider.summary ?? "נקסוס לא מחברת ספק אחסון חיצוני לפני שיש מיפוי מלא.")}</p>
+        <p>${escapeHtml(provider.nextStep ?? "החיבור ייפתח אחרי שמיפוי הרשאות, קבצים, פרטיות ושחזור יהיה מוכן.")}</p>
+      </section>
       <div class="nexus-settings-screen__activity-list">
         <h4>פעילות חשבון</h4>
         ${activityItems.length > 0

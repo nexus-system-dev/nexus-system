@@ -222,9 +222,9 @@ export function buildProductShellDataOwnershipBoundary(project = {}) {
     projectId: safeProject.id ?? null,
     persistenceProviderDecision: {
       provider: "Supabase",
-      decision: "defer-until-SUPABASE-001",
-      reason: "DATA-001 defines ownership first; SUPABASE-001 decides whether Supabase is adopted, deferred, or rejected as a persistence provider.",
-      userFacingReason: "ספק אחסון חיצוני ייבחר רק אחרי שמקור האמת של הנתונים ברור ומסונכרן.",
+      decision: "defer-for-first-release",
+      reason: "SUPABASE-001 keeps ProjectService as the selected first-release persistence path and defers Supabase adoption until schema, RLS, auth mapping, storage, backup, export, and deletion hooks are ready.",
+      userFacingReason: "ספק אחסון חיצוני לא מחובר עכשיו; החיבור ייפתח רק אחרי שמיפוי הרשאות, קבצים, פרטיות ושחזור יהיה מוכן.",
       currentPersistencePath: "ProjectService projectWorkspaceStore plus bounded serialized project records",
     },
     entities,
